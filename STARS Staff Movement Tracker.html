@@ -1,0 +1,2103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Staff Movement Tracker — STARS Physiotherapy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0E1C2A; --ink-2:#3A5068; --muted:#8C9BAE;
+  --bg:#EBF2F8; --bg-2:#F4F9FC; --panel:#FFFFFF;
+  --line:rgba(14,42,70,0.09); --line-soft:rgba(14,42,70,0.05); --soft:rgba(26,90,153,0.04);
+  --accent:#1A5A9A; --accent-dark:#124070; --accent-soft:rgba(26,90,153,0.07);
+  --good:#0C7A52; --good-bg:#EDFBF3;
+  --warn:#7A5800; --warn-bg:#FDFBEB;
+  --danger:#B41A1A; --danger-bg:#FEF2F2;
+  --shadow:0 2px 6px rgba(14,28,42,0.04),0 10px 32px rgba(14,28,42,0.06);
+  --shadow-sm:0 1px 3px rgba(14,28,42,0.04),0 4px 14px rgba(14,28,42,0.05);
+  --radius:18px; --spring:cubic-bezier(0.32,0.72,0,1); --ease-out:cubic-bezier(0.22,1,0.36,1);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--ink);background:radial-gradient(1200px 600px at 80% -10%,#fff,var(--bg));-webkit-font-smoothing:antialiased;line-height:1.5}
+h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-0.01em}
+button{font-family:inherit}
+
+/* Top bar — wide floating island, aligned to the Wheelchair tool header pattern */
+.topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:18px;width:calc(100% - 32px);max-width:1900px;min-height:96px;margin:12px auto 0;padding:18px 20px;border:0;border-radius:18px;color:#fff;background-color:#073a57;background-image:linear-gradient(90deg,rgba(0,27,54,0.46) 0%,rgba(0,32,54,0.18) 45%,rgba(0,32,54,0.06) 100%),linear-gradient(100deg,#001D46 0%,#075F73 48%,#00838A 100%);background-repeat:no-repeat;background-size:100% 100%;background-position:center;box-shadow:0 4px 18px rgba(6,47,69,0.18);overflow:visible;isolation:isolate}
+.brand{display:flex;flex-direction:column;line-height:1.15;min-width:0;position:relative;z-index:1}
+.brand .t{font-size:clamp(17px,1.6vw,22px);font-weight:800;letter-spacing:-0.025em;color:#fff;text-shadow:0 1px 2px rgba(0,20,43,0.28)}
+.brand .s{font-size:12px;color:rgba(255,255,255,0.88);font-weight:600;margin-top:4px;text-shadow:0 1px 2px rgba(0,20,43,0.22)}
+.top-actions{margin-left:auto;display:flex;align-items:center;justify-content:flex-end;gap:8px;flex:0 1 620px;flex-wrap:wrap;row-gap:8px;position:relative;z-index:2}
+.save-dot{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;color:#fff;padding:7px 12px;border-radius:999px;background:rgba(0,38,61,0.22);border:1px solid rgba(255,255,255,0.42);backdrop-filter:blur(4px)}
+.save-dot .d{width:8px;height:8px;border-radius:50%;background:#46E3A0;box-shadow:0 0 0 3px rgba(70,227,160,0.25);transition:background .3s,box-shadow .3s}
+.save-dot.saving .d{background:#FFD24A;box-shadow:0 0 0 3px rgba(255,210,74,0.3)}
+.btn{border:1px solid var(--line);border-radius:999px;padding:8px 15px;background:#fff;color:var(--ink-2);cursor:pointer;font-size:12.5px;font-weight:700;box-shadow:var(--shadow-sm);transition:all .22s var(--spring);white-space:nowrap}
+.btn:hover{box-shadow:0 4px 14px rgba(14,28,42,0.1);transform:translateY(-1px)}
+.btn:active{transform:scale(.97);transition-duration:.1s}
+.btn.primary{background:var(--accent);color:#fff;border-color:transparent}
+.btn.primary:hover{background:var(--accent-dark)}
+.btn.danger{color:var(--danger);border-color:rgba(180,26,26,0.25)}
+.btn.sm{padding:5px 11px;font-size:11.5px}
+.rot-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(430px,1fr));gap:14px;align-items:start}
+.rot-area{min-width:0;border:1px solid var(--line);border-radius:15px;background:#fff;box-shadow:var(--shadow-sm);padding:14px 15px}
+.rot-area-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:11px}
+.rot-area-name{font-size:16px;font-weight:900;letter-spacing:-.01em}
+.rot-area-tot{font-size:11.5px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums}
+.rot-slot{border:1px solid var(--line);border-left:5px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:9px;background:#fff}
+.rot-slot:last-child{margin-bottom:0}
+.rot-slot.high{border-left-color:var(--danger);background:#FFFBFB}
+.rot-slot.warn{border-left-color:var(--warn);background:#FFFDF3}
+.rot-slot.good{border-left-color:var(--good)}
+.rot-slot-top{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.rot-owner{font-size:14.5px;font-weight:850;letter-spacing:-.01em}
+.rot-fte{font-size:12.5px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums;margin-left:auto}
+.rot-line{font-size:12px;font-weight:650;color:var(--ink-2);margin-top:6px;line-height:1.45}
+.rot-line b{font-weight:800}
+.rot-note{font-size:11.5px;color:var(--muted);font-weight:700;margin-top:5px;font-style:italic}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(12px);z-index:600;background:#0E1C2A;color:#fff;font-size:13px;font-weight:700;padding:12px 20px;border-radius:999px;box-shadow:0 10px 32px rgba(0,20,43,0.34);opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;max-width:min(90vw,560px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.bad{background:#7A1F1F}
+/* header buttons tuned for the floating brand header */
+.topbar .btn{background:#fff;color:#073a57;border-color:#fff;box-shadow:0 2px 8px rgba(0,20,43,0.20);backdrop-filter:blur(4px)}
+.topbar .btn:hover{background:#E8F4F5;border-color:#E8F4F5;color:#052C43;box-shadow:0 5px 18px rgba(0,20,43,0.26);transform:translateY(-1px)}
+
+/* Layout */
+.app{display:grid;grid-template-columns:212px minmax(0,1fr);gap:22px;max-width:1760px;margin:18px auto 22px;padding:0 28px}
+.content{min-width:0}
+.rail{position:sticky;top:126px;align-self:start;max-height:calc(100vh - 140px);overflow-y:auto;overscroll-behavior:contain;background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:10px;display:flex;flex-direction:column;gap:3px}
+.rail .rl{font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:10px 12px 5px}
+.navbtn{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;border-radius:12px;padding:10px 12px;cursor:pointer;font-size:13.5px;font-weight:700;color:var(--ink-2);text-align:left;transition:all .18s var(--ease-out)}
+.navbtn:hover{background:var(--soft);color:var(--ink)}
+.navbtn.active{background:var(--accent-soft);color:var(--accent-dark)}
+.navbtn .ic{width:22px;text-align:center;font-size:15px;opacity:.9;line-height:1;flex:0 0 22px;font-weight:900}
+.navbtn .ct{margin-left:auto;font-size:11px;font-weight:800;color:var(--muted);background:var(--bg);border-radius:999px;padding:1px 8px}
+
+.view{display:none;animation:fade .4s var(--ease-out) both}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:20px 22px;margin-bottom:18px}
+.card.is-collapsed .card-body{display:none}
+.card-head{display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none}
+.card-head h3{font-size:15px}
+.card-head .chev{margin-left:auto;color:var(--muted);transition:transform .25s var(--spring);font-size:13px}
+.card.is-collapsed .card-head .chev{transform:rotate(-90deg)}
+.card-sub{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
+.card-body{margin-top:16px}
+
+.viewhead{display:flex;align-items:flex-end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.viewhead h2{font-size:22px}
+.viewhead .vsub{font-size:13px;color:var(--muted);font-weight:600}
+.viewhead .spacer{flex:1}
+
+/* Controls */
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;color:var(--muted)}
+select,input[type=text],input[type=date],input[type=number],textarea{font-family:inherit;font-size:13.5px;color:var(--ink);border:1px solid var(--line);border-radius:11px;padding:9px 12px;background:#fff;outline:none;transition:border .18s,box-shadow .18s}
+select:focus,input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.ctrlrow{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+
+/* Tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px}
+thead th{position:sticky;top:0;background:var(--bg-2);text-align:left;font-size:10.5px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;color:var(--ink-2);padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--soft)}
+tbody tr.archived{opacity:.5}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.rowact{display:flex;gap:6px;white-space:nowrap}
+.iconbtn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer;color:var(--ink-2)}
+.iconbtn:hover{border-color:var(--accent);color:var(--accent)}
+.iconbtn.del:hover{border-color:var(--danger);color:var(--danger)}
+
+/* Pills */
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap}
+.pill.good{background:var(--good-bg);color:var(--good)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.danger{background:var(--danger-bg);color:var(--danger)}
+.pill.neutral{background:var(--bg);color:var(--ink-2)}
+.pill.accent{background:var(--accent-soft);color:var(--accent-dark)}
+
+/* Stat tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{background:var(--bg-2);border:1px solid var(--line-soft);border-radius:14px;padding:14px 16px}
+.tile .k{font-size:11px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;color:var(--muted)}
+.tile .v{font-size:24px;font-weight:800;letter-spacing:-0.02em;margin-top:4px;font-variant-numeric:tabular-nums}
+.tile .v.sm{font-size:18px}
+
+.empty{padding:28px;text-align:center;color:var(--muted);font-size:13px;font-weight:600}
+.linklike{color:var(--accent);font-weight:700;text-decoration:none;cursor:pointer}
+.linklike:hover{text-decoration:underline}
+
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(14,28,42,0.42);backdrop-filter:blur(3px);z-index:400;display:none;align-items:flex-start;justify-content:center;padding:28px 18px;overflow-y:auto}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:20px;box-shadow:var(--shadow);width:100%;max-width:680px;padding:22px 24px;animation:pop .3s var(--spring) both}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+.modal h3{font-size:17px;margin-bottom:3px}
+.modal .msub{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.grid2 .full{grid-column:1/-1}
+.modal-foot{display:flex;gap:9px;margin-top:20px;align-items:center}
+.modal-foot .spacer{flex:1}
+@media(max-width:760px){.topbar{position:sticky;top:0;width:calc(100% - 20px);min-height:auto;margin:10px auto 0;padding:14px;flex-direction:column;align-items:flex-start}.top-actions{margin-left:0;width:100%;justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px}.top-actions::-webkit-scrollbar{display:none}.app{grid-template-columns:1fr;margin:16px auto 22px;padding:0 16px}.rail{position:static;flex-direction:row;flex-wrap:wrap;top:auto;max-height:none;overflow:visible}.grid2{grid-template-columns:1fr}}
+.hint{font-size:11.5px;color:var(--muted);font-weight:600}
+.sectionnote{background:var(--accent-soft);border:1px solid rgba(26,90,153,0.14);border-radius:12px;padding:11px 14px;font-size:12px;color:var(--accent-dark);font-weight:600;margin-bottom:14px}
+
+/* Planner */
+.plegend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.pchip{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid var(--line-soft)}
+.ptbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+table.planner{border-collapse:separate;border-spacing:0;font-size:11px}
+table.planner th,table.planner td{padding:5px 7px;white-space:nowrap;border-bottom:1px solid var(--line-soft)}
+table.planner thead th{position:sticky;top:0;background:var(--bg-2);font-size:9.5px;font-weight:800;letter-spacing:.02em;color:var(--ink-2);text-align:center}
+table.planner .pname{position:sticky;left:0;z-index:2;background:#fff;text-align:left;font-weight:700;border-right:1px solid var(--line)}
+table.planner thead .pname{z-index:3;background:var(--bg-2)}
+table.planner .pcls{position:sticky;left:120px;z-index:2;background:#fff;text-align:left;color:var(--muted);font-weight:700;border-right:1px solid var(--line)}
+table.planner .planner-name-link{appearance:none;border:0;background:transparent;padding:0;margin:0;font:inherit;font-weight:800;color:var(--accent-dark);cursor:pointer;text-align:left;text-decoration:none;border-radius:8px}
+table.planner .planner-name-link:hover{color:var(--accent);text-decoration:underline}
+table.planner .planner-name-link:focus-visible{outline:3px solid var(--accent-soft);outline-offset:3px}
+table.planner thead .pcls{z-index:3;background:var(--bg-2)}
+.pcell{text-align:center;font-weight:800;font-variant-numeric:tabular-nums;min-width:30px}
+.fnb{border-left:2px solid var(--ink-2)!important;opacity:1}
+.pchip[data-k="sub"],.pcell[data-k="sub"]{background:#DCEFE4;color:#0A6A47}
+.pchip[data-k="acting"],.pcell[data-k="acting"]{background:#CFE3F6;color:#0F3A63}
+.pchip[data-k="parental"],.pcell[data-k="parental"]{background:#E6D9FA;color:#532F94}
+.pchip[data-k="leave"],.pcell[data-k="leave"]{background:#FBE6B0;color:#7A5800}
+.pchip[data-k="sec"],.pcell[data-k="sec"]{background:#D2DAE3;color:#324A62}
+.pchip[data-k="end"],.pcell[data-k="end"]{background:#F6CFCF;color:#9E1717}
+.pchip{font-weight:800}
+
+/* Sortable headers */
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--accent)}
+th.sorted{color:var(--accent-dark);background:var(--accent-soft)}
+.sarr{opacity:.3;font-weight:800;font-size:9px}
+tr.grp-top td{border-top:2px solid var(--line)}
+
+/* Staff expired flag */
+tr.rowexpired td{background:var(--danger-bg)!important}
+tr.rowexpired:hover td{background:#FBDADA!important}
+
+/* Budget heatmap cells */
+.heatcell{display:block;margin:-9px -12px;padding:9px 12px;font-weight:800;text-align:right}
+.heat-over{background:var(--danger-bg);color:var(--danger)}
+.heat-warn{background:var(--warn-bg);color:var(--warn)}
+.heat-under{background:#E7F0FA;color:var(--accent-dark)}
+.heat-on{background:var(--good-bg);color:var(--good)}
+
+/* Budget shape charts */
+.bchart{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line-soft)}
+.bchart:last-child{border-bottom:0}
+.bchart .blab{font-weight:800;font-size:13px}
+.bchart .blab .bsub{display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.bchart svg{width:100%;height:64px;display:block}
+
+/* Contract horizon */
+.horizon{display:flex;flex-direction:column;gap:9px}
+.hrow{display:grid;grid-template-columns:minmax(150px,1.4fr) 1fr 60px auto;gap:12px;align-items:center}
+.hrow .rowact{justify-content:flex-end}
+@media(max-width:760px){.hrow{grid-template-columns:1fr auto;row-gap:8px}.hrow .htrack{grid-column:1/-1;order:3}.hrow .rowact{order:2}}
+.hrow .hname{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hrow .hname .hsub{display:block;font-size:10.5px;font-weight:600;color:var(--muted)}
+.htrack{position:relative;height:14px;border-radius:999px;background:var(--bg);border:1px solid var(--line-soft);overflow:hidden}
+.htrack .hfill{position:absolute;top:0;bottom:0;left:0;border-radius:999px}
+.htrack .hnow{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink-2);opacity:.45}
+.hrow .hdays{text-align:right;font-weight:800;font-size:12px;font-variant-numeric:tabular-nums}
+.htag{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.04em;padding:1px 5px;border-radius:5px;margin-right:7px;vertical-align:1px;background:#D2DAE3;color:#324A62}
+.htag.tc{background:#E6D9FA;color:#532F94}
+.hfill.ok{background:#BFE3CF}.hdays.ok{color:var(--good)}
+.hfill.soon{background:#FBE6B0}.hdays.soon{color:var(--warn)}
+.hfill.urgent{background:#F6C6C6}.hdays.urgent{color:var(--danger)}
+.hfill.gone{background:#E89B9B}.hdays.gone{color:var(--danger)}
+.hfill.none{background:#DDE3EA}.hdays.none{color:var(--muted)}
+.hbuckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+.hbucket{border-radius:12px;padding:11px 14px;border:1px solid var(--line-soft);font-family:inherit;text-align:left;cursor:pointer;transition:transform .14s var(--ease-out),box-shadow .14s,outline-color .14s;outline:2.5px solid transparent;outline-offset:2px}
+.hbucket:hover:not(:disabled){transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+.hbucket:focus-visible{outline-color:var(--accent)}
+.hbucket.active{outline-color:var(--ink);box-shadow:var(--shadow-sm)}
+.hbucket:disabled{opacity:.45;cursor:default}
+.hbucket .hb-v{font-size:22px;font-weight:800;line-height:1}
+.hbucket .hb-k{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-top:4px;color:var(--muted)}
+.hbucket.b-gone{background:var(--danger-bg)}.hbucket.b-gone .hb-v{color:var(--danger)}
+.hbucket.b-urgent{background:#FFF4F4}.hbucket.b-urgent .hb-v{color:var(--danger)}
+.hbucket.b-soon{background:var(--warn-bg)}.hbucket.b-soon .hb-v{color:var(--warn)}
+.hbucket.b-none{background:var(--bg-2)}.hbucket.b-none .hb-v{color:var(--ink-2)}
+
+
+/* Manager decision-support layer */
+.action-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+.action-tile{border:1px solid var(--line-soft);border-radius:14px;padding:13px 15px;background:var(--bg-2);text-align:left;cursor:pointer;font-family:inherit;color:inherit;transition:all .2s var(--spring);box-shadow:none}
+.action-tile:hover{transform:translateY(-1px);box-shadow:var(--shadow-sm);border-color:rgba(26,90,153,0.18)}
+.action-tile:focus-visible{outline:3px solid var(--accent-soft);outline-offset:2px}
+.action-tile.active{border-color:rgba(14,28,42,0.26);box-shadow:0 0 0 3px rgba(14,28,42,0.04),var(--shadow-sm)}
+.action-tile .ak{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.action-tile .av{font-size:25px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums}
+.action-tile .af{font-size:10.5px;font-weight:700;color:var(--muted);margin-top:2px}
+.action-tile.high{background:var(--danger-bg)}.action-tile.high .av{color:var(--danger)}
+.action-tile.warn{background:var(--warn-bg)}.action-tile.warn .av{color:var(--warn)}
+.action-tile.info{background:var(--accent-soft)}.action-tile.info .av{color:var(--accent-dark)}
+.action-filter-note{font-size:11.5px;color:var(--muted);font-weight:700;margin:-4px 0 12px}
+.action-list{display:flex;flex-direction:column;gap:9px}
+.action-item{display:grid;grid-template-columns:6px minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:14px;background:#fff;padding:10px 12px;box-shadow:var(--shadow-sm)}
+.action-item .abar{width:6px;align-self:stretch;border-radius:999px;background:var(--muted)}
+.action-item.high .abar{background:var(--danger)}.action-item.warn .abar{background:var(--warn)}.action-item.info .abar{background:var(--accent)}
+.action-title{font-size:13px;font-weight:800;color:var(--ink)}
+.action-detail{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:2px}
+.action-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.action-person-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px}
+.action-person{font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.01em;border:0;background:transparent;padding:0;text-align:left;font-family:inherit;line-height:1.2;cursor:pointer}
+.action-issue{font-size:12.5px;font-weight:800;color:var(--ink-2);margin-top:1px}
+.action-item.high .action-issue{color:var(--danger)}
+.action-item.warn .action-issue{color:var(--warn)}
+.action-item.info .action-issue{color:var(--accent-dark)}
+.action-type-chip{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:2px 8px;background:var(--bg);color:var(--muted)}
+.action-buttons{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.action-buttons .iconbtn.primary-link{border-color:rgba(26,90,153,0.25);color:var(--accent-dark);background:var(--accent-soft)}
+.action-buttons .iconbtn.primary-link:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.validation-panel{grid-column:1/-1;border:1px solid var(--line);border-radius:14px;background:var(--bg-2);padding:12px 14px;margin-top:14px;font-size:12.5px}
+.validation-panel.is-clean{background:var(--good-bg);border-color:rgba(12,122,82,.16);color:var(--good)}
+.validation-panel.has-warnings{background:var(--warn-bg);border-color:rgba(122,88,0,.18);color:var(--warn)}
+.validation-panel.has-errors{background:var(--danger-bg);border-color:rgba(180,26,26,.20);color:var(--danger)}
+.validation-panel .vh{font-weight:800;margin-bottom:6px;color:inherit}
+.validation-panel ul{margin:6px 0 0;padding-left:18px;color:inherit}
+.validation-panel li{margin:3px 0}
+
+.timeline-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+table.timeline{border-collapse:separate;border-spacing:0;font-size:11px;width:100%}
+table.timeline th,table.timeline td{padding:6px 8px;white-space:nowrap;border-bottom:1px solid var(--line-soft)}
+table.timeline thead th{position:sticky;top:0;background:var(--bg-2);font-size:9.5px;text-align:center;z-index:1}
+table.timeline .tl-label{position:sticky;left:0;z-index:2;background:#fff;min-width:260px;max-width:320px;text-align:left;border-right:1px solid var(--line);font-weight:800;white-space:normal}
+table.timeline thead .tl-label{z-index:3;background:var(--bg-2)}
+.tl-sub{display:block;font-size:10.5px;font-weight:600;color:var(--muted);margin-top:2px}
+.tlcell{text-align:center;font-weight:800;min-width:34px;border-left:1px solid rgba(14,42,70,.03)}
+.tlcell[data-k="sub"]{background:#DCEFE4;color:#0A6A47}.tlcell[data-k="acting"]{background:#CFE3F6;color:#0F3A63}
+.tlcell[data-k="backfill"]{background:#D6EAF8;color:#0F3A63}.tlcell[data-k="leave"]{background:#FBE6B0;color:#7A5800}
+.tlcell[data-k="sec"]{background:#D2DAE3;color:#324A62}.tlcell[data-k="parental"]{background:#E6D9FA;color:#532F94}
+.tlcell[data-k="end"]{background:#F6CFCF;color:#9E1717}.tlcell[data-k="owner"]{background:var(--accent-soft);color:var(--accent-dark)}
+.audit-changes{max-width:520px;white-space:normal;color:var(--ink-2);font-size:11.5px;line-height:1.45}
+@media(max-width:760px){.action-item{grid-template-columns:5px minmax(0,1fr)}.action-item .rowact{grid-column:2/-1}.timeline-wrap{max-width:100%}}
+
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="t" id="brandTitle">Staff Movement Tracker</span><span class="s" id="brandSub">STARS Physiotherapy · Metro North Health</span></div>
+  <div class="top-actions">
+    <span class="save-dot" id="saveDot"><span class="d"></span><span id="saveTxt">Saved</span></span>
+    <button class="btn" onclick="exportBackup()">Export backup</button>
+    <button class="btn" onclick="document.getElementById('importInput').click()">Import</button>
+    <input id="importInput" type="file" accept="application/json,.json" style="display:none" onchange="importBackup(event)"/>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<main class="app">
+  <nav class="rail">
+    <div class="rl">Views</div>
+    <button class="navbtn active" data-view="dashboard" onclick="go('dashboard')"><span class="ic">◆</span> Manager Dashboard <span class="ct" id="navActions"></span></button>
+    <button class="navbtn" data-view="gaps" onclick="go('gaps')"><span class="ic">⇅</span> FTE Gaps <span class="ct" id="navGaps"></span></button>
+    <button class="navbtn" data-view="budget" onclick="go('budget')"><span class="ic">$</span> Budget</button>
+    <button class="navbtn" data-view="planner" onclick="go('planner')"><span class="ic">▣</span> Planner</button>
+    <button class="navbtn" data-view="timeline" onclick="go('timeline')"><span class="ic">👤</span> Staff Details</button>
+    <button class="navbtn" data-view="rotations" onclick="go('rotations')"><span class="ic">◷</span> Rotations <span class="ct" id="navRot"></span></button>
+    <div class="rl">Data</div>
+    <button class="navbtn" data-view="movements" onclick="go('movements')"><span class="ic">⇄</span> Movements <span class="ct" id="navMov"></span></button>
+    <button class="navbtn" data-view="staff" onclick="go('staff')"><span class="ic">☰</span> Staff Register <span class="ct" id="navStaff"></span></button>
+    <button class="navbtn" data-view="audit" onclick="go('audit')"><span class="ic">↺</span> Audit History <span class="ct" id="navAudit"></span></button>
+    <button class="navbtn" data-view="settings" onclick="go('settings')"><span class="ic">⚙</span> Settings</button>
+  </nav>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <section class="view active" id="view-dashboard">
+      <div class="viewhead">
+        <div><h2>Manager Dashboard</h2><div class="vsub">Actions, service FTE position and contract horizon for the selected pay cycle.</div></div>
+      </div>
+      <div class="card">
+        <div class="ctrlrow">
+          <div class="field" style="min-width:210px"><label>Pay cycle</label><select id="dashCycle" onchange="renderDashboard();renderManagerActions()"></select></div>
+          <div class="field"><label>&nbsp;</label><span class="hint" id="dashCycleDates"></span></div>
+        </div>
+      </div>
+      <div class="card" id="managerActionsCard">
+        <div class="card-head" onclick="toggleCard(this)"><div><h3>Manager actions</h3><div class="card-sub">Live prompts for data risks, upcoming decisions and workforce gaps.</div></div><span class="chev">▾</span></div>
+        <div class="card-body"><div id="managerActions"></div></div>
+      </div>
+      <div class="card" id="budgetCard">
+        <div class="card-head" onclick="toggleCard(this)"><h3>Team FTE budget — selected cycle</h3><span class="chev">▾</span></div>
+        <div class="card-body"><div id="dashBudget"></div></div>
+      </div>
+      <div class="card" id="alertCard">
+        <div class="card-head" onclick="toggleCard(this)"><div><h3>Contract horizon</h3><div class="card-sub">Temp contracts and dated movements by time to expiry — soonest first.</div></div><span class="chev">▾</span></div>
+        <div class="card-body"><div id="dashAlerts"></div></div>
+      </div>
+    </section>
+
+    <!-- FTE GAPS -->
+    <section class="view" id="view-rotations">
+      <div class="card"><div class="card-body"><div class="ctrlrow">
+        <div class="field" style="min-width:230px"><label>Pay cycle</label><select id="rotCycle" onchange="renderRotations()"></select></div>
+        <div class="field" style="min-width:190px"><label>Area</label><select id="rotArea" onchange="renderRotations()"></select></div>
+        <div class="field"><label>&nbsp;</label><button class="btn primary" onclick="openRotation(null)">+ Add rotation slot</button></div>
+      </div></div></div>
+      <div class="viewhead"><div><h2>Rotations</h2><div class="vsub">Funded FTE broken into chunks by clinical area, and who is delivering each one.</div></div></div>
+      <div class="sectionnote">A slot is a piece of funded FTE sitting in an area, with the person who substantively owns it. Who is actually delivering it is read live from the movements — if the owner is away or acting elsewhere, whoever is covering them shows here. Slot totals per classification should match your baseline.</div>
+      <div class="card">
+        <div class="card-head" onclick="toggleCard(this)"><div><h3>Establishment check</h3><div class="card-sub">Slot FTE against baseline, per classification.</div></div><span class="chev">▾</span></div>
+        <div class="card-body"><div id="rotTotals"></div></div>
+      </div>
+      <div id="rotBoard"></div>
+    </section>
+
+    <section class="view" id="view-gaps">
+      <div class="card"><div class="card-body"><div class="ctrlrow">
+        <div class="field" style="min-width:230px"><label>Pay cycle</label><select id="gapsCycle" onchange="renderGaps()"></select></div>
+        <div class="field"><label>&nbsp;</label><span class="hint">Cover is counted only where it overlaps the absence in this fortnight, so sequential backfills no longer look over-filled.</span></div>
+      </div></div></div>
+      <div class="viewhead"><div><h2>FTE Gaps</h2><div class="vsub">Each person with an absence — what is vacated vs what is backfilled.</div></div></div>
+      <div class="sectionnote">Auto-built live from movements. Vacated = leave / secondment-out / partial parental return. Backfilled = backfill movements owned by that person. Totals sum across the whole movement, not a single fortnight.</div>
+      <div class="card"><div id="gapsTable"></div></div>
+    </section>
+
+    <!-- BUDGET -->
+    <section class="view" id="view-budget">
+      <div class="viewhead"><div><h2>Budget Summary</h2><div class="vsub">Effective FTE per classification across 13 fortnights.</div></div></div>
+      <div class="card">
+        <div class="ctrlrow" style="margin-bottom:14px">
+          <div class="field" style="min-width:210px"><label>Start window from cycle</label><select id="budgetStart" onchange="renderBudget()"></select></div>
+        </div>
+        <div id="budgetTable"></div>
+      </div>
+    </section>
+
+    <!-- PLANNER -->
+    <section class="view" id="view-planner">
+      <div class="viewhead"><div><h2>Fortnight Planner</h2><div class="vsub">Where every staff line is working, week by week. Heavier line = fortnight (pay cycle) boundary.</div></div></div>
+      <div class="card">
+        <div class="ctrlrow" style="margin-bottom:12px">
+          <div class="field" style="min-width:210px"><label>Start from week of</label><select id="plannerStart" onchange="renderPlanner()"></select></div>
+        </div>
+        <div class="plegend">
+          <span class="pchip" data-k="sub">1.0 = working substantive FTE</span>
+          <span class="pchip" data-k="acting">Class code = acting up in that class</span>
+          <span class="pchip" data-k="parental">P 0.4 = parental (vacated FTE)</span>
+          <span class="pchip" data-k="leave">L = leave</span>
+          <span class="pchip" data-k="sec">S = secondment out</span>
+          <span class="pchip" data-k="end">X = contract ended</span>
+        </div>
+        <div id="plannerTable"></div>
+      </div>
+    </section>
+
+    <!-- PERSON TIMELINE -->
+    <section class="view" id="view-timeline">
+      <div class="viewhead"><div><h2>Staff Details</h2><div class="vsub">Select a staff member to view their current position, backfill arrangements and movement timeline.</div></div></div>
+      <div class="card">
+        <div class="ctrlrow" style="margin-bottom:14px">
+          <div class="field" style="min-width:230px"><label>Staff member</label><select id="timelinePerson" onchange="renderTimeline()"></select></div>
+          <div class="field" style="min-width:210px"><label>Pay cycle for current view</label><select id="timelineCycle" onchange="renderTimeline()"></select></div>
+          <div class="field" style="min-width:210px"><label>Timeline starts week of</label><select id="timelineStart" onchange="renderTimeline()"></select></div>
+          <div class="field" style="min-width:140px"><label>Timeline window</label><select id="timelineWindow" onchange="renderTimeline()"><option value="26">26 weeks</option><option value="52">52 weeks</option></select></div>
+        </div>
+        <div id="personProfileBlock"></div>
+        <div id="timelineSummary"></div>
+        <div id="timelineTable"></div>
+      </div>
+    </section>
+
+    <!-- MOVEMENTS -->
+    <section class="view" id="view-movements">
+      <div class="viewhead">
+        <div><h2>Active Movements</h2><div class="vsub">The single source of truth. One movement = one row.</div></div>
+        <div class="spacer"></div>
+        <label class="hint" style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="showArchived" onchange="renderMovements()"> Show archived</label>
+        <button class="btn primary" onclick="openMovement(null)">+ Add movement</button>
+      </div>
+      <div class="card"><div id="movTable"></div></div>
+    </section>
+
+    <!-- STAFF -->
+    <section class="view" id="view-staff">
+      <div class="viewhead">
+        <div><h2>Staff Register</h2><div class="vsub">Every staff member and their substantive line(s). Split substantive = multiple rows.</div></div>
+        <div class="spacer"></div>
+        <button class="btn primary" onclick="openStaff(null)">+ Add staff line</button>
+      </div>
+      <div class="card"><div id="staffTable"></div></div>
+    </section>
+
+    <!-- AUDIT HISTORY -->
+    <section class="view" id="view-audit">
+      <div class="viewhead">
+        <div><h2>Audit History</h2><div class="vsub">Local change log for staff lines, movements, settings and administrative changes.</div></div>
+        <div class="spacer"></div>
+        <div class="field" style="min-width:170px"><label>Filter</label><select id="auditFilter" onchange="renderAudit()"><option value="all">All changes</option><option value="Movement">Movements</option><option value="Staff">Staff</option><option value="Settings">Settings</option><option value="Data">Data</option></select></div>
+        <button class="btn danger" onclick="clearAudit()">Clear audit</button>
+      </div>
+      <div class="sectionnote">The audit history is stored locally in this browser and included in exported backups. It is not a formal enterprise audit log, but it gives a practical history of what changed and when.</div>
+      <div class="card"><div id="auditTable"></div></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="view" id="view-settings">
+      <div class="viewhead"><div><h2>Settings</h2><div class="vsub">Service identity, classification budget, and pay-cycle calendar.</div></div></div>
+      <div class="card">
+        <div class="card-head" onclick="toggleCard(this)"><div><h3>Service identity</h3><div class="card-sub">Drives the banner, the browser tab and the backup file name.</div></div><span class="chev">▾</span></div>
+        <div class="card-body">
+          <div class="ctrlrow">
+            <div class="field" style="min-width:260px"><label>Service name</label><input type="text" id="setServiceName" onchange="saveIdentity()" placeholder="e.g. STARS Physiotherapy"></div>
+            <div class="field" style="min-width:220px"><label>Organisation / HHS</label><input type="text" id="setOrgName" onchange="saveIdentity()" placeholder="e.g. Metro North Health"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head" onclick="toggleCard(this)"><div><h3>Classification budget</h3><div class="card-sub">Add, rename or remove classifications and set the funded FTE for this service.</div></div><span class="chev">▾</span></div>
+        <div class="card-body">
+          <div class="sectionnote">Baseline FTE = your funded establishment for that classification. Ceiling = the most you are permitted to run. Additional approved = extra FTE signed off outside the baseline (e.g. new grant funding) — it is added to the ceiling, not the baseline.</div>
+          <div id="settingsClasses"></div>
+          <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px">
+            <button class="btn primary" onclick="addClassification()">+ Add classification</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head" onclick="toggleCard(this)"><h3>Pay-cycle calendar</h3><span class="chev">▾</span></div>
+        <div class="card-body">
+          <div class="ctrlrow">
+            <div class="field"><label>Cycle anchor (a Wednesday)</label><input type="date" id="setAnchor" onchange="saveSettings()"></div>
+            <div class="field"><label>Cycle length (days)</label><input type="number" id="setLen" value="14" onchange="saveSettings()" style="width:90px"></div>
+          </div>
+          <div class="hint" style="margin-top:10px">Standard Queensland Health fortnight runs Wed–Tue. Change the anchor only if the pay calendar shifts.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head" onclick="toggleCard(this)"><h3>Backup &amp; data</h3><span class="chev">▾</span></div>
+        <div class="card-body">
+          <div class="hint" style="margin-bottom:12px">Your data auto-saves to this browser on every change. The backup file is your insurance — export it regularly and keep a copy somewhere safe.</div>
+          <div style="display:flex;gap:9px;flex-wrap:wrap">
+            <button class="btn primary" onclick="exportBackup()">Export backup (.json)</button>
+            <button class="btn" onclick="document.getElementById('importInput').click()">Import backup</button>
+            <button class="btn danger" onclick="resetToSeed()">Reset to original data</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- MOVEMENT MODAL -->
+<div class="modal-bg" id="rotModal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="rotModalTitle">Add rotation slot</h3><button class="iconbtn" onclick="closeModal('rotModal')">✕</button></div>
+    <div class="grid2">
+      <div class="field"><label>Clinical area</label><input type="text" id="r_area" list="rotAreaList" placeholder="e.g. 4A, Day Hospital, Proc/Surg"><datalist id="rotAreaList"></datalist></div>
+      <div class="field"><label>Classification</label><select id="r_cls"></select></div>
+      <div class="field"><label>Funded FTE in this slot</label><input type="number" step="0.01" min="0" id="r_fte"></div>
+      <div class="field"><label>Substantive owner</label><select id="r_owner_sel" onchange="nameSelChanged('r_owner')"></select><input type="text" id="r_owner" class="nameother" placeholder="Type the name or Vacant" style="display:none;margin-top:6px"></div>
+      <div class="field full"><label>Currently delivered by (your note)</label><input type="text" id="r_actual" placeholder="e.g. Abby Mon &amp; Tue, Wed TBC — free text, for anything the movements cannot express"></div>
+      <div class="field full"><label>Notes</label><textarea id="r_notes" rows="2"></textarea></div>
+    </div>
+    <div id="rotValidation"></div>
+    <div class="modal-actions">
+      <button class="btn del" id="r_delBtn" onclick="deleteRotation()">Delete</button>
+      <span style="flex:1"></span>
+      <button class="btn" onclick="closeModal('rotModal')">Cancel</button>
+      <button class="btn primary" onclick="saveRotation()">Save slot</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="movModal">
+  <div class="modal">
+    <h3 id="movModalTitle">Add movement</h3>
+    <div class="msub">One movement = one row. Split holdings (e.g. backfill from two people) = two separate movements.</div>
+    <div class="grid2">
+      <div class="field"><label>Movement ID</label><input type="text" id="m_id" readonly></div>
+      <div class="field"><label>Staff member (who moves)</label><select id="m_staff_sel" onchange="nameSelChanged('m_staff')"></select><input type="text" id="m_staff" class="nameother" placeholder="Type the name" style="display:none;margin-top:6px"></div>
+      <div class="field"><label>Substantive classification</label><select id="m_subClass"></select></div>
+      <div class="field"><label>Substantive FTE</label><input type="number" step="0.01" id="m_subFTE"></div>
+      <div class="field"><label>Movement type</label><select id="m_type" onchange="movTypeHint()"></select></div>
+      <div class="field"><label id="fteLabel">FTE moved</label><input type="number" step="0.01" id="m_fteMoved"><span class="hint" id="fteHint"></span></div>
+      <div class="field"><label>Working classification</label><select id="m_workClass"></select></div>
+      <div class="field"><label>Employment arrangement</label><select id="m_empArr"></select></div>
+      <div class="field"><label>Working position ID</label><input type="text" id="m_workPosId"></div>
+      <div class="field"><label>Working position title</label><input type="text" id="m_workPosTitle"></div>
+      <div class="field full" id="ownerField"><label id="ownerLabel">Backfilling whom / owner</label><select id="m_owner_sel" onchange="nameSelChanged('m_owner')"></select><input type="text" id="m_owner" class="nameother" placeholder="Type the name or funding source" style="display:none;margin-top:6px"><span class="hint" id="ownerHint"></span></div>
+      <div class="field"><label>Start date</label><input type="date" id="m_start"></div>
+      <div class="field"><label>End date</label><input type="date" id="m_end"></div>
+      <div class="field"><label>Leave / absence type</label><select id="m_absenceType"></select></div>
+      <div class="field"><label>Admin status</label><select id="m_adminStatus"></select></div>
+      <div class="field"><label>VMC number</label><input type="text" id="m_vmcNum"></div>
+      <div class="field"><label>Process number</label><input type="text" id="m_procNum"></div>
+      <div class="field full"><label>VMC PDF link (paste OneDrive/network path)</label><input type="text" id="m_vmcUrl"></div>
+      <div class="field full"><label>Notes</label><textarea id="m_notes" rows="2"></textarea></div>
+      <div class="field full"><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="m_archived"> Archived (excluded from all calculations)</label></div>
+    </div>
+    <div class="validation-panel is-clean" id="movValidation"><div class="vh">Validation ready</div></div>
+    <div class="modal-foot">
+      <button class="btn danger" id="m_delBtn" onclick="deleteMovement()">Delete</button>
+      <div class="spacer"></div>
+      <button class="btn" onclick="closeModal('movModal')">Cancel</button>
+      <button class="btn primary" onclick="saveMovement()">Save movement</button>
+    </div>
+  </div>
+</div>
+
+<!-- STAFF MODAL -->
+<div class="modal-bg" id="staffModal">
+  <div class="modal">
+    <h3 id="staffModalTitle">Add staff line</h3>
+    <div class="msub">One substantive line per row. A permanent split (0.4 HP5 + 0.6 HP4) is two rows, same name.</div>
+    <div class="grid2">
+      <div class="field full"><label>Staff member</label><input type="text" id="s_name"></div>
+      <div class="field"><label>Substantive classification</label><select id="s_subClass"></select></div>
+      <div class="field"><label>Substantive FTE</label><input type="number" step="0.01" id="s_subFTE"></div>
+      <div class="field"><label>Position ID</label><input type="text" id="s_posId"></div>
+      <div class="field"><label>Position title</label><input type="text" id="s_posTitle"></div>
+      <div class="field"><label>Employment type</label><select id="s_empType"></select></div>
+      <div class="field"><label>Active?</label><select id="s_active"><option>Yes</option><option>No</option></select></div>
+      <div class="field"><label>Line starts</label><input type="date" id="s_contractStart"><span class="hint">Leave blank if it has always applied</span></div>
+      <div class="field"><label>Line ends</label><input type="date" id="s_contractEnd"><span class="hint">Temp contract end, or the date a substantive changes</span></div>
+      <div class="field full"><label>Notes</label><input type="text" id="s_notes"></div>
+    </div>
+    <div class="validation-panel is-clean" id="staffValidation"><div class="vh">Validation ready</div></div>
+    <div class="modal-foot">
+      <button class="btn danger" id="s_delBtn" onclick="deleteStaff()">Delete</button>
+      <div class="spacer"></div>
+      <button class="btn" onclick="closeModal('staffModal')">Cancel</button>
+      <button class="btn primary" onclick="saveStaff()">Save staff line</button>
+    </div>
+  </div>
+</div>
+
+<datalist id="staffNames"></datalist>
+
+<script>
+/* ============================ SEED DATA ============================ */
+const SEED = {
+ "staff": [
+  { "name":"Demo Lead (HP5)", "subClass":"HP5", "posId":30000001, "posTitle":"Physio Advanced TL", "subFTE":1, "empType":"Permanent", "contractStart":"", "contractEnd":"", "team":"", "active":"Yes", "notes":"Example data — replace with your own or import a backup." },
+  { "name":"Demo Senior (HP4)", "subClass":"HP4", "posId":30000002, "posTitle":"Physiotherapist Senior", "subFTE":1, "empType":"Permanent", "contractStart":"", "contractEnd":"", "team":"", "active":"Yes", "notes":"" },
+  { "name":"Demo Clinician (HP3)", "subClass":"HP3", "posId":30000003, "posTitle":"Physiotherapist", "subFTE":1, "empType":"Permanent", "contractStart":"", "contractEnd":"", "team":"", "active":"Yes", "notes":"" },
+  { "name":"Demo Temp Soon (HP3)", "subClass":"HP3", "posId":30000003, "posTitle":"Physiotherapist", "subFTE":0.5, "empType":"Temporary", "contractStart":"2026-01-01", "contractEnd":"2026-08-15", "team":"", "active":"Yes", "notes":"Temp contract — appears in Contract horizon." },
+  { "name":"Demo Temp Expired (HP3)", "subClass":"HP3", "posId":30000003, "posTitle":"Physiotherapist", "subFTE":0.6, "empType":"Temporary", "contractStart":"2025-06-01", "contractEnd":"2026-05-31", "team":"", "active":"Yes", "notes":"Contract end has passed — shows the expired flag." },
+  { "name":"Demo Assistant (CA3)", "subClass":"CA3", "posId":30000004, "posTitle":"Physiotherapist Assistant", "subFTE":1, "empType":"Permanent", "contractStart":"", "contractEnd":"", "team":"", "active":"Yes", "notes":"" }
+ ],
+ "movements": [
+  { "id":"MV-0001", "owner":"", "staff":"Demo Clinician (HP3)", "subClass":"HP3", "subFTE":1, "empArr":"Permanent", "workPosId":"", "workPosTitle":"", "workClass":"HP3", "type":"Leave", "fteMoved":1, "start":"2026-06-15", "end":"2026-09-15", "vmcNum":"", "vmcUrl":"", "procNum":"", "adminStatus":"Confirmed", "absenceType":"LSL", "archived":"No", "notes":"Example long service leave." },
+  { "id":"MV-0002", "owner":"Demo Clinician (HP3)", "staff":"Demo Senior (HP4)", "subClass":"HP4", "subFTE":1, "empArr":"Permanent", "workPosId":30000003, "workPosTitle":"Physiotherapist", "workClass":"HP3", "type":"Backfill", "fteMoved":1, "start":"2026-06-15", "end":"2026-09-15", "vmcNum":"", "vmcUrl":"", "procNum":"", "adminStatus":"VMC Approved", "absenceType":"", "archived":"No", "notes":"Example backfill covering the leave above." },
+  { "id":"MV-0003", "owner":"Demo Senior (HP4)", "staff":"Demo Temp Soon (HP3)", "subClass":"HP3", "subFTE":0.5, "empArr":"Temporary", "workPosId":30000002, "workPosTitle":"Physiotherapist Senior", "workClass":"HP4", "type":"Acting Higher Duties", "fteMoved":0.5, "start":"2026-06-15", "end":"2026-09-15", "vmcNum":"", "vmcUrl":"", "procNum":"", "adminStatus":"Awaiting Approval", "absenceType":"", "archived":"No", "notes":"Example acting-up movement." }
+ ],
+ "settings": {
+  "serviceName": "STARS Physiotherapy",
+  "orgName": "Metro North Health",
+  "classes": ["HP5","HP4","HP3","CA3"],
+  "baselines": { "HP5":2.5, "HP4":7.93, "HP3":10.5, "CA3":2.5 },
+  "ceilings": {
+   "HP5": { "ceiling":2.5, "additional":0 },
+   "HP4": { "ceiling":7.93, "additional":0 },
+   "HP3": { "ceiling":10.5, "additional":0 },
+   "CA3": { "ceiling":2.5, "additional":0 }
+  },
+  "cycleLenDays": 14,
+  "cycleAnchorDate": "2025-06-18"
+ }
+};
+
+/* ============================ VOCAB ============================ */
+// Movement types that COVER a vacated line. Must stay in step with the ownerNeeded
+// list in the movement validator — if the form asks for an owner, the gap view counts it.
+const COVER_TYPES = ['Backfill','Acting Higher Duties','Secondment In','Temporary Contract Extension','Casual to Temporary'];
+const DEFAULT_CLASSES = ['HP5','HP4','HP3','CA3'];
+let CLASSES = DEFAULT_CLASSES.slice(); // rebuilt from Settings on every load/change
+function syncClasses(){ const c=(state&&state.settings&&Array.isArray(state.settings.classes))?state.settings.classes.filter(x=>String(x).trim()!==''):[]; CLASSES = c.length? c.map(x=>String(x).trim()) : DEFAULT_CLASSES.slice(); }
+// Default classification for new records = the one most used in the register (falls back to the first listed).
+function defaultClass(){
+  if(!CLASSES.length) return '';
+  const tally={}; (state&&state.staff||[]).forEach(x=>{ const c=String(x.subClass||'').trim(); if(c) tally[c]=(tally[c]||0)+1; });
+  let best=CLASSES[0], n=-1;
+  CLASSES.forEach(c=>{ const v=tally[c]||0; if(v>n){ n=v; best=c; } });
+  return best;
+}
+const MOVE_TYPES = ['Substantive','Backfill','Acting Higher Duties','Secondment In','Secondment Out','Leave','Parental Return to Work','Temporary Contract Extension','Casual to Temporary','Vacancy','Flexible Work Arrangement','Extra Funded'];
+const EMP_ARR = ['Permanent','Temporary','Casual','Agency','External'];
+const EMP_TYPE = ['Permanent','Temporary','Casual','Agency','External'];
+const ADMIN_STATUS = ['Draft / Planning','Awaiting Submission','Awaiting Approval','VMC Submitted','VMC Approved','Payroll / MyHR Pending','Confirmed','Completed','On Hold','Cancelled'];
+const ABSENCE_TYPES = ['','LSL','Parental Leave','Maternity Leave','LWOP','Leave Without Pay','Secondment Out','Reduced Hours','Other'];
+// Absence types where the position stays FUNDED while the person is away.
+// The gaps view still shows them — funded is not the same as covered.
+const STAY_LEAVE = ['Parental Leave','Maternity Leave','LSL','Leave Without Pay','LWOP'];
+
+/* ============================ STATE ============================ */
+let state = null; // {staff, movements, settings}
+let editingMovId = null, editingStaffIdx = null;
+let managerActionFilter = 'all';
+
+/* ============================ DATE / CYCLE HELPERS ============================ */
+const MS_DAY = 86400000;
+function parseDate(v){ if(v===null||v===undefined||v==='') return null; const s=String(v).slice(0,10); const t=Date.parse(s+'T00:00:00Z'); return isNaN(t)?null:t; }
+function isoToday(){ const d=new Date(); return d.toISOString().slice(0,10); }
+function fmtDate(v){ const t=parseDate(v); if(t===null) return ''; const d=new Date(t); return d.getUTCDate().toString().padStart(2,'0')+'-'+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getUTCMonth()]+'-'+d.getUTCFullYear(); }
+function num(v){ return (v===null||v===undefined||v==='')?0:Number(v)||0; }
+function str(v){ return (v===null||v===undefined)?'':String(v).trim(); }
+
+// Build the list of pay cycles (start ms) spanning the data + a forward buffer.
+function buildCycles(){
+  const anchor = parseDate(state.settings.cycleAnchorDate) ?? parseDate('2025-06-18');
+  const len = (num(state.settings.cycleLenDays)||14) * MS_DAY;
+  // span: earliest data date .. latest data date + 1 year
+  let lo=anchor, hi=anchor;
+  const all=[];
+  state.movements.forEach(m=>{ [m.start,m.end].forEach(d=>{const t=parseDate(d); if(t!==null) all.push(t);}); });
+  state.staff.forEach(s=>{ [s.contractStart,s.contractEnd].forEach(d=>{const t=parseDate(d); if(t!==null) all.push(t);}); });
+  all.push(parseDate(isoToday()));
+  if(all.length){ lo=Math.min(lo,...all); hi=Math.max(hi,...all); }
+  hi += 365*MS_DAY;
+  // step anchor back to <= lo
+  let startN = Math.floor((lo-anchor)/len);
+  let first = anchor + startN*len;
+  const cycles=[];
+  for(let t=first; t<=hi; t+=len) cycles.push(t);
+  return {cycles,len};
+}
+function cycleLabel(startMs,len){ const endMs=startMs+len-MS_DAY; return fmtDate(new Date(startMs).toISOString().slice(0,10))+'  →  '+fmtDate(new Date(endMs).toISOString().slice(0,10)); }
+function currentCycleIndex(cycles,len){ const today=parseDate(isoToday()); for(let i=cycles.length-1;i>=0;i--){ if(cycles[i]<=today) return i; } return 0; }
+
+/* ============================ ENGINE (verified against Excel) ============================ */
+// movement active within [csMs, ceMs] and not archived
+function inCycle(m,csMs,ceMs){ const st=parseDate(m.start),en=parseDate(m.end); if(st===null||en===null) return false; return st<=ceMs && en>=csMs && str(m.archived).toLowerCase()!=='yes'; }
+
+// substantive base FTE for a class at cycle [csMs,ceMs], optionally one person
+function subBase(cls,csMs,ceMs,person){
+  let base=0;
+  for(const s of state.staff){
+    if(str(s.subClass)!==cls||str(s.active)!=='Yes'||str(s.empType)==='Casual') continue;
+    if(person && str(s.name)!==person) continue;
+    const cs=parseDate(s.contractStart), ce=parseDate(s.contractEnd);
+    const csOk = cs===null || cs<=ceMs; const ceOk = ce===null || ce>=csMs;
+    if(!(csOk&&ceOk)) continue;
+    base+=num(s.subFTE);
+  }
+  return base;
+}
+
+// mode 'floor'  = who is actually at work. Every absence comes off, cover goes on.
+// mode 'funded' = what the service is paying for. Positions held open during
+//                 parental / maternity / LSL / LWOP stay in the count.
+function effFTE(cls,csMs,ceMs,mode){
+  const funded = mode==='funded';
+  let base=subBase(cls,csMs,ceMs,null);
+  let out=0,outL=0,inM=0,inE=0;
+  for(const m of state.movements){
+    if(!inCycle(m,csMs,ceMs)) continue;
+    const t=str(m.type),sc=str(m.subClass),wc=str(m.workClass),ab=str(m.absenceType),f=num(m.fteMoved);
+    // Extra Funded is new money — it lands in the working class and must never be
+    // drawn out of a substantive class, whatever is recorded in the substantive field.
+    if(sc===cls&&wc!==cls&&!(t==='Leave'||t==='Secondment Out'||t==='Vacancy'||t==='Flexible Work Arrangement'||t==='Extra Funded')) out+=f;
+    if(sc===cls&&(t==='Secondment Out'||t==='Vacancy'||t==='Flexible Work Arrangement'||(t==='Leave'&&!(funded&&STAY_LEAVE.includes(ab))))) outL+=f;
+    // Parental Return to Work: the person is back for fteMoved of their subFTE line.
+    // The portion they have NOT returned to is not being delivered, so it comes off.
+    if(sc===cls&&t==='Parental Return to Work'){ const held=registerFTE(str(m.staff),sc)||num(m.subFTE); const notBack=held-f; if(notBack>0) outL+=notBack; }
+    if(sc!==cls&&wc===cls&&!(t==='Leave'||t==='Secondment Out')&&t!=='Extra Funded') inM+=f;
+    if(wc===cls&&t==='Extra Funded') inE+=f;
+  }
+  return base-out-outL+inM+inE;
+}
+function baselineOf(cls){ const b=state.settings.baselines||{}; return num(b[cls]); }
+function ceilingOf(cls){ const c=(state.settings.ceilings||{})[cls]||{}; return num(c.ceiling)+num(c.additional); }
+const r2=x=>Math.round(x*100)/100;
+
+/* ============================ PERSISTENCE (IndexedDB) ============================ */
+const DB_NAME='starsMovementTracker', STORE='state';
+let _db=null, _saveTimer=null;
+function openDB(){ return new Promise((res,rej)=>{ const r=indexedDB.open(DB_NAME,1); r.onupgradeneeded=()=>{ r.result.createObjectStore(STORE); }; r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function dbGet(){ if(!_db) _db=await openDB(); return new Promise((res,rej)=>{ const tx=_db.transaction(STORE,'readonly').objectStore(STORE).get('current'); tx.onsuccess=()=>res(tx.result); tx.onerror=()=>rej(tx.error); }); }
+async function dbPut(val){ if(!_db) _db=await openDB(); return new Promise((res,rej)=>{ const tx=_db.transaction(STORE,'readwrite').objectStore(STORE).put(val,'current'); tx.onsuccess=()=>res(); tx.onerror=()=>rej(tx.error); }); }
+
+function markSaving(){ const d=document.getElementById('saveDot'); d.classList.add('saving'); document.getElementById('saveTxt').textContent='Saving…'; }
+function markSaved(){ const d=document.getElementById('saveDot'); d.classList.remove('saving'); document.getElementById('saveTxt').textContent='Saved'; }
+function persist(){ markSaving(); clearTimeout(_saveTimer); _saveTimer=setTimeout(async()=>{ try{ await dbPut(JSON.stringify(state)); }catch(e){ console.error(e);} markSaved(); },350); }
+
+function deepCopy(o){ return JSON.parse(JSON.stringify(o)); }
+
+
+/* ============================ AUDIT + VALIDATION HELPERS ============================ */
+function shortVal(v){ const s=String(v==null?'':v); return s.length>60?s.slice(0,57)+'…':s; }
+function fieldChanges(before,after){
+  before=before||{}; after=after||{};
+  const keys=[...new Set([...Object.keys(before),...Object.keys(after)])].filter(k=>!['notes'].includes(k));
+  const out=[];
+  keys.forEach(k=>{ const a=before[k]??'', b=after[k]??''; if(JSON.stringify(a)!==JSON.stringify(b)) out.push(`${k}: "${shortVal(a)}" → "${shortVal(b)}"`); });
+  return out;
+}
+function auditLog(action,entityType,entityId,summary,before,after,changes){
+  if(!state) return;
+  state.audit=Array.isArray(state.audit)?state.audit:[];
+  state.audit.unshift({ts:new Date().toISOString(),action,entityType,entityId:String(entityId||''),summary:String(summary||''),changes:changes||fieldChanges(before,after)});
+  if(state.audit.length>1000) state.audit=state.audit.slice(0,1000);
+}
+function rangesOverlap(aStart,aEnd,bStart,bEnd){ return aStart!==null&&aEnd!==null&&bStart!==null&&bEnd!==null&&aStart<=bEnd&&aEnd>=bStart; }
+function readMovementForm(){
+  const g=id=>document.getElementById(id).value;
+  return { id:g('m_id'), staff:g('m_staff'), subClass:g('m_subClass'), subFTE:g('m_subFTE')===''?'':Number(g('m_subFTE')),
+    empArr:g('m_empArr'), workPosId:g('m_workPosId'), workPosTitle:g('m_workPosTitle'), workClass:g('m_workClass'),
+    type:g('m_type'), fteMoved:g('m_fteMoved')===''?'':Number(g('m_fteMoved')), start:g('m_start'), end:g('m_end'),
+    vmcNum:g('m_vmcNum'), vmcUrl:g('m_vmcUrl'), procNum:g('m_procNum'), adminStatus:g('m_adminStatus'),
+    absenceType:g('m_absenceType'), archived:document.getElementById('m_archived').checked?'Yes':'No', notes:g('m_notes'), owner:str(g('m_owner')) };
+}
+function readStaffForm(){
+  const g=id=>document.getElementById(id).value;
+  return { name:g('s_name'), subClass:g('s_subClass'), subFTE:g('s_subFTE')===''?'':Number(g('s_subFTE')), posId:g('s_posId'), posTitle:g('s_posTitle'), empType:g('s_empType'), active:g('s_active'), contractStart:g('s_contractStart'), contractEnd:g('s_contractEnd'), team:'', notes:g('s_notes') };
+}
+function validateMovementObject(obj,existingId){
+  const errors=[],warnings=[];
+  const t=str(obj.type), name=str(obj.staff), st=parseDate(obj.start), en=parseDate(obj.end), f=num(obj.fteMoved), today=parseDate(isoToday());
+  if(!name) errors.push('Staff member is required.');
+  if(!t) errors.push('Movement type is required.');
+  if(!str(obj.start)) errors.push('Start date is required because undated movements are excluded from calculations.');
+  if(!str(obj.end)) errors.push('End date is required because open-ended movements are excluded from calculations.');
+  if(st!==null&&en!==null&&en<st) errors.push('End date is before start date.');
+  if(f<=0) errors.push('FTE moved must be greater than 0.');
+  if(t==='Secondment In'&&name&&!state.staff.some(x=>str(x.name)===name))
+    warnings.push(name+' has no Staff Register line. A person seconded in still needs one — add them as Temporary, with the secondment dates as the contract dates and the classification they work as here. Their FTE comes from that register line; this movement records who they are covering.');
+  if(name&&str(obj.subClass)){
+    const held=registerFTE(name,str(obj.subClass));
+    const thisRow=VACATING.includes(t)?f:(t==='Parental Return to Work'?Math.max(0,num(obj.subFTE)-f):((str(obj.workClass)&&str(obj.workClass)!==str(obj.subClass)&&t!=='Extra Funded')?f:0));
+    const total=r2(vacatedFrom(name,str(obj.subClass),existingId||str(obj.id))+thisRow);
+    if(held>0&&total>held+0.001)
+      warnings.push(name+' would have '+total+' FTE emptied out of '+str(obj.subClass)+' but only holds '+held+' there. Absences, vacancies and working in another classification all count towards this, so check whether one of them is double counting the same hours.');
+  }
+  if(t==='Parental Return to Work'&&name&&str(obj.subClass)){
+    let elsewhere=0;
+    state.movements.forEach(o=>{
+      if(str(o.staff)!==name||str(o.id)===str(existingId||obj.id)||str(o.archived).toLowerCase()==='yes') return;
+      if(str(o.subClass)===str(obj.subClass)&&str(o.workClass)&&str(o.workClass)!==str(o.subClass)&&str(o.type)!=='Extra Funded') elsewhere+=num(o.fteMoved);
+    });
+    if(elsewhere>0&&f<elsewhere-0.001)
+      warnings.push(name+' is already working '+r2(elsewhere)+' FTE in another classification, which is more than the '+r2(f)+' recorded here as returned to. This field is the total they have come back to across all classifications, so it should be at least '+r2(elsewhere)+'.');
+  }
+  if(name&&str(obj.owner)&&name===str(obj.owner)&&COVER_TYPES.includes(t))
+    warnings.push('The staff member and the person being backfilled are the same. Nobody can cover their own absence — check the staff member on this row.');
+  const drawsOnSubstantive=['Substantive','Backfill','Acting Higher Duties','Secondment Out','Leave','Parental Return to Work','Vacancy','Flexible Work Arrangement'].includes(t);
+  if(num(obj.subFTE)>0&&f>num(obj.subFTE)+0.001) warnings.push('FTE moved exceeds the substantive FTE recorded on this row. Check whether this should be split or corrected.');
+  if(drawsOnSubstantive&&name&&str(obj.subClass)){
+    const held=registerFTE(name,str(obj.subClass));
+    if(held<=0) warnings.push(name+' holds no active '+str(obj.subClass)+' FTE on the Staff Register, so there is nothing for this movement to draw on. If this FTE is separately funded rather than coming out of a substantive line, use Extra Funded instead.');
+    else if(f>held+0.001) warnings.push('This moves '+r2(f)+' FTE but '+name+' only holds '+r2(held)+' FTE as '+str(obj.subClass)+' on the register. Either correct the FTE, split it across the classifications they actually hold, or use Extra Funded for the portion that is new money.');
+  }
+  const lines=state.staff.filter(s=>str(s.name)===name);
+  if(name&&!lines.length) warnings.push('Staff member is not in the Staff Register. Add the substantive line if this person should appear in calculations and the planner.');
+  else if(name&&str(obj.subClass)&&!lines.some(s=>str(s.subClass)===str(obj.subClass))) warnings.push('The selected substantive classification does not match any register line for this staff member.');
+  const ownerNeeded=['Backfill','Acting Higher Duties','Secondment In','Parental Return to Work','Temporary Contract Extension','Casual to Temporary','Vacancy'].includes(t);
+  if(ownerNeeded&&!str(obj.owner)) warnings.push('Backfilled person / owner is blank. This limits gap tracking and accountability.');
+  if(t==='Backfill'&&str(obj.owner)&&str(obj.owner)===name) warnings.push('Backfill owner is the same as the staff member being moved. Check whether the owner field is correct.');
+  if((t==='Leave'||t==='Secondment Out')&&str(obj.owner)) warnings.push('Owner is usually blank for leave or secondment out. Check whether this should instead be a backfill row.');
+  if(t==='Leave'&&!str(obj.absenceType)) warnings.push('Leave / absence type is blank, so this leave will be subtracted from the budget. Set it to Parental Leave, Maternity Leave, LSL or LWOP if the position stays funded.');
+  const movesFTE=['Backfill','Acting Higher Duties','Secondment In','Temporary Contract Extension','Casual to Temporary'].includes(t);
+  const attributionOnly=t==='Secondment In'||(name&&str(obj.workClass)&&registerFTE(name,str(obj.workClass))>0);
+  const movesFTEInternally=movesFTE&&!attributionOnly;
+  if(movesFTEInternally&&str(obj.subClass)&&str(obj.subClass)===str(obj.workClass))
+    warnings.push('Substantive and working classification are both '+str(obj.subClass)+', so this movement will not change any FTE and will not appear on the planner. If this person is moving into a different classification, set the substantive classification to the one they actually hold.');
+  const landsSomewhere=['Substantive','Backfill','Acting Higher Duties','Secondment In','Parental Return to Work','Temporary Contract Extension','Casual to Temporary','Extra Funded'].includes(t);
+  if(landsSomewhere&&!str(obj.workClass)) warnings.push('Working classification is blank, so this FTE is taken out of the substantive classification without landing anywhere. Set the classification the person is actually working as.');
+  if((t==='Vacancy'||t==='Flexible Work Arrangement')&&str(obj.workClass)) warnings.push(t+' rows should have the working classification set to none, otherwise the FTE is not shown as undelivered.');
+  if(['Awaiting Approval','VMC Submitted','VMC Approved'].includes(str(obj.adminStatus))&&!str(obj.vmcNum)&&!str(obj.vmcUrl)) warnings.push('VMC-related status is selected but no VMC number or PDF link is recorded.');
+  if(st!==null&&en!==null&&name){
+    const overlaps=state.movements.filter(m=>str(m.id)!==str(existingId||obj.id)&&str(m.archived).toLowerCase()!=='yes'&&str(m.staff)===name&&rangesOverlap(st,en,parseDate(m.start),parseDate(m.end)));
+    if(overlaps.length) warnings.push('Overlaps with active movement(s): '+overlaps.slice(0,3).map(m=>str(m.id)).join(', ')+(overlaps.length>3?'…':'')+'. Check that concurrent movements are intentional.');
+  }
+  if(en!==null&&en<today&&str(obj.archived).toLowerCase()!=='yes'&&!['Completed','Cancelled'].includes(str(obj.adminStatus))) warnings.push('This movement has already ended but is not archived or completed/cancelled.');
+  return {errors,warnings};
+}
+function validateStaffObject(obj,idx){
+  const errors=[],warnings=[];
+  const name=str(obj.name), f=num(obj.subFTE), cs=parseDate(obj.contractStart), ce=parseDate(obj.contractEnd), today=parseDate(isoToday());
+  if(!name) errors.push('Staff name is required.');
+  if(!str(obj.subClass)) errors.push('Substantive classification is required.');
+  if(f<=0) errors.push('Substantive FTE must be greater than 0.');
+  if(f>1.0) warnings.push('Substantive FTE is greater than 1.0. Check whether this should be split across lines.');
+  if(cs!==null&&ce!==null&&ce<cs) errors.push('Contract end date is before contract start date.');
+  if(str(obj.empType)==='Temporary'&&str(obj.active)==='Yes'&&!str(obj.contractEnd)) warnings.push('Active temporary staff line has no contract end date. It will not appear in the contract horizon.');
+  // A substantive that changes mid-fortnight leaves both arrangements touching the same
+  // pay cycle, so that one cycle shows the person twice.
+  if(name&&(cs!==null||ce!==null)){
+    const len=(num(state.settings.cycleLenDays)||14)*MS_DAY;
+    state.staff.forEach(o=>{
+      if(str(o.name)!==name||o===obj) return;
+      const ocs=parseDate(o.contractStart), oce=parseDate(o.contractEnd);
+      const touching=(a,b)=>a!==null&&b!==null&&Math.abs(a-b)<len&&a!==b;
+      if(touching(cs,oce===null?null:oce+MS_DAY)||touching(ocs,ce===null?null:ce+MS_DAY))
+        warnings.push('This line changes over within a fortnight of another line for '+name+'. The pay cycle containing the changeover will show both arrangements, because a cycle counts any line that touches it. Every other cycle reads correctly.');
+    });
+  }
+  if(str(obj.empType)==='Temporary'&&str(obj.active)==='Yes'&&ce!==null&&ce<today) warnings.push('Temporary contract end date has passed while the line remains active.');
+  
+  const dup=state.staff.some((s,i)=>i!==idx&&str(s.name)===name&&str(s.subClass)===str(obj.subClass)&&str(s.posId)===str(obj.posId));
+  if(dup) warnings.push('A similar staff line already exists for this name, classification and position ID.');
+  return {errors,warnings};
+}
+function renderValidationPanel(id,result){
+  const el=document.getElementById(id); if(!el) return;
+  const cls=result.errors.length?'has-errors':result.warnings.length?'has-warnings':'is-clean';
+  const title=result.errors.length?'Fix before saving':result.warnings.length?'Review before saving':'No validation issues detected';
+  let h=`<div class="vh">${esc(title)}</div>`;
+  if(result.errors.length) h+='<b>Errors</b><ul>'+result.errors.map(x=>`<li>${esc(x)}</li>`).join('')+'</ul>';
+  if(result.warnings.length) h+='<b>Warnings</b><ul>'+result.warnings.map(x=>`<li>${esc(x)}</li>`).join('')+'</ul>';
+  el.className='validation-panel '+cls; el.innerHTML=h;
+}
+function updateMovementValidation(){ renderValidationPanel('movValidation',validateMovementObject(readMovementForm(),editingMovId)); }
+function updateStaffValidation(){ renderValidationPanel('staffValidation',validateStaffObject(readStaffForm(),editingStaffIdx)); }
+function wireValidation(){
+  ['m_staff','m_subClass','m_subFTE','m_type','m_fteMoved','m_workClass','m_empArr','m_owner','m_start','m_end','m_absenceType','m_adminStatus','m_vmcNum','m_vmcUrl','m_archived'].forEach(id=>{ const el=document.getElementById(id); if(el&&!el.dataset.vwired){ el.addEventListener('input',updateMovementValidation); el.addEventListener('change',updateMovementValidation); el.dataset.vwired='1'; }});
+  ['s_name','s_subClass','s_subFTE','s_posId','s_posTitle','s_empType','s_active','s_contractStart','s_contractEnd'].forEach(id=>{ const el=document.getElementById(id); if(el&&!el.dataset.vwired){ el.addEventListener('input',updateStaffValidation); el.addEventListener('change',updateStaffValidation); el.dataset.vwired='1'; }});
+}
+function confirmWarnings(result){
+  if(result.errors.length){ alert('Please fix before saving:\n\n- '+result.errors.join('\n- ')); return false; }
+  if(result.warnings.length){ return confirm('Save with these warnings?\n\n- '+result.warnings.join('\n- ')); }
+  return true;
+}
+
+/* ============================ BACKUP ============================ */
+let toastTimer=null;
+function toast(msg,bad){
+  const el=document.getElementById('toast'); if(!el){ if(bad) alert(msg); return; }
+  el.textContent=msg; el.className='toast show'+(bad?' bad':'');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>{ el.className='toast'; },bad?6000:3200);
+}
+function exportBackup(){
+  let url=null;
+  try{
+    const json=JSON.stringify(state,null,2);
+    const blob=new Blob([json],{type:'application/json'});
+    const d=new Date(), stamp=d.getFullYear().toString().slice(2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+    const name=((str(state.settings.serviceName)||'Service').replace(/[^A-Za-z0-9]+/g,''))+'_StaffMovementTracker_'+stamp+'.json';
+    // Edge on a locked-down desktop can refuse a blob download from a local file with no
+    // error at all, which looks exactly like a dead button. Try the documented path first,
+    // then fall back to opening the data so it can be saved by hand.
+    if(window.navigator&&window.navigator.msSaveOrOpenBlob){ window.navigator.msSaveOrOpenBlob(blob,name); toast('Backup saved: '+name); return; }
+    url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download=name; a.rel='noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>{ try{URL.revokeObjectURL(url);}catch(e){} },4000);
+    toast('Backup downloaded: '+name+' — check your Downloads folder');
+  }catch(err){
+    try{
+      const win=window.open('','_blank');
+      if(win){ win.document.write('<pre>'+esc(JSON.stringify(state,null,2))+'</pre>'); win.document.close();
+        toast('Download was blocked. Your data has opened in a new tab — save it as a .json file.',true); return; }
+    }catch(e){}
+    toast('Could not export: '+err.message,true);
+  }
+}
+function importBackup(ev){
+  const file=ev.target.files&&ev.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onerror=()=>toast('That file could not be read.',true);
+  reader.onload=()=>{ let data; try{ data=JSON.parse(reader.result);}catch(e){ alert('That file could not be read as tracker data.'); return; }
+    if(!data||!data.staff||!data.movements){ alert('That file does not look like tracker data.'); return; }
+    if(!confirm('Load this backup? It replaces everything currently in the tracker.')){ ev.target.value=''; toast('Import cancelled'); return; }
+    state=data; ensureShape(); auditLog('Import','Data','Backup','Backup imported into tracker',null,null,['Imported from '+(file.name||'backup file')]); persist(); rebuildAll(); ev.target.value='';
+    toast('Imported '+state.staff.length+' staff lines and '+state.movements.length+' movements from '+(file.name||'backup file'));
+  };
+  reader.readAsText(file);
+}
+function resetToSeed(){ if(!confirm('Reset to the original imported data? Anything added or edited since will be lost (export a backup first if unsure).')) return; state=deepCopy(SEED); ensureShape(); auditLog('Reset','Data','Seed','Tracker reset to original seed data',null,null,['Reset to original data']); persist(); rebuildAll(); }
+
+function applyBranding(){
+  const svc=str(state.settings.serviceName)||'Service', org=str(state.settings.orgName);
+  const sub=document.getElementById('brandSub'); if(sub) sub.textContent = org? svc+' · '+org : svc;
+  document.title='Staff Movement Tracker — '+svc;
+}
+function ensureShape(){
+  state.staff=state.staff||[]; state.movements=state.movements||[];
+  state.audit=Array.isArray(state.audit)?state.audit:[];
+  state.rotations=Array.isArray(state.rotations)?state.rotations:[];
+  state.rotations.forEach((r,i)=>{ if(!str(r.id)) r.id='ROT-'+String(i+1).padStart(3,'0'); });
+  state.settings=state.settings||{};
+  if(state.settings.serviceName===undefined) state.settings.serviceName='STARS Physiotherapy';
+  if(state.settings.orgName===undefined) state.settings.orgName='Metro North Health';
+  state.settings.baselines=state.settings.baselines||{};
+  state.settings.ceilings=state.settings.ceilings||{};
+  // Classification list is manager-editable. Fall back to whatever the data already uses.
+  if(!Array.isArray(state.settings.classes)||!state.settings.classes.length){
+    const found=[...new Set([...Object.keys(state.settings.baselines),...state.staff.map(x=>str(x.subClass)),...state.movements.map(x=>str(x.subClass)),...state.movements.map(x=>str(x.workClass))].filter(Boolean))];
+    state.settings.classes = found.length? DEFAULT_CLASSES.filter(c=>found.includes(c)).concat(found.filter(c=>!DEFAULT_CLASSES.includes(c))) : DEFAULT_CLASSES.slice();
+  }
+  state.settings.classes=state.settings.classes.map(c=>String(c).trim()).filter(Boolean);
+  // Repair: a build shipped 25 Aug 2026 saved the "none" option's label as the value.
+  // Also trim stray whitespace so names match between the register and movements.
+  const NO_CLASS_BAD=/^\s*[\u2014-]\s*none\b/i;
+  state.staff.forEach(x=>{ x.name=String(x.name==null?'':x.name).trim(); });
+  state.movements.forEach(x=>{
+    x.staff=String(x.staff==null?'':x.staff).trim();
+    x.owner=String(x.owner==null?'':x.owner).trim();
+    if(NO_CLASS_BAD.test(String(x.workClass||''))) x.workClass='';
+    if(NO_CLASS_BAD.test(String(x.subClass||''))) x.subClass='';
+  });
+  syncClasses();
+  CLASSES.forEach(c=>{
+    if(state.settings.baselines[c]===undefined) state.settings.baselines[c]=0;
+    if(!state.settings.ceilings[c]) state.settings.ceilings[c]={ceiling:0,additional:0};
+  });
+  state.settings.cycleAnchorDate=state.settings.cycleAnchorDate||'2025-06-18';
+  state.settings.cycleLenDays=state.settings.cycleLenDays||14;
+  // one-time data migration: correct legacy misspelled movement type
+  state.movements.forEach(m=>{ if(str(m.type)==='Parental Retun to Work') m.type='Parental Return to Work'; });
+  state.staff.forEach(s=>{ if(s.active===undefined||s.active==='') s.active='Yes'; if(s.team===undefined) s.team=''; });
+  state.movements.forEach(m=>{ if(m.archived===undefined||m.archived==='') m.archived='No'; });
+}
+
+/* ============================ NAV ============================ */
+function go(v){ document.querySelectorAll('.view').forEach(s=>s.classList.remove('active')); document.getElementById('view-'+v).classList.add('active'); document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.view===v)); window.scrollTo({top:0,behavior:'smooth'}); }
+function viewStaffDetails(person){
+  go('timeline');
+  renderTimelineControls();
+  const psel=document.getElementById('timelinePerson');
+  if(psel){
+    const target=str(person);
+    const has=[...psel.options].some(o=>o.value===target);
+    if(has) psel.value=target;
+  }
+  renderTimeline();
+}
+function toggleCard(head){ head.parentElement.classList.toggle('is-collapsed'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+/* ============================ DASHBOARD ============================ */
+const NAME_OTHER='__other__';
+// Names are picked from the Staff Register so they always match on gap tracking.
+// The Other option stays available for funding sources and people not on the register.
+function fillNameSelect(baseId,value){
+  const sel=document.getElementById(baseId+'_sel'), txt=document.getElementById(baseId);
+  if(!sel||!txt) return;
+  const names=distinctStaffNames(), v=str(value);
+  const onRegister=names.includes(v);
+  sel.innerHTML='<option value="">— select —</option>'
+    + names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('')
+    + `<option value="${NAME_OTHER}">Other / not on the register…</option>`;
+  if(v&&!onRegister){ sel.value=NAME_OTHER; txt.style.display=''; txt.value=v; }
+  else { sel.value=v; txt.style.display='none'; txt.value=v; }
+}
+// Picking a register name fills the substantive details, but never overwrites
+// anything already typed — a deliberate split line stays as entered.
+function autofillFromRegister(){
+  const name=str(document.getElementById('m_staff').value);
+  const lines=state.staff.filter(x=>str(x.name)===name);
+  if(lines.length!==1) return;
+  const cls=document.getElementById('m_subClass'), fte=document.getElementById('m_subFTE');
+  if(cls&&!str(cls.value)&&CLASSES.includes(str(lines[0].subClass))) cls.value=str(lines[0].subClass);
+  if(fte&&!str(fte.value)&&num(lines[0].subFTE)>0) fte.value=num(lines[0].subFTE);
+}
+function nameSelChanged(baseId){
+  const sel=document.getElementById(baseId+'_sel'), txt=document.getElementById(baseId);
+  if(sel.value===NAME_OTHER){ txt.style.display=''; txt.value=''; txt.focus(); }
+  else { txt.style.display='none'; txt.value=sel.value; }
+  if(baseId==='m_staff') autofillFromRegister();
+  updateMovementValidation();
+}
+// What this person actually holds in a classification, per the Staff Register.
+// A movement can only shift FTE the person has; anything beyond it is new money.
+// Everything that empties a person's line in a classification: absence, vacancy,
+// or working somewhere else. The total can never exceed what they hold there.
+const VACATING=['Leave','Secondment Out','Vacancy','Flexible Work Arrangement'];
+function vacatedFrom(name,cls,exceptId){
+  let t=0;
+  state.movements.forEach(m=>{
+    if(str(m.staff)!==str(name)||str(m.subClass)!==str(cls)) return;
+    if(exceptId!==undefined&&str(m.id)===str(exceptId)) return;
+    if(str(m.archived).toLowerCase()==='yes') return;
+    const ty=str(m.type);
+    if(VACATING.includes(ty)) t+=num(m.fteMoved);
+    else if(ty==='Parental Return to Work') t+=Math.max(0,(registerFTE(str(m.staff),str(m.subClass))||num(m.subFTE))-num(m.fteMoved));
+    else if(str(m.workClass)&&str(m.workClass)!==str(m.subClass)&&ty!=='Extra Funded') t+=num(m.fteMoved);
+  });
+  return r2(t);
+}
+function registerFTE(name,cls){
+  return state.staff.filter(s=>str(s.name)===str(name)&&str(s.subClass)===str(cls)&&str(s.active)!=='No'&&str(s.empType)!=='Casual')
+    .reduce((a,s)=>a+num(s.subFTE),0);
+}
+function distinctStaffNames(){ return [...new Set(state.staff.map(s=>str(s.name)).filter(Boolean))].sort(); }
+
+function renderGapsControls(){ fillCycleSelect('gapsCycle'); }
+function renderDashControls(){
+  const {cycles,len}=buildCycles();
+  const csel=document.getElementById('dashCycle');
+  if(csel){
+    const prevC=csel.value;
+    csel.innerHTML=cycles.map((c,i)=>`<option value="${i}">${cycleLabel(c,len)}</option>`).join('');
+    csel.value=prevC!==''?prevC:currentCycleIndex(cycles,len);
+  }
+}
+
+const cycleMemory={};
+function fillCycleSelect(id){
+  const {cycles,len}=buildCycles();
+  const sel=document.getElementById(id); if(!sel) return;
+  sel.innerHTML=cycles.map((c,i)=>`<option value="${i}">${cycleLabel(c,len)}</option>`).join('');
+  const want=cycleMemory[id];
+  let idx=(want!==undefined)?cycles.indexOf(want):-1;
+  if(idx<0) idx=currentCycleIndex(cycles,len);
+  sel.value=idx; cycleMemory[id]=cycles[idx];
+  if(!sel.dataset.cyWired){ sel.addEventListener('change',()=>{ const c2=buildCycles(); cycleMemory[id]=c2.cycles[Math.min(Math.max(+sel.value||0,0),c2.cycles.length-1)]; }); sel.dataset.cyWired='1'; }
+}
+function cycleFromSelect(id){
+  const {cycles,len}=buildCycles();
+  const el=document.getElementById(id);
+  const raw=el ? el.value : currentCycleIndex(cycles,len);
+  const i=Math.min(Math.max(+raw||0,0),cycles.length-1);
+  return {csMs:cycles[i],ceMs:cycles[i]+len-MS_DAY,len,index:i,label:cycleLabel(cycles[i],len)};
+}
+function selectedCycle(){ return cycleFromSelect('dashCycle'); }
+function cycleRangeText(csMs,ceMs){ return fmtDate(new Date(csMs).toISOString().slice(0,10))+' – '+fmtDate(new Date(ceMs).toISOString().slice(0,10)); }
+
+function renderDashboard(){
+  const {csMs,ceMs}=selectedCycle();
+  const dateEl=document.getElementById('dashCycleDates');
+  if(dateEl) dateEl.textContent='Cycle: '+cycleRangeText(csMs,ceMs);
+  renderBudgetBlock('dashBudget',csMs,ceMs);
+  renderAlerts();
+}
+
+function renderPersonProfileBlock(targetId,person,csMs,ceMs){
+  const target=document.getElementById(targetId); if(!target) return;
+  if(!person){ target.innerHTML='<div class="empty">No staff member selected.</div>'; return; }
+  const lines=state.staff.filter(s=>str(s.name)===person);
+  const classes=new Set(); lines.forEach(s=>{classes.add(str(s.subClass));});
+  let subForEff=0; classes.forEach(cls=>{ subForEff+=subBase(cls,csMs,ceMs,person); });
+  let pOut=0,pLeave=0,pIn=0;
+  state.movements.forEach(m=>{ if(str(m.staff)!==person||!inCycle(m,csMs,ceMs)) return; const t=str(m.type),sc=str(m.subClass),wc=str(m.workClass),ab=str(m.absenceType),f=num(m.fteMoved);
+    const away=(t==='Leave'||t==='Secondment Out'||t==='Vacancy'||t==='Flexible Work Arrangement');
+    if(classes.has(sc)&&wc!==sc&&!away&&t!=='Extra Funded') pOut+=f;
+    // Moving into another classification is still work. Counting only the outward leg
+    // made anyone acting up read as zero.
+    if(wc&&wc!==sc&&!away) pIn+=f;
+    if(classes.has(sc)&&(t==='Secondment Out'||t==='Vacancy'||t==='Flexible Work Arrangement'||(t==='Leave'&&!STAY_LEAVE.includes(ab)))) pLeave+=f;
+    if(classes.has(sc)&&t==='Parental Return to Work'){ const notBack=num(m.subFTE)-f; if(notBack>0) pLeave+=notBack; }
+  });
+  const personEff=subForEff-pOut-pLeave+pIn;
+  const holdings=state.movements.filter(m=>str(m.staff)===person&&inCycle(m,csMs,ceMs));
+  const backf=state.movements.filter(m=>str(m.owner)===person&&str(m.archived).toLowerCase()!=='yes');
+
+  let html=`<div class="card">
+    <div class="card-head" onclick="toggleCard(this)"><div><h3>${esc(person||'—')}</h3><div class="card-sub">Current position and backfill details for ${cycleRangeText(csMs,ceMs)}</div></div><span class="chev">▾</span></div>
+    <div class="card-body">
+      <div class="tiles" style="margin-bottom:16px">
+        <div class="tile"><div class="k">Substantive FTE this cycle</div><div class="v">${r2(subForEff)}</div></div>
+        <div class="tile"><div class="k">Working this cycle</div><div class="v">${r2(personEff)}</div></div>
+        <div class="tile"><div class="k">Not being worked</div><div class="v">${r2(subForEff-personEff)}</div></div>
+        <div class="tile"><div class="k">Related backfill records</div><div class="v">${backf.length}</div></div>
+      </div>`;
+
+  html+=`<h4 style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:6px 0 8px">Substantive line(s)</h4>`;
+  html+=tableHTML(['Class','FTE','Position title','Position ID','Type','Contract end'], lines.map(s=>[esc(str(s.subClass)),r2(num(s.subFTE)),esc(str(s.posTitle)),esc(str(s.posId)),esc(str(s.empType)),fmtDate(s.contractEnd)]), lines.length?'':'No substantive line on file.');
+
+  html+=`<h4 style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 8px">Active holdings — where they are sitting <span style="font-weight:600;text-transform:none;letter-spacing:0">(click Open to edit / update status)</span></h4>`;
+  const movedOut=holdings.filter(m=>classes.has(str(m.subClass))&&str(m.workClass)!==str(m.subClass)&&!['Leave','Secondment Out','Vacancy','Flexible Work Arrangement','Extra Funded'].includes(str(m.type))).reduce((a,m)=>a+num(m.fteMoved),0);
+  const stillOwn=r2(subForEff-movedOut-pLeave);
+  const ownRow = stillOwn>0.001 ? [['<i>Own substantive role</i>',[...classes].join(' / '),stillOwn,'<i>Substantive</i>','','','','','','']] : [];
+  html+=tableHTML(['Working role','Class','FTE','Type','Owner / backfilling','Start','End','VMC','Status',''],
+    ownRow.concat(holdings.map(m=>[esc(str(m.workPosTitle)),esc(str(m.workClass)),r2(num(m.fteMoved)),esc(str(m.type)),esc(str(m.owner)),fmtDate(m.start),fmtDate(m.end),vmcCell(m),statusPill(m.adminStatus),`<button class="iconbtn" onclick="openMovement('${esc(str(m.id))}')">Open ✎</button>`])),
+    holdings.length?'':'No active holdings this cycle.');
+
+  html+=`<h4 style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 8px">Who is backfilling this person</h4>`;
+  html+=tableHTML(['Backfiller','Class','FTE','Type','Start','End','VMC','Status',''],
+    backf.map(m=>[esc(str(m.staff)),esc(str(m.workClass)),r2(num(m.fteMoved)),esc(str(m.type)),fmtDate(m.start),fmtDate(m.end),vmcCell(m),statusPill(m.adminStatus),`<button class="iconbtn" onclick="openMovement('${esc(str(m.id))}')">Open ✎</button>`]),
+    backf.length?'':'Nobody is currently backfilling this person.');
+  html+=`</div></div>`;
+  target.innerHTML=html;
+}
+
+function renderBudgetBlock(targetId,csMs,ceMs){
+  const rows=CLASSES.map(cls=>{
+    const floor=r2(effFTE(cls,csMs,ceMs,'floor'));
+    const funded=r2(effFTE(cls,csMs,ceMs,'funded'));
+    const base=baselineOf(cls), ceil=ceilingOf(cls);
+    const away=r2(funded-floor);
+    let pill;
+    if(funded>ceil) pill='<span class="pill danger">OVER ceiling</span>';
+    else if(funded>base) pill='<span class="pill warn">Over baseline</span>';
+    else if(funded<base) pill='<span class="pill neutral">Under baseline</span>';
+    else pill='<span class="pill good">On baseline</span>';
+    return [cls, base, ceil, funded, signed(r2(funded-base)), floor, away?'<span class="pill neutral">'+away+'</span>':'—', pill];
+  });
+  document.getElementById(targetId).innerHTML=tableHTML(
+    ['Class','Baseline','Ceiling','Funded FTE','vs Baseline','On the floor','On leave','Status'],rows,'');
+}
+
+let horizonFilter='all';
+function setHorizonFilter(k){ horizonFilter=(horizonFilter===k)?'all':k; renderAlerts(); }
+function renderAlerts(){
+  const today=parseDate(isoToday());
+  const HZ=180; // horizon window in days
+  const dleft=ms=>ms===null?null:Math.round((ms-today)/MS_DAY);
+  let items=[];
+  // temp staff contracts
+  state.staff.forEach((s,idx)=>{
+    if(str(s.empType)!=='Temporary'||str(s.active)!=='Yes') return;
+    const ce=parseDate(s.contractEnd);
+    items.push({kind:'contract',name:str(s.name),sub:'Temp contract · '+str(s.subClass)+' · '+r2(num(s.subFTE))+' FTE',end:ce,days:dleft(ce),id:null,idx});
+  });
+  // active movements with an end date
+  state.movements.forEach(m=>{
+    if(str(m.archived).toLowerCase()==='yes') return;
+    const en=parseDate(m.end); if(en===null) return;
+    items.push({kind:'movement',name:str(m.staff)||str(m.id),sub:'Movement · '+str(m.type)+' · '+str(m.workClass)+' · '+r2(num(m.fteMoved))+' FTE',end:en,days:dleft(en),id:str(m.id)});
+  });
+  // sort: expired/soonest first, no-end last
+  items.sort((a,b)=>{ if(a.end===null) return 1; if(b.end===null) return -1; return a.end-b.end; });
+
+  // bucket each item
+  items.forEach(it=>{
+    if(it.end===null) it.bk='none';
+    else if(it.days<0) it.bk='gone';
+    else if(it.days<=30) it.bk='urgent';
+    else if(it.days<=90) it.bk='soon';
+    else it.bk='ok';
+  });
+  const nGone=items.filter(i=>i.bk==='gone').length;
+  const nUrgent=items.filter(i=>i.bk==='urgent').length;
+  const nSoon=items.filter(i=>i.bk==='soon').length;
+  const nNone=items.filter(i=>i.bk==='none').length;
+
+  // keep filter valid (e.g. emptied after an action)
+  const countOf={gone:nGone,urgent:nUrgent,soon:nSoon,none:nNone};
+  if(horizonFilter!=='all' && !countOf[horizonFilter]) horizonFilter='all';
+
+  const bk=(k,cls,v,lab)=>{
+    const on=horizonFilter===k, dis=v===0;
+    return `<button class="hbucket ${cls}${on?' active':''}" ${dis?'disabled':''} onclick="setHorizonFilter('${k}')" title="${dis?'None in this band':(on?'Showing this band — click to clear':'Show only this band')}"><div class="hb-v">${v}</div><div class="hb-k">${lab}</div></button>`;
+  };
+  let h='<div class="hbuckets">';
+  h+=bk('gone','b-gone',nGone,'Expired · still active');
+  h+=bk('urgent','b-urgent',nUrgent,'≤ 30 days');
+  h+=bk('soon','b-soon',nSoon,'31–90 days');
+  h+=bk('none','b-none',nNone,'No end date');
+  h+='</div>';
+
+  if(!items.length){ document.getElementById('dashAlerts').innerHTML=h+'<div class="empty">No temporary contracts or dated movements on file.</div>'; return; }
+
+  const shown=items.filter(it=>horizonFilter==='all'||it.bk===horizonFilter);
+  h+='<div class="horizon">';
+  shown.forEach(it=>{
+    const cls=it.bk;
+    let lab;
+    if(it.end===null) lab='No end';
+    else if(it.days<0) lab=Math.abs(it.days)+'d ago';
+    else lab=it.days+'d';
+    let pct;
+    if(it.end===null) pct=0; else if(it.days<0) pct=100; else pct=Math.max(4,Math.min(100,(1-it.days/HZ)*100));
+    const endTxt=it.end===null?'—':fmtDate(new Date(it.end).toISOString().slice(0,10));
+    const tag=it.kind==='movement'?'<span class="htag">MOV</span>':'<span class="htag tc">TEMP</span>';
+    let act;
+    if(it.kind==='movement'){
+      const id=esc(it.id);
+      act=`<button class="iconbtn" title="Edit this movement (change end date to extend)" onclick="go('movements');openMovement('${id}')">Extend ✎</button>`
+         +`<button class="iconbtn del" title="Archive this movement" onclick="archiveMovement('${id}',true)">Archive</button>`;
+    } else {
+      act=`<button class="iconbtn" title="Edit this staff line (change contract end to extend)" onclick="go('staff');openStaff(${it.idx})">Extend ✎</button>`
+         +`<button class="iconbtn del" title="Mark this staff line inactive (kept for audit)" onclick="deactivateStaff(${it.idx})">Archive</button>`;
+    }
+    h+=`<div class="hrow">
+      <div class="hname">${tag}${esc(it.name)}<span class="hsub">${esc(it.sub)} · ends ${esc(endTxt)}</span></div>
+      <div class="htrack"><div class="hfill ${cls}" style="width:${pct}%"></div></div>
+      <div class="hdays ${cls}">${esc(lab)}</div>
+      <div class="rowact">${act}</div>
+    </div>`;
+  });
+  h+='</div>';
+  const filterNote = horizonFilter==='all'
+    ? `Showing all ${items.length}.`
+    : `Showing ${shown.length} in this band. <a class="linklike" onclick="setHorizonFilter('all')">Show all ${items.length}</a>.`;
+  h+=`<div class="hint" style="margin-top:12px">${filterNote} <b>Click a tile above to filter.</b> &nbsp;<span class="htag tc">TEMP</span> temp contract &nbsp; <span class="htag">MOV</span> movement. <b>Extend</b> opens the record in the Staff Register / Movements tab; <b>Archive</b> removes it from active counts (kept for audit). Bar fills as end approaches (full = expired). Window ≈ ${HZ} days.</div>`;
+  document.getElementById('dashAlerts').innerHTML=h;
+}
+
+/* ============================ FTE GAPS ============================ */
+// Gaps are a point-in-time question: who is away THIS fortnight, and who is covering
+// them THIS fortnight. Summing across all time made sequential backfills of one absence
+// look like over-cover, because two 0.2 covers on different dates added up to 0.4.
+function computeGaps(csMs,ceMs){
+  if(csMs===undefined){ const c=cycleFromSelect('gapsCycle'); csMs=c.csMs; ceMs=c.ceMs; }
+  const live=m=>str(m.archived).toLowerCase()!=='yes'&&inCycle(m,csMs,ceMs);
+  const vac={}; // name -> absence in this cycle
+  state.movements.forEach(m=>{
+    if(!live(m)) return;
+    const t=str(m.type), ab=str(m.absenceType), person=str(m.staff);
+    let vacated=0, label='';
+    if(t==='Secondment Out'){ vacated=num(m.fteMoved); label='Secondment Out'; }
+    else if(t==='Leave'){ vacated=num(m.fteMoved); label=ab||'Leave (type not set)'; }
+    else if(t==='Vacancy'){ vacated=num(m.fteMoved); label='Vacancy'; }
+    else if(t==='Flexible Work Arrangement'){ vacated=num(m.fteMoved); label='FWA'; }
+    else if(t==='Parental Return to Work'){ const held=registerFTE(person,str(m.subClass))||num(m.subFTE); vacated=held-num(m.fteMoved); label='Parental (Partial Return)'; }
+    // Working in a different classification also empties the substantive line — that FTE
+    // is not being delivered where it is funded, so it needs covering like any absence.
+    else if(str(m.workClass)&&str(m.workClass)!==str(m.subClass)&&t!=='Extra Funded'
+            &&registerFTE(person,str(m.subClass))>0){ vacated=num(m.fteMoved); label='Working as '+str(m.workClass); }
+    else return;
+    if(vacated<=0&&t!=='Parental Return to Work') {} // keep zero-vacate parental too
+    const k=person;
+    if(!vac[k]) vac[k]={name:person,subClass:str(m.subClass),absence:label,vacated:0,start:null,end:null};
+    vac[k].vacated+=vacated;
+    if(!vac[k].absence) vac[k].absence=label;
+    const st=parseDate(m.start),en=parseDate(m.end);
+    if(st!==null) vac[k].start=vac[k].start===null?st:Math.min(vac[k].start,st);
+    if(en!==null) vac[k].end=vac[k].end===null?en:Math.max(vac[k].end,en);
+  });
+  // backfill owned by each person
+  return Object.values(vac).map(v=>{
+    const bf=state.movements.filter(m=>str(m.owner)===v.name&&COVER_TYPES.includes(str(m.type))&&live(m));
+    const backfilled=bf.reduce((a,m)=>a+num(m.fteMoved),0);
+    const by=bf.map(m=>str(m.staff)+' '+r2(num(m.fteMoved))+' ('+str(m.type)+')');
+    return {...v, backfilled, gap:r2(backfilled-v.vacated), count:bf.length, coveredBy:by, vacated:r2(v.vacated)};
+  }).sort((a,b)=>CLASSES.indexOf(a.subClass)-CLASSES.indexOf(b.subClass)||a.name.localeCompare(b.name));
+}
+
+/* ============================ MANAGER ACTION DASHBOARD ============================ */
+function staffDetailsAction(person){ return `<button class="iconbtn primary-link" onclick="viewStaffDetails(${esc(jsq(person))})">View ${esc(firstName(person))}</button>`; }
+function editStaffAction(i){ return `<button class="iconbtn" onclick="openStaff(${i})">Edit staff line</button>`; }
+function editMovementAction(id){ return `<button class="iconbtn" onclick="openMovement(${esc(jsq(id))})">Edit movement</button>`; }
+function computeManagerActions(){
+  const items=[], today=parseDate(isoToday()), seenOverVacate=new Set();
+  const add=(sev,person,issue,detail,meta,actions,type)=>items.push({sev,person:str(person)||'Unassigned staff member',issue,detail,meta:meta||[],actions:actions||'',type:type||''});
+  state.staff.forEach((s,i)=>{
+    const ce=parseDate(s.contractEnd), days=ce===null?null:Math.round((ce-today)/MS_DAY);
+    if(str(s.empType)==='Temporary'&&str(s.active)==='Yes'){
+      const base=`${str(s.subClass)} · ${r2(num(s.subFTE))} FTE${str(s.posTitle)?' · '+str(s.posTitle):''}`;
+      const actions=`${staffDetailsAction(s.name)}${editStaffAction(i)}`;
+      if(ce===null) add('warn',s.name,'Temporary contract missing end date',`${base}. Add a contract end date so this person appears correctly in the contract horizon.`,['Staff register','Contract horizon'],actions,'Contract');
+      else if(days<0) add('high',s.name,'Temporary contract has expired',`${base}. Contract ended ${fmtDate(s.contractEnd)} (${Math.abs(days)} days ago). Confirm extension, cessation or replacement action.`,['Immediate action','Contract horizon'],actions,'Contract');
+      else if(days<=30) add('high',s.name,'Temporary contract ends within 30 days',`${base}. Contract ends ${fmtDate(s.contractEnd)} (${days} days). Confirm whether this person is being extended, replaced or ceased.`,['Upcoming decision'],actions,'Contract');
+      else if(days<=90) add('warn',s.name,'Temporary contract ends within 90 days',`${base}. Contract ends ${fmtDate(s.contractEnd)} (${days} days). Include this person in forward workforce planning.`,['Forward planning'],actions,'Contract');
+    }
+  });
+  state.movements.forEach(m=>{
+    if(str(m.archived).toLowerCase()==='yes') return;
+    const st=parseDate(m.start), en=parseDate(m.end), days=en===null?null:Math.round((en-today)/MS_DAY), res=validateMovementObject(m,str(m.id));
+    const person=str(m.staff)||str(m.owner)||'Unassigned staff member';
+    const movementSummary=`${str(m.type)||'Movement'}${str(m.absenceType)?' · '+str(m.absenceType):''} · ${r2(num(m.fteMoved))} FTE · ${fmtDate(m.start)||'no start'} → ${fmtDate(m.end)||'no end'}`;
+    const actions=`${staffDetailsAction(person)}${editMovementAction(str(m.id))}`;
+    if(res.errors.length) add('high',person,'Movement has a calculation-blocking data issue',`${movementSummary}. ${res.errors[0]}`,['Movement validation'],actions,'Movement');
+    if(en!==null&&days<0&&!['Completed','Cancelled'].includes(str(m.adminStatus))) add('high',person,'Movement has ended but remains active',`${movementSummary}. Movement ${str(m.id)} ended ${fmtDate(m.end)} and still needs completion, archive or status update.`,['Archive or complete'],actions,'Movement');
+    else if(en!==null&&days>=0&&days<=30&&!['Completed','Confirmed','Cancelled'].includes(str(m.adminStatus))) add('warn',person,'Movement ending soon without confirmed status',`${movementSummary}. Movement ${str(m.id)} ends ${fmtDate(m.end)}; current status is ${str(m.adminStatus)||'blank'}.`,['Admin follow-up'],actions,'Movement');
+    if(['Awaiting Approval','VMC Submitted','VMC Approved'].includes(str(m.adminStatus))&&!str(m.vmcNum)&&!str(m.vmcUrl)) add('warn',person,'VMC evidence missing for this person\'s movement',`${movementSummary}. Movement ${str(m.id)} is marked ${str(m.adminStatus)} but no VMC number or link is recorded.`,['VMC'],actions,'Movement');
+    if(str(m.staff)&&str(m.subClass)){
+      const held=registerFTE(str(m.staff),str(m.subClass)), vac=vacatedFrom(str(m.staff),str(m.subClass));
+      if(held>0&&vac>held+0.001&&!seenOverVacate.has(str(m.staff)+'|'+str(m.subClass))){
+        seenOverVacate.add(str(m.staff)+'|'+str(m.subClass));
+        add('high',person,'More FTE emptied out than the person holds',`${str(m.staff)} has ${vac} FTE emptied out of ${str(m.subClass)} but only holds ${held} there. Absences, vacancies and working in another classification all count, so two rows are probably covering the same hours.`,['Over-vacated'],actions,'Movement');
+      }
+    }
+    if(str(m.staff)&&str(m.owner)&&str(m.staff)===str(m.owner)&&COVER_TYPES.includes(str(m.type))) add('high',person,'Someone is recorded as covering themselves',`${movementSummary}. Movement ${str(m.id)} has ${str(m.staff)} as both the staff member and the person being backfilled.`,['Check staff member'],actions,'Movement');
+    const attribOnly=str(m.type)==='Secondment In'||(str(m.staff)&&str(m.workClass)&&registerFTE(str(m.staff),str(m.workClass))>0);
+    const movesFTE2=!attribOnly&&['Backfill','Acting Higher Duties','Temporary Contract Extension','Casual to Temporary'].includes(str(m.type));
+    if(movesFTE2&&str(m.subClass)&&str(m.subClass)===str(m.workClass)) add('high',person,'Movement is not affecting any FTE',`${movementSummary}. Movement ${str(m.id)} has ${str(m.subClass)} as both the substantive and the working classification, so no FTE moves and it does not show on the planner. Set the substantive classification to the one this person actually holds.`,['No effect','Check classification'],actions,'Movement');
+    const draws=['Substantive','Backfill','Acting Higher Duties','Secondment Out','Leave','Parental Return to Work','Vacancy','Flexible Work Arrangement'].includes(str(m.type));
+    if(draws&&str(m.staff)&&str(m.subClass)&&state.staff.some(x=>str(x.name)===str(m.staff))){
+      const held=registerFTE(str(m.staff),str(m.subClass));
+      if(held<=0) add('warn',person,'Movement draws on FTE this person does not hold',`${movementSummary}. Movement ${str(m.id)} is set to come out of ${str(m.subClass)}, but ${str(m.staff)} holds no active ${str(m.subClass)} line on the register. If this is separately funded, change the type to Extra Funded.`,['Check classification'],actions,'Movement');
+      else if(num(m.fteMoved)>held+0.001) add('warn',person,'Movement shifts more FTE than the person holds',`${movementSummary}. Movement ${str(m.id)} shifts ${r2(num(m.fteMoved))} FTE out of ${str(m.subClass)} but ${str(m.staff)} only holds ${r2(held)} FTE there. Split it across the classifications they hold, or use Extra Funded for the new money.`,['Check FTE'],actions,'Movement');
+    }
+    if(str(m.staff)&&!state.staff.some(x=>str(x.name)===str(m.staff))) add('warn',person,'Movement staff member is not in the Staff Register',`${movementSummary}. Movement ${str(m.id)} names someone with no register line, so their FTE is not counted anywhere.`,['Register'],actions,'Movement');
+    if(st===null||en===null) add('high',person,'Movement dates incomplete',`${movementSummary}. Movement ${str(m.id)} will not calculate reliably until start and end dates are recorded.`,['Date required'],actions,'Movement');
+  });
+  computeGaps().filter(g=>g.gap>0.001).forEach(g=>{
+    const actions=`${staffDetailsAction(g.name)}<button class="iconbtn" onclick="go('gaps')">View FTE gap</button>`;
+    add(g.gap>=0.5?'high':'warn',g.name,'Unfilled FTE gap linked to this person',`${g.subClass}: ${r2(g.vacated)} FTE vacated, ${r2(g.backfilled)} FTE backfilled, gap ${r2(g.gap)} FTE.`,['FTE gaps'],actions,'FTE gap');
+  });
+  items.sort((a,b)=>({high:0,warn:1,info:2}[a.sev]-{high:0,warn:1,info:2}[b.sev])||a.person.localeCompare(b.person)||a.issue.localeCompare(b.issue));
+  return items;
+}
+function setManagerActionFilter(filter){
+  managerActionFilter = ['all','high','warn'].includes(filter) ? filter : 'all';
+  renderManagerActions();
+}
+function renderManagerActions(){
+  const el=document.getElementById('managerActions'); if(!el) return;
+  const items=computeManagerActions();
+  const high=items.filter(i=>i.sev==='high').length, warn=items.filter(i=>i.sev==='warn').length;
+  const nav=document.getElementById('navActions'); if(nav) nav.textContent=(high+warn)||'';
+  const filter = ['all','high','warn'].includes(managerActionFilter) ? managerActionFilter : 'all';
+  const filtered = filter==='all' ? items : items.filter(i=>i.sev===filter);
+  const filterLabel = filter==='high' ? 'High priority' : filter==='warn' ? 'Needs review' : 'Open actions';
+  let h=`<div class="action-tiles" role="tablist" aria-label="Manager action filters">
+    <button type="button" class="action-tile high ${filter==='high'?'active':''}" onclick="setManagerActionFilter('high')" aria-pressed="${filter==='high'}"><div class="ak">High priority</div><div class="av">${high}</div><div class="af">Show urgent issues</div></button>
+    <button type="button" class="action-tile warn ${filter==='warn'?'active':''}" onclick="setManagerActionFilter('warn')" aria-pressed="${filter==='warn'}"><div class="ak">Needs review</div><div class="av">${warn}</div><div class="af">Show follow-up items</div></button>
+    <button type="button" class="action-tile info ${filter==='all'?'active':''}" onclick="setManagerActionFilter('all')" aria-pressed="${filter==='all'}"><div class="ak">Open actions</div><div class="av">${items.length}</div><div class="af">Show all actions</div></button>
+  </div>`;
+  if(!items.length){ h+='<div class="empty">No manager actions detected from the current data.</div>'; el.innerHTML=h; return; }
+  h+=`<div class="action-filter-note">Showing ${filtered.length} ${filterLabel.toLowerCase()} ${filtered.length===1?'item':'items'}.</div>`;
+  if(!filtered.length){ h+=`<div class="empty">No ${filterLabel.toLowerCase()} actions detected. Select Open actions to view all current items.</div>`; el.innerHTML=h; return; }
+  h+='<div class="action-list">'+filtered.slice(0,24).map(i=>`<div class="action-item ${i.sev}"><div class="abar"></div><div><div class="action-person-row"><button class="linklike action-person" onclick="viewStaffDetails(${esc(jsq(i.person))})">${esc(i.person)}</button>${i.type?`<span class="action-type-chip">${esc(i.type)}</span>`:''}</div><div class="action-issue">${esc(i.issue)}</div><div class="action-detail">${esc(i.detail)}</div><div class="action-meta">${(i.meta||[]).map(m=>`<span class="pill neutral">${esc(m)}</span>`).join('')}</div></div><div class="action-buttons">${i.actions}</div></div>`).join('')+'</div>';
+  if(filtered.length>24) h+=`<div class="hint" style="margin-top:10px">Showing first 24 of ${filtered.length} ${filterLabel.toLowerCase()} actions.</div>`;
+  el.innerHTML=h;
+}
+
+// ============================ ROTATIONS ============================
+// A rotation slot is a chunk of funded FTE sitting in a clinical area, owned
+// substantively by one person. Who is actually delivering it is read live from the
+// movements: the owner's own remaining FTE, plus anyone recorded as covering them.
+// Slot totals per classification should reconcile to the baseline.
+function rotAreas(){
+  const seen=[];
+  state.rotations.forEach(r=>{ const a=str(r.area)||'Unassigned area'; if(!seen.includes(a)) seen.push(a); });
+  return seen.sort((a,b)=>a.localeCompare(b));
+}
+function ownerDelivering(owner,cls,csMs,ceMs){
+  // How much of their own line the owner is still delivering in this classification.
+  const held=registerFTE(owner,cls);
+  if(held<=0) return {held:0,own:0,cover:[]};
+  const gone=Math.min(held,vacatedFromInCycle(owner,cls,csMs,ceMs));
+  const cover=state.movements.filter(m=>str(m.owner)===str(owner)&&COVER_TYPES.includes(str(m.type))
+    &&str(m.archived).toLowerCase()!=='yes'&&inCycle(m,csMs,ceMs))
+    .map(m=>({person:str(m.staff),fte:num(m.fteMoved),type:str(m.type)}));
+  return {held:r2(held),own:r2(held-gone),cover};
+}
+function vacatedFromInCycle(name,cls,csMs,ceMs){
+  let t=0;
+  state.movements.forEach(m=>{
+    if(str(m.staff)!==str(name)||str(m.subClass)!==str(cls)) return;
+    if(str(m.archived).toLowerCase()==='yes'||!inCycle(m,csMs,ceMs)) return;
+    const ty=str(m.type);
+    if(VACATING.includes(ty)) t+=num(m.fteMoved);
+    else if(ty==='Parental Return to Work') t+=Math.max(0,(registerFTE(str(m.staff),str(m.subClass))||num(m.subFTE))-num(m.fteMoved));
+    else if(str(m.workClass)&&str(m.workClass)!==str(m.subClass)&&ty!=='Extra Funded') t+=num(m.fteMoved);
+  });
+  return r2(t);
+}
+// Is this person named in the slot's free-text "delivered by" note? The rotation plan
+// records this as shorthand ("Dan", "Abby Mon & Tue"), so match on name parts rather
+// than the whole string. This is what stops a coverer being smeared across every slot
+// their owner holds when the plan already says which area they are in.
+function nameMentioned(person,text){
+  const t=String(text||'').toLowerCase();
+  if(!t||!person) return false;
+  const words=t.split(/[^a-z]+/).filter(Boolean);
+  const parts=String(person).toLowerCase().split(/[^a-z]+/).filter(Boolean);
+  return parts.some(p=>words.some(w=>
+    (w.length>=3&&p.startsWith(w))||(p.length>=3&&w.startsWith(p))||(w.length>=2&&w===p)));
+}
+function placeIntoSlots(person,fte,type,slots,cap,alloc,spread){
+  if(!str(person)||num(fte)<=0.001) return;
+  let left=r2(num(fte));
+  const named=slots.filter(r=>nameMentioned(person,r.actual));
+  const pool=named.length?named:slots;
+  // The owner's own residual usually sits across all the areas they hold, so spread it.
+  // A coverer is normally in one place, so fill slot by slot instead.
+  if(spread&&pool.length>1){
+    const tot=pool.reduce((a,r)=>a+num(cap[r.id]),0);
+    if(tot>0) pool.forEach(r=>{
+      const give=Math.min(num(cap[r.id]),r2(left*num(cap[r.id])/tot));
+      if(give>0.001){ alloc[r.id].push({person:str(person),fte:r2(give),type}); cap[r.id]=r2(cap[r.id]-give); }
+    });
+    left=r2(left-pool.reduce((a,r)=>a+alloc[r.id].filter(x=>x.person===str(person)).reduce((b,x)=>b+x.fte,0),0));
+  }
+  const order=pool.concat(slots.filter(r=>pool.indexOf(r)<0));
+  order.forEach(r=>{
+    if(left<=0.001) return;
+    const give=Math.min(num(cap[r.id]),left);
+    if(give>0.001){ alloc[r.id].push({person:str(person),fte:r2(give),type}); cap[r.id]=r2(cap[r.id]-give); left=r2(left-give); }
+  });
+}
+function rotationAllocations(csMs,ceMs){
+  const groups={}, alloc={}, cap={};
+  state.rotations.forEach(r=>{
+    alloc[r.id]=[]; cap[r.id]=num(r.fte);
+    const k=str(r.owner)+'|'+str(r.cls);
+    (groups[k]=groups[k]||[]).push(r);
+  });
+  Object.keys(groups).forEach(k=>{
+    const slots=groups[k], owner=str(slots[0].owner), cls=str(slots[0].cls);
+    if(!owner) return;                       // a vacant slot has nobody to draw from
+    const d=ownerDelivering(owner,cls,csMs,ceMs);
+    // Order matters. Anyone the plan names against a particular area is placed there
+    // first, because that is known rather than inferred. The owner's own remaining FTE
+    // then spreads across whatever room is left, and any unplaced cover fills the rest.
+    // Place the most specific claims first. Someone the plan names against exactly one
+    // area tells us more than someone named against several, so they get their area
+    // before the rest is spread around.
+    const spec=p=>slots.filter(r=>nameMentioned(p,r.actual)).length;
+    const cands=[{person:owner,fte:d.own,type:'Substantive',isOwner:true}]
+      .concat(d.cover.map(c=>({person:c.person,fte:c.fte,type:c.type,isOwner:false})))
+      .filter(x=>str(x.person)&&num(x.fte)>0.001)
+      .map(x=>Object.assign(x,{spec:spec(x.person)}));
+    const named=cands.filter(x=>x.spec>0).sort((a,b)=>a.spec-b.spec||(b.isOwner?1:0)-(a.isOwner?1:0)||b.fte-a.fte);
+    const rest =cands.filter(x=>x.spec===0).sort((a,b)=>(b.isOwner?1:0)-(a.isOwner?1:0)||b.fte-a.fte);
+    named.concat(rest).forEach(x=>placeIntoSlots(x.person,x.fte,x.type,slots,cap,alloc,x.isOwner));
+  });
+  return alloc;
+}
+function computeRotationSlot(rot,csMs,ceMs,alloc){
+  const owner=str(rot.owner), cls=str(rot.cls), fte=num(rot.fte);
+  const onRegister=owner&&state.staff.some(x=>str(x.name)===owner);
+  const raw=(alloc&&alloc[rot.id])||[];
+  const merged=[];
+  raw.forEach(h=>{ const hit=merged.find(x=>x.person===h.person);
+    if(hit){ hit.fte=r2(hit.fte+h.fte); if(hit.type!==h.type) hit.type=''; } else merged.push({person:h.person,fte:r2(h.fte),type:h.type}); });
+  const holders=merged;
+  const filled=r2(holders.reduce((a,h)=>a+num(h.fte),0));
+  const shortfall=r2(Math.max(0,fte-filled));
+  let sev='good';
+  if(!owner||!onRegister) sev='warn';
+  if(shortfall>0.001) sev = shortfall>=fte-0.001 ? 'high' : 'warn';
+  return {rot,owner,cls,fte,onRegister,holders,filled,shortfall,sev};
+}
+function renderRotationControls(){
+  const {cycles,len}=buildCycles();
+  fillCycleSelect('rotCycle');
+  const a=document.getElementById('rotArea');
+  if(a){ const prev=a.value; a.innerHTML='<option value="all">All areas</option>'+rotAreas().map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join(''); a.value=prev||'all'; }
+  const dl=document.getElementById('rotAreaList');
+  if(dl) dl.innerHTML=rotAreas().map(x=>`<option value="${esc(x)}"></option>`).join('');
+}
+function renderRotations(){
+  renderRotationControls();
+  const {csMs,ceMs}=cycleFromSelect('rotCycle');
+  const alloc=rotationAllocations(csMs,ceMs);
+  const slots=state.rotations.map(r=>computeRotationSlot(r,csMs,ceMs,alloc));
+  const nav=document.getElementById('navRot'); if(nav) nav.textContent=slots.filter(s=>s.shortfall>0.001).length||'';
+
+  let t='<div class="tbl-wrap"><table><thead><tr><th>Class</th><th class="num">Slot FTE</th><th class="num">Baseline</th><th class="num">Difference</th><th>Status</th></tr></thead><tbody>';
+  CLASSES.forEach(cls=>{
+    const tot=r2(state.rotations.filter(r=>str(r.cls)===cls).reduce((a,r)=>a+num(r.fte),0));
+    const base=baselineOf(cls), diff=r2(tot-base);
+    if(!tot&&!base) return;
+    const pill = Math.abs(diff)<0.001?'<span class="pill good">Matches baseline</span>'
+      : diff>0?`<span class="pill warn">${signed(diff)} over baseline</span>`
+      : `<span class="pill neutral">${signed(diff)} not yet allocated</span>`;
+    t+=`<tr><td><b>${esc(cls)}</b></td><td class="num">${tot}</td><td class="num">${base}</td><td class="num">${signed(diff)}</td><td>${pill}</td></tr>`;
+  });
+  t+='</tbody></table></div>';
+  document.getElementById('rotTotals').innerHTML=t;
+
+  const areaFilter=(document.getElementById('rotArea')||{}).value||'all';
+  const areas=rotAreas().filter(a=>areaFilter==='all'||a===areaFilter);
+  if(!state.rotations.length){
+    document.getElementById('rotBoard').innerHTML='<div class="card"><div class="card-body"><div class="empty">No rotation slots yet. Add one for each chunk of funded FTE in each clinical area — the totals should add up to your baseline.</div></div></div>';
+    return;
+  }
+  let h='<div class="rot-board">';
+  areas.forEach(area=>{
+    const list=slots.filter(s=>(str(s.rot.area)||'Unassigned area')===area)
+      .sort((a,b)=>CLASSES.indexOf(a.cls)-CLASSES.indexOf(b.cls)||a.owner.localeCompare(b.owner));
+    const tot=r2(list.reduce((a,s)=>a+s.fte,0)), fil=r2(list.reduce((a,s)=>a+s.filled,0));
+    h+=`<div class="rot-area"><div class="rot-area-head"><div class="rot-area-name">${esc(area)}</div><div class="rot-area-tot">${fil} of ${tot} FTE covered</div></div>`;
+    list.forEach(s=>{
+      const parts=s.holders.map(h=>`<b>${esc(h.person)}</b> ${h.fte}`+(h.type&&h.type!=='Substantive'?` <span class="hint">(${esc(h.type)})</span>`:''));
+      const who = parts.length?parts.join(' &nbsp;·&nbsp; '):'<span class="hint">nobody recorded</span>';
+      let flag='';
+      if(!s.owner) flag='<span class="pill warn">No owner set</span>';
+      else if(!s.onRegister) flag=`<span class="pill warn">${esc(s.owner)} is not on the Staff Register</span>`;
+      else if(s.shortfall>0.001) flag=`<span class="pill ${s.shortfall>=s.fte-0.001?'danger':'warn'}">${signed(-s.shortfall)} uncovered</span>`;
+      else flag='<span class="pill good">Covered</span>';
+      h+=`<div class="rot-slot ${s.sev}" onclick="openRotation('${esc(str(s.rot.id))}')" style="cursor:pointer">
+        <div class="rot-slot-top"><span class="pill neutral">${esc(s.cls)}</span><span class="rot-owner">${esc(s.owner)||'<i>Vacant</i>'}</span><span class="rot-fte">${s.fte} FTE</span></div>
+        <div class="rot-line">Delivered by: ${who}</div>
+        <div style="margin-top:7px">${flag}</div>
+        ${str(s.rot.actual)?`<div class="rot-note">${esc(str(s.rot.actual))}</div>`:''}
+      </div>`;
+    });
+    h+='</div>';
+  });
+  h+='</div>';
+  document.getElementById('rotBoard').innerHTML=h;
+}
+let editingRotId=null;
+function openRotation(id){
+  editingRotId=id;
+  const r = id? state.rotations.find(x=>str(x.id)===str(id)) : {id:'',area:'',cls:defaultClass(),fte:'',owner:'',actual:'',notes:''};
+  if(!r) return;
+  renderRotationControls();
+  document.getElementById('rotModalTitle').textContent=id?'Edit rotation slot':'Add rotation slot';
+  document.getElementById('r_delBtn').style.display=id?'':'none';
+  document.getElementById('r_area').value=str(r.area);
+  fillSelect('r_cls',CLASSES,str(r.cls)||defaultClass());
+  document.getElementById('r_fte').value=r.fte===''?'':num(r.fte);
+  fillNameSelect('r_owner',str(r.owner));
+  document.getElementById('r_actual').value=str(r.actual);
+  document.getElementById('r_notes').value=str(r.notes);
+  document.getElementById('rotValidation').innerHTML='';
+  document.getElementById('rotModal').classList.add('open');
+}
+function saveRotation(){
+  const obj={ id: editingRotId||('ROT-'+String(state.rotations.length+1).padStart(3,'0')),
+    area:str(document.getElementById('r_area').value), cls:str(document.getElementById('r_cls').value),
+    fte:num(document.getElementById('r_fte').value), owner:str(document.getElementById('r_owner').value),
+    actual:str(document.getElementById('r_actual').value), notes:str(document.getElementById('r_notes').value) };
+  const errs=[];
+  if(!obj.area) errs.push('Clinical area is required.');
+  if(!obj.cls) errs.push('Classification is required.');
+  if(!(obj.fte>0)) errs.push('Slot FTE must be greater than zero.');
+  if(errs.length){ document.getElementById('rotValidation').innerHTML='<div class="vbox err"><b>Fix before saving</b><ul>'+errs.map(e=>`<li>${esc(e)}</li>`).join('')+'</ul></div>'; return; }
+  const warn=[];
+  if(obj.owner&&!state.staff.some(x=>str(x.name)===obj.owner)) warn.push(obj.owner+' is not on the Staff Register, so nothing can be read from their movements. Slots for a vacant line are fine — leave the owner blank or name it Vacant.');
+  const ownedTotal=state.rotations.filter(r=>str(r.owner)===obj.owner&&str(r.cls)===obj.cls&&str(r.id)!==str(obj.id)).reduce((a,r)=>a+num(r.fte),0)+obj.fte;
+  const held=obj.owner?registerFTE(obj.owner,obj.cls):0;
+  if(held>0&&ownedTotal>held+0.001) warn.push(obj.owner+' would own '+r2(ownedTotal)+' FTE of '+obj.cls+' slots but only holds '+r2(held)+' on the register.');
+  if(warn.length&&!confirm('Check these before saving:\n\n• '+warn.join('\n• ')+'\n\nSave anyway?')) return;
+  const idx=state.rotations.findIndex(x=>str(x.id)===str(obj.id));
+  const before=idx>=0?deepCopy(state.rotations[idx]):null;
+  if(idx>=0) state.rotations[idx]=obj; else state.rotations.push(obj);
+  auditLog(idx>=0?'Update':'Create','Rotation',obj.area+' · '+obj.cls,(idx>=0?'Updated':'Added')+' rotation slot '+obj.area+' '+obj.cls+' '+obj.fte+' FTE',before,obj);
+  persist(); closeModal('rotModal'); rebuildAll(); toast('Rotation slot saved');
+}
+function deleteRotation(){
+  if(!editingRotId) return;
+  const idx=state.rotations.findIndex(x=>str(x.id)===str(editingRotId));
+  if(idx<0) return;
+  const r=state.rotations[idx];
+  if(!confirm('Delete the '+str(r.area)+' '+str(r.cls)+' slot?')) return;
+  auditLog('Delete','Rotation',str(r.area)+' · '+str(r.cls),'Deleted rotation slot',deepCopy(r),null);
+  state.rotations.splice(idx,1);
+  persist(); closeModal('rotModal'); rebuildAll(); toast('Rotation slot deleted');
+}
+function renderGaps(){
+  renderGapsControls();
+  const gaps=computeGaps();
+  document.getElementById('navGaps').textContent=gaps.length||'';
+  const rows=gaps.map(g=>{
+    let gp; if(g.gap<-0.001) gp=`<span class="pill warn">${signed(g.gap)}</span>`; else if(g.gap>0.001) gp=`<span class="pill accent">${signed(g.gap)}</span>`; else gp=`<span class="pill good">0</span>`;
+    const cover = g.count? g.coveredBy.map(x=>esc(x)).join('<br>') : '<span class="hint">nobody</span>';
+    const holds=r2(registerFTE(g.name,g.subClass));
+    const vacCell = (holds>0&&g.vacated>holds+0.001)? `<span class="pill danger">${r2(g.vacated)}</span>` : r2(g.vacated);
+    return [esc(g.name),esc(g.subClass),holds||'',vacCell,r2(g.backfilled),gp,cover,fmtDate(new Date(g.start).toISOString().slice(0,10)),g.end?fmtDate(new Date(g.end).toISOString().slice(0,10)):''];
+  });
+  document.getElementById('gapsTable').innerHTML=tableHTML(['Owner','Class','Holds','Vacated','Covered','Gap (\u2212 short, + over)','Covered by','Earliest start','Latest end'],rows,'No absences with vacated FTE right now.');
+}
+
+/* ============================ BUDGET SUMMARY ============================ */
+function renderBudgetControls(){
+  const {cycles,len}=buildCycles(); const sel=document.getElementById('budgetStart'); const prev=sel.value;
+  sel.innerHTML=cycles.map((c,i)=>`<option value="${i}">${fmtDate(new Date(c).toISOString().slice(0,10))}</option>`).join('');
+  sel.value=prev!==''?prev:currentCycleIndex(cycles,len);
+}
+function budgetChartSVG(eff,base,ceil){
+  const n=eff.length; if(!n) return '';
+  const W=Math.max(n*30,120), H=64, pad=6;
+  const maxV=Math.max(ceil,base,...eff,0.1)*1.14;
+  const colW=(W-2*pad)/n, bw=colW*0.64;
+  const y=v=>H-pad-(v/maxV)*(H-2*pad);
+  let bars='';
+  eff.forEach((v,i)=>{
+    let c; if(v>ceil) c='#B41A1A'; else if(v>base) c='#A87A00'; else if(v<base) c='#1A5A9A'; else c='#0C7A52';
+    const bx=pad+i*colW+(colW-bw)/2, by=y(v);
+    bars+=`<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${bw.toFixed(1)}" height="${(H-pad-by).toFixed(1)}" rx="2" fill="${c}" opacity="0.9"/>`;
+  });
+  const yB=y(base).toFixed(1), yC=y(ceil).toFixed(1);
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">`
+    +`<line x1="${pad}" x2="${W-pad}" y1="${yC}" y2="${yC}" stroke="#B41A1A" stroke-width="1.5" opacity="0.6"/>`
+    +`<line x1="${pad}" x2="${W-pad}" y1="${yB}" y2="${yB}" stroke="#3A5068" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>`
+    +`${bars}</svg>`;
+}
+function renderBudget(){
+  const {cycles,len}=buildCycles(); let start=+document.getElementById('budgetStart').value||0;
+  const win=cycles.slice(start,start+13);
+  const effByClass={};
+  CLASSES.forEach(cls=>{ effByClass[cls]=win.map(c=>r2(effFTE(cls,c,c+len-MS_DAY,'funded'))); });
+
+  // --- shape charts ---
+  let chartH='<div style="margin-bottom:6px"><div class="card-sub" style="margin-bottom:6px">FTE shape across the window — bars = funded FTE, dashed line = baseline, red line = ceiling.</div>';
+  CLASSES.forEach(cls=>{
+    chartH+=`<div class="bchart"><div class="blab">${cls}<span class="bsub">base ${baselineOf(cls)} · ceil ${ceilingOf(cls)}</span></div>${budgetChartSVG(effByClass[cls],baselineOf(cls),ceilingOf(cls))}</div>`;
+  });
+  chartH+=`<div class="plegend" style="margin-top:12px">
+    <span class="pchip" style="background:var(--good-bg);color:var(--good)">On / under baseline</span>
+    <span class="pchip" style="background:var(--warn-bg);color:var(--warn)">Over baseline</span>
+    <span class="pchip" style="background:var(--danger-bg);color:var(--danger)">Over ceiling</span>
+    <span class="pchip" style="background:#E7F0FA;color:var(--accent-dark)">Under baseline</span>
+  </div></div>`;
+
+  // --- number grid with heatmap ---
+  const head=['Class','Measure',...win.map(c=>fmtDate(new Date(c).toISOString().slice(0,10)).slice(0,6))];
+  let rows=[];
+  CLASSES.forEach(cls=>{
+    const eff=effByClass[cls], base=baselineOf(cls), ceil=ceilingOf(cls);
+    const heat=v=>{ let c=v>ceil?'heat-over':v>base?'heat-warn':v<base?'heat-under':'heat-on'; return `<span class="heatcell ${c}">${v}</span>`; };
+    rows.push([cls,'Effective FTE',...eff.map(heat)]);
+    rows.push(['','Baseline',...win.map(()=>base)]);
+    rows.push(['','Ceiling',...win.map(()=>ceil)]);
+    rows.push(['','vs Baseline',...eff.map(x=>cell_signed(x-base))]);
+    rows.push(['','',...win.map(()=>'')]);
+  });
+  document.getElementById('budgetTable').innerHTML=chartH+tableHTML(head,rows,'');
+}
+
+/* ============================ MOVEMENTS TABLE ============================ */
+function renderMovements(){
+  const showArch=document.getElementById('showArchived').checked;
+  const today=parseDate(isoToday());
+  document.getElementById('navMov').textContent=state.movements.filter(m=>str(m.archived).toLowerCase()!=='yes').length||'';
+  const items=state.movements
+    .map((m,i)=>({row:m,i}))
+    .filter(o=>showArch||str(o.row.archived).toLowerCase()!=='yes');
+  const cols=[
+    {key:'id',label:'ID',val:m=>str(m.id).toLowerCase(),get:m=>esc(str(m.id))},
+    {key:'staff',label:'Staff',val:m=>str(m.staff).toLowerCase(),get:m=>esc(str(m.staff))},
+    {key:'subClass',label:'Sub',group:true,val:m=>CLASSES.indexOf(str(m.subClass)),get:m=>esc(str(m.subClass))},
+    {key:'workClass',label:'Work',group:true,val:m=>CLASSES.indexOf(str(m.workClass)),get:m=>esc(str(m.workClass))},
+    {key:'type',label:'Type',group:true,val:m=>MOVE_TYPES.indexOf(str(m.type)),get:m=>esc(str(m.type))},
+    {key:'fteMoved',label:'FTE',num:true,val:m=>num(m.fteMoved),get:m=>r2(num(m.fteMoved))},
+    {key:'owner',label:'Owner',val:m=>str(m.owner).toLowerCase(),get:m=>esc(str(m.owner))},
+    {key:'start',label:'Start',val:m=>parseDate(m.start),get:m=>fmtDate(m.start)},
+    {key:'end',label:'End',val:m=>parseDate(m.end),get:m=>{
+        const exp=str(m.archived).toLowerCase()!=='yes'&&parseDate(m.end)!==null&&parseDate(m.end)<today;
+        return fmtDate(m.end)+(exp?' <span class="pill danger" style="font-size:9px">expired</span>':'');
+      }},
+    {key:'adminStatus',label:'Status',group:true,val:m=>ADMIN_STATUS.indexOf(str(m.adminStatus)),get:m=>statusPill(m.adminStatus)},
+    {label:'VMC',get:m=>vmcCell(m)},
+    {label:'',get:m=>{
+        const id=esc(str(m.id)); const isArch=str(m.archived).toLowerCase()==='yes';
+        return `<div class="rowact"><button class="iconbtn" onclick="openMovement('${id}')">Edit</button>`
+          +`<button class="iconbtn${isArch?'':' del'}" onclick="archiveMovement('${id}',${isArch?'false':'true'})">${isArch?'Unarchive':'Archive'}</button></div>`;
+      }}
+  ];
+  document.getElementById('movTable').innerHTML=sortableTable(cols,items,movSort,'sortMov',
+    {emptyMsg:'No movements.',rowClass:m=>str(m.archived).toLowerCase()==='yes'?'archived':''});
+}
+function archiveMovement(id,arch){
+  const m=state.movements.find(x=>str(x.id)===id); if(!m) return;
+  if(arch){ if(!confirm('Archive movement '+id+'?\n\nIt will be excluded from all FTE calculations, the planner and budget. You can tick "Show archived" and unarchive it later.')) return; }
+  else { if(!confirm('Unarchive movement '+id+'?\n\nIt will be included in calculations again.')) return; }
+  m.archived=arch?'Yes':'No'; persist(); rebuildAll();
+}
+
+/* ============================ STAFF TABLE ============================ */
+function renderStaff(){
+  document.getElementById('navStaff').textContent=state.staff.length||'';
+  const today=parseDate(isoToday());
+  const items=state.staff.map((s,i)=>({row:s,i}));
+  const isExpired=s=>str(s.empType)==='Temporary'&&str(s.active)==='Yes'&&parseDate(s.contractEnd)!==null&&parseDate(s.contractEnd)<today;
+  const cols=[
+    {key:'name',label:'Name',val:s=>str(s.name).toLowerCase(),get:s=>esc(str(s.name))},
+    {key:'subClass',label:'Class',group:true,val:s=>CLASSES.indexOf(str(s.subClass)),get:s=>esc(str(s.subClass))},
+    {key:'subFTE',label:'FTE',num:true,val:s=>num(s.subFTE),get:s=>r2(num(s.subFTE))},
+    {key:'posTitle',label:'Position',val:s=>str(s.posTitle).toLowerCase(),get:s=>esc(str(s.posTitle))},
+    {key:'empType',label:'Type',group:true,val:s=>EMP_TYPE.indexOf(str(s.empType)),get:s=>esc(str(s.empType))},
+    {key:'active',label:'Active',group:true,val:s=>str(s.active)==='Yes'?0:1,
+      get:s=>str(s.active)==='Yes'?'<span class="pill good">Yes</span>':'<span class="pill neutral">No</span>'},
+    {key:'contractEnd',label:'Contract end',val:s=>parseDate(s.contractEnd),get:s=>{
+        if(!s.contractEnd) return '';
+        return isExpired(s)?`<span class="pill danger">⚠ EXPIRED · ${esc(fmtDate(s.contractEnd))}</span>`:esc(fmtDate(s.contractEnd));
+      }},
+    {label:'',get:(s,i)=>`<div class="rowact"><button class="iconbtn" onclick="openStaff(${i})">Edit</button>`
+        +`<button class="iconbtn del" onclick="removeStaff(${i})">Remove</button></div>`}
+  ];
+  document.getElementById('staffTable').innerHTML=sortableTable(cols,items,staffSort,'sortStaff',
+    {emptyMsg:'No staff.',rowClass:s=>(isExpired(s)?'rowexpired ':'')+(str(s.active)!=='Yes'?'archived':'')});
+}
+function removeStaff(i){
+  const s=state.staff[i]; if(!s) return;
+  if(!confirm('Remove '+str(s.name)+' ('+str(s.subClass)+', '+r2(num(s.subFTE))+' FTE) from the register?\n\nThis permanently deletes this substantive line. Export a backup first if unsure.')) return;
+  state.staff.splice(i,1); persist(); rebuildAll();
+}
+function deactivateStaff(i){
+  const s=state.staff[i]; if(!s) return;
+  if(!confirm('Archive '+str(s.name)+' ('+str(s.subClass)+', '+r2(num(s.subFTE))+' FTE)?\n\nThe line is set to inactive — kept for audit but removed from active FTE counts, the planner and the contract horizon. Reactivate any time in the Staff Register.')) return;
+  const before=deepCopy(s); s.active='No'; auditLog('Archive','Staff',str(s.name),`Set ${str(s.name)} inactive`,before,s); persist(); rebuildAll();
+}
+
+/* ============================ SETTINGS ============================ */
+function classUsage(cls){
+  const st=state.staff.filter(s=>str(s.subClass)===cls).length;
+  const mv=state.movements.filter(m=>str(m.subClass)===cls||str(m.workClass)===cls).length;
+  return {staff:st,movements:mv,total:st+mv};
+}
+function renderSettings(){
+  let h='<div class="tbl-wrap"><table><thead><tr><th>Classification</th><th class="num">Baseline FTE</th><th class="num">Ceiling FTE</th><th class="num">Additional approved</th><th class="num">Effective ceiling</th><th>In use</th><th></th></tr></thead><tbody>';
+  CLASSES.forEach((cls,i)=>{
+    const b=num((state.settings.baselines||{})[cls]); const c=(state.settings.ceilings||{})[cls]||{};
+    const u=classUsage(cls);
+    h+=`<tr><td><input type="text" value="${esc(cls)}" style="width:110px;font-weight:800" onchange="renameClassification(${i},this.value)"></td>
+      <td class="num"><input type="number" step="0.01" min="0" value="${b}" style="width:90px;text-align:right" onchange="setBaseline('${esc(cls)}',this.value)"></td>
+      <td class="num"><input type="number" step="0.01" min="0" value="${num(c.ceiling)}" style="width:90px;text-align:right" onchange="setCeiling('${esc(cls)}','ceiling',this.value)"></td>
+      <td class="num"><input type="number" step="0.01" value="${num(c.additional)}" style="width:90px;text-align:right" onchange="setCeiling('${esc(cls)}','additional',this.value)"></td>
+      <td class="num"><b>${r2(num(c.ceiling)+num(c.additional))}</b></td>
+      <td>${u.total? '<span class="pill neutral">'+u.staff+' staff · '+u.movements+' mvt</span>' : '<span class="hint">not used</span>'}</td>
+      <td class="rowact"><button class="iconbtn" onclick="moveClassification(${i},-1)" title="Move up">↑</button><button class="iconbtn" onclick="moveClassification(${i},1)" title="Move down">↓</button><button class="iconbtn del" onclick="removeClassification(${i})">Remove</button></td></tr>`;
+  });
+  h+='</tbody></table></div>';
+  if(!CLASSES.length) h='<div class="empty">No classifications yet. Add one to start budgeting.</div>';
+  document.getElementById('settingsClasses').innerHTML=h;
+  const sn=document.getElementById('setServiceName'); if(sn) sn.value=str(state.settings.serviceName);
+  const on=document.getElementById('setOrgName'); if(on) on.value=str(state.settings.orgName);
+  document.getElementById('setAnchor').value=state.settings.cycleAnchorDate||'2025-06-18';
+  document.getElementById('setLen').value=state.settings.cycleLenDays||14;
+}
+function saveIdentity(){
+  const before={serviceName:state.settings.serviceName,orgName:state.settings.orgName};
+  state.settings.serviceName=str(document.getElementById('setServiceName').value)||'Service';
+  state.settings.orgName=str(document.getElementById('setOrgName').value);
+  auditLog('Update','Settings','Service identity','Service name / organisation updated',before,{serviceName:state.settings.serviceName,orgName:state.settings.orgName});
+  applyBranding(); persist(); renderAudit();
+}
+function addClassification(){
+  const raw=prompt('New classification code (e.g. HP2, HP6, OO3, AO3):','');
+  if(raw===null) return;
+  const v=str(raw);
+  if(!v){ alert('Classification code cannot be blank.'); return; }
+  if(CLASSES.some(c=>c.toLowerCase()===v.toLowerCase())){ alert(v+' already exists.'); return; }
+  state.settings.classes.push(v);
+  state.settings.baselines[v]=0;
+  state.settings.ceilings[v]={ceiling:0,additional:0};
+  auditLog('Create','Settings','Classification '+v,'Classification '+v+' added',null,null,['Added '+v+' with baseline 0 and ceiling 0']);
+  syncClasses(); persist(); rebuildAll();
+}
+function renameClassification(i,raw){
+  const oldName=CLASSES[i], v=str(raw);
+  if(v===oldName){ return; }
+  if(!v){ alert('Classification code cannot be blank.'); renderSettings(); return; }
+  if(CLASSES.some((c,j)=>j!==i&&c.toLowerCase()===v.toLowerCase())){ alert(v+' already exists.'); renderSettings(); return; }
+  const u=classUsage(oldName);
+  if(u.total && !confirm('Rename '+oldName+' to '+v+'?\n\n'+u.staff+' staff line(s) and '+u.movements+' movement(s) currently use '+oldName+'. They will all be re-pointed to '+v+' so no data is orphaned.')){ renderSettings(); return; }
+  state.settings.classes[i]=v;
+  state.settings.baselines[v]=num(state.settings.baselines[oldName]); delete state.settings.baselines[oldName];
+  state.settings.ceilings[v]=state.settings.ceilings[oldName]||{ceiling:0,additional:0}; delete state.settings.ceilings[oldName];
+  state.staff.forEach(s=>{ if(str(s.subClass)===oldName) s.subClass=v; });
+  state.movements.forEach(m=>{ if(str(m.subClass)===oldName) m.subClass=v; if(str(m.workClass)===oldName) m.workClass=v; });
+  auditLog('Update','Settings','Classification '+v,'Classification '+oldName+' renamed to '+v,null,null,[oldName+' → '+v+' ('+u.staff+' staff, '+u.movements+' movements re-pointed)']);
+  syncClasses(); persist(); rebuildAll();
+}
+function removeClassification(i){
+  const cls=CLASSES[i]; const u=classUsage(cls);
+  if(u.total){ alert('Cannot remove '+cls+'.\n\n'+u.staff+' staff line(s) and '+u.movements+' movement(s) still use it. Rename it instead, or re-point those records to another classification first.'); return; }
+  if(!confirm('Remove classification '+cls+'? Its baseline and ceiling will be deleted.')) return;
+  state.settings.classes.splice(i,1);
+  delete state.settings.baselines[cls]; delete state.settings.ceilings[cls];
+  auditLog('Delete','Settings','Classification '+cls,'Classification '+cls+' removed',null,null,['Removed '+cls]);
+  syncClasses(); persist(); rebuildAll();
+}
+function moveClassification(i,dir){
+  const j=i+dir; if(j<0||j>=CLASSES.length) return;
+  const arr=state.settings.classes; const t=arr[i]; arr[i]=arr[j]; arr[j]=t;
+  syncClasses(); persist(); rebuildAll();
+}
+function setBaseline(cls,v){ state.settings.baselines=state.settings.baselines||{}; const before=state.settings.baselines[cls]; state.settings.baselines[cls]=Number(v)||0; auditLog('Update','Settings','Baseline '+cls,`Baseline FTE updated for ${cls}`,{value:before},{value:state.settings.baselines[cls]}); persist(); rebuildCalc(); }
+function setCeiling(cls,k,v){ state.settings.ceilings[cls]=state.settings.ceilings[cls]||{ceiling:0,additional:0}; const before=state.settings.ceilings[cls][k]; state.settings.ceilings[cls][k]=Number(v)||0; auditLog('Update','Settings',`${cls} ${k}`,`${k} updated for ${cls}`,{value:before},{value:state.settings.ceilings[cls][k]}); persist(); rebuildCalc(); }
+function saveSettings(){ const before={cycleAnchorDate:state.settings.cycleAnchorDate,cycleLenDays:state.settings.cycleLenDays}; state.settings.cycleAnchorDate=document.getElementById('setAnchor').value||'2025-06-18'; state.settings.cycleLenDays=Number(document.getElementById('setLen').value)||14; auditLog('Update','Settings','Pay cycle','Pay-cycle settings updated',before,{cycleAnchorDate:state.settings.cycleAnchorDate,cycleLenDays:state.settings.cycleLenDays}); persist(); rebuildAll(); }
+
+/* ============================ MODALS: MOVEMENT ============================ */
+// opts entries are either a plain string, or {v,label} where v is the stored value.
+// The value attribute is always written explicitly — without it an option's value is
+// its visible text, so relabelling an option silently changes the data it saves.
+function fillSelect(id,opts,val){
+  const el=document.getElementById(id);
+  el.innerHTML=opts.map(o=>{
+    const v = (o&&typeof o==='object') ? str(o.v) : str(o);
+    const label = (o&&typeof o==='object') ? o.label : v;
+    return `<option value="${esc(v)}" ${v===str(val)?'selected':''}>${esc(label)}</option>`;
+  }).join('');
+}
+const NO_CLASS_LABEL='\u2014 none (not working in a classification) \u2014';
+function openMovement(id){
+  editingMovId=id;
+  const m = id? state.movements.find(x=>str(x.id)===id) : blankMovement();
+  document.getElementById('movModalTitle').textContent=id?'Edit movement':'Add movement';
+  document.getElementById('m_delBtn').style.display=id?'':'none';
+  document.getElementById('m_id').value=str(m.id);
+  fillNameSelect('m_staff',str(m.staff));
+  fillSelect('m_subClass',CLASSES,str(m.subClass)||defaultClass());
+  document.getElementById('m_subFTE').value=m.subFTE??'';
+  fillSelect('m_type',MOVE_TYPES,str(m.type)||'Backfill');
+  document.getElementById('m_fteMoved').value=m.fteMoved??'';
+  fillSelect('m_workClass',[{v:'',label:NO_CLASS_LABEL},...CLASSES],str(m.workClass)||defaultClass());
+  fillSelect('m_empArr',EMP_ARR,str(m.empArr)||'Temporary');
+  document.getElementById('m_workPosId').value=str(m.workPosId);
+  document.getElementById('m_workPosTitle').value=str(m.workPosTitle);
+  fillNameSelect('m_owner',str(m.owner));
+  document.getElementById('m_start').value=m.start? String(m.start).slice(0,10):'';
+  document.getElementById('m_end').value=m.end? String(m.end).slice(0,10):'';
+  fillSelect('m_absenceType',ABSENCE_TYPES,str(m.absenceType));
+  fillSelect('m_adminStatus',ADMIN_STATUS,str(m.adminStatus)||'Draft / Planning');
+  document.getElementById('m_vmcNum').value=str(m.vmcNum);
+  document.getElementById('m_procNum').value=str(m.procNum);
+  document.getElementById('m_vmcUrl').value=str(m.vmcUrl);
+  document.getElementById('m_notes').value=str(m.notes);
+  document.getElementById('m_archived').checked=str(m.archived).toLowerCase()==='yes';
+  movTypeHint();
+  updateMovementValidation();
+  document.getElementById('movModal').classList.add('open');
+}
+function movTypeHint(){
+  const t=document.getElementById('m_type').value;
+  const hint=document.getElementById('ownerHint');
+  if(t==='Extra Funded') hint.textContent='Owner = funding source name (e.g. RITA Grant).';
+  else if(t==='Leave'||t==='Secondment Out') hint.textContent='This is the absent person leaving — owner usually blank.';
+  else if(t==='Vacancy'||t==='Flexible Work Arrangement') hint.textContent='FTE that is funded but not being worked. Set working classification to none. Owner blank.';
+  const fl=document.getElementById('fteLabel'), fh=document.getElementById('fteHint');
+  if(fl&&fh){
+    if(t==='Parental Return to Work'){
+      fl.textContent='FTE returned to';
+      fh.textContent='The TOTAL they have come back to, across every classification — including any they are acting in. The rest of their line counts as still vacated.';
+    } else { fl.textContent='FTE moved'; fh.textContent=''; }
+  }
+  else hint.textContent='Name the substantive person being backfilled / acted up for.';
+}
+function blankMovement(){ return {id:nextMovId(),staff:'',subClass:defaultClass(),subFTE:'',empArr:'Temporary',workPosId:'',workPosTitle:'',workClass:defaultClass(),type:'Backfill',fteMoved:'',start:'',end:'',vmcNum:'',vmcUrl:'',procNum:'',adminStatus:'Draft / Planning',absenceType:'',archived:'No',notes:'',owner:''}; }
+function nextMovId(){ let max=0; state.movements.forEach(m=>{ const mm=/MV-?(\d+)/.exec(str(m.id)); if(mm) max=Math.max(max,+mm[1]); }); return 'MV-'+String(max+1).padStart(4,'0'); }
+function saveMovement(){
+  const obj=readMovementForm();
+  const result=validateMovementObject(obj,editingMovId);
+  renderValidationPanel('movValidation',result);
+  if(!confirmWarnings(result)) return;
+  if(editingMovId){
+    const i=state.movements.findIndex(x=>str(x.id)===editingMovId);
+    const before=deepCopy(state.movements[i]);
+    state.movements[i]=obj;
+    auditLog('Update','Movement',str(obj.id),`Updated ${str(obj.staff)} · ${str(obj.type)}`,before,obj);
+  }
+  else{
+    state.movements.push(obj);
+    auditLog('Create','Movement',str(obj.id),`Created ${str(obj.staff)} · ${str(obj.type)}`,null,obj,fieldChanges(null,obj));
+  }
+  closeModal('movModal'); persist(); rebuildAll();
+}
+function deleteMovement(){ if(!editingMovId) return; if(!confirm('Delete this movement permanently? (Archiving instead keeps the audit trail.)')) return; const before=deepCopy(state.movements.find(x=>str(x.id)===editingMovId)); state.movements=state.movements.filter(x=>str(x.id)!==editingMovId); auditLog('Delete','Movement',editingMovId,`Deleted ${before?str(before.staff):''} · ${before?str(before.type):''}`,before,null,['Movement permanently deleted']); closeModal('movModal'); persist(); rebuildAll(); }
+
+/* ============================ MODALS: STAFF ============================ */
+function openStaff(idx){
+  editingStaffIdx=idx;
+  const s= idx!==null? state.staff[idx] : {name:'',subClass:defaultClass(),subFTE:'',posId:'',posTitle:'',empType:'Permanent',active:'Yes',contractStart:'',contractEnd:'',notes:''};
+  document.getElementById('staffModalTitle').textContent=idx!==null?'Edit staff line':'Add staff line';
+  document.getElementById('s_delBtn').style.display=idx!==null?'':'none';
+  document.getElementById('s_name').value=str(s.name);
+  fillSelect('s_subClass',CLASSES,str(s.subClass)||defaultClass());
+  document.getElementById('s_subFTE').value=s.subFTE??'';
+  document.getElementById('s_posId').value=str(s.posId);
+  document.getElementById('s_posTitle').value=str(s.posTitle);
+  fillSelect('s_empType',EMP_TYPE,str(s.empType)||'Permanent');
+  document.getElementById('s_active').value=str(s.active)||'Yes';
+  document.getElementById('s_contractStart').value=s.contractStart?String(s.contractStart).slice(0,10):'';
+  document.getElementById('s_contractEnd').value=s.contractEnd?String(s.contractEnd).slice(0,10):'';
+  document.getElementById('s_notes').value=str(s.notes);
+  updateStaffValidation();
+  document.getElementById('staffModal').classList.add('open');
+}
+function saveStaff(){
+  const obj=readStaffForm();
+  const result=validateStaffObject(obj,editingStaffIdx);
+  renderValidationPanel('staffValidation',result);
+  if(!confirmWarnings(result)) return;
+  if(editingStaffIdx!==null){
+    const before=deepCopy(state.staff[editingStaffIdx]);
+    state.staff[editingStaffIdx]=obj;
+    auditLog('Update','Staff',str(obj.name),`Updated ${str(obj.name)} · ${str(obj.subClass)} · ${r2(num(obj.subFTE))} FTE`,before,obj);
+  }
+  else{
+    state.staff.push(obj);
+    auditLog('Create','Staff',str(obj.name),`Created ${str(obj.name)} · ${str(obj.subClass)} · ${r2(num(obj.subFTE))} FTE`,null,obj,fieldChanges(null,obj));
+  }
+  closeModal('staffModal'); persist(); rebuildAll();
+}
+function deleteStaff(){ if(editingStaffIdx===null) return; if(!confirm('Delete this staff line permanently?')) return; const before=deepCopy(state.staff[editingStaffIdx]); state.staff.splice(editingStaffIdx,1); auditLog('Delete','Staff',str(before.name),`Deleted ${str(before.name)} · ${str(before.subClass)} · ${r2(num(before.subFTE))} FTE`,before,null,['Staff line permanently deleted']); closeModal('staffModal'); persist(); rebuildAll(); }
+
+/* ============================ SHARED RENDER HELPERS ============================ */
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function jsq(s){ return JSON.stringify(String(s==null?'':s)); }
+function firstName(s){ return str(s).split(/\s+/)[0]||'staff'; }
+function signed(x){ x=r2(x); return x>0?'+'+x:''+x; }
+function cell_signed(x){ x=r2(x); const cl=x>0?'warn':x<0?'neutral':'good'; return `<span class="pill ${cl}" style="font-size:10px">${signed(x)}</span>`; }
+function statusPill(s){ s=str(s); if(!s) return ''; const ok=['Completed','Confirmed','VMC Approved'].includes(s); const wait=['Awaiting Approval','Awaiting Submission','VMC Submitted','Payroll / MyHR Pending'].includes(s); const cls=ok?'good':wait?'warn':'neutral'; return `<span class="pill ${cls}">${esc(s)}</span>`; }
+function vmcCell(m){ const u=str(m.vmcUrl); const n=str(m.vmcNum); if(u){ const safe=esc(u); return `<a class="linklike" href="${safe}" title="${safe}" target="_blank" rel="noopener">PDF${n?' '+esc(n):''}</a>`; } return n?esc(n):''; }
+function tableHTML(head,rows,emptyMsg){
+  if(!rows.length) return `<div class="empty">${esc(emptyMsg||'Nothing here.')}</div>`;
+  let h='<div class="tbl-wrap"><table><thead><tr>'+head.map((x,i)=>`<th class="${typeof rows[0][i]==='number'?'num':''}">${esc(x)}</th>`).join('')+'</tr></thead><tbody>';
+  rows.forEach(r=>{ h+='<tr>'+r.map(c=>`<td class="${typeof c==='number'?'num':''}">${c==null?'':c}</td>`).join('')+'</tr>'; });
+  return h+'</tbody></table></div>';
+}
+function updateDatalist(){ document.getElementById('staffNames').innerHTML=distinctStaffNames().map(n=>`<option value="${esc(n)}">`).join(''); }
+
+/* ---- Sortable table engine ---- */
+/* cols: [{key,label,num,group,val(row,i),get(row,i)}]  key absent = not sortable.
+   items: [{row,i}]  i = original index (used by action buttons).
+   sort: {key,dir}   sortFn: name of global handler e.g. 'sortMov' */
+function sortableTable(cols, items, sort, sortFn, opts){
+  opts=opts||{};
+  if(!items.length) return `<div class="empty">${esc(opts.emptyMsg||'Nothing here.')}</div>`;
+  const arr=items.slice();
+  const col=cols.find(c=>c.key===sort.key);
+  if(col){
+    const dir=sort.dir==='desc'?-1:1;
+    arr.sort((A,B)=>{
+      let a=col.val(A.row,A.i), b=col.val(B.row,B.i);
+      const an=(a===null||a===undefined||a===''), bn=(b===null||b===undefined||b==='');
+      if(an&&bn) return 0; if(an) return 1; if(bn) return -1; // blanks always last
+      if(typeof a==='string') a=a.toLowerCase(); if(typeof b==='string') b=b.toLowerCase();
+      if(a<b) return -1*dir; if(a>b) return 1*dir; return 0;
+    });
+  }
+  let h='<div class="tbl-wrap"><table><thead><tr>';
+  cols.forEach(c=>{
+    const sortable=!!c.key, active=sortable&&sort.key===c.key;
+    const arrow=active?(sort.dir==='asc'?' ▲':' ▼'):(sortable?' <span class="sarr">↕</span>':'');
+    h+=`<th class="${c.num?'num':''}${sortable?' sortable':''}${active?' sorted':''}"${sortable?` onclick="${sortFn}('${c.key}')"`:''}>${esc(c.label)}${arrow}</th>`;
+  });
+  h+='</tr></thead><tbody>';
+  let prevG=null;
+  arr.forEach(({row,i})=>{
+    let cls=opts.rowClass?opts.rowClass(row,i):'';
+    if(col&&col.group){ const g=col.val(row,i); if(prevG!==null&&g!==prevG) cls+=' grp-top'; prevG=g; }
+    h+=`<tr class="${cls.trim()}">`+cols.map(c=>`<td class="${c.num?'num':''}">${c.get(row,i)}</td>`).join('')+'</tr>';
+  });
+  return h+'</tbody></table></div>';
+}
+let movSort={key:'end',dir:'asc'};
+let staffSort={key:'name',dir:'asc'};
+function sortMov(k){ if(movSort.key===k) movSort.dir=movSort.dir==='asc'?'desc':'asc'; else {movSort.key=k;movSort.dir='asc';} renderMovements(); }
+function sortStaff(k){ if(staffSort.key===k) staffSort.dir=staffSort.dir==='asc'?'desc':'asc'; else {staffSort.key=k;staffSort.dir='asc';} renderStaff(); }
+
+/* ============================ FORTNIGHT PLANNER ============================ */
+function buildWeeksAll(){
+  const anchor=parseDate(state.settings.cycleAnchorDate)??parseDate('2025-06-18');
+  const step=7*MS_DAY; const all=[]; let lo=anchor,hi=anchor;
+  state.movements.forEach(m=>['start','end'].forEach(k=>{const t=parseDate(m[k]);if(t!=null)all.push(t);}));
+  all.push(parseDate(isoToday()));
+  if(all.length){lo=Math.min(lo,...all);hi=Math.max(hi,...all);}
+  hi+=200*MS_DAY;
+  let n=Math.floor((lo-anchor)/step), first=anchor+n*step, w=[];
+  for(let t=first;t<=hi;t+=step) w.push(t);
+  return w;
+}
+function plannerCode(line,ws){
+  const we=ws+6*MS_DAY, name=str(line.name), cls=str(line.subClass), sub=num(line.subFTE);
+  if(!name) return {t:'',k:''};
+  const reg=state.staff.find(s=>str(s.name)===name);
+  if(reg&&str(reg.empType)==='Temporary'&&parseDate(reg.contractEnd)!=null&&ws>parseDate(reg.contractEnd)) return {t:'X',k:'end'};
+  const mv=state.movements.filter(m=>str(m.staff)===name&&str(m.subClass)===cls&&inCycle(m,ws,we));
+  let par=0;
+  mv.forEach(m=>{const t=str(m.type),ab=str(m.absenceType);
+    if(t==='Leave'&&(ab==='Parental Leave'||ab==='Maternity Leave')) par+=num(m.fteMoved);
+    if(t==='Parental Return to Work') par+=(num(m.subFTE)-num(m.fteMoved));});
+  par=Math.min(par,sub);
+  if(par>0) return {t:'P '+par.toFixed(1),k:'parental'};
+  if(mv.some(m=>str(m.type)==='Secondment Out')) return {t:'S',k:'sec'};
+  if(mv.some(m=>str(m.type)==='Leave'&&!(str(m.absenceType)==='Parental Leave'||str(m.absenceType)==='Maternity Leave'))) return {t:'L',k:'leave'};
+  for(const wc of CLASSES) if(mv.some(m=>str(m.workClass)===wc&&wc!==cls)) return {t:wc,k:'acting'};
+  return {t:String(r2(sub)),k:'sub'};
+}
+function plannerLines(){
+  return state.staff.slice().sort((a,b)=> (CLASSES.indexOf(str(a.subClass))-CLASSES.indexOf(str(b.subClass))) || str(a.name).localeCompare(str(b.name)) );
+}
+function renderPlannerControls(){
+  const weeks=buildWeeksAll(); const sel=document.getElementById('plannerStart'); const prev=sel.value;
+  sel.innerHTML=weeks.map((w,i)=>`<option value="${i}">${fmtDate(new Date(w).toISOString().slice(0,10))}</option>`).join('');
+  // default: week containing today
+  let def=0; const today=parseDate(isoToday());
+  for(let i=weeks.length-1;i>=0;i--){ if(weeks[i]<=today){def=i;break;} }
+  sel.value=prev!==''?prev:def;
+}
+function renderPlanner(){
+  const weeks=buildWeeksAll(); let start=+document.getElementById('plannerStart').value||0;
+  const win=weeks.slice(start,start+26);
+  const lines=plannerLines();
+  let h='<div class="ptbl-wrap"><table class="planner"><thead><tr><th class="pname">Staff member</th><th class="pcls">Class</th>';
+  win.forEach((w,i)=>{ h+=`<th class="${i%2===0?'fnb':''}">${fmtDate(new Date(w).toISOString().slice(0,10)).slice(0,6)}</th>`; });
+  h+='</tr></thead><tbody>';
+  if(!lines.length) h+=`<tr><td colspan="${win.length+2}" class="empty">No staff on file.</td></tr>`;
+  lines.forEach(line=>{
+    h+=`<tr><td class="pname"><button type="button" class="planner-name-link" title="Open Staff Details for ${esc(str(line.name))}" onclick="viewStaffDetails(${esc(jsq(str(line.name)))})">${esc(str(line.name))}</button></td><td class="pcls">${esc(str(line.subClass))}</td>`;
+    win.forEach((w,i)=>{ const c=plannerCode(line,w); h+=`<td class="pcell ${i%2===0?'fnb':''}" data-k="${c.k}">${esc(c.t)}</td>`; });
+    h+='</tr>';
+  });
+  h+='</tbody></table></div>';
+  document.getElementById('plannerTable').innerHTML=h;
+}
+
+
+/* ============================ PERSON TIMELINE ============================ */
+function renderTimelineControls(){
+  const psel=document.getElementById('timelinePerson'); if(!psel) return;
+  const prev=psel.value; const names=distinctStaffNames();
+  psel.innerHTML=names.map(n=>`<option>${esc(n)}</option>`).join('');
+  if(prev&&names.includes(prev)) psel.value=prev;
+
+  const {cycles,len}=buildCycles(); const csel=document.getElementById('timelineCycle');
+  if(csel){
+    const prevC=csel.value;
+    csel.innerHTML=cycles.map((c,i)=>`<option value="${i}">${cycleLabel(c,len)}</option>`).join('');
+    csel.value=prevC!==''?prevC:currentCycleIndex(cycles,len);
+  }
+
+  const weeks=buildWeeksAll(); const wsel=document.getElementById('timelineStart'); const prevW=wsel.value;
+  wsel.innerHTML=weeks.map((w,i)=>`<option value="${i}">${fmtDate(new Date(w).toISOString().slice(0,10))}</option>`).join('');
+  let def=0; const today=parseDate(isoToday()); for(let i=weeks.length-1;i>=0;i--){ if(weeks[i]<=today){ def=i; break; } }
+  wsel.value=prevW!==''?prevW:def;
+}
+function tlKey(m,owned){ const t=str(m.type),ab=str(m.absenceType); if(owned) return 'owner'; if(t==='Backfill') return 'backfill'; if(t==='Acting Higher Duties'||t==='Secondment In'||t==='Temporary Contract Extension'||t==='Casual to Temporary'||t==='Vacancy'||t==='Flexible Work Arrangement') return 'acting'; if(t==='Secondment Out') return 'sec'; if(t==='Leave'&&(ab==='Parental Leave'||ab==='Maternity Leave')) return 'parental'; if(t==='Leave') return 'leave'; return 'acting'; }
+function renderTimeline(){
+  const psel=document.getElementById('timelinePerson'); if(!psel) return;
+  const person=psel.value||distinctStaffNames()[0]||'';
+  const {csMs,ceMs}=cycleFromSelect('timelineCycle');
+  renderPersonProfileBlock('personProfileBlock',person,csMs,ceMs);
+  const weeks=buildWeeksAll(); const start=+document.getElementById('timelineStart').value||0; const count=+document.getElementById('timelineWindow').value||26; const win=weeks.slice(start,start+count);
+  const lines=state.staff.filter(s=>str(s.name)===person);
+  const moves=state.movements.filter(m=>str(m.archived).toLowerCase()!=='yes'&&(str(m.staff)===person||str(m.owner)===person));
+  const totalFTE=lines.filter(s=>str(s.active)==='Yes').reduce((a,s)=>a+num(s.subFTE),0);
+  document.getElementById('timelineSummary').innerHTML=`<div class="sectionnote" style="margin-top:8px">Movement timeline — individual movement, contract and backfill history across the selected window.</div><div class="tiles" style="margin-bottom:14px"><div class="tile"><div class="k">Substantive lines</div><div class="v">${lines.length}</div></div><div class="tile"><div class="k">Active substantive FTE</div><div class="v">${r2(totalFTE)}</div></div><div class="tile"><div class="k">Related movements</div><div class="v">${moves.length}</div></div></div>`;
+  if(!person){ document.getElementById('timelineTable').innerHTML='<div class="empty">No staff available.</div>'; return; }
+  const rows=[];
+  lines.forEach(s=>rows.push({label:`Substantive · ${str(s.subClass)} · ${r2(num(s.subFTE))} FTE`,sub:[str(s.posTitle),str(s.posId),str(s.empType),str(s.active)==='Yes'?'Active':'Inactive'].filter(Boolean).join(' · '),kind:'sub',code:r2(num(s.subFTE)),start:parseDate(s.contractStart)||-8640000000000000,end:parseDate(s.contractEnd)||8640000000000000,active:str(s.active)==='Yes'}));
+  moves.forEach(m=>{ const owned=str(m.owner)===person&&str(m.staff)!==person; rows.push({label:`${owned?'Owner/backfilled by':'Movement'} · ${str(m.type)} · ${str(m.id)}`,sub:`${owned?str(m.staff):str(m.workClass)} · ${r2(num(m.fteMoved))} FTE · ${fmtDate(m.start)} → ${fmtDate(m.end)} · ${str(m.adminStatus)}`,kind:tlKey(m,owned),code:owned?'OWN':(str(m.type)==='Leave'?'L':str(m.type)==='Secondment Out'?'S':r2(num(m.fteMoved))),start:parseDate(m.start),end:parseDate(m.end),active:true}); });
+  let h='<div class="timeline-wrap"><table class="timeline"><thead><tr><th class="tl-label">Timeline row</th>';
+  win.forEach((w,i)=>h+=`<th class="${i%2===0?'fnb':''}">${fmtDate(new Date(w).toISOString().slice(0,10)).slice(0,6)}</th>`);
+  h+='</tr></thead><tbody>';
+  if(!rows.length) h+=`<tr><td colspan="${win.length+1}" class="empty">No substantive lines or movements found for this person.</td></tr>`;
+  rows.forEach(r=>{
+    h+=`<tr><td class="tl-label">${esc(r.label)}<span class="tl-sub">${esc(r.sub||'')}</span></td>`;
+    win.forEach((w,i)=>{ const we=w+6*MS_DAY; let active=r.active&&rangesOverlap(r.start,r.end,w,we); let k=active?r.kind:''; let code=active?r.code:''; if(!r.active&&r.kind==='sub'){ k='end'; code='Inactive'; } h+=`<td class="tlcell ${i%2===0?'fnb':''}" data-k="${k}">${esc(code)}</td>`; });
+    h+='</tr>';
+  });
+  h+='</tbody></table></div>';
+  document.getElementById('timelineTable').innerHTML=h;
+}
+
+/* ============================ AUDIT HISTORY ============================ */
+function fmtDateTime(v){ const d=new Date(v); if(isNaN(d)) return ''; return d.toLocaleString([], {year:'numeric',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+function renderAudit(){
+  const nav=document.getElementById('navAudit'); if(nav) nav.textContent=(state.audit||[]).length||'';
+  const el=document.getElementById('auditTable'); if(!el) return;
+  const filt=document.getElementById('auditFilter')?document.getElementById('auditFilter').value:'all';
+  let rows=(state.audit||[]).filter(a=>filt==='all'||str(a.entityType)===filt).slice(0,300);
+  if(!rows.length){ el.innerHTML='<div class="empty">No audit history recorded yet.</div>'; return; }
+  const head=['When','Action','Entity','Summary','Changes'];
+  const out=rows.map(a=>[
+    esc(fmtDateTime(a.ts)),
+    `<span class="pill accent">${esc(a.action)}</span>`,
+    `${esc(a.entityType)}${a.entityId?'<br><span class="hint">'+esc(a.entityId)+'</span>':''}`,
+    esc(a.summary),
+    `<div class="audit-changes">${(a.changes||[]).map(c=>esc(c)).join('<br>')}</div>`
+  ]);
+  el.innerHTML=tableHTML(head,out,'No audit history recorded yet.');
+}
+function clearAudit(){ if(!confirm('Clear the local audit history? This does not change staff or movement data. Export a backup first if you want to keep it.')) return; state.audit=[]; persist(); renderAudit(); }
+
+/* ============================ REBUILD ============================ */
+function rebuildCalc(){ renderDashboard(); renderManagerActions(); renderGaps(); renderRotations(); renderBudget(); renderPlanner(); renderTimeline(); renderAudit(); }
+function rebuildAll(){ applyBranding(); renderDashControls(); renderGapsControls(); renderBudgetControls(); renderPlannerControls(); renderTimelineControls(); updateDatalist(); renderMovements(); renderStaff(); renderSettings(); renderDashboard(); renderManagerActions(); renderGaps(); renderRotations(); renderBudget(); renderPlanner(); renderTimeline(); renderAudit(); }
+
+/* ============================ INIT ============================ */
+(async function init(){
+  try{
+    const stored=await dbGet();
+    if(stored){ state=JSON.parse(stored); } else { state=deepCopy(SEED); }
+  }catch(e){ state=deepCopy(SEED); }
+  ensureShape();
+  wireValidation();
+  rebuildAll();
+  markSaved();
+  // close modal on backdrop click
+  document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{ if(e.target===bg) bg.classList.remove('open'); }));
+})();
+</script>
+</body>
+</html>
