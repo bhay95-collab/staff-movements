@@ -55,9 +55,14 @@ button{font-family:inherit}
 .rot-slot-top{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
 .rot-owner{font-size:14.5px;font-weight:850;letter-spacing:-.01em}
 .rot-fte{font-size:12.5px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums;margin-left:auto}
-.rot-line{font-size:12px;font-weight:650;color:var(--ink-2);margin-top:6px;line-height:1.45}
-.rot-line b{font-weight:800}
-.rot-note{font-size:11.5px;color:var(--muted);font-weight:700;margin-top:5px;font-style:italic}
+.rot-asg{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;padding:6px 8px;margin-top:6px;border-radius:9px;background:var(--bg-2);cursor:pointer;font-size:12.5px}
+.rot-asg:hover{background:var(--accent-soft)}
+.rot-asg b{font-weight:800}
+.team-block{border:1px solid var(--line);border-radius:15px;background:#fff;box-shadow:var(--shadow-sm);padding:14px 16px;margin-bottom:14px}
+.team-block.is-archived{opacity:.65;background:var(--bg-2)}
+.team-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.team-head input[type=text]{font-size:15px;font-weight:800;min-width:220px;flex:1 1 220px}
+.team-tot{font-size:11.5px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums}
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(12px);z-index:600;background:#0E1C2A;color:#fff;font-size:13px;font-weight:700;padding:12px 20px;border-radius:999px;box-shadow:0 10px 32px rgba(0,20,43,0.34);opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;max-width:min(90vw,560px);text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.bad{background:#7A1F1F}
@@ -343,22 +348,28 @@ table.timeline thead .tl-label{z-index:3;background:var(--bg-2)}
       </div>
     </section>
 
-    <!-- FTE GAPS -->
+    <!-- ROTATIONS -->
     <section class="view" id="view-rotations">
-      <div class="card"><div class="card-body"><div class="ctrlrow">
+      <div class="viewhead"><div><h2>Rotation Planner</h2><div class="vsub">Who is working in each role, in each pay cycle. Plan ahead, and see where leave or over-allocation gets in the way.</div></div>
+        <div class="spacer"></div><button class="btn" onclick="openRoll()">Roll forward</button><button class="btn primary" onclick="openRotation(null)">+ Add assignment</button></div>
+      <div class="card"><div class="ctrlrow">
         <div class="field" style="min-width:230px"><label>Pay cycle</label><select id="rotCycle" onchange="renderRotations()"></select></div>
-        <div class="field" style="min-width:190px"><label>Area</label><select id="rotArea" onchange="renderRotations()"></select></div>
-        <div class="field"><label>&nbsp;</label><button class="btn primary" onclick="openRotation(null)">+ Add rotation slot</button></div>
-      </div></div></div>
-      <div class="viewhead"><div><h2>Rotations</h2><div class="vsub">Funded FTE broken into chunks by clinical area, and who is delivering each one.</div></div></div>
-      <div class="sectionnote">A slot is a piece of funded FTE sitting in an area, with the person who substantively owns it. Who is actually delivering it is read live from the movements — if the owner is away or acting elsewhere, whoever is covering them shows here. Slot totals per classification should match your baseline.</div>
-      <div class="card">
-        <div class="card-head" onclick="toggleCard(this)"><div><h3>Establishment check</h3><div class="card-sub">Slot FTE against baseline, per classification.</div></div><span class="chev">▾</span></div>
-        <div class="card-body"><div id="rotTotals"></div></div>
-      </div>
+        <div class="field" style="min-width:190px"><label>Team</label><select id="rotTeam" onchange="renderRotations()"></select></div>
+      </div></div>
+      <div class="sectionnote">An assignment puts one person from the Staff Register into one role for a date range, with its own FTE. A role can hold several people and a person can be split across roles. Assignments are your plan; leave and cover are read live from Movements and flagged when they clash with the plan. Teams and roles are built in Settings.</div>
+      <div id="rotSummary"></div>
       <div id="rotBoard"></div>
+      <div class="card">
+        <div class="card-head" onclick="toggleCard(this)"><div><h3>Plan ahead — next 8 pay cycles</h3><div class="card-sub">Assigned FTE / funded FTE per role, starting from the selected cycle.</div></div><span class="chev">▾</span></div>
+        <div class="card-body"><div id="rotAhead"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head" onclick="toggleCard(this)"><div><h3>Staff allocation — selected cycle</h3><div class="card-sub">Register FTE against FTE assigned to roles. Shows who is unallocated or over-allocated.</div></div><span class="chev">▾</span></div>
+        <div class="card-body"><div id="rotPeople"></div></div>
+      </div>
     </section>
 
+    <!-- FTE GAPS -->
     <section class="view" id="view-gaps">
       <div class="card"><div class="card-body"><div class="ctrlrow">
         <div class="field" style="min-width:230px"><label>Pay cycle</label><select id="gapsCycle" onchange="renderGaps()"></select></div>
@@ -441,7 +452,7 @@ table.timeline thead .tl-label{z-index:3;background:var(--bg-2)}
       <div class="viewhead">
         <div><h2>Audit History</h2><div class="vsub">Local change log for staff lines, movements, settings and administrative changes.</div></div>
         <div class="spacer"></div>
-        <div class="field" style="min-width:170px"><label>Filter</label><select id="auditFilter" onchange="renderAudit()"><option value="all">All changes</option><option value="Movement">Movements</option><option value="Staff">Staff</option><option value="Settings">Settings</option><option value="Data">Data</option></select></div>
+        <div class="field" style="min-width:170px"><label>Filter</label><select id="auditFilter" onchange="renderAudit()"><option value="all">All changes</option><option value="Movement">Movements</option><option value="Staff">Staff</option><option value="Rotation">Rotations</option><option value="Settings">Settings</option><option value="Data">Data</option></select></div>
         <button class="btn danger" onclick="clearAudit()">Clear audit</button>
       </div>
       <div class="sectionnote">The audit history is stored locally in this browser and included in exported backups. It is not a formal enterprise audit log, but it gives a practical history of what changed and when.</div>
@@ -450,7 +461,7 @@ table.timeline thead .tl-label{z-index:3;background:var(--bg-2)}
 
     <!-- SETTINGS -->
     <section class="view" id="view-settings">
-      <div class="viewhead"><div><h2>Settings</h2><div class="vsub">Service identity, classification budget, and pay-cycle calendar.</div></div></div>
+      <div class="viewhead"><div><h2>Settings</h2><div class="vsub">Service identity, teams &amp; roles, classification budget, and pay-cycle calendar.</div></div></div>
       <div class="card">
         <div class="card-head" onclick="toggleCard(this)"><div><h3>Service identity</h3><div class="card-sub">Drives the banner, the browser tab and the backup file name.</div></div><span class="chev">▾</span></div>
         <div class="card-body">
@@ -461,9 +472,20 @@ table.timeline thead .tl-label{z-index:3;background:var(--bg-2)}
         </div>
       </div>
       <div class="card">
+        <div class="card-head" onclick="toggleCard(this)"><div><h3>Teams &amp; roles</h3><div class="card-sub">Build your own service structure: teams, and the roles inside each team.</div></div><span class="chev">▾</span></div>
+        <div class="card-body">
+          <div class="sectionnote">A <b>team</b> is any grouping you use (a ward, service line, rotation area). A <b>role</b> is a funded position inside a team. Each role has a classification (pay grade) and funded FTE. Funded FTE on roles adds up to the baseline for each classification, so the budget stays in step. Staff lines are then assigned to a team and role in the Staff Register.</div>
+          <div id="settingsMigration"></div>
+          <div id="settingsTeams"></div>
+          <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px">
+            <button class="btn primary" onclick="addTeam()">+ Add team</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
         <div class="card-head" onclick="toggleCard(this)"><div><h3>Classification budget</h3><div class="card-sub">Add, rename or remove classifications and set the funded FTE for this service.</div></div><span class="chev">▾</span></div>
         <div class="card-body">
-          <div class="sectionnote">Baseline FTE = your funded establishment for that classification. Ceiling = the most you are permitted to run. Additional approved = extra FTE signed off outside the baseline (e.g. new grant funding) — it is added to the ceiling, not the baseline.</div>
+          <div class="sectionnote">Baseline FTE = your funded establishment for that classification. Where roles use a classification, its baseline is added up from those roles automatically; otherwise you can type it here. Ceiling = the most you are permitted to run. Additional approved = extra FTE signed off outside the baseline (e.g. new grant funding) — it is added to the ceiling, not the baseline.</div>
           <div id="settingsClasses"></div>
           <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px">
             <button class="btn primary" onclick="addClassification()">+ Add classification</button>
@@ -497,27 +519,6 @@ table.timeline thead .tl-label{z-index:3;background:var(--bg-2)}
 </main>
 
 <!-- MOVEMENT MODAL -->
-<div class="modal-bg" id="rotModal">
-  <div class="modal">
-    <div class="modal-head"><h3 id="rotModalTitle">Add rotation slot</h3><button class="iconbtn" onclick="closeModal('rotModal')">✕</button></div>
-    <div class="grid2">
-      <div class="field"><label>Clinical area</label><input type="text" id="r_area" list="rotAreaList" placeholder="e.g. 4A, Day Hospital, Proc/Surg"><datalist id="rotAreaList"></datalist></div>
-      <div class="field"><label>Classification</label><select id="r_cls"></select></div>
-      <div class="field"><label>Funded FTE in this slot</label><input type="number" step="0.01" min="0" id="r_fte"></div>
-      <div class="field"><label>Substantive owner</label><select id="r_owner_sel" onchange="nameSelChanged('r_owner')"></select><input type="text" id="r_owner" class="nameother" placeholder="Type the name or Vacant" style="display:none;margin-top:6px"></div>
-      <div class="field full"><label>Currently delivered by (your note)</label><input type="text" id="r_actual" placeholder="e.g. Abby Mon &amp; Tue, Wed TBC — free text, for anything the movements cannot express"></div>
-      <div class="field full"><label>Notes</label><textarea id="r_notes" rows="2"></textarea></div>
-    </div>
-    <div id="rotValidation"></div>
-    <div class="modal-actions">
-      <button class="btn del" id="r_delBtn" onclick="deleteRotation()">Delete</button>
-      <span style="flex:1"></span>
-      <button class="btn" onclick="closeModal('rotModal')">Cancel</button>
-      <button class="btn primary" onclick="saveRotation()">Save slot</button>
-    </div>
-  </div>
-</div>
-
 <div class="modal-bg" id="movModal">
   <div class="modal">
     <h3 id="movModalTitle">Add movement</h3>
@@ -561,6 +562,8 @@ table.timeline thead .tl-label{z-index:3;background:var(--bg-2)}
     <div class="msub">One substantive line per row. A permanent split (0.4 HP5 + 0.6 HP4) is two rows, same name.</div>
     <div class="grid2">
       <div class="field full"><label>Staff member</label><input type="text" id="s_name"></div>
+      <div class="field"><label>Team</label><select id="s_team" onchange="staffTeamChanged()"></select></div>
+      <div class="field"><label>Role</label><select id="s_role" onchange="staffRoleChanged()"></select></div>
       <div class="field"><label>Substantive classification</label><select id="s_subClass"></select></div>
       <div class="field"><label>Substantive FTE</label><input type="number" step="0.01" id="s_subFTE"></div>
       <div class="field"><label>Position ID</label><input type="text" id="s_posId"></div>
@@ -581,26 +584,90 @@ table.timeline thead .tl-label{z-index:3;background:var(--bg-2)}
   </div>
 </div>
 
+<!-- ROTATION MODAL -->
+<div class="modal-bg" id="rotModal">
+  <div class="modal">
+    <h3 id="rotModalTitle">Add assignment</h3>
+    <div class="msub">One row = one person in one role for a date range. Split someone across two roles = two assignments.</div>
+    <div class="grid2">
+      <div class="field full"><label>Role</label><select id="r_role" onchange="rotSuggest()"></select></div>
+      <div class="field full"><label>Staff member (from Staff Register)</label><select id="r_staff" onchange="rotSuggest()"></select></div>
+      <div class="field"><label>FTE in this role</label><input type="number" step="0.01" min="0" id="r_fte"></div>
+      <div class="field"><label>&nbsp;</label><span class="hint" id="r_hint"></span></div>
+      <div class="field"><label>Start date</label><input type="date" id="r_start" onchange="rotSuggest()"></div>
+      <div class="field"><label>End date (blank = ongoing)</label><input type="date" id="r_end"></div>
+      <div class="field full"><label>Notes</label><textarea id="r_notes" rows="2"></textarea></div>
+    </div>
+    <div class="validation-panel is-clean" id="rotValidation"><div class="vh">Validation ready</div></div>
+    <div class="modal-foot">
+      <button class="btn danger" id="r_delBtn" onclick="deleteRotation()">Delete</button>
+      <div class="spacer"></div>
+      <button class="btn" onclick="closeModal('rotModal')">Cancel</button>
+      <button class="btn primary" onclick="saveRotation()">Save assignment</button>
+    </div>
+  </div>
+</div>
+
+<!-- ROLL FORWARD MODAL -->
+<div class="modal-bg" id="rollModal">
+  <div class="modal" style="max-width:860px">
+    <h3>Roll forward rotations</h3>
+    <div class="msub" id="rollSource"></div>
+    <div class="grid2">
+      <div class="field"><label>New block starts</label><input type="date" id="roll_start" onchange="renderRollPreview()"></div>
+      <div class="field"><label>New block ends (blank = ongoing)</label><input type="date" id="roll_end" onchange="renderRollPreview()"></div>
+      <div class="field full"><label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:12.5px"><input type="checkbox" id="roll_close" checked onchange="renderRollPreview()"> End the current assignments the day before the new block starts</label></div>
+    </div>
+    <div class="hint" style="margin:12px 0 6px">Each row copies one current assignment. Change the person to rotate someone in, adjust FTE, or untick a row to leave it out. An unticked row is not copied and its current assignment keeps running.</div>
+    <div id="rollPreview"></div>
+    <div class="validation-panel is-clean" id="rollValidation"><div class="vh">Validation ready</div></div>
+    <div class="modal-foot">
+      <div class="spacer"></div>
+      <button class="btn" onclick="closeModal('rollModal')">Cancel</button>
+      <button class="btn primary" onclick="applyRoll()">Create new block</button>
+    </div>
+  </div>
+</div>
+
+<datalist id="staffNames"></datalist>
+
 <datalist id="staffNames"></datalist>
 
 <script>
 /* ============================ SEED DATA ============================ */
 const SEED = {
  "staff": [
-  { "name":"Demo Lead (HP5)", "subClass":"HP5", "posId":30000001, "posTitle":"Physio Advanced TL", "subFTE":1, "empType":"Permanent", "contractStart":"", "contractEnd":"", "team":"", "active":"Yes", "notes":"Example data — replace with your own or import a backup." },
-  { "name":"Demo Senior (HP4)", "subClass":"HP4", "posId":30000002, "posTitle":"Physiotherapist Senior", "subFTE":1, "empType":"Permanent", "contractStart":"", "contractEnd":"", "team":"", "active":"Yes", "notes":"" },
-  { "name":"Demo Clinician (HP3)", "subClass":"HP3", "posId":30000003, "posTitle":"Physiotherapist", "subFTE":1, "empType":"Permanent", "contractStart":"", "contractEnd":"", "team":"", "active":"Yes", "notes":"" },
-  { "name":"Demo Temp Soon (HP3)", "subClass":"HP3", "posId":30000003, "posTitle":"Physiotherapist", "subFTE":0.5, "empType":"Temporary", "contractStart":"2026-01-01", "contractEnd":"2026-08-15", "team":"", "active":"Yes", "notes":"Temp contract — appears in Contract horizon." },
-  { "name":"Demo Temp Expired (HP3)", "subClass":"HP3", "posId":30000003, "posTitle":"Physiotherapist", "subFTE":0.6, "empType":"Temporary", "contractStart":"2025-06-01", "contractEnd":"2026-05-31", "team":"", "active":"Yes", "notes":"Contract end has passed — shows the expired flag." },
-  { "name":"Demo Assistant (CA3)", "subClass":"CA3", "posId":30000004, "posTitle":"Physiotherapist Assistant", "subFTE":1, "empType":"Permanent", "contractStart":"", "contractEnd":"", "team":"", "active":"Yes", "notes":"" }
+  { "name":"Demo Lead (HP5)", "subClass":"HP5", "posId":30000001, "posTitle":"Physio Advanced TL", "subFTE":1, "empType":"Permanent", "contractStart":"", "contractEnd":"", "team":"", "roleId":"R-DEMO1", "active":"Yes", "notes":"Example data — replace with your own or import a backup." },
+  { "name":"Demo Senior (HP4)", "subClass":"HP4", "posId":30000002, "posTitle":"Physiotherapist Senior", "subFTE":1, "empType":"Permanent", "contractStart":"", "contractEnd":"", "team":"", "roleId":"R-DEMO2", "active":"Yes", "notes":"" },
+  { "name":"Demo Clinician (HP3)", "subClass":"HP3", "posId":30000003, "posTitle":"Physiotherapist", "subFTE":1, "empType":"Permanent", "contractStart":"", "contractEnd":"", "team":"", "roleId":"R-DEMO3", "active":"Yes", "notes":"" },
+  { "name":"Demo Temp Soon (HP3)", "subClass":"HP3", "posId":30000003, "posTitle":"Physiotherapist", "subFTE":0.5, "empType":"Temporary", "contractStart":"2026-01-01", "contractEnd":"2026-08-15", "team":"", "roleId":"R-DEMO3", "active":"Yes", "notes":"Temp contract — appears in Contract horizon." },
+  { "name":"Demo Temp Expired (HP3)", "subClass":"HP3", "posId":30000003, "posTitle":"Physiotherapist", "subFTE":0.6, "empType":"Temporary", "contractStart":"2025-06-01", "contractEnd":"2026-05-31", "team":"", "roleId":"R-DEMO4", "active":"Yes", "notes":"Contract end has passed — shows the expired flag." },
+  { "name":"Demo Assistant (CA3)", "subClass":"CA3", "posId":30000004, "posTitle":"Physiotherapist Assistant", "subFTE":1, "empType":"Permanent", "contractStart":"", "contractEnd":"", "team":"", "roleId":"R-DEMO5", "active":"Yes", "notes":"" }
  ],
  "movements": [
   { "id":"MV-0001", "owner":"", "staff":"Demo Clinician (HP3)", "subClass":"HP3", "subFTE":1, "empArr":"Permanent", "workPosId":"", "workPosTitle":"", "workClass":"HP3", "type":"Leave", "fteMoved":1, "start":"2026-06-15", "end":"2026-09-15", "vmcNum":"", "vmcUrl":"", "procNum":"", "adminStatus":"Confirmed", "absenceType":"LSL", "archived":"No", "notes":"Example long service leave." },
   { "id":"MV-0002", "owner":"Demo Clinician (HP3)", "staff":"Demo Senior (HP4)", "subClass":"HP4", "subFTE":1, "empArr":"Permanent", "workPosId":30000003, "workPosTitle":"Physiotherapist", "workClass":"HP3", "type":"Backfill", "fteMoved":1, "start":"2026-06-15", "end":"2026-09-15", "vmcNum":"", "vmcUrl":"", "procNum":"", "adminStatus":"VMC Approved", "absenceType":"", "archived":"No", "notes":"Example backfill covering the leave above." },
   { "id":"MV-0003", "owner":"Demo Senior (HP4)", "staff":"Demo Temp Soon (HP3)", "subClass":"HP3", "subFTE":0.5, "empArr":"Temporary", "workPosId":30000002, "workPosTitle":"Physiotherapist Senior", "workClass":"HP4", "type":"Acting Higher Duties", "fteMoved":0.5, "start":"2026-06-15", "end":"2026-09-15", "vmcNum":"", "vmcUrl":"", "procNum":"", "adminStatus":"Awaiting Approval", "absenceType":"", "archived":"No", "notes":"Example acting-up movement." }
  ],
+ "rotations": [
+  { "id":"ROT-001", "roleId":"R-DEMO1", "staff":"Demo Lead (HP5)", "fte":1, "start":"2026-01-01", "end":"", "notes":"" },
+  { "id":"ROT-002", "roleId":"R-DEMO2", "staff":"Demo Senior (HP4)", "fte":1, "start":"2026-01-01", "end":"", "notes":"" },
+  { "id":"ROT-003", "roleId":"R-DEMO3", "staff":"Demo Clinician (HP3)", "fte":1, "start":"2026-01-01", "end":"", "notes":"On leave in Movements — flagged in the planner" },
+  { "id":"ROT-004", "roleId":"R-DEMO3", "staff":"Demo Temp Soon (HP3)", "fte":0.5, "start":"2026-01-01", "end":"2026-08-15", "notes":"" },
+  { "id":"ROT-005", "roleId":"R-DEMO5", "staff":"Demo Assistant (CA3)", "fte":1, "start":"2026-01-01", "end":"", "notes":"" }
+ ],
  "settings": {
   "serviceName": "STARS Physiotherapy",
+  "orgName": "Metro North Health",
+  "teams": [
+   { "id":"T-DEMO1", "name":"Example Team A", "active":true, "roles":[
+     { "id":"R-DEMO1", "name":"Team Lead", "cls":"HP5", "fte":1, "active":true },
+     { "id":"R-DEMO2", "name":"Senior Clinician", "cls":"HP4", "fte":1, "active":true },
+     { "id":"R-DEMO3", "name":"Clinician", "cls":"HP3", "fte":1.5, "active":true } ] },
+   { "id":"T-DEMO2", "name":"Example Team B", "active":true, "roles":[
+     { "id":"R-DEMO4", "name":"Clinician", "cls":"HP3", "fte":0.6, "active":true },
+     { "id":"R-DEMO5", "name":"Assistant", "cls":"CA3", "fte":1, "active":true } ] }
+  ],
   "orgName": "Metro North Health",
   "classes": ["HP5","HP4","HP3","CA3"],
   "baselines": { "HP5":2.5, "HP4":7.93, "HP3":10.5, "CA3":2.5 },
@@ -661,6 +728,7 @@ function buildCycles(){
   const all=[];
   state.movements.forEach(m=>{ [m.start,m.end].forEach(d=>{const t=parseDate(d); if(t!==null) all.push(t);}); });
   state.staff.forEach(s=>{ [s.contractStart,s.contractEnd].forEach(d=>{const t=parseDate(d); if(t!==null) all.push(t);}); });
+  (state.rotations||[]).forEach(a=>{ [a.start,a.end].forEach(d=>{const t=parseDate(d); if(t!==null) all.push(t);}); });
   all.push(parseDate(isoToday()));
   if(all.length){ lo=Math.min(lo,...all); hi=Math.max(hi,...all); }
   hi += 365*MS_DAY;
@@ -714,7 +782,11 @@ function effFTE(cls,csMs,ceMs,mode){
   }
   return base-out-outL+inM+inE;
 }
-function baselineOf(cls){ const b=state.settings.baselines||{}; return num(b[cls]); }
+// Baseline = sum of active role FTE in that classification once any role uses it; otherwise the manual figure.
+function activeRoles(){ const out=[]; (state.settings.teams||[]).forEach(t=>{ if(t.active===false) return; (t.roles||[]).forEach(r=>{ if(r.active!==false) out.push(r); }); }); return out; }
+function classHasRoles(cls){ return activeRoles().some(r=>str(r.cls)===cls); }
+function roleFundedByClass(cls){ return r2(activeRoles().filter(r=>str(r.cls)===cls).reduce((a,r)=>a+num(r.fte),0)); }
+function baselineOf(cls){ if(classHasRoles(cls)) return roleFundedByClass(cls); const b=state.settings.baselines||{}; return num(b[cls]); }
 function ceilingOf(cls){ const c=(state.settings.ceilings||{})[cls]||{}; return num(c.ceiling)+num(c.additional); }
 const r2=x=>Math.round(x*100)/100;
 
@@ -758,7 +830,7 @@ function readMovementForm(){
 }
 function readStaffForm(){
   const g=id=>document.getElementById(id).value;
-  return { name:g('s_name'), subClass:g('s_subClass'), subFTE:g('s_subFTE')===''?'':Number(g('s_subFTE')), posId:g('s_posId'), posTitle:g('s_posTitle'), empType:g('s_empType'), active:g('s_active'), contractStart:g('s_contractStart'), contractEnd:g('s_contractEnd'), team:'', notes:g('s_notes') };
+  return { name:g('s_name'), subClass:g('s_subClass'), subFTE:g('s_subFTE')===''?'':Number(g('s_subFTE')), posId:g('s_posId'), posTitle:g('s_posTitle'), empType:g('s_empType'), active:g('s_active'), contractStart:g('s_contractStart'), contractEnd:g('s_contractEnd'), team:'', roleId:g('s_role'), notes:g('s_notes') };
 }
 function validateMovementObject(obj,existingId){
   const errors=[],warnings=[];
@@ -842,7 +914,14 @@ function validateStaffObject(obj,idx){
     });
   }
   if(str(obj.empType)==='Temporary'&&str(obj.active)==='Yes'&&ce!==null&&ce<today) warnings.push('Temporary contract end date has passed while the line remains active.');
-  
+  const fr=findRole(str(obj.roleId));
+  if(fr){
+    if(str(fr.role.cls)&&str(fr.role.cls)!==str(obj.subClass)) warnings.push('This role ('+fr.role.name+') is funded as '+fr.role.cls+' but the line is '+str(obj.subClass)+'. Fine if intended; otherwise the role or classification may be wrong.');
+    if(fr.role.active===false||fr.team.active===false) warnings.push('This role or its team is archived, so its funded FTE is not counted.');
+    const others=state.staff.filter((s,i)=>i!==idx&&str(s.roleId)===fr.role.id&&str(s.active)==='Yes').reduce((a,s)=>a+num(s.subFTE),0);
+    const total=r2(others+(str(obj.active)==='Yes'?f:0));
+    if(num(fr.role.fte)>0&&total>num(fr.role.fte)+0.001) warnings.push(fr.team.name+' / '+fr.role.name+' would hold '+total+' FTE against '+r2(num(fr.role.fte))+' FTE funded.');
+  }
   const dup=state.staff.some((s,i)=>i!==idx&&str(s.name)===name&&str(s.subClass)===str(obj.subClass)&&str(s.posId)===str(obj.posId));
   if(dup) warnings.push('A similar staff line already exists for this name, classification and position ID.');
   return {errors,warnings};
@@ -860,7 +939,7 @@ function updateMovementValidation(){ renderValidationPanel('movValidation',valid
 function updateStaffValidation(){ renderValidationPanel('staffValidation',validateStaffObject(readStaffForm(),editingStaffIdx)); }
 function wireValidation(){
   ['m_staff','m_subClass','m_subFTE','m_type','m_fteMoved','m_workClass','m_empArr','m_owner','m_start','m_end','m_absenceType','m_adminStatus','m_vmcNum','m_vmcUrl','m_archived'].forEach(id=>{ const el=document.getElementById(id); if(el&&!el.dataset.vwired){ el.addEventListener('input',updateMovementValidation); el.addEventListener('change',updateMovementValidation); el.dataset.vwired='1'; }});
-  ['s_name','s_subClass','s_subFTE','s_posId','s_posTitle','s_empType','s_active','s_contractStart','s_contractEnd'].forEach(id=>{ const el=document.getElementById(id); if(el&&!el.dataset.vwired){ el.addEventListener('input',updateStaffValidation); el.addEventListener('change',updateStaffValidation); el.dataset.vwired='1'; }});
+  ['s_name','s_team','s_role','s_subClass','s_subFTE','s_posId','s_posTitle','s_empType','s_active','s_contractStart','s_contractEnd'].forEach(id=>{ const el=document.getElementById(id); if(el&&!el.dataset.vwired){ el.addEventListener('input',updateStaffValidation); el.addEventListener('change',updateStaffValidation); el.dataset.vwired='1'; }});
 }
 function confirmWarnings(result){
   if(result.errors.length){ alert('Please fix before saving:\n\n- '+result.errors.join('\n- ')); return false; }
@@ -919,11 +998,60 @@ function applyBranding(){
   const sub=document.getElementById('brandSub'); if(sub) sub.textContent = org? svc+' · '+org : svc;
   document.title='Staff Movement Tracker — '+svc;
 }
+// One-off upgrade from the old free-text rotation slots ({area, cls, fte, owner, actual, notes})
+// to Teams > Roles plus dated assignments. Each area becomes a team, each slot a role, and a
+// slot whose owner is on the Staff Register becomes an assignment. Nothing is deleted: the old
+// rows are kept in state.legacyRotations until the manager discards them in Settings.
+let migratedNow=false;
+function isLegacyRotation(x){ return !!x&&typeof x==='object'&&!('roleId' in x)&&('area' in x||'owner' in x||'cls' in x||'actual' in x); }
+function migrateLegacyRotations(){
+  const old=state.rotations.filter(isLegacyRotation);
+  if(!old.length) return;
+  state.rotations=state.rotations.filter(x=>!isLegacyRotation(x));
+  state.legacyRotations=(Array.isArray(state.legacyRotations)?state.legacyRotations:[]).concat(deepCopy(old));
+  // Start the migrated assignments at the beginning of the pay cycle we are in now.
+  const anchor=parseDate(state.settings.cycleAnchorDate), len=num(state.settings.cycleLenDays)*MS_DAY;
+  const start=new Date(anchor+Math.floor((parseDate(isoToday())-anchor)/len)*len).toISOString().slice(0,10);
+  const areas=[...new Set(old.map(x=>str(x.area)||'Unassigned area'))].sort((a,b)=>a.localeCompare(b));
+  const teamFor={};
+  areas.forEach(a=>{
+    let t=state.settings.teams.find(x=>x.name.toLowerCase()===a.toLowerCase());
+    if(!t){ t={id:newId('T'),name:a,active:true,roles:[]}; state.settings.teams.push(t); }
+    teamFor[a]=t;
+  });
+  let nRoles=0, nAsg=0, nLinked=0;
+  old.forEach(x=>{
+    const t=teamFor[str(x.area)||'Unassigned area'], cls=str(x.cls), owner=str(x.owner);
+    const vacant=!owner||/^vacant$/i.test(owner);
+    const base=(cls||'No class')+' – '+(vacant?'Vacant':owner);
+    let name=base, n=1; while(t.roles.some(r=>r.name===name)) name=base+' ('+(++n)+')';
+    const role={id:newId('R'),name,cls,fte:num(x.fte),active:true};
+    if(cls&&!state.settings.classes.includes(cls)) state.settings.classes.push(cls);
+    t.roles.push(role); nRoles++;
+    if(vacant||!state.staff.some(s=>str(s.name)===owner)) return;
+    const notes=['Migrated from rotation slot '+str(x.id)+' ('+(str(x.area)||'no area')+')'];
+    if(str(x.actual)) notes.push('Delivered by (old note): '+str(x.actual));
+    if(str(x.notes)) notes.push('Old notes: '+str(x.notes));
+    state.rotations.push({id:newId('ROT'),roleId:role.id,staff:owner,fte:num(x.fte),start,end:'',notes:notes.join(' · ')}); nAsg++;
+    // Point the owner's register line at the role only when there is exactly one candidate.
+    const lines=state.staff.filter(s=>str(s.name)===owner&&str(s.subClass)===cls);
+    const slots=old.filter(y=>str(y.owner)===owner&&str(y.cls)===cls).length;
+    if(lines.length===1&&slots===1&&!str(lines[0].roleId)){ lines[0].roleId=role.id; nLinked++; }
+  });
+  const items=[];
+  state.settings.classes.forEach(c=>{
+    const was=r2(num((state.settings.baselines||{})[c])), now=classHasRoles(c)?roleFundedByClass(c):was;
+    if(Math.abs(was-now)>0.001) items.push({cls:c,was,now});
+  });
+  state.migrationNote={ts:new Date().toISOString(),slots:old.length,teams:areas.length,roles:nRoles,assignments:nAsg,linked:nLinked,items};
+  auditLog('Update','Settings','Rotations','Old rotation slots converted to teams, roles and assignments',null,null,
+    [old.length+' slot(s) → '+areas.length+' team(s), '+nRoles+' role(s), '+nAsg+' assignment(s) starting '+start,nLinked+' staff line(s) linked to a role','Old slots kept as a backup in the data file']);
+  migratedNow=true;
+}
 function ensureShape(){
   state.staff=state.staff||[]; state.movements=state.movements||[];
   state.audit=Array.isArray(state.audit)?state.audit:[];
   state.rotations=Array.isArray(state.rotations)?state.rotations:[];
-  state.rotations.forEach((r,i)=>{ if(!str(r.id)) r.id='ROT-'+String(i+1).padStart(3,'0'); });
   state.settings=state.settings||{};
   if(state.settings.serviceName===undefined) state.settings.serviceName='STARS Physiotherapy';
   if(state.settings.orgName===undefined) state.settings.orgName='Metro North Health';
@@ -935,6 +1063,14 @@ function ensureShape(){
     state.settings.classes = found.length? DEFAULT_CLASSES.filter(c=>found.includes(c)).concat(found.filter(c=>!DEFAULT_CLASSES.includes(c))) : DEFAULT_CLASSES.slice();
   }
   state.settings.classes=state.settings.classes.map(c=>String(c).trim()).filter(Boolean);
+  // Teams > Roles: manager-built structure. Normalise, and make sure every role's classification exists.
+  if(!Array.isArray(state.settings.teams)) state.settings.teams=[];
+  state.settings.teams.forEach(t=>{
+    if(!t.id) t.id=newId('T'); t.name=str(t.name)||'Unnamed team'; if(t.active===undefined) t.active=true;
+    if(!Array.isArray(t.roles)) t.roles=[];
+    t.roles.forEach(r=>{ if(!r.id) r.id=newId('R'); r.name=str(r.name)||'Unnamed role'; r.cls=str(r.cls); r.fte=num(r.fte); if(r.active===undefined) r.active=true;
+      if(r.cls&&!state.settings.classes.includes(r.cls)) state.settings.classes.push(r.cls); });
+  });
   // Repair: a build shipped 25 Aug 2026 saved the "none" option's label as the value.
   // Also trim stray whitespace so names match between the register and movements.
   const NO_CLASS_BAD=/^\s*[\u2014-]\s*none\b/i;
@@ -945,16 +1081,19 @@ function ensureShape(){
     if(NO_CLASS_BAD.test(String(x.workClass||''))) x.workClass='';
     if(NO_CLASS_BAD.test(String(x.subClass||''))) x.subClass='';
   });
+  state.settings.cycleAnchorDate=state.settings.cycleAnchorDate||'2025-06-18';
+  state.settings.cycleLenDays=state.settings.cycleLenDays||14;
+  // Assignments: convert any old area/slot/owner rows first, then normalise what is left.
+  migrateLegacyRotations();
+  state.rotations.forEach(a=>{ if(!str(a.id)) a.id=newId('ROT'); a.staff=str(a.staff); a.roleId=str(a.roleId); a.fte=num(a.fte); a.start=str(a.start); a.end=str(a.end); a.notes=str(a.notes); });
   syncClasses();
   CLASSES.forEach(c=>{
     if(state.settings.baselines[c]===undefined) state.settings.baselines[c]=0;
     if(!state.settings.ceilings[c]) state.settings.ceilings[c]={ceiling:0,additional:0};
   });
-  state.settings.cycleAnchorDate=state.settings.cycleAnchorDate||'2025-06-18';
-  state.settings.cycleLenDays=state.settings.cycleLenDays||14;
   // one-time data migration: correct legacy misspelled movement type
   state.movements.forEach(m=>{ if(str(m.type)==='Parental Retun to Work') m.type='Parental Return to Work'; });
-  state.staff.forEach(s=>{ if(s.active===undefined||s.active==='') s.active='Yes'; if(s.team===undefined) s.team=''; });
+  state.staff.forEach(s=>{ if(s.active===undefined||s.active==='') s.active='Yes'; if(s.team===undefined) s.team=''; if(s.roleId===undefined) s.roleId=''; });
   state.movements.forEach(m=>{ if(m.archived===undefined||m.archived==='') m.archived='No'; });
 }
 
@@ -1045,8 +1184,11 @@ const cycleMemory={};
 function fillCycleSelect(id){
   const {cycles,len}=buildCycles();
   const sel=document.getElementById(id); if(!sel) return;
-  sel.innerHTML=cycles.map((c,i)=>`<option value="${i}">${cycleLabel(c,len)}</option>`).join('');
-  const want=cycleMemory[id];
+  // The inline onchange runs before the wired listener below, so the memory is stale at that
+  // moment. Read the choice straight off the select first, or every pick snaps back.
+  const picked=sel.selectedOptions[0];
+  const want=(picked&&picked.dataset.ms)?+picked.dataset.ms:cycleMemory[id];
+  sel.innerHTML=cycles.map((c,i)=>`<option value="${i}" data-ms="${c}">${cycleLabel(c,len)}</option>`).join('');
   let idx=(want!==undefined)?cycles.indexOf(want):-1;
   if(idx<0) idx=currentCycleIndex(cycles,len);
   sel.value=idx; cycleMemory[id]=cycles[idx];
@@ -1344,224 +1486,6 @@ function renderManagerActions(){
   el.innerHTML=h;
 }
 
-// ============================ ROTATIONS ============================
-// A rotation slot is a chunk of funded FTE sitting in a clinical area, owned
-// substantively by one person. Who is actually delivering it is read live from the
-// movements: the owner's own remaining FTE, plus anyone recorded as covering them.
-// Slot totals per classification should reconcile to the baseline.
-function rotAreas(){
-  const seen=[];
-  state.rotations.forEach(r=>{ const a=str(r.area)||'Unassigned area'; if(!seen.includes(a)) seen.push(a); });
-  return seen.sort((a,b)=>a.localeCompare(b));
-}
-function ownerDelivering(owner,cls,csMs,ceMs){
-  // How much of their own line the owner is still delivering in this classification.
-  const held=registerFTE(owner,cls);
-  if(held<=0) return {held:0,own:0,cover:[]};
-  const gone=Math.min(held,vacatedFromInCycle(owner,cls,csMs,ceMs));
-  const cover=state.movements.filter(m=>str(m.owner)===str(owner)&&COVER_TYPES.includes(str(m.type))
-    &&str(m.archived).toLowerCase()!=='yes'&&inCycle(m,csMs,ceMs))
-    .map(m=>({person:str(m.staff),fte:num(m.fteMoved),type:str(m.type)}));
-  return {held:r2(held),own:r2(held-gone),cover};
-}
-function vacatedFromInCycle(name,cls,csMs,ceMs){
-  let t=0;
-  state.movements.forEach(m=>{
-    if(str(m.staff)!==str(name)||str(m.subClass)!==str(cls)) return;
-    if(str(m.archived).toLowerCase()==='yes'||!inCycle(m,csMs,ceMs)) return;
-    const ty=str(m.type);
-    if(VACATING.includes(ty)) t+=num(m.fteMoved);
-    else if(ty==='Parental Return to Work') t+=Math.max(0,(registerFTE(str(m.staff),str(m.subClass))||num(m.subFTE))-num(m.fteMoved));
-    else if(str(m.workClass)&&str(m.workClass)!==str(m.subClass)&&ty!=='Extra Funded') t+=num(m.fteMoved);
-  });
-  return r2(t);
-}
-// Is this person named in the slot's free-text "delivered by" note? The rotation plan
-// records this as shorthand ("Dan", "Abby Mon & Tue"), so match on name parts rather
-// than the whole string. This is what stops a coverer being smeared across every slot
-// their owner holds when the plan already says which area they are in.
-function nameMentioned(person,text){
-  const t=String(text||'').toLowerCase();
-  if(!t||!person) return false;
-  const words=t.split(/[^a-z]+/).filter(Boolean);
-  const parts=String(person).toLowerCase().split(/[^a-z]+/).filter(Boolean);
-  return parts.some(p=>words.some(w=>
-    (w.length>=3&&p.startsWith(w))||(p.length>=3&&w.startsWith(p))||(w.length>=2&&w===p)));
-}
-function placeIntoSlots(person,fte,type,slots,cap,alloc,spread){
-  if(!str(person)||num(fte)<=0.001) return;
-  let left=r2(num(fte));
-  const named=slots.filter(r=>nameMentioned(person,r.actual));
-  const pool=named.length?named:slots;
-  // The owner's own residual usually sits across all the areas they hold, so spread it.
-  // A coverer is normally in one place, so fill slot by slot instead.
-  if(spread&&pool.length>1){
-    const tot=pool.reduce((a,r)=>a+num(cap[r.id]),0);
-    if(tot>0) pool.forEach(r=>{
-      const give=Math.min(num(cap[r.id]),r2(left*num(cap[r.id])/tot));
-      if(give>0.001){ alloc[r.id].push({person:str(person),fte:r2(give),type}); cap[r.id]=r2(cap[r.id]-give); }
-    });
-    left=r2(left-pool.reduce((a,r)=>a+alloc[r.id].filter(x=>x.person===str(person)).reduce((b,x)=>b+x.fte,0),0));
-  }
-  const order=pool.concat(slots.filter(r=>pool.indexOf(r)<0));
-  order.forEach(r=>{
-    if(left<=0.001) return;
-    const give=Math.min(num(cap[r.id]),left);
-    if(give>0.001){ alloc[r.id].push({person:str(person),fte:r2(give),type}); cap[r.id]=r2(cap[r.id]-give); left=r2(left-give); }
-  });
-}
-function rotationAllocations(csMs,ceMs){
-  const groups={}, alloc={}, cap={};
-  state.rotations.forEach(r=>{
-    alloc[r.id]=[]; cap[r.id]=num(r.fte);
-    const k=str(r.owner)+'|'+str(r.cls);
-    (groups[k]=groups[k]||[]).push(r);
-  });
-  Object.keys(groups).forEach(k=>{
-    const slots=groups[k], owner=str(slots[0].owner), cls=str(slots[0].cls);
-    if(!owner) return;                       // a vacant slot has nobody to draw from
-    const d=ownerDelivering(owner,cls,csMs,ceMs);
-    // Order matters. Anyone the plan names against a particular area is placed there
-    // first, because that is known rather than inferred. The owner's own remaining FTE
-    // then spreads across whatever room is left, and any unplaced cover fills the rest.
-    // Place the most specific claims first. Someone the plan names against exactly one
-    // area tells us more than someone named against several, so they get their area
-    // before the rest is spread around.
-    const spec=p=>slots.filter(r=>nameMentioned(p,r.actual)).length;
-    const cands=[{person:owner,fte:d.own,type:'Substantive',isOwner:true}]
-      .concat(d.cover.map(c=>({person:c.person,fte:c.fte,type:c.type,isOwner:false})))
-      .filter(x=>str(x.person)&&num(x.fte)>0.001)
-      .map(x=>Object.assign(x,{spec:spec(x.person)}));
-    const named=cands.filter(x=>x.spec>0).sort((a,b)=>a.spec-b.spec||(b.isOwner?1:0)-(a.isOwner?1:0)||b.fte-a.fte);
-    const rest =cands.filter(x=>x.spec===0).sort((a,b)=>(b.isOwner?1:0)-(a.isOwner?1:0)||b.fte-a.fte);
-    named.concat(rest).forEach(x=>placeIntoSlots(x.person,x.fte,x.type,slots,cap,alloc,x.isOwner));
-  });
-  return alloc;
-}
-function computeRotationSlot(rot,csMs,ceMs,alloc){
-  const owner=str(rot.owner), cls=str(rot.cls), fte=num(rot.fte);
-  const onRegister=owner&&state.staff.some(x=>str(x.name)===owner);
-  const raw=(alloc&&alloc[rot.id])||[];
-  const merged=[];
-  raw.forEach(h=>{ const hit=merged.find(x=>x.person===h.person);
-    if(hit){ hit.fte=r2(hit.fte+h.fte); if(hit.type!==h.type) hit.type=''; } else merged.push({person:h.person,fte:r2(h.fte),type:h.type}); });
-  const holders=merged;
-  const filled=r2(holders.reduce((a,h)=>a+num(h.fte),0));
-  const shortfall=r2(Math.max(0,fte-filled));
-  let sev='good';
-  if(!owner||!onRegister) sev='warn';
-  if(shortfall>0.001) sev = shortfall>=fte-0.001 ? 'high' : 'warn';
-  return {rot,owner,cls,fte,onRegister,holders,filled,shortfall,sev};
-}
-function renderRotationControls(){
-  const {cycles,len}=buildCycles();
-  fillCycleSelect('rotCycle');
-  const a=document.getElementById('rotArea');
-  if(a){ const prev=a.value; a.innerHTML='<option value="all">All areas</option>'+rotAreas().map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join(''); a.value=prev||'all'; }
-  const dl=document.getElementById('rotAreaList');
-  if(dl) dl.innerHTML=rotAreas().map(x=>`<option value="${esc(x)}"></option>`).join('');
-}
-function renderRotations(){
-  renderRotationControls();
-  const {csMs,ceMs}=cycleFromSelect('rotCycle');
-  const alloc=rotationAllocations(csMs,ceMs);
-  const slots=state.rotations.map(r=>computeRotationSlot(r,csMs,ceMs,alloc));
-  const nav=document.getElementById('navRot'); if(nav) nav.textContent=slots.filter(s=>s.shortfall>0.001).length||'';
-
-  let t='<div class="tbl-wrap"><table><thead><tr><th>Class</th><th class="num">Slot FTE</th><th class="num">Baseline</th><th class="num">Difference</th><th>Status</th></tr></thead><tbody>';
-  CLASSES.forEach(cls=>{
-    const tot=r2(state.rotations.filter(r=>str(r.cls)===cls).reduce((a,r)=>a+num(r.fte),0));
-    const base=baselineOf(cls), diff=r2(tot-base);
-    if(!tot&&!base) return;
-    const pill = Math.abs(diff)<0.001?'<span class="pill good">Matches baseline</span>'
-      : diff>0?`<span class="pill warn">${signed(diff)} over baseline</span>`
-      : `<span class="pill neutral">${signed(diff)} not yet allocated</span>`;
-    t+=`<tr><td><b>${esc(cls)}</b></td><td class="num">${tot}</td><td class="num">${base}</td><td class="num">${signed(diff)}</td><td>${pill}</td></tr>`;
-  });
-  t+='</tbody></table></div>';
-  document.getElementById('rotTotals').innerHTML=t;
-
-  const areaFilter=(document.getElementById('rotArea')||{}).value||'all';
-  const areas=rotAreas().filter(a=>areaFilter==='all'||a===areaFilter);
-  if(!state.rotations.length){
-    document.getElementById('rotBoard').innerHTML='<div class="card"><div class="card-body"><div class="empty">No rotation slots yet. Add one for each chunk of funded FTE in each clinical area — the totals should add up to your baseline.</div></div></div>';
-    return;
-  }
-  let h='<div class="rot-board">';
-  areas.forEach(area=>{
-    const list=slots.filter(s=>(str(s.rot.area)||'Unassigned area')===area)
-      .sort((a,b)=>CLASSES.indexOf(a.cls)-CLASSES.indexOf(b.cls)||a.owner.localeCompare(b.owner));
-    const tot=r2(list.reduce((a,s)=>a+s.fte,0)), fil=r2(list.reduce((a,s)=>a+s.filled,0));
-    h+=`<div class="rot-area"><div class="rot-area-head"><div class="rot-area-name">${esc(area)}</div><div class="rot-area-tot">${fil} of ${tot} FTE covered</div></div>`;
-    list.forEach(s=>{
-      const parts=s.holders.map(h=>`<b>${esc(h.person)}</b> ${h.fte}`+(h.type&&h.type!=='Substantive'?` <span class="hint">(${esc(h.type)})</span>`:''));
-      const who = parts.length?parts.join(' &nbsp;·&nbsp; '):'<span class="hint">nobody recorded</span>';
-      let flag='';
-      if(!s.owner) flag='<span class="pill warn">No owner set</span>';
-      else if(!s.onRegister) flag=`<span class="pill warn">${esc(s.owner)} is not on the Staff Register</span>`;
-      else if(s.shortfall>0.001) flag=`<span class="pill ${s.shortfall>=s.fte-0.001?'danger':'warn'}">${signed(-s.shortfall)} uncovered</span>`;
-      else flag='<span class="pill good">Covered</span>';
-      h+=`<div class="rot-slot ${s.sev}" onclick="openRotation('${esc(str(s.rot.id))}')" style="cursor:pointer">
-        <div class="rot-slot-top"><span class="pill neutral">${esc(s.cls)}</span><span class="rot-owner">${esc(s.owner)||'<i>Vacant</i>'}</span><span class="rot-fte">${s.fte} FTE</span></div>
-        <div class="rot-line">Delivered by: ${who}</div>
-        <div style="margin-top:7px">${flag}</div>
-        ${str(s.rot.actual)?`<div class="rot-note">${esc(str(s.rot.actual))}</div>`:''}
-      </div>`;
-    });
-    h+='</div>';
-  });
-  h+='</div>';
-  document.getElementById('rotBoard').innerHTML=h;
-}
-let editingRotId=null;
-function openRotation(id){
-  editingRotId=id;
-  const r = id? state.rotations.find(x=>str(x.id)===str(id)) : {id:'',area:'',cls:defaultClass(),fte:'',owner:'',actual:'',notes:''};
-  if(!r) return;
-  renderRotationControls();
-  document.getElementById('rotModalTitle').textContent=id?'Edit rotation slot':'Add rotation slot';
-  document.getElementById('r_delBtn').style.display=id?'':'none';
-  document.getElementById('r_area').value=str(r.area);
-  fillSelect('r_cls',CLASSES,str(r.cls)||defaultClass());
-  document.getElementById('r_fte').value=r.fte===''?'':num(r.fte);
-  fillNameSelect('r_owner',str(r.owner));
-  document.getElementById('r_actual').value=str(r.actual);
-  document.getElementById('r_notes').value=str(r.notes);
-  document.getElementById('rotValidation').innerHTML='';
-  document.getElementById('rotModal').classList.add('open');
-}
-function saveRotation(){
-  const obj={ id: editingRotId||('ROT-'+String(state.rotations.length+1).padStart(3,'0')),
-    area:str(document.getElementById('r_area').value), cls:str(document.getElementById('r_cls').value),
-    fte:num(document.getElementById('r_fte').value), owner:str(document.getElementById('r_owner').value),
-    actual:str(document.getElementById('r_actual').value), notes:str(document.getElementById('r_notes').value) };
-  const errs=[];
-  if(!obj.area) errs.push('Clinical area is required.');
-  if(!obj.cls) errs.push('Classification is required.');
-  if(!(obj.fte>0)) errs.push('Slot FTE must be greater than zero.');
-  if(errs.length){ document.getElementById('rotValidation').innerHTML='<div class="vbox err"><b>Fix before saving</b><ul>'+errs.map(e=>`<li>${esc(e)}</li>`).join('')+'</ul></div>'; return; }
-  const warn=[];
-  if(obj.owner&&!state.staff.some(x=>str(x.name)===obj.owner)) warn.push(obj.owner+' is not on the Staff Register, so nothing can be read from their movements. Slots for a vacant line are fine — leave the owner blank or name it Vacant.');
-  const ownedTotal=state.rotations.filter(r=>str(r.owner)===obj.owner&&str(r.cls)===obj.cls&&str(r.id)!==str(obj.id)).reduce((a,r)=>a+num(r.fte),0)+obj.fte;
-  const held=obj.owner?registerFTE(obj.owner,obj.cls):0;
-  if(held>0&&ownedTotal>held+0.001) warn.push(obj.owner+' would own '+r2(ownedTotal)+' FTE of '+obj.cls+' slots but only holds '+r2(held)+' on the register.');
-  if(warn.length&&!confirm('Check these before saving:\n\n• '+warn.join('\n• ')+'\n\nSave anyway?')) return;
-  const idx=state.rotations.findIndex(x=>str(x.id)===str(obj.id));
-  const before=idx>=0?deepCopy(state.rotations[idx]):null;
-  if(idx>=0) state.rotations[idx]=obj; else state.rotations.push(obj);
-  auditLog(idx>=0?'Update':'Create','Rotation',obj.area+' · '+obj.cls,(idx>=0?'Updated':'Added')+' rotation slot '+obj.area+' '+obj.cls+' '+obj.fte+' FTE',before,obj);
-  persist(); closeModal('rotModal'); rebuildAll(); toast('Rotation slot saved');
-}
-function deleteRotation(){
-  if(!editingRotId) return;
-  const idx=state.rotations.findIndex(x=>str(x.id)===str(editingRotId));
-  if(idx<0) return;
-  const r=state.rotations[idx];
-  if(!confirm('Delete the '+str(r.area)+' '+str(r.cls)+' slot?')) return;
-  auditLog('Delete','Rotation',str(r.area)+' · '+str(r.cls),'Deleted rotation slot',deepCopy(r),null);
-  state.rotations.splice(idx,1);
-  persist(); closeModal('rotModal'); rebuildAll(); toast('Rotation slot deleted');
-}
 function renderGaps(){
   renderGapsControls();
   const gaps=computeGaps();
@@ -1680,6 +1604,8 @@ function renderStaff(){
   const isExpired=s=>str(s.empType)==='Temporary'&&str(s.active)==='Yes'&&parseDate(s.contractEnd)!==null&&parseDate(s.contractEnd)<today;
   const cols=[
     {key:'name',label:'Name',val:s=>str(s.name).toLowerCase(),get:s=>esc(str(s.name))},
+    {key:'team',label:'Team',group:true,val:s=>{ const l=roleLabel(s); return l?l.team.toLowerCase():''; },get:s=>{ const l=roleLabel(s); return l?esc(l.team):'<span class="hint">Unassigned</span>'; }},
+    {key:'role',label:'Role',val:s=>{ const l=roleLabel(s); return l?l.role.toLowerCase():''; },get:s=>{ const l=roleLabel(s); return l?esc(l.role):''; }},
     {key:'subClass',label:'Class',group:true,val:s=>CLASSES.indexOf(str(s.subClass)),get:s=>esc(str(s.subClass))},
     {key:'subFTE',label:'FTE',num:true,val:s=>num(s.subFTE),get:s=>r2(num(s.subFTE))},
     {key:'posTitle',label:'Position',val:s=>str(s.posTitle).toLowerCase(),get:s=>esc(str(s.posTitle))},
@@ -1707,23 +1633,213 @@ function deactivateStaff(i){
   const before=deepCopy(s); s.active='No'; auditLog('Archive','Staff',str(s.name),`Set ${str(s.name)} inactive`,before,s); persist(); rebuildAll();
 }
 
+/* ============================ TEAMS > ROLES ============================ */
+let _idSeq=0;
+function newId(prefix){ return prefix+'-'+Date.now().toString(36).toUpperCase()+(++_idSeq).toString(36).toUpperCase()+Math.floor(Math.random()*1296).toString(36).toUpperCase(); }
+function teams(){ return state.settings.teams||[]; }
+function findRole(roleId){
+  if(!str(roleId)) return null;
+  for(const t of teams()){ const r=(t.roles||[]).find(x=>x.id===roleId); if(r) return {team:t,role:r}; }
+  return null;
+}
+function roleStaff(roleId){ return state.staff.filter(s=>str(s.roleId)===roleId); }
+function roleFilledFTE(roleId){ return r2(roleStaff(roleId).filter(s=>str(s.active)==='Yes').reduce((a,s)=>a+num(s.subFTE),0)); }
+function teamOfStaff(s){ const f=findRole(str(s.roleId)); return f?f.team:null; }
+function roleLabel(s){ const f=findRole(str(s.roleId)); return f?{team:f.team.name,role:f.role.name}:null; }
+function addTeam(){
+  const raw=prompt('Team name (any grouping you use, e.g. a ward, service line or area):','');
+  if(raw===null) return;
+  const v=str(raw); if(!v){ alert('Team name cannot be blank.'); return; }
+  if(teams().some(t=>t.name.toLowerCase()===v.toLowerCase())){ alert('A team called '+v+' already exists.'); return; }
+  state.settings.teams.push({id:newId('T'),name:v,active:true,roles:[]});
+  auditLog('Create','Settings','Team '+v,'Team '+v+' added',null,null,['Added team '+v]);
+  persist(); rebuildAll();
+}
+function addRole(teamId){
+  const t=teams().find(x=>x.id===teamId); if(!t) return;
+  const raw=prompt('New role in '+t.name+' (e.g. Senior Clinician, Rotation 1, Assistant):','');
+  if(raw===null) return;
+  const v=str(raw); if(!v){ alert('Role name cannot be blank.'); return; }
+  if(t.roles.some(r=>r.name.toLowerCase()===v.toLowerCase())&&!confirm('A role called '+v+' already exists in '+t.name+'. Add another with the same name?')) return;
+  t.roles.push({id:newId('R'),name:v,cls:defaultClass(),fte:0,active:true});
+  auditLog('Create','Settings','Role '+t.name+' / '+v,'Role '+v+' added to '+t.name,null,null,['Added role '+v+' to '+t.name]);
+  persist(); rebuildAll();
+}
+function renameTeam(teamId,raw){
+  const t=teams().find(x=>x.id===teamId); if(!t) return;
+  const v=str(raw), old=t.name;
+  if(v===old) return;
+  if(!v){ alert('Team name cannot be blank.'); renderSettings(); return; }
+  if(teams().some(x=>x!==t&&x.name.toLowerCase()===v.toLowerCase())){ alert('A team called '+v+' already exists.'); renderSettings(); return; }
+  t.name=v; auditLog('Update','Settings','Team '+v,'Team '+old+' renamed to '+v,null,null,[old+' → '+v]);
+  persist(); rebuildAll();
+}
+function renameRole(teamId,roleId,raw){
+  const t=teams().find(x=>x.id===teamId); const r=t&&t.roles.find(x=>x.id===roleId); if(!r) return;
+  const v=str(raw), old=r.name;
+  if(v===old) return;
+  if(!v){ alert('Role name cannot be blank.'); renderSettings(); return; }
+  r.name=v; auditLog('Update','Settings','Role '+t.name+' / '+v,'Role '+old+' renamed to '+v+' in '+t.name,null,null,[old+' → '+v]);
+  persist(); rebuildAll();
+}
+function setRoleField(teamId,roleId,k,v){
+  const t=teams().find(x=>x.id===teamId); const r=t&&t.roles.find(x=>x.id===roleId); if(!r) return;
+  const before=r[k];
+  r[k]= k==='fte' ? Math.max(0,Number(v)||0) : v;
+  if(before===r[k]) return;
+  auditLog('Update','Settings','Role '+t.name+' / '+r.name,(k==='fte'?'Funded FTE':k==='cls'?'Classification':k)+' updated for '+r.name+' in '+t.name,{value:before},{value:r[k]});
+  persist(); rebuildAll();
+}
+function toggleTeamActive(teamId){
+  const t=teams().find(x=>x.id===teamId); if(!t) return;
+  t.active=(t.active===false); auditLog('Update','Settings','Team '+t.name,'Team '+t.name+(t.active?' reactivated':' archived'),null,null,[t.active?'Reactivated':'Archived — its role FTE no longer counts towards baselines']);
+  persist(); rebuildAll();
+}
+function toggleRoleActive(teamId,roleId){
+  const t=teams().find(x=>x.id===teamId); const r=t&&t.roles.find(x=>x.id===roleId); if(!r) return;
+  r.active=(r.active===false); auditLog('Update','Settings','Role '+t.name+' / '+r.name,'Role '+r.name+' in '+t.name+(r.active?' reactivated':' archived'),null,null,[r.active?'Reactivated':'Archived — its FTE no longer counts towards baselines']);
+  persist(); rebuildAll();
+}
+function moveTeam(teamId,dir){
+  const a=state.settings.teams, i=a.findIndex(x=>x.id===teamId), j=i+dir; if(i<0||j<0||j>=a.length) return;
+  const t=a[i]; a[i]=a[j]; a[j]=t; persist(); rebuildAll();
+}
+function moveRole(teamId,roleId,dir){
+  const t=teams().find(x=>x.id===teamId); if(!t) return;
+  const a=t.roles, i=a.findIndex(x=>x.id===roleId), j=i+dir; if(i<0||j<0||j>=a.length) return;
+  const r=a[i]; a[i]=a[j]; a[j]=r; persist(); rebuildAll();
+}
+function moveRoleToTeam(teamId,roleId,newTeamId){
+  const from=teams().find(x=>x.id===teamId), to=teams().find(x=>x.id===newTeamId); if(!from||!to||from===to) return;
+  const i=from.roles.findIndex(x=>x.id===roleId); if(i<0) return;
+  const r=from.roles.splice(i,1)[0]; to.roles.push(r);
+  const n=roleStaff(roleId).length;
+  auditLog('Update','Settings','Role '+r.name,'Role '+r.name+' moved from '+from.name+' to '+to.name,null,null,[from.name+' → '+to.name+(n?' ('+n+' staff line(s) move with it)':'')]);
+  persist(); rebuildAll();
+}
+function removeTeam(teamId){
+  const t=teams().find(x=>x.id===teamId); if(!t) return;
+  const used=t.roles.reduce((a,r)=>a+roleStaff(r.id).length,0);
+  const usedR=t.roles.reduce((a,r)=>a+state.rotations.filter(x=>str(x.roleId)===r.id).length,0);
+  if(used||usedR){ alert('Cannot delete '+t.name+'.\n\n'+used+' staff line(s) and '+usedR+' rotation assignment(s) use roles in this team. Reassign or delete them first, or archive the team instead.'); return; }
+  if(!confirm('Delete team '+t.name+(t.roles.length?' and its '+t.roles.length+' role(s)':'')+'?\n\nNo staff are assigned to it. Archive instead if you may want it back.')) return;
+  state.settings.teams=teams().filter(x=>x!==t);
+  auditLog('Delete','Settings','Team '+t.name,'Team '+t.name+' deleted',deepCopy(t),null,['Deleted team '+t.name+' with '+t.roles.length+' role(s)']);
+  persist(); rebuildAll();
+}
+function removeRole(teamId,roleId){
+  const t=teams().find(x=>x.id===teamId); const r=t&&t.roles.find(x=>x.id===roleId); if(!r) return;
+  const n=roleStaff(roleId).length, nr=state.rotations.filter(x=>str(x.roleId)===roleId).length;
+  if(n||nr){ alert('Cannot delete '+r.name+'.\n\n'+n+' staff line(s) and '+nr+' rotation assignment(s) use it. Reassign or delete them first, or archive the role instead.'); return; }
+  if(!confirm('Delete role '+r.name+' from '+t.name+'?')) return;
+  t.roles=t.roles.filter(x=>x!==r);
+  auditLog('Delete','Settings','Role '+t.name+' / '+r.name,'Role '+r.name+' deleted from '+t.name,deepCopy(r),null,['Deleted role '+r.name]);
+  persist(); rebuildAll();
+}
+function renderTeams(){
+  const el=document.getElementById('settingsTeams'); if(!el) return;
+  const ts=teams();
+  if(!ts.length){
+    el.innerHTML='<div class="empty">No teams yet. Add your first team, then add the roles that sit inside it.</div>';
+    return;
+  }
+  const unassigned=state.staff.filter(s=>str(s.active)==='Yes'&&!findRole(str(s.roleId)));
+  let h='';
+  if(unassigned.length) h+=`<div class="sectionnote" style="background:var(--warn-bg);border-color:rgba(122,88,0,.2);color:var(--warn)"><b>${unassigned.length}</b> active staff line(s) (${r2(unassigned.reduce((a,s)=>a+num(s.subFTE),0))} FTE) are not assigned to a role yet. Assign them in the Staff Register.</div>`;
+  ts.forEach((t,ti)=>{
+    const live=t.active!==false;
+    const roles=t.roles||[];
+    const funded=r2(roles.filter(r=>r.active!==false).reduce((a,r)=>a+num(r.fte),0));
+    const filled=r2(roles.filter(r=>r.active!==false).reduce((a,r)=>a+roleFilledFTE(r.id),0));
+    const otherTeams=ts.filter(x=>x!==t);
+    h+=`<div class="team-block${live?'':' is-archived'}">
+      <div class="team-head">
+        <input type="text" value="${esc(t.name)}" onchange="renameTeam(${esc(jsq(t.id))},this.value)" aria-label="Team name">
+        ${live?'':'<span class="pill neutral">Archived</span>'}
+        <span class="team-tot">${funded} FTE funded · ${filled} FTE substantive · ${roles.length} role${roles.length===1?'':'s'}</span>
+        <div class="rowact" style="margin-left:auto">
+          <button class="iconbtn" onclick="moveTeam(${esc(jsq(t.id))},-1)" title="Move up"${ti===0?' disabled':''}>↑</button>
+          <button class="iconbtn" onclick="moveTeam(${esc(jsq(t.id))},1)" title="Move down"${ti===ts.length-1?' disabled':''}>↓</button>
+          <button class="iconbtn" onclick="toggleTeamActive(${esc(jsq(t.id))})">${live?'Archive':'Reactivate'}</button>
+          <button class="iconbtn del" onclick="removeTeam(${esc(jsq(t.id))})">Delete team</button>
+        </div>
+      </div>`;
+    if(roles.length){
+      h+='<div class="tbl-wrap"><table><thead><tr><th>Role</th><th>Classification</th><th class="num">Funded FTE</th><th class="num" title="FTE of active Staff Register lines assigned to this role as their substantive role">Substantive FTE</th><th>Status</th>'+(otherTeams.length?'<th>Move to team</th>':'')+'<th></th></tr></thead><tbody>';
+      roles.forEach((r,ri)=>{
+        const rl=r.active!==false, fl=roleFilledFTE(r.id), fu=num(r.fte), d=r2(fl-fu), n=roleStaff(r.id).length;
+        let st;
+        if(!rl) st='<span class="pill neutral">Archived</span>';
+        else if(fu===0&&fl===0) st='<span class="hint">no FTE set</span>';
+        else if(Math.abs(d)<0.001) st='<span class="pill good">Filled</span>';
+        else if(d<0) st=`<span class="pill warn">${signed(d)} vacant</span>`;
+        else st=`<span class="pill danger">${signed(d)} over funded</span>`;
+        const clsOpts=(CLASSES.includes(r.cls)||!r.cls?CLASSES:CLASSES.concat([r.cls])).map(c=>`<option value="${esc(c)}"${c===r.cls?' selected':''}>${esc(c)}</option>`).join('');
+        h+=`<tr class="${rl?'':'archived'}">
+          <td><input type="text" value="${esc(r.name)}" style="min-width:170px;font-weight:700" onchange="renameRole(${esc(jsq(t.id))},${esc(jsq(r.id))},this.value)" aria-label="Role name"></td>
+          <td><select onchange="setRoleField(${esc(jsq(t.id))},${esc(jsq(r.id))},'cls',this.value)">${clsOpts}</select></td>
+          <td class="num"><input type="number" step="0.01" min="0" value="${fu}" style="width:90px;text-align:right" onchange="setRoleField(${esc(jsq(t.id))},${esc(jsq(r.id))},'fte',this.value)"></td>
+          <td class="num">${fl}${n?` <span class="hint">(${n} line${n===1?'':'s'})</span>`:''}</td>
+          <td>${st}</td>
+          ${otherTeams.length?`<td><select onchange="moveRoleToTeam(${esc(jsq(t.id))},${esc(jsq(r.id))},this.value)"><option value="">${esc(t.name)}</option>${otherTeams.map(o=>`<option value="${esc(o.id)}">Move to ${esc(o.name)}</option>`).join('')}</select></td>`:''}
+          <td class="rowact"><button class="iconbtn" onclick="moveRole(${esc(jsq(t.id))},${esc(jsq(r.id))},-1)" title="Move up"${ri===0?' disabled':''}>↑</button><button class="iconbtn" onclick="moveRole(${esc(jsq(t.id))},${esc(jsq(r.id))},1)" title="Move down"${ri===roles.length-1?' disabled':''}>↓</button><button class="iconbtn" onclick="toggleRoleActive(${esc(jsq(t.id))},${esc(jsq(r.id))})">${rl?'Archive':'Reactivate'}</button><button class="iconbtn del" onclick="removeRole(${esc(jsq(t.id))},${esc(jsq(r.id))})">Delete</button></td>
+        </tr>`;
+      });
+      h+='</tbody></table></div>';
+    } else h+='<div class="hint" style="margin-bottom:8px">No roles in this team yet.</div>';
+    h+=`<div style="margin-top:10px"><button class="btn sm" onclick="addRole(${esc(jsq(t.id))})">+ Add role to ${esc(t.name)}</button></div></div>`;
+  });
+  el.innerHTML=h;
+}
+
+/* ---- One-off notes after the old rotation slots were converted ---- */
+function renderLegacyNotes(){
+  const el=document.getElementById('settingsMigration'); if(!el) return;
+  const warnStyle='background:var(--warn-bg);border-color:rgba(122,88,0,.2);color:var(--warn)';
+  let h='';
+  const n=state.migrationNote;
+  if(n){
+    h+=`<div class="sectionnote" style="${warnStyle}"><b>Your old rotation slots were converted.</b> ${n.slots} slot(s) became ${n.teams} team(s) and ${n.roles} role(s), with ${n.assignments} dated assignment(s) and ${n.linked} staff line(s) linked to a role. Rename teams and roles as you like.`;
+    if(n.items.length) h+='<br><br><b>Baselines changed</b> because each classification now takes its baseline from the role FTE:<ul style="margin:6px 0 0 18px">'+n.items.map(x=>`<li>${esc(x.cls)}: was ${x.was}, now ${x.now}</li>`).join('')+'</ul>Check the roles below add up to your real funded FTE.';
+    else h+=' Role totals match your old baselines.';
+    h+=' <button class="iconbtn" onclick="dismissMigrationNote()">Dismiss</button></div>';
+  }
+  const old=Array.isArray(state.legacyRotations)?state.legacyRotations:[];
+  if(old.length){
+    h+=`<div class="sectionnote"><b>Safety copy:</b> your ${old.length} old rotation slot(s) are kept in the data file (and in Export backup) until you discard them. Their free-text "delivered by" and notes were copied into the assignment notes where the owner is on the Staff Register.
+      <details style="margin-top:8px"><summary>Show old slots</summary>${tableHTML(['Area','Class','FTE','Owner','Delivered by (old note)','Notes'],old.map(x=>[esc(str(x.area)),esc(str(x.cls)),r2(num(x.fte)),esc(str(x.owner)),esc(str(x.actual)),esc(str(x.notes))]),'')}</details>
+      <div style="margin-top:8px"><button class="btn sm danger" onclick="discardLegacyRotations()">Discard old copy</button></div></div>`;
+  }
+  el.innerHTML=h;
+}
+function dismissMigrationNote(){ delete state.migrationNote; persist(); renderSettings(); }
+function discardLegacyRotations(){
+  const n=(state.legacyRotations||[]).length; if(!n) return;
+  if(!confirm('Discard the safety copy of your '+n+' old rotation slot(s)?\n\nOnly do this once you have checked the new teams, roles and assignments. Export a backup first if unsure.')) return;
+  delete state.legacyRotations;
+  auditLog('Delete','Settings','Rotations','Old rotation slot copy discarded',null,null,['Discarded '+n+' old slot(s)']);
+  persist(); renderSettings(); renderAudit();
+}
 /* ============================ SETTINGS ============================ */
 function classUsage(cls){
   const st=state.staff.filter(s=>str(s.subClass)===cls).length;
   const mv=state.movements.filter(m=>str(m.subClass)===cls||str(m.workClass)===cls).length;
-  return {staff:st,movements:mv,total:st+mv};
+  const ro=teams().reduce((a,t)=>a+(t.roles||[]).filter(r=>str(r.cls)===cls).length,0);
+  return {staff:st,movements:mv,roles:ro,total:st+mv+ro};
 }
 function renderSettings(){
+  renderTeams();
+  renderLegacyNotes();
   let h='<div class="tbl-wrap"><table><thead><tr><th>Classification</th><th class="num">Baseline FTE</th><th class="num">Ceiling FTE</th><th class="num">Additional approved</th><th class="num">Effective ceiling</th><th>In use</th><th></th></tr></thead><tbody>';
   CLASSES.forEach((cls,i)=>{
     const b=num((state.settings.baselines||{})[cls]); const c=(state.settings.ceilings||{})[cls]||{};
     const u=classUsage(cls);
     h+=`<tr><td><input type="text" value="${esc(cls)}" style="width:110px;font-weight:800" onchange="renameClassification(${i},this.value)"></td>
-      <td class="num"><input type="number" step="0.01" min="0" value="${b}" style="width:90px;text-align:right" onchange="setBaseline('${esc(cls)}',this.value)"></td>
+      <td class="num">${classHasRoles(cls)?`<b>${roleFundedByClass(cls)}</b><div class="hint">from roles</div>`:`<input type="number" step="0.01" min="0" value="${b}" style="width:90px;text-align:right" onchange="setBaseline('${esc(cls)}',this.value)">`}</td>
       <td class="num"><input type="number" step="0.01" min="0" value="${num(c.ceiling)}" style="width:90px;text-align:right" onchange="setCeiling('${esc(cls)}','ceiling',this.value)"></td>
       <td class="num"><input type="number" step="0.01" value="${num(c.additional)}" style="width:90px;text-align:right" onchange="setCeiling('${esc(cls)}','additional',this.value)"></td>
       <td class="num"><b>${r2(num(c.ceiling)+num(c.additional))}</b></td>
-      <td>${u.total? '<span class="pill neutral">'+u.staff+' staff · '+u.movements+' mvt</span>' : '<span class="hint">not used</span>'}</td>
+      <td>${u.total? '<span class="pill neutral">'+u.staff+' staff · '+u.movements+' mvt'+(u.roles?' · '+u.roles+' role'+(u.roles===1?'':'s'):'')+'</span>' : '<span class="hint">not used</span>'}</td>
       <td class="rowact"><button class="iconbtn" onclick="moveClassification(${i},-1)" title="Move up">↑</button><button class="iconbtn" onclick="moveClassification(${i},1)" title="Move down">↓</button><button class="iconbtn del" onclick="removeClassification(${i})">Remove</button></td></tr>`;
   });
   h+='</tbody></table></div>';
@@ -1759,18 +1875,19 @@ function renameClassification(i,raw){
   if(!v){ alert('Classification code cannot be blank.'); renderSettings(); return; }
   if(CLASSES.some((c,j)=>j!==i&&c.toLowerCase()===v.toLowerCase())){ alert(v+' already exists.'); renderSettings(); return; }
   const u=classUsage(oldName);
-  if(u.total && !confirm('Rename '+oldName+' to '+v+'?\n\n'+u.staff+' staff line(s) and '+u.movements+' movement(s) currently use '+oldName+'. They will all be re-pointed to '+v+' so no data is orphaned.')){ renderSettings(); return; }
+  if(u.total && !confirm('Rename '+oldName+' to '+v+'?\n\n'+u.staff+' staff line(s), '+u.movements+' movement(s) and '+u.roles+' role(s) currently use '+oldName+'. They will all be re-pointed to '+v+' so no data is orphaned.')){ renderSettings(); return; }
   state.settings.classes[i]=v;
   state.settings.baselines[v]=num(state.settings.baselines[oldName]); delete state.settings.baselines[oldName];
   state.settings.ceilings[v]=state.settings.ceilings[oldName]||{ceiling:0,additional:0}; delete state.settings.ceilings[oldName];
   state.staff.forEach(s=>{ if(str(s.subClass)===oldName) s.subClass=v; });
   state.movements.forEach(m=>{ if(str(m.subClass)===oldName) m.subClass=v; if(str(m.workClass)===oldName) m.workClass=v; });
-  auditLog('Update','Settings','Classification '+v,'Classification '+oldName+' renamed to '+v,null,null,[oldName+' → '+v+' ('+u.staff+' staff, '+u.movements+' movements re-pointed)']);
+  teams().forEach(t=>(t.roles||[]).forEach(r=>{ if(str(r.cls)===oldName) r.cls=v; }));
+  auditLog('Update','Settings','Classification '+v,'Classification '+oldName+' renamed to '+v,null,null,[oldName+' → '+v+' ('+u.staff+' staff, '+u.movements+' movements, '+u.roles+' roles re-pointed)']);
   syncClasses(); persist(); rebuildAll();
 }
 function removeClassification(i){
   const cls=CLASSES[i]; const u=classUsage(cls);
-  if(u.total){ alert('Cannot remove '+cls+'.\n\n'+u.staff+' staff line(s) and '+u.movements+' movement(s) still use it. Rename it instead, or re-point those records to another classification first.'); return; }
+  if(u.total){ alert('Cannot remove '+cls+'.\n\n'+u.staff+' staff line(s), '+u.movements+' movement(s) and '+u.roles+' role(s) still use it. Rename it instead, or re-point those records to another classification first.'); return; }
   if(!confirm('Remove classification '+cls+'? Its baseline and ceiling will be deleted.')) return;
   state.settings.classes.splice(i,1);
   delete state.settings.baselines[cls]; delete state.settings.ceilings[cls];
@@ -1865,12 +1982,35 @@ function saveMovement(){
 function deleteMovement(){ if(!editingMovId) return; if(!confirm('Delete this movement permanently? (Archiving instead keeps the audit trail.)')) return; const before=deepCopy(state.movements.find(x=>str(x.id)===editingMovId)); state.movements=state.movements.filter(x=>str(x.id)!==editingMovId); auditLog('Delete','Movement',editingMovId,`Deleted ${before?str(before.staff):''} · ${before?str(before.type):''}`,before,null,['Movement permanently deleted']); closeModal('movModal'); persist(); rebuildAll(); }
 
 /* ============================ MODALS: STAFF ============================ */
+// Team select drives the Role select. Archived teams/roles only appear if this line already uses them.
+function fillStaffTeamRole(teamId,roleId){
+  const opts=[{v:'',label:'— Unassigned —'}];
+  teams().forEach(t=>{ if(t.active!==false||t.id===teamId) opts.push({v:t.id,label:t.name+(t.active===false?' (archived)':'')}); });
+  fillSelect('s_team',opts,teamId);
+  fillStaffRoles(teamId,roleId);
+}
+function fillStaffRoles(teamId,roleId){
+  const t=teams().find(x=>x.id===teamId);
+  const opts=[{v:'',label:t?(t.roles.length?'— Choose a role —':'— No roles in this team yet —'):'— Choose a team first —'}];
+  if(t) t.roles.forEach(r=>{ if(r.active!==false||r.id===roleId) opts.push({v:r.id,label:r.name+' ('+(r.cls||'no class')+')'+(r.active===false?' (archived)':'')}); });
+  fillSelect('s_role',opts,roleId);
+}
+function staffTeamChanged(){ fillStaffRoles(document.getElementById('s_team').value,''); updateStaffValidation(); }
+// Picking a role pre-fills the classification from the role; still editable afterwards.
+function staffRoleChanged(){
+  const f=findRole(document.getElementById('s_role').value);
+  if(f&&f.role.cls&&CLASSES.includes(f.role.cls)) document.getElementById('s_subClass').value=f.role.cls;
+  updateStaffValidation();
+}
+
 function openStaff(idx){
   editingStaffIdx=idx;
-  const s= idx!==null? state.staff[idx] : {name:'',subClass:defaultClass(),subFTE:'',posId:'',posTitle:'',empType:'Permanent',active:'Yes',contractStart:'',contractEnd:'',notes:''};
+  const s= idx!==null? state.staff[idx] : {name:'',roleId:'',subClass:defaultClass(),subFTE:'',posId:'',posTitle:'',empType:'Permanent',active:'Yes',contractStart:'',contractEnd:'',notes:''};
   document.getElementById('staffModalTitle').textContent=idx!==null?'Edit staff line':'Add staff line';
   document.getElementById('s_delBtn').style.display=idx!==null?'':'none';
   document.getElementById('s_name').value=str(s.name);
+  const cur=findRole(str(s.roleId));
+  fillStaffTeamRole(cur?cur.team.id:'',cur?cur.role.id:'');
   fillSelect('s_subClass',CLASSES,str(s.subClass)||defaultClass());
   document.getElementById('s_subFTE').value=s.subFTE??'';
   document.getElementById('s_posId').value=str(s.posId);
@@ -1900,6 +2040,368 @@ function saveStaff(){
   closeModal('staffModal'); persist(); rebuildAll();
 }
 function deleteStaff(){ if(editingStaffIdx===null) return; if(!confirm('Delete this staff line permanently?')) return; const before=deepCopy(state.staff[editingStaffIdx]); state.staff.splice(editingStaffIdx,1); auditLog('Delete','Staff',str(before.name),`Deleted ${str(before.name)} · ${str(before.subClass)} · ${r2(num(before.subFTE))} FTE`,before,null,['Staff line permanently deleted']); closeModal('staffModal'); persist(); rebuildAll(); }
+
+/* ============================ ROTATION PLANNER ============================ */
+let editingRotId=null;
+function rotInRange(a,cs,ce){ const st=parseDate(a.start), en=parseDate(a.end); return st!==null&&st<=ce&&(en===null||en>=cs); }
+// What this person holds on the register. Given a pay cycle, lines dated outside it are left out.
+function rotRegisterFTE(name,cs,ce){
+  return r2(state.staff.filter(s=>{
+    if(str(s.name)!==str(name)||str(s.active)==='No'||str(s.empType)==='Casual') return false;
+    if(cs===undefined) return true;
+    const a=parseDate(s.contractStart), b=parseDate(s.contractEnd);
+    return (a===null||a<=ce)&&(b===null||b>=cs);
+  }).reduce((a,s)=>a+num(s.subFTE),0));
+}
+// Load in a pay cycle = the busiest day in it. Two assignments that hand over mid-cycle
+// (one ends, the next starts) do not overlap on any day, so they are not double counted.
+function rotPeakLoad(list,cs,ce){
+  let peak=0;
+  for(let d=cs;d<=ce;d+=MS_DAY){
+    let t=0; list.forEach(a=>{ const st=parseDate(a.start), en=parseDate(a.end); if(st!==null&&st<=d&&(en===null||en>=d)) t+=num(a.fte); });
+    if(t>peak) peak=t;
+  }
+  return r2(peak);
+}
+function rotPersonList(name,exceptId){ return state.rotations.filter(a=>str(a.staff)===str(name)&&str(a.id)!==str(exceptId||'')); }
+function rotRoleList(roleId,exceptId){ return state.rotations.filter(a=>str(a.roleId)===str(roleId)&&str(a.id)!==str(exceptId||'')); }
+function rotPersonLoad(name,cs,ce,exceptId){ return rotPeakLoad(rotPersonList(name,exceptId),cs,ce); }
+function rotRoleLoad(roleId,cs,ce,exceptId){ return rotPeakLoad(rotRoleList(roleId,exceptId),cs,ce); }
+function rotAbsences(name,cs,ce){ return state.movements.filter(m=>str(m.staff)===str(name)&&['Leave','Secondment Out'].includes(str(m.type))&&str(m.archived).toLowerCase()!=='yes'&&inCycle(m,cs,ce)); }
+function rotCover(name,cs,ce){ return state.movements.filter(m=>str(m.owner)===str(name)&&COVER_TYPES.includes(str(m.type))&&str(m.archived).toLowerCase()!=='yes'&&inCycle(m,cs,ce)); }
+function rotFlags(a,cs,ce){
+  const f=[], name=str(a.staff);
+  if(!state.staff.some(s=>str(s.name)===name)) f.push({k:'warn',t:'Not on Staff Register'});
+  else{
+    const reg=rotRegisterFTE(name,cs,ce), load=rotPersonLoad(name,cs,ce);
+    if(reg>0&&load>reg+0.001) f.push({k:'warn',t:'Assigned '+load+' FTE across roles, holds '+reg});
+  }
+  rotAbsences(name,cs,ce).forEach(m=>{
+    const cov=rotCover(name,cs,ce).map(c=>str(c.staff));
+    f.push({k:cov.length?'neutral':'warn',t:str(m.type)+(num(m.fteMoved)?' '+num(m.fteMoved)+' FTE':'')+(str(m.end)?' until '+fmtDate(m.end):'')+(cov.length?' — covered by '+cov.join(', '):' — no cover recorded')});
+  });
+  return f;
+}
+function rotRoleCycle(role,cs,ce){
+  const list=state.rotations.filter(a=>str(a.roleId)===role.id&&rotInRange(a,cs,ce)).map(a=>({a,flags:rotFlags(a,cs,ce)}))
+    .sort((x,y)=>str(x.a.staff).localeCompare(str(y.a.staff)));
+  const filled=rotRoleLoad(role.id,cs,ce), funded=r2(num(role.fte));
+  const short=r2(Math.max(0,funded-filled)), over=r2(Math.max(0,filled-funded));
+  let sev='good';
+  if(list.some(x=>x.flags.some(f=>f.k==='warn'))||over>0.001) sev='warn';
+  if(short>0.001) sev=(filled<=0.001)?'high':'warn';
+  return {role,list,filled,funded,short,over,sev};
+}
+function rotLiveRoles(){
+  const out=[];
+  teams().forEach(t=>{ if(t.active===false) return; (t.roles||[]).forEach(r=>{ if(r.active!==false) out.push({team:t,role:r}); }); });
+  return out;
+}
+function renderRotationControls(){
+  fillCycleSelect('rotCycle');
+  const ts=document.getElementById('rotTeam');
+  if(ts){ const prev=ts.value||'all'; ts.innerHTML='<option value="all">All teams</option>'+teams().filter(t=>t.active!==false).map(t=>`<option value="${esc(t.id)}">${esc(t.name)}</option>`).join(''); ts.value=[...ts.options].some(o=>o.value===prev)?prev:'all'; }
+}
+function renderRotations(){
+  renderRotationControls();
+  const {csMs,ceMs,index,len}=cycleFromSelect('rotCycle');
+  const teamFilter=(document.getElementById('rotTeam')||{}).value||'all';
+  const nav=document.getElementById('navRot');
+  const live=rotLiveRoles();
+  const all=live.map(x=>Object.assign({team:x.team},rotRoleCycle(x.role,csMs,ceMs)));
+  if(nav){ const n=all.filter(x=>x.sev!=='good').length; nav.textContent=n||''; }
+  const sumEl=document.getElementById('rotSummary'), board=document.getElementById('rotBoard'), ahead=document.getElementById('rotAhead'), ppl=document.getElementById('rotPeople');
+  if(!sumEl) return;
+  if(!live.length){
+    sumEl.innerHTML=''; ahead.innerHTML=''; ppl.innerHTML='';
+    board.innerHTML='<div class="card"><div class="card-body"><div class="empty">No teams or roles yet. Build your structure first in Settings → Teams &amp; roles, then come back to plan who works where.<br><br><button class="btn primary" onclick="go(\'settings\')">Go to Settings</button></div></div></div>';
+    return;
+  }
+  const shown=all.filter(x=>teamFilter==='all'||x.team.id===teamFilter);
+  const funded=r2(shown.reduce((t,x)=>t+x.funded,0)), filled=r2(shown.reduce((t,x)=>t+x.filled,0));
+  const issues=shown.filter(x=>x.sev!=='good').length;
+  sumEl.innerHTML=`<div class="card"><div class="ctrlrow" style="gap:26px">
+    <div><div class="hint">Funded FTE</div><b style="font-size:20px">${funded}</b></div>
+    <div><div class="hint">Assigned this cycle</div><b style="font-size:20px">${filled}</b></div>
+    <div><div class="hint">Unfilled</div><b style="font-size:20px">${r2(shown.reduce((t,x)=>t+x.short,0))}</b></div>
+    <div><div class="hint">Roles needing attention</div><b style="font-size:20px">${issues}</b></div>
+  </div></div>`;
+  let h='<div class="rot-board">';
+  teams().filter(t=>t.active!==false&&(teamFilter==='all'||t.id===teamFilter)).forEach(t=>{
+    const rs=shown.filter(x=>x.team.id===t.id);
+    const tf=r2(rs.reduce((a,x)=>a+x.filled,0)), tt=r2(rs.reduce((a,x)=>a+x.funded,0));
+    h+=`<div class="rot-area"><div class="rot-area-head"><div class="rot-area-name">${esc(t.name)}</div><div class="rot-area-tot">${tf} of ${tt} FTE assigned</div></div>`;
+    if(!rs.length) h+='<div class="hint">No active roles in this team.</div>';
+    rs.forEach(x=>{
+      let status;
+      if(x.short>0.001) status=`<span class="pill ${x.sev==='high'?'danger':'warn'}">${signed(-x.short)} unfilled</span>`;
+      else if(x.over>0.001) status=`<span class="pill warn">${signed(x.over)} over funded</span>`;
+      else if(x.funded>0) status='<span class="pill good">Fully assigned</span>';
+      else status='<span class="hint">no funded FTE set for this role</span>';
+      h+=`<div class="rot-slot ${x.sev}">
+        <div class="rot-slot-top"><span class="pill neutral">${esc(x.role.cls||'—')}</span><span class="rot-owner">${esc(x.role.name)}</span><span class="rot-fte">${x.filled} / ${x.funded} FTE</span></div>`;
+      x.list.forEach(({a,flags})=>{
+        h+=`<div class="rot-asg" onclick="openRotation(${esc(jsq(a.id))})"><b>${esc(str(a.staff))}</b> ${r2(num(a.fte))} FTE <span class="hint">${esc(fmtDate(a.start))} → ${a.end?esc(fmtDate(a.end)):'ongoing'}</span>`
+          +flags.map(f=>`<span class="pill ${f.k}">${esc(f.t)}</span>`).join('')+'</div>';
+      });
+      if(!x.list.length) h+='<div class="hint" style="margin-top:6px">Nobody assigned in this cycle.</div>';
+      h+=`<div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">${status}<button class="iconbtn" onclick="openRotation(null,${esc(jsq(x.role.id))})">+ Assign</button></div></div>`;
+    });
+    h+='</div>';
+  });
+  h+='</div>';
+  const orphans=state.rotations.filter(a=>!findRole(str(a.roleId)));
+  if(orphans.length) h+=`<div class="sectionnote" style="background:var(--warn-bg);color:var(--warn)">${orphans.length} assignment(s) point to a role that no longer exists and are not shown here. Re-import a backup to recover the structure.</div>`;
+  board.innerHTML=h;
+
+  const {cycles}=buildCycles();
+  const cols=[]; for(let k=0;k<8&&index+k<cycles.length;k++) cols.push(cycles[index+k]);
+  let g='<div class="tbl-wrap"><table><thead><tr><th>Team / role</th>'+cols.map(c=>`<th class="num">${esc(fmtDate(new Date(c).toISOString().slice(0,10)).slice(0,6))}</th>`).join('')+'</tr></thead><tbody>';
+  shown.forEach(x=>{
+    g+=`<tr><td><b>${esc(x.team.name)}</b> · ${esc(x.role.name)} <span class="hint">${esc(x.role.cls||'')}</span></td>`;
+    cols.forEach(c=>{
+      const ce=c+len-MS_DAY, f=rotRoleLoad(x.role.id,c,ce), fu=x.funded;
+      let cell;
+      if(fu===0&&f===0) cell='<span class="hint">—</span>';
+      else{ const cl=Math.abs(f-fu)<0.001?'good':(f<=0.001?'danger':'warn'); cell=`<span class="pill ${cl}">${f}/${fu}</span>`; }
+      g+=`<td class="num">${cell}</td>`;
+    });
+    g+='</tr>';
+  });
+  ahead.innerHTML=g+'</tbody></table></div><div class="hint" style="margin-top:8px">Green = fully assigned · amber = part filled or over funded · red = nobody assigned. Column = first day of the pay cycle.</div>';
+
+  const names=distinctStaffNames().filter(n=>rotRegisterFTE(n,csMs,ceMs)>0);
+  const rows=names.map(n=>{ const reg=rotRegisterFTE(n,csMs,ceMs), load=rotPersonLoad(n,csMs,ceMs), d=r2(reg-load); return {n,reg,load,d}; })
+    .filter(x=>Math.abs(x.d)>0.001).sort((a,b)=>b.d-a.d);
+  ppl.innerHTML=rows.length?tableHTML(['Staff member','Register FTE','Assigned FTE','Difference',''],rows.map(x=>[
+    esc(x.n),x.reg,x.load,signed(-x.d),
+    x.d>0?`<span class="pill warn">${x.d} FTE unallocated</span>`:`<span class="pill danger">${r2(-x.d)} FTE over-allocated</span>`]),''):'<div class="empty">Everyone on the register is fully allocated in this cycle.</div>';
+}
+
+/* ---- Roll forward: copy the current block of assignments into a new date range ---- */
+let rollRows=[], rollSrc=null;
+function openRoll(){
+  const {csMs,ceMs,index}=cycleFromSelect('rotCycle');
+  const teamId=(document.getElementById('rotTeam')||{}).value||'all';
+  const live=new Set(rotLiveRoles().filter(x=>teamId==='all'||x.team.id===teamId).map(x=>x.role.id));
+  const src=state.rotations.filter(a=>live.has(str(a.roleId))&&rotInRange(a,csMs,ceMs));
+  if(!src.length){ alert('Nothing to roll forward. There are no assignments in the selected pay cycle'+(teamId==='all'?'':' for this team')+'.\n\nPick a pay cycle and team that have assignments, then try again.'); return; }
+  const {cycles,len}=buildCycles();
+  const next=cycles[Math.min(index+1,cycles.length-1)];
+  rollSrc={csMs,ceMs,teamId};
+  const t=teams().find(x=>x.id===teamId);
+  document.getElementById('rollSource').textContent='Copying '+src.length+' assignment(s) active in the pay cycle '+fmtDate(new Date(csMs).toISOString().slice(0,10))+' – '+fmtDate(new Date(ceMs).toISOString().slice(0,10))+' · '+(t?t.name:'all teams');
+  document.getElementById('roll_start').value=new Date(next).toISOString().slice(0,10);
+  document.getElementById('roll_end').value='';
+  document.getElementById('roll_close').checked=true;
+  rollRows=src.map(a=>({src:a,roleId:str(a.roleId),staff:str(a.staff),fte:num(a.fte),include:true,touched:false}));
+  renderRollPreview(true);
+  document.getElementById('rollModal').classList.add('open');
+}
+function rollNames(cur){
+  const names=distinctStaffNames();
+  return '<option value="">— Vacant (skip) —</option>'+names.map(n=>`<option value="${esc(n)}"${n===cur?' selected':''}>${esc(n)}</option>`).join('')
+    +((cur&&!names.includes(cur))?`<option value="${esc(cur)}" selected>${esc(cur)} (not on register)</option>`:'');
+}
+function rollSet(i,k,v){
+  const r=rollRows[i]; if(!r) return;
+  if(k==='fte') r.fte=Number(v)||0; else if(k==='include') r.include=!!v; else r[k]=v;
+  r.touched=true; renderRollPreview();
+}
+function renderRollPreview(reset){
+  const el=document.getElementById('rollPreview'); if(!el) return;
+  const ns=parseDate(document.getElementById('roll_start').value);
+  let h='<div class="tbl-wrap"><table><thead><tr><th></th><th>Team / role</th><th>Staff member</th><th class="num">FTE</th><th>Current assignment</th></tr></thead><tbody>';
+  rollRows.forEach((r,i)=>{
+    const f=findRole(r.roleId);
+    const a=r.src, en=parseDate(a.end);
+    const ended=ns!==null&&en!==null&&en<ns;
+    if(!r.touched) r.include=!ended;
+    h+=`<tr class="${r.include?'':'archived'}"><td><input type="checkbox" ${r.include?'checked':''} onchange="rollSet(${i},'include',this.checked)"></td>
+      <td>${f?'<b>'+esc(f.team.name)+'</b> · '+esc(f.role.name)+' <span class="hint">'+esc(f.role.cls||'')+'</span>':'<span class="hint">Unknown role</span>'}</td>
+      <td><select onchange="rollSet(${i},'staff',this.value)">${rollNames(r.staff)}</select></td>
+      <td class="num"><input type="number" step="0.01" min="0" value="${r2(r.fte)}" style="width:80px;text-align:right" onchange="rollSet(${i},'fte',this.value)"></td>
+      <td><span class="hint">${esc(str(a.staff))} · ${esc(fmtDate(a.start))} → ${a.end?esc(fmtDate(a.end)):'ongoing'}</span>${ended?' <span class="pill neutral">ended before new block</span>':''}</td></tr>`;
+  });
+  el.innerHTML=h+'</tbody></table></div>';
+  renderValidationPanel('rollValidation',rollValidate());
+}
+function rollBuild(){
+  const ns=document.getElementById('roll_start').value, ne=document.getElementById('roll_end').value;
+  const adds=rollRows.filter(r=>r.include&&r.staff&&r.fte>0).map(r=>({id:newId('ROT'),roleId:r.roleId,staff:r.staff,fte:r2(r.fte),start:ns,end:ne,notes:str(r.src.notes)}));
+  const closeTo=(document.getElementById('roll_close').checked&&parseDate(ns)!==null)?new Date(parseDate(ns)-MS_DAY).toISOString().slice(0,10):'';
+  const closes=[];
+  // Only ticked rows are rolled, so only their old assignments are ended. An unticked row keeps running.
+  if(closeTo) rollRows.forEach(r=>{
+    if(!r.include) return;
+    const a=r.src, st=parseDate(a.start), en=parseDate(a.end), n=parseDate(ns);
+    if(st!==null&&st<n&&(en===null||en>=n)&&!closes.includes(a)) closes.push(a);
+  });
+  return {adds,closes,closeTo};
+}
+// Simulate the roll against a temporary copy of the plan and report what would go wrong.
+function rollValidate(){
+  const errors=[],warnings=[];
+  const ns=parseDate(document.getElementById('roll_start').value), ne=parseDate(document.getElementById('roll_end').value);
+  if(ns===null) errors.push('New block start date is required.');
+  if(ns!==null&&ne!==null&&ne<ns) errors.push('End date is before start date.');
+  if(errors.length) return {errors,warnings};
+  const {adds,closes,closeTo}=rollBuild();
+  if(!adds.length){ errors.push('No rows selected. Tick at least one row with a person and FTE above 0.'); return {errors,warnings}; }
+  const real=state.rotations;
+  const sim=deepCopy(real);
+  closes.forEach(a=>{ const c=sim.find(x=>x.id===a.id); if(c) c.end=closeTo; });
+  state.rotations=sim.concat(adds);
+  try{
+    const span=rotSpan(ns,ne), fmt=cs=>fmtDate(new Date(cs).toISOString().slice(0,10));
+    const people=[...new Set(adds.map(x=>x.staff))], roles=[...new Set(adds.map(x=>x.roleId))];
+    const some=a=>a.length>3?a.slice(0,3).join(', ')+' and '+(a.length-3)+' more':a.join(', ');
+    people.forEach(n=>{
+      const over=[], abs=[];
+      span.forEach(({cs,ce})=>{ const reg=rotRegisterFTE(n,cs,ce); if(reg>0&&rotPersonLoad(n,cs,ce)>reg+0.001) over.push(fmt(cs)); if(rotAbsences(n,cs,ce).length) abs.push(fmt(cs)); });
+      if(!state.staff.some(s=>str(s.name)===n)) warnings.push(n+' is not on the Staff Register.');
+      if(over.length) warnings.push(n+' would be assigned more FTE than they hold on the register in '+over.length+' pay cycle(s), from '+some(over)+'.');
+      if(abs.length) warnings.push(n+' has leave or secondment out in Movements during '+abs.length+' pay cycle(s), from '+some(abs)+'.');
+    });
+    roles.forEach(id=>{
+      const f=findRole(id); if(!f) return;
+      const over=[]; span.forEach(({cs,ce})=>{ if(num(f.role.fte)>0&&rotRoleLoad(id,cs,ce)>num(f.role.fte)+0.001) over.push(fmt(cs)); });
+      if(over.length) warnings.push(f.team.name+' / '+f.role.name+' would exceed its '+r2(num(f.role.fte))+' FTE funding in '+over.length+' pay cycle(s), from '+some(over)+'.');
+    });
+    const skipped=rollRows.filter(r=>r.include&&!r.staff).length;
+    if(skipped) warnings.push(skipped+' ticked row(s) have no person selected and will be left vacant.');
+  } finally { state.rotations=real; }
+  return {errors,warnings};
+}
+function applyRoll(){
+  const result=rollValidate();
+  renderValidationPanel('rollValidation',result);
+  if(!confirmWarnings(result)) return;
+  const {adds,closes,closeTo}=rollBuild();
+  closes.forEach(a=>{ const before=deepCopy(a); a.end=closeTo; auditLog('Update','Rotation',str(a.staff),'Ended assignment for '+str(a.staff)+' on '+fmtDate(closeTo)+' (roll forward)',before,a); });
+  adds.forEach(a=>{ state.rotations.push(a); const f=findRole(a.roleId); auditLog('Create','Rotation',a.staff+' → '+(f?f.team.name+' / '+f.role.name:a.roleId),'Added assignment via roll forward · '+r2(a.fte)+' FTE from '+fmtDate(a.start),null,a,fieldChanges(null,a)); });
+  closeModal('rollModal'); persist();
+  const {cycles}=buildCycles(); const sel=document.getElementById('rotCycle');
+  const st=parseDate(adds[0].start); let idx=0; cycles.forEach((c,k)=>{ if(c<=st) idx=k; });
+  rebuildAll(); if(sel){ sel.value=idx; renderRotations(); }
+}
+function rotRoleOptions(selId){
+  let h='<option value="">— Choose a role —</option>';
+  teams().forEach(t=>{
+    const rs=(t.roles||[]).filter(r=>(t.active!==false&&r.active!==false)||r.id===selId);
+    if(!rs.length) return;
+    h+=`<optgroup label="${esc(t.name)}">`+rs.map(r=>`<option value="${esc(r.id)}"${r.id===selId?' selected':''}>${esc(r.name)} (${esc(r.cls||'no class')}, ${r2(num(r.fte))} FTE)${(t.active===false||r.active===false)?' — archived':''}</option>`).join('')+'</optgroup>';
+  });
+  return h;
+}
+function openRotation(id,presetRole){
+  editingRotId=id||null;
+  const a=id?state.rotations.find(x=>str(x.id)===str(id)):{roleId:presetRole||'',staff:'',fte:'',start:isoToday(),end:'',notes:''};
+  if(!a) return;
+  document.getElementById('rotModalTitle').textContent=id?'Edit assignment':'Add assignment';
+  document.getElementById('r_delBtn').style.display=id?'':'none';
+  document.getElementById('r_role').innerHTML=rotRoleOptions(str(a.roleId));
+  const names=distinctStaffNames(), cur=str(a.staff);
+  document.getElementById('r_staff').innerHTML='<option value="">— Choose staff member —</option>'
+    +names.map(n=>`<option value="${esc(n)}"${n===cur?' selected':''}>${esc(n)}</option>`).join('')
+    +((cur&&!names.includes(cur))?`<option value="${esc(cur)}" selected>${esc(cur)} (not on register)</option>`:'');
+  document.getElementById('r_fte').value=a.fte===''?'':num(a.fte);
+  document.getElementById('r_start').value=str(a.start).slice(0,10);
+  document.getElementById('r_end').value=str(a.end).slice(0,10);
+  document.getElementById('r_notes').value=str(a.notes);
+  document.getElementById('r_hint').textContent='';
+  updateRotValidation();
+  document.getElementById('rotModal').classList.add('open');
+}
+function readRotationForm(){
+  const g=i=>document.getElementById(i).value;
+  return {id:editingRotId||'',roleId:str(g('r_role')),staff:str(g('r_staff')),fte:g('r_fte')===''?'':Number(g('r_fte')),start:g('r_start'),end:g('r_end'),notes:str(g('r_notes'))};
+}
+function rotSpan(st,en){
+  const {cycles,len}=buildCycles(); const hi=en===null?Infinity:en;
+  return cycles.filter(c=>c<=hi&&c+len-MS_DAY>=st).slice(0,80).map(c=>({cs:c,ce:c+len-MS_DAY}));
+}
+// Pre-fill FTE with what is both free on the person and open on the role at the start date.
+function rotSuggest(){
+  const o=readRotationForm(), st=parseDate(o.start);
+  const fEl=document.getElementById('r_fte'), hint=document.getElementById('r_hint');
+  const f=findRole(o.roleId);
+  if(st!==null&&o.staff&&f){
+    const {cycles,len}=buildCycles(); let cs=cycles[0]; cycles.forEach(c=>{ if(c<=st) cs=c; });
+    const ce=cs+len-MS_DAY;
+    const freePerson=r2(rotRegisterFTE(o.staff,cs,ce)-rotPersonLoad(o.staff,cs,ce,editingRotId));
+    const openRole=r2(num(f.role.fte)-rotRoleLoad(o.roleId,cs,ce,editingRotId));
+    hint.textContent=o.staff+' has '+Math.max(0,freePerson)+' FTE free · role has '+Math.max(0,openRole)+' FTE open (pay cycle of start date)';
+    const sug=r2(Math.min(freePerson,openRole));
+    if(fEl.value===''&&sug>0) fEl.value=sug;
+  } else hint.textContent='';
+  updateRotValidation();
+}
+function validateRotationObject(o){
+  const errors=[],warnings=[];
+  const st=parseDate(o.start), en=parseDate(o.end), fte=num(o.fte), f=findRole(o.roleId);
+  if(!o.roleId) errors.push('Role is required.');
+  else if(!f) errors.push('That role no longer exists.');
+  if(!o.staff) errors.push('Staff member is required.');
+  if(!(fte>0)) errors.push('FTE must be greater than 0.');
+  if(st===null) errors.push('Start date is required.');
+  if(st!==null&&en!==null&&en<st) errors.push('End date is before start date.');
+  if(errors.length) return {errors,warnings};
+  if(f.team.active===false||f.role.active===false) warnings.push('This role or its team is archived.');
+  const onReg=state.staff.some(s=>str(s.name)===o.staff);
+  if(!onReg) warnings.push(o.staff+' is not on the Staff Register.');
+  else{
+    const c0=rotSpan(st,en)[0], reg=c0?rotRegisterFTE(o.staff,c0.cs,c0.ce):rotRegisterFTE(o.staff);
+    if(reg>0&&fte>reg+0.001) warnings.push(o.staff+' holds '+reg+' FTE on the register but this assignment is '+r2(fte)+' FTE.');
+    const classes=state.staff.filter(s=>str(s.name)===o.staff&&str(s.active)!=='No').map(s=>str(s.subClass));
+    if(str(f.role.cls)&&classes.length&&!classes.includes(str(f.role.cls))) warnings.push(o.staff+' is on the register as '+[...new Set(classes)].join('/')+' but this role is '+f.role.cls+'. Fine if it is an acting or development placement.');
+  }
+  const span=rotSpan(st,en);
+  const overP=[],overR=[],abs=[];
+  // Test the busiest day with this assignment included, so a handover that starts the day
+  // after another ends is not counted twice.
+  const cand={fte,start:o.start,end:o.end};
+  const pList=rotPersonList(o.staff,editingRotId).concat([cand]), rList=rotRoleList(o.roleId,editingRotId).concat([cand]);
+  span.forEach(({cs,ce})=>{
+    const label=fmtDate(new Date(cs).toISOString().slice(0,10));
+    const reg=rotRegisterFTE(o.staff,cs,ce);
+    if(onReg&&reg>0&&rotPeakLoad(pList,cs,ce)>reg+0.001) overP.push(label);
+    if(num(f.role.fte)>0&&rotPeakLoad(rList,cs,ce)>num(f.role.fte)+0.001) overR.push(label);
+    if(rotAbsences(o.staff,cs,ce).length) abs.push(label);
+  });
+  const some=a=>a.length>3?a.slice(0,3).join(', ')+' and '+(a.length-3)+' more':a.join(', ');
+  if(overP.length) warnings.push(o.staff+' would be assigned more FTE than they hold in '+overP.length+' pay cycle(s), from '+some(overP)+'.');
+  if(num(f.role.fte)<=0) warnings.push('This role has no funded FTE set in Settings.');
+  else if(overR.length) warnings.push(f.team.name+' / '+f.role.name+' would exceed its '+r2(num(f.role.fte))+' FTE funding in '+overR.length+' pay cycle(s), from '+some(overR)+'.');
+  if(abs.length) warnings.push(o.staff+' has leave or secondment out in Movements during '+abs.length+' pay cycle(s) of this assignment, from '+some(abs)+'.');
+  return {errors,warnings};
+}
+function updateRotValidation(){ renderValidationPanel('rotValidation',validateRotationObject(readRotationForm())); }
+function saveRotation(){
+  const o=readRotationForm();
+  const result=validateRotationObject(o);
+  renderValidationPanel('rotValidation',result);
+  if(!confirmWarnings(result)) return;
+  const f=findRole(o.roleId);
+  const label=o.staff+' → '+f.team.name+' / '+f.role.name+' · '+r2(num(o.fte))+' FTE';
+  if(editingRotId){
+    const idx=state.rotations.findIndex(x=>str(x.id)===editingRotId);
+    const before=deepCopy(state.rotations[idx]);
+    state.rotations[idx]=o; auditLog('Update','Rotation',label,'Updated assignment '+label,before,o);
+  } else {
+    o.id=newId('ROT'); state.rotations.push(o);
+    auditLog('Create','Rotation',label,'Added assignment '+label,null,o,fieldChanges(null,o));
+  }
+  closeModal('rotModal'); persist(); rebuildAll(); toast('Assignment saved');
+}
+function deleteRotation(){
+  if(!editingRotId) return;
+  const idx=state.rotations.findIndex(x=>str(x.id)===editingRotId); if(idx<0) return;
+  if(!confirm('Delete this assignment?')) return;
+  const before=deepCopy(state.rotations[idx]); state.rotations.splice(idx,1);
+  auditLog('Delete','Rotation',str(before.staff),'Deleted assignment for '+str(before.staff),before,null,['Assignment deleted']);
+  closeModal('rotModal'); persist(); rebuildAll(); toast('Assignment deleted');
+}
 
 /* ============================ SHARED RENDER HELPERS ============================ */
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
@@ -2094,7 +2596,7 @@ function rebuildAll(){ applyBranding(); renderDashControls(); renderGapsControls
   ensureShape();
   wireValidation();
   rebuildAll();
-  markSaved();
+  if(migratedNow) persist(); else markSaved();
   // close modal on backdrop click
   document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{ if(e.target===bg) bg.classList.remove('open'); }));
 })();
