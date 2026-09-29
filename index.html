@@ -618,7 +618,7 @@ table.timeline thead .tl-label{z-index:3;background:var(--bg-2)}
       <div class="field"><label>New block ends (blank = ongoing)</label><input type="date" id="roll_end" onchange="renderRollPreview()"></div>
       <div class="field full"><label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:12.5px"><input type="checkbox" id="roll_close" checked onchange="renderRollPreview()"> End the current assignments the day before the new block starts</label></div>
     </div>
-    <div class="hint" style="margin:12px 0 6px">Each row copies one current assignment. Change the person to rotate someone in, adjust FTE, or untick a row to leave it out.</div>
+    <div class="hint" style="margin:12px 0 6px">Each row copies one current assignment. Change the person to rotate someone in, adjust FTE, or untick a row to leave it out. An unticked row is not copied and its current assignment keeps running.</div>
     <div id="rollPreview"></div>
     <div class="validation-panel is-clean" id="rollValidation"><div class="vh">Validation ready</div></div>
     <div class="modal-foot">
@@ -2231,7 +2231,9 @@ function rollBuild(){
   const adds=rollRows.filter(r=>r.include&&r.staff&&r.fte>0).map(r=>({id:newId('ROT'),roleId:r.roleId,staff:r.staff,fte:r2(r.fte),start:ns,end:ne,notes:str(r.src.notes)}));
   const closeTo=(document.getElementById('roll_close').checked&&parseDate(ns)!==null)?new Date(parseDate(ns)-MS_DAY).toISOString().slice(0,10):'';
   const closes=[];
+  // Only ticked rows are rolled, so only their old assignments are ended. An unticked row keeps running.
   if(closeTo) rollRows.forEach(r=>{
+    if(!r.include) return;
     const a=r.src, st=parseDate(a.start), en=parseDate(a.end), n=parseDate(ns);
     if(st!==null&&st<n&&(en===null||en>=n)&&!closes.includes(a)) closes.push(a);
   });
