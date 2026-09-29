@@ -1184,8 +1184,11 @@ const cycleMemory={};
 function fillCycleSelect(id){
   const {cycles,len}=buildCycles();
   const sel=document.getElementById(id); if(!sel) return;
-  sel.innerHTML=cycles.map((c,i)=>`<option value="${i}">${cycleLabel(c,len)}</option>`).join('');
-  const want=cycleMemory[id];
+  // The inline onchange runs before the wired listener below, so the memory is stale at that
+  // moment. Read the choice straight off the select first, or every pick snaps back.
+  const picked=sel.selectedOptions[0];
+  const want=(picked&&picked.dataset.ms)?+picked.dataset.ms:cycleMemory[id];
+  sel.innerHTML=cycles.map((c,i)=>`<option value="${i}" data-ms="${c}">${cycleLabel(c,len)}</option>`).join('');
   let idx=(want!==undefined)?cycles.indexOf(want):-1;
   if(idx<0) idx=currentCycleIndex(cycles,len);
   sel.value=idx; cycleMemory[id]=cycles[idx];
@@ -2060,8 +2063,10 @@ function rotPeakLoad(list,cs,ce){
   }
   return r2(peak);
 }
-function rotPersonLoad(name,cs,ce,exceptId){ return rotPeakLoad(state.rotations.filter(a=>str(a.staff)===str(name)&&str(a.id)!==str(exceptId||'')),cs,ce); }
-function rotRoleLoad(roleId,cs,ce,exceptId){ return rotPeakLoad(state.rotations.filter(a=>str(a.roleId)===str(roleId)&&str(a.id)!==str(exceptId||'')),cs,ce); }
+function rotPersonList(name,exceptId){ return state.rotations.filter(a=>str(a.staff)===str(name)&&str(a.id)!==str(exceptId||'')); }
+function rotRoleList(roleId,exceptId){ return state.rotations.filter(a=>str(a.roleId)===str(roleId)&&str(a.id)!==str(exceptId||'')); }
+function rotPersonLoad(name,cs,ce,exceptId){ return rotPeakLoad(rotPersonList(name,exceptId),cs,ce); }
+function rotRoleLoad(roleId,cs,ce,exceptId){ return rotPeakLoad(rotRoleList(roleId,exceptId),cs,ce); }
 function rotAbsences(name,cs,ce){ return state.movements.filter(m=>str(m.staff)===str(name)&&['Leave','Secondment Out'].includes(str(m.type))&&str(m.archived).toLowerCase()!=='yes'&&inCycle(m,cs,ce)); }
 function rotCover(name,cs,ce){ return state.movements.filter(m=>str(m.owner)===str(name)&&COVER_TYPES.includes(str(m.type))&&str(m.archived).toLowerCase()!=='yes'&&inCycle(m,cs,ce)); }
 function rotFlags(a,cs,ce){
@@ -2351,11 +2356,15 @@ function validateRotationObject(o){
   }
   const span=rotSpan(st,en);
   const overP=[],overR=[],abs=[];
+  // Test the busiest day with this assignment included, so a handover that starts the day
+  // after another ends is not counted twice.
+  const cand={fte,start:o.start,end:o.end};
+  const pList=rotPersonList(o.staff,editingRotId).concat([cand]), rList=rotRoleList(o.roleId,editingRotId).concat([cand]);
   span.forEach(({cs,ce})=>{
     const label=fmtDate(new Date(cs).toISOString().slice(0,10));
     const reg=rotRegisterFTE(o.staff,cs,ce);
-    if(onReg&&reg>0&&r2(rotPersonLoad(o.staff,cs,ce,editingRotId)+fte)>reg+0.001) overP.push(label);
-    if(num(f.role.fte)>0&&r2(rotRoleLoad(o.roleId,cs,ce,editingRotId)+fte)>num(f.role.fte)+0.001) overR.push(label);
+    if(onReg&&reg>0&&rotPeakLoad(pList,cs,ce)>reg+0.001) overP.push(label);
+    if(num(f.role.fte)>0&&rotPeakLoad(rList,cs,ce)>num(f.role.fte)+0.001) overR.push(label);
     if(rotAbsences(o.staff,cs,ce).length) abs.push(label);
   });
   const some=a=>a.length>3?a.slice(0,3).join(', ')+' and '+(a.length-3)+' more':a.join(', ');
