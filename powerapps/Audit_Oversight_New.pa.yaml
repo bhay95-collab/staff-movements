@@ -644,7 +644,7 @@ Screens:
                   Size: =30
                   FontWeight: =FontWeight.Bold
                   Height: =38
-                  Text: =If(auKpi.Total = 0, "—", Text(Round(auKpi.Passed * 100 / auKpi.Total, 0), "0") & "%")
+                  Text: =If(auKpi.Total = 0, "—", Text(Round(auKpi.Passed * 100 / Max(auKpi.Total, 1), 0), "0") & "%")
                   Width: =Parent.Width - 32
                   X: =16
                   Y: =27
@@ -992,8 +992,8 @@ Screens:
                               FontWeight: =FontWeight.Bold
                               Height: =24
                               Text: =ThisItem.Total & If(ThisItem.Total = 1, " audit", " audits")
-                              Width: =115
-                              X: =76
+                              Width: =105
+                              X: =72
                               Y: =14
                         - lblWardFail_Au:
                             Control: Label@2.5.1
@@ -1004,8 +1004,8 @@ Screens:
                               FontWeight: =FontWeight.Bold
                               Height: =20
                               Text: =If(ThisItem.NotPassed = 0, "All passed", ThisItem.NotPassed & " not passed")
-                              Width: =115
-                              X: =76
+                              Width: =105
+                              X: =72
                               Y: =40
                         - lblWardN0_Au:
                             Control: Label@2.5.1
@@ -1017,8 +1017,8 @@ Screens:
                               FontWeight: =FontWeight.Bold
                               Height: =26
                               Text: =ThisItem.Risks
-                              Width: =62
-                              X: =200
+                              Width: =72
+                              X: =180
                               Y: =14
                         - lblWardC0_Au:
                             Control: Label@2.5.1
@@ -1030,8 +1030,8 @@ Screens:
                               FontWeight: =FontWeight.Bold
                               Height: =16
                               Text: ="Risks"
-                              Width: =62
-                              X: =200
+                              Width: =72
+                              X: =180
                               Y: =42
                         - lblWardN1_Au:
                             Control: Label@2.5.1
@@ -1043,8 +1043,8 @@ Screens:
                               FontWeight: =FontWeight.Bold
                               Height: =26
                               Text: =ThisItem.Untagged
-                              Width: =62
-                              X: =266
+                              Width: =72
+                              X: =254
                               Y: =14
                         - lblWardC1_Au:
                             Control: Label@2.5.1
@@ -1056,8 +1056,8 @@ Screens:
                               FontWeight: =FontWeight.Bold
                               Height: =16
                               Text: ="Untagged"
-                              Width: =62
-                              X: =266
+                              Width: =72
+                              X: =254
                               Y: =42
                         - lblWardN2_Au:
                             Control: Label@2.5.1
@@ -1069,8 +1069,8 @@ Screens:
                               FontWeight: =FontWeight.Bold
                               Height: =26
                               Text: =ThisItem.Mismatches
-                              Width: =62
-                              X: =332
+                              Width: =72
+                              X: =328
                               Y: =14
                         - lblWardC2_Au:
                             Control: Label@2.5.1
@@ -1082,8 +1082,8 @@ Screens:
                               FontWeight: =FontWeight.Bold
                               Height: =16
                               Text: ="Mismatch"
-                              Width: =62
-                              X: =332
+                              Width: =72
+                              X: =328
                               Y: =42
                         - btnWardRow_Au:
                             Control: Button@0.0.45
