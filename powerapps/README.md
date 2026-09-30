@@ -165,8 +165,8 @@ Layout: filter bar, 6 summary tiles, "By ward" list (left), audits list (right),
 How it works (one place for the filter logic instead of 8 copies):
 - `btnLoad_Au` (hidden): loads audits for the date range, builds the clinician list. Runs on open and when dates change.
 - `btnFilter_Au` (hidden): applies clinician, ward, outcome and the Risks / Mismatch / Untagged toggles. Every filter control just calls it.
-- Summary tiles follow date + ward + clinician only. Pills (Risks / Mismatch / Untagged) and the Outcome filter change the audits list only, so the tiles stay stable.
-- Tap a ward on the left to filter to it. Tap again to clear.
+- Every filter (dates, ward, outcome, clinician, pills) applies to the tiles and the audits list.
+- The "By ward" list follows every filter except ward, so you can always switch wards. Tap a ward to filter to it, tap again to clear.
 - New variables and collections all start `au` / `colAu`, so nothing clashes with the old screen.
 - "Untagged" everywhere = `TagResult` is not "OK".
 - Removed: the unwired "Usage Dashboard" button (it had no action).

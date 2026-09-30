@@ -78,35 +78,28 @@ Screens:
                   colAuPool,
                   Filter(
                       colAuServer,
-                      auClin = "" ||
-                      CountIf(TreatingPTs, Lower(Email) = auClin) > 0
+                      (auClin = "" || CountIf(TreatingPTs, Lower(Email) = auClin) > 0) &&
+                      (auOutcome = "" || AuditOutcome.Value = auOutcome) &&
+                      (!auRisks || ImmediateRisk = true || RemovedFromUse = true) &&
+                      (!auMismatch || AllocationMatch = false) &&
+                      (!auUntagged || Coalesce(TagResult.Value, "") <> "OK")
                   )
               );
 
-              With(
+              ClearCollect(
+                  colAuScope,
+                  Filter(colAuPool, auWard = "" || Coalesce(ActualWard.Value, "Unknown") = auWard)
+              );
+
+              Set(
+                  auKpi,
                   {
-                      p: Filter(colAuPool, auWard = "" || Coalesce(ActualWard.Value, "Unknown") = auWard)
-                  },
-                  Set(
-                      auKpi,
-                      {
-                          Total: CountRows(p),
-                          Passed: CountRows(Filter(p, AuditOutcome.Value = "Pass")),
-                          Risk: CountRows(Filter(p, ImmediateRisk = true)),
-                          Removed: CountRows(Filter(p, RemovedFromUse = true)),
-                          Untagged: CountRows(Filter(p, Coalesce(TagResult.Value, "") <> "OK"))
-                      }
-                  );
-                  ClearCollect(
-                      colAuScope,
-                      Filter(
-                          p,
-                          (auOutcome = "" || AuditOutcome.Value = auOutcome) &&
-                          (!auRisks || ImmediateRisk = true || RemovedFromUse = true) &&
-                          (!auMismatch || AllocationMatch = false) &&
-                          (!auUntagged || Coalesce(TagResult.Value, "") <> "OK")
-                      )
-                  )
+                      Total: CountRows(colAuScope),
+                      Passed: CountRows(Filter(colAuScope, AuditOutcome.Value = "Pass")),
+                      Risk: CountRows(Filter(colAuScope, ImmediateRisk = true)),
+                      Removed: CountRows(Filter(colAuScope, RemovedFromUse = true)),
+                      Untagged: CountRows(Filter(colAuScope, Coalesce(TagResult.Value, "") <> "OK"))
+                  }
               )
       - Au_Title:
           Control: GroupContainer@1.5.0
@@ -609,7 +602,7 @@ Screens:
                   Color: =RGBA(140, 155, 174, 1)
                   Size: =11
                   Height: =16
-                  Text: ="In selected period"
+                  Text: ="Matching all filters"
                   Width: =Parent.Width - 32
                   X: =16
                   Y: =68
