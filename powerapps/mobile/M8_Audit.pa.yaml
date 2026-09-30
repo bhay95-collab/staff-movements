@@ -811,39 +811,30 @@ Screens:
                         Wrap: =false
                   - conSegTag_Au:
                       Control: GroupContainer@1.5.0
-                      Variant: AutoLayout
+                      Variant: ManualLayout
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
                         LayoutMinHeight: =40
-                        Height: =40
                         FillPortions: =0
-                        Width: =App.Width - 32
                         Fill: =RGBA(0, 0, 0, 0)
-                        LayoutDirection: =LayoutDirection.Horizontal
-                        LayoutAlignItems: =LayoutAlignItems.Stretch
-                        LayoutJustifyContent: =LayoutJustifyContent.Start
-                        LayoutGap: =8
-                        PaddingTop: =0
-                        PaddingRight: =0
-                        PaddingBottom: =0
-                        PaddingLeft: =0
-                        DropShadow: =DropShadow.None
+                        Height: =40
+                        Width: =App.Width - 32
+                        X: =0
+                        Y: =0
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
                       Children:
                         - conSegTagOK_Au:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              AlignInContainer: =AlignInContainer.Stretch
-                              LayoutMinWidth: =40
-                              FillPortions: =1
                               Fill: =If(auTag = "OK", C_Accent, C_White)
                               Height: =40
                               Width: =(App.Width - 32 - 24) / 4
-                              X: =0
+                              X: =0 * ((App.Width - 32 - 24) / 4 + 8)
                               Y: =0
                               RadiusBottomLeft: =20
                               RadiusBottomRight: =20
@@ -871,13 +862,10 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              AlignInContainer: =AlignInContainer.Stretch
-                              LayoutMinWidth: =40
-                              FillPortions: =1
                               Fill: =If(auTag = "Missing", C_Accent, C_White)
                               Height: =40
                               Width: =(App.Width - 32 - 24) / 4
-                              X: =0
+                              X: =1 * ((App.Width - 32 - 24) / 4 + 8)
                               Y: =0
                               RadiusBottomLeft: =20
                               RadiusBottomRight: =20
@@ -905,13 +893,10 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              AlignInContainer: =AlignInContainer.Stretch
-                              LayoutMinWidth: =40
-                              FillPortions: =1
                               Fill: =If(auTag = "Incorrect", C_Accent, C_White)
                               Height: =40
                               Width: =(App.Width - 32 - 24) / 4
-                              X: =0
+                              X: =2 * ((App.Width - 32 - 24) / 4 + 8)
                               Y: =0
                               RadiusBottomLeft: =20
                               RadiusBottomRight: =20
@@ -935,17 +920,14 @@ Screens:
                                     Width: =Parent.Width
                                     Text: ="Incorrect"
                                     OnSelect: =Set(auTag, "Incorrect")
-                        - conSegTagUnreadable/Damaged_Au:
+                        - conSegTagUnreadableDamaged_Au:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              AlignInContainer: =AlignInContainer.Stretch
-                              LayoutMinWidth: =40
-                              FillPortions: =1
                               Fill: =If(auTag = "Unreadable/Damaged", C_Accent, C_White)
                               Height: =40
                               Width: =(App.Width - 32 - 24) / 4
-                              X: =0
+                              X: =3 * ((App.Width - 32 - 24) / 4 + 8)
                               Y: =0
                               RadiusBottomLeft: =20
                               RadiusBottomRight: =20
@@ -956,7 +938,7 @@ Screens:
                               BorderThickness: =1
                               DropShadow: =DropShadow.None
                             Children:
-                              - btnSegTagUnreadable/Damaged_Au:
+                              - btnSegTagUnreadableDamaged_Au:
                                   Control: Button@0.0.45
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent

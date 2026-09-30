@@ -187,40 +187,31 @@ Screens:
                               Y: =0
                   - conSegCat_Fd:
                       Control: GroupContainer@1.5.0
-                      Variant: AutoLayout
+                      Variant: ManualLayout
                       Properties:
                         Visible: =IsBlank(Trim(txtCode_Fd.Text))
                         AlignInContainer: =AlignInContainer.SetByContainer
                         LayoutMinHeight: =40
-                        Height: =40
                         FillPortions: =0
-                        Width: =App.Width - 32
                         Fill: =RGBA(0, 0, 0, 0)
-                        LayoutDirection: =LayoutDirection.Horizontal
-                        LayoutAlignItems: =LayoutAlignItems.Stretch
-                        LayoutJustifyContent: =LayoutJustifyContent.Start
-                        LayoutGap: =8
-                        PaddingTop: =0
-                        PaddingRight: =0
-                        PaddingBottom: =0
-                        PaddingLeft: =0
-                        DropShadow: =DropShadow.None
+                        Height: =40
+                        Width: =App.Width - 32
+                        X: =0
+                        Y: =0
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
                       Children:
                         - conSegCatWheelchair_Fd:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              AlignInContainer: =AlignInContainer.Stretch
-                              LayoutMinWidth: =40
-                              FillPortions: =1
                               Fill: =If(fdCat = "Wheelchair", C_Accent, C_White)
                               Height: =40
                               Width: =(App.Width - 32 - 16) / 3
-                              X: =0
+                              X: =0 * ((App.Width - 32 - 16) / 3 + 8)
                               Y: =0
                               RadiusBottomLeft: =20
                               RadiusBottomRight: =20
@@ -251,13 +242,10 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              AlignInContainer: =AlignInContainer.Stretch
-                              LayoutMinWidth: =40
-                              FillPortions: =1
                               Fill: =If(fdCat = "Cushion", C_Accent, C_White)
                               Height: =40
                               Width: =(App.Width - 32 - 16) / 3
-                              X: =0
+                              X: =1 * ((App.Width - 32 - 16) / 3 + 8)
                               Y: =0
                               RadiusBottomLeft: =20
                               RadiusBottomRight: =20
@@ -288,13 +276,10 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              AlignInContainer: =AlignInContainer.Stretch
-                              LayoutMinWidth: =40
-                              FillPortions: =1
                               Fill: =If(fdCat = "Backrest", C_Accent, C_White)
                               Height: =40
                               Width: =(App.Width - 32 - 16) / 3
-                              X: =0
+                              X: =2 * ((App.Width - 32 - 16) / 3 + 8)
                               Y: =0
                               RadiusBottomLeft: =20
                               RadiusBottomRight: =20
@@ -679,8 +664,8 @@ Screens:
                   LayoutOverflowY: =LayoutOverflow.Scroll
                   X: =0
                   Width: =Parent.Width
-                  Height: =Min(Parent.Height - 40, 520)
-                  Y: =Parent.Height - Self.Height
+                  Height: =Min(Parent.Height - 40, 450)
+                  Y: =Parent.Height - Min(Parent.Height - 40, 450)
                 Children:
                   - lblSheetT_Fd:
                       Control: Label@2.5.1
@@ -738,7 +723,7 @@ Screens:
                               Items: =Sort(Distinct(Filter(colFind, !IsBlank(cType) && (IsBlank(fdBrand) || Brand = fdBrand) && (IsBlank(fdModel) || Model = fdModel) && (IsBlank(fdWidth) || cWidth = fdWidth) && (IsBlank(fdDepth) || cDepth = fdDepth) && (IsBlank(fdHeight) || cHeight = fdHeight)), cType), Value)
                               ShowScrollbar: =false
                               TemplatePadding: =0
-                              TemplateSize: =158
+                              TemplateSize: =184
                               Width: =Parent.Width
                               X: =0
                               Y: =20
@@ -827,7 +812,7 @@ Screens:
                               Items: =Sort(Distinct(Filter(colFind, !IsBlank(Brand) && (IsBlank(fdType) || cType = fdType) && (IsBlank(fdModel) || Model = fdModel) && (IsBlank(fdWidth) || cWidth = fdWidth) && (IsBlank(fdDepth) || cDepth = fdDepth) && (IsBlank(fdHeight) || cHeight = fdHeight)), Brand), Value)
                               ShowScrollbar: =false
                               TemplatePadding: =0
-                              TemplateSize: =132
+                              TemplateSize: =148
                               Width: =Parent.Width
                               X: =0
                               Y: =20
@@ -916,7 +901,7 @@ Screens:
                               Items: =Sort(Distinct(Filter(colFind, !IsBlank(Model) && (IsBlank(fdType) || cType = fdType) && (IsBlank(fdBrand) || Brand = fdBrand) && (IsBlank(fdWidth) || cWidth = fdWidth) && (IsBlank(fdDepth) || cDepth = fdDepth) && (IsBlank(fdHeight) || cHeight = fdHeight)), Model), Value)
                               ShowScrollbar: =false
                               TemplatePadding: =0
-                              TemplateSize: =158
+                              TemplateSize: =184
                               Width: =Parent.Width
                               X: =0
                               Y: =20
@@ -1234,35 +1219,26 @@ Screens:
                                           OnSelect: =Set(fdHeight, If(fdHeight = ThisItem.Value, Blank(), ThisItem.Value))
                   - conFilterBtns_Fd:
                       Control: GroupContainer@1.5.0
-                      Variant: AutoLayout
+                      Variant: ManualLayout
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
                         LayoutMinHeight: =48
-                        Height: =48
                         FillPortions: =0
-                        Width: =App.Width - 40
                         Fill: =RGBA(0, 0, 0, 0)
-                        LayoutDirection: =LayoutDirection.Horizontal
-                        LayoutAlignItems: =LayoutAlignItems.Stretch
-                        LayoutJustifyContent: =LayoutJustifyContent.Start
-                        LayoutGap: =12
-                        PaddingTop: =0
-                        PaddingRight: =0
-                        PaddingBottom: =0
-                        PaddingLeft: =0
-                        DropShadow: =DropShadow.None
+                        Height: =48
+                        Width: =App.Width - 40
+                        X: =0
+                        Y: =0
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
                       Children:
                         - conFilterClear_Fd:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              AlignInContainer: =AlignInContainer.Stretch
-                              LayoutMinWidth: =40
-                              FillPortions: =1
                               Fill: =C_White
                               Height: =48
                               Width: =(App.Width - 52) / 2
@@ -1294,13 +1270,10 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              AlignInContainer: =AlignInContainer.Stretch
-                              LayoutMinWidth: =40
-                              FillPortions: =1
                               Fill: =C_Accent
                               Height: =48
                               Width: =(App.Width - 52) / 2
-                              X: =0
+                              X: =(App.Width - 52) / 2 + 12
                               Y: =0
                               RadiusBottomLeft: =24
                               RadiusBottomRight: =24

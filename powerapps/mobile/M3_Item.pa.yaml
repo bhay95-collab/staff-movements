@@ -682,7 +682,7 @@ Screens:
                   X: =0
                   Width: =Parent.Width
                   Height: =Min(Parent.Height - 40, 220)
-                  Y: =Parent.Height - Self.Height
+                  Y: =Parent.Height - Min(Parent.Height - 40, 220)
                 Children:
                   - lblSheetT_It:
                       Control: Label@2.5.1
@@ -716,35 +716,26 @@ Screens:
                         Y: =0
                   - conRetBtns_It:
                       Control: GroupContainer@1.5.0
-                      Variant: AutoLayout
+                      Variant: ManualLayout
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
                         LayoutMinHeight: =48
-                        Height: =48
                         FillPortions: =0
-                        Width: =App.Width - 40
                         Fill: =RGBA(0, 0, 0, 0)
-                        LayoutDirection: =LayoutDirection.Horizontal
-                        LayoutAlignItems: =LayoutAlignItems.Stretch
-                        LayoutJustifyContent: =LayoutJustifyContent.Start
-                        LayoutGap: =12
-                        PaddingTop: =0
-                        PaddingRight: =0
-                        PaddingBottom: =0
-                        PaddingLeft: =0
-                        DropShadow: =DropShadow.None
+                        Height: =48
+                        Width: =App.Width - 40
+                        X: =0
+                        Y: =0
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
                       Children:
                         - conRetNo_It:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              AlignInContainer: =AlignInContainer.Stretch
-                              LayoutMinWidth: =40
-                              FillPortions: =1
                               Fill: =C_White
                               Height: =48
                               Width: =(App.Width - 52) / 2
@@ -776,13 +767,10 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              AlignInContainer: =AlignInContainer.Stretch
-                              LayoutMinWidth: =40
-                              FillPortions: =1
                               Fill: =C_Accent
                               Height: =48
                               Width: =(App.Width - 52) / 2
-                              X: =0
+                              X: =(App.Width - 52) / 2 + 12
                               Y: =0
                               RadiusBottomLeft: =24
                               RadiusBottomRight: =24
