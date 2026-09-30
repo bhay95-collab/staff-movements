@@ -240,3 +240,30 @@ New / changed:
 Full replacement for App > OnStart. Two sections: (1) used by the redesigned screens, (2) Data Dashboard ratios and diagnosis map (now includes Amp, Recon, Neuro). CA scheduling has been removed from the app, so all its variables and collections are gone.
 
 Removed (only the old audit / ward screens used them): `varSelWard`, `varSelOutcome`, `varSelClinicianEmail`, `varFromDate`, `varToDate`, `varHasUnsavedChanges_4A/4B/5A/6A`, `HomeColorsList`, `HomeColorCollection` (Home_Main builds its own), and everything for CA scheduling (slots, time options, CA dropdown, `varCAEmail`, `varMyClaims`, `colSelectedSessionRows`, `varShowRemovePopup`, `varRemoveTarget`, `varDayAnchorMinutes`, `varSelectedWard`, 2A time variables).
+
+---
+
+## Ward board – `Ward_Board_New.pa.yaml` (replaces `Ward_All.pa.yaml`)
+
+New screen name is `Ward_Board_New`. Delete the old `Ward_All` screen, then rename this one to `Ward_All` (Home_Main opens `Ward_All`). The old `Ward_All.pa.yaml` is removed from the repo (git history keeps it).
+
+Only the bed list changed. Load, Save, Discard, discharge clean-up, header buttons, and the add-patient / discharge / discard / patient-list popups are the same code.
+
+**Board (left)**: one line per bed, read-only, built to scan.
+- Filter chips with live counts: All beds, Patients, My patients, EDD <= 3 days, No physio.
+- Column headings once at the top (not repeated on every row).
+- Coloured stripe = AFRM diagnosis (same colours as the pies). Falls risk = teal row, contact precautions = amber border (same cues as before). Selected bed = blue border.
+- Bed, patient (URN, age), AFRM chip, physio ("No physio" in amber), PT acuity, length of stay, EDD with countdown (amber <= 3 days, red overdue), AROC EDD (or "Maintenance"), and F / C / N / M flag dots.
+- Empty bed: dashed row, tap to add a patient. The new patient's panel opens straight away.
+
+**Bed panel (right)**: tap a patient to edit.
+- Bed number, name, "Open patient record".
+- AFRM diagnosis: one-tap coloured chips (tap the chosen one again to clear).
+- Physio picker, PT acuity with - / + buttons, length of stay.
+- Admission, EDD and AROC EDD (AROC hidden on 6A).
+- Flag tiles: falls, contact, NDIS (not 6A), maintenance.
+- Discharge button.
+
+Why: the old rows put ~12 editable controls in every row. Now the rows are plain text and there is one set of editing controls, so the screen is faster and reads like a ward board.
+
+Removed: OT / SP pickers (they were already hidden), and editing the bed number inline (it now lives in the panel).
