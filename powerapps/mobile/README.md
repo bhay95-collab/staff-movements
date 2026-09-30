@@ -78,3 +78,6 @@ Do this in a **copy** of the current mobile app so every SharePoint connection i
 - Availability: type tabs; bars; tap a width → Find opens pre-filtered.
 - Audit: scan or type a code; pick the patient; match banner; toggles; tag result; comment rule; Submit (try one PASS and one FAIL on test data – the FAIL emails the treating physio).
 - Rotate / try a small and a large phone: nothing should be cut off; long pages scroll.
+
+## Layout note (why widths are written as App.Width)
+Inside an auto-layout container Power Apps sizes each child itself, but the child's own **Width** property still returns whatever formula it holds. Controls inside that child that use `Parent.Width` then get the wrong number (text centred off the button, pills in the wrong place). Every auto-layout child therefore has its real width written out from `App.Width` (for example `(App.Width - 48) / 3` for three tabs), so everything inside lines up on any phone.

@@ -129,7 +129,7 @@ Screens:
                   FillPortions: =0
                   Fill: =RGBA(7, 95, 115, 1)
                   Height: =76
-                  Width: =Parent.Width
+                  Width: =App.Width
                   X: =0
                   Y: =0
                   RadiusBottomLeft: =0
@@ -192,6 +192,7 @@ Screens:
                   AlignInContainer: =AlignInContainer.SetByContainer
                   LayoutMinHeight: =200
                   FillPortions: =1
+                  Width: =App.Width
                   Fill: =RGBA(0, 0, 0, 0)
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -216,7 +217,7 @@ Screens:
                         FillPortions: =0
                         Fill: =C_White
                         Height: =58
-                        Width: =Parent.Width
+                        Width: =App.Width - 32
                         X: =0
                         Y: =0
                         RadiusBottomLeft: =14
@@ -277,7 +278,7 @@ Screens:
                         FillPortions: =0
                         Fill: =C_White
                         Height: =48
-                        Width: =Parent.Width
+                        Width: =App.Width - 32
                         X: =0
                         Y: =0
                         RadiusBottomLeft: =12
@@ -321,6 +322,7 @@ Screens:
                         LayoutMinHeight: =40
                         Height: =40
                         FillPortions: =0
+                        Width: =App.Width - 32
                         Fill: =RGBA(0, 0, 0, 0)
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -345,7 +347,7 @@ Screens:
                               FillPortions: =1
                               Fill: =If(alView = "Mine", C_Accent, C_White)
                               Height: =40
-                              Width: =Parent.Width
+                              Width: =(App.Width - 144) / 2
                               X: =0
                               Y: =0
                               RadiusBottomLeft: =20
@@ -362,7 +364,7 @@ Screens:
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
                                     BorderRadius: =20
-                                    Font: =AppFont
+                                    Font: =Font.'Segoe UI'
                                     FontColor: =If(alView = "Mine", C_White, C_Ink2)
                                     FontSize: =13
                                     FontWeight: =FontWeight.Bold
@@ -379,7 +381,7 @@ Screens:
                               FillPortions: =1
                               Fill: =If(alView = "All", C_Accent, C_White)
                               Height: =40
-                              Width: =Parent.Width
+                              Width: =(App.Width - 144) / 2
                               X: =0
                               Y: =0
                               RadiusBottomLeft: =20
@@ -396,7 +398,7 @@ Screens:
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
                                     BorderRadius: =20
-                                    Font: =AppFont
+                                    Font: =Font.'Segoe UI'
                                     FontColor: =If(alView = "All", C_White, C_Ink2)
                                     FontSize: =13
                                     FontWeight: =FontWeight.Bold
@@ -429,7 +431,7 @@ Screens:
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
                                     BorderRadius: =20
-                                    Font: =AppFont
+                                    Font: =Font.'Segoe UI'
                                     FontColor: =C_Accent
                                     FontSize: =13
                                     FontWeight: =FontWeight.Bold
@@ -449,7 +451,7 @@ Screens:
                         Items: =SortByColumns(Filter(colPatients, (alView = "All" || Mine) && (IsBlank(Trim(txtSearch_Al.Text)) || Lower(Trim(txtSearch_Al.Text)) in Lower(Name) || Trim(txtSearch_Al.Text) in URN)), "Ward", SortOrder.Ascending, "Bed", SortOrder.Ascending)
                         TemplatePadding: =0
                         TemplateSize: =70
-                        Width: =Parent.Width
+                        Width: =App.Width - 32
                       Children:
                         - conPt_Al:
                             Control: GroupContainer@1.5.0
@@ -557,7 +559,7 @@ Screens:
                         Size: =13
                         Height: =40
                         Text: =If(alView = "Mine" && IsEmpty(Filter(colPatients, Mine)), "No patients are allocated to you. Tap All.", "No patients found.")
-                        Width: =Parent.Width
+                        Width: =App.Width - 32
                         X: =0
                         Y: =0
                         Align: =Align.Center
@@ -625,7 +627,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =32
                         Text: =If(IsBlank(alPatient), "Other patient", "Allocate to " & alPatient.Name)
-                        Width: =Parent.Width
+                        Width: =App.Width - 40
                         X: =0
                         Y: =0
                         Wrap: =false
@@ -638,7 +640,7 @@ Screens:
                         FillPortions: =0
                         Fill: =RGBA(0, 0, 0, 0)
                         Height: =64
-                        Width: =Parent.Width
+                        Width: =App.Width - 40
                         X: =0
                         Y: =0
                         RadiusBottomLeft: =0
@@ -701,7 +703,7 @@ Screens:
                         FillPortions: =0
                         Fill: =RGBA(0, 0, 0, 0)
                         Height: =64
-                        Width: =Parent.Width
+                        Width: =App.Width - 40
                         X: =0
                         Y: =0
                         RadiusBottomLeft: =0
@@ -764,7 +766,7 @@ Screens:
                         FillPortions: =0
                         Fill: =RGBA(0, 0, 0, 0)
                         Height: =64
-                        Width: =Parent.Width
+                        Width: =App.Width - 40
                         X: =0
                         Y: =0
                         RadiusBottomLeft: =0
@@ -826,7 +828,7 @@ Screens:
                         FillPortions: =0
                         Fill: =RGBA(0, 0, 0, 0)
                         Height: =64
-                        Width: =Parent.Width
+                        Width: =App.Width - 40
                         X: =0
                         Y: =0
                         RadiusBottomLeft: =0
@@ -892,7 +894,7 @@ Screens:
                         FillPortions: =0
                         Fill: =RGBA(0, 0, 0, 0)
                         Height: =64
-                        Width: =Parent.Width
+                        Width: =App.Width - 40
                         X: =0
                         Y: =0
                         RadiusBottomLeft: =0
@@ -955,7 +957,7 @@ Screens:
                         FillPortions: =0
                         Fill: =RGBA(0, 0, 0, 0)
                         Height: =64
-                        Width: =Parent.Width
+                        Width: =App.Width - 40
                         X: =0
                         Y: =0
                         RadiusBottomLeft: =0
@@ -1016,6 +1018,7 @@ Screens:
                         LayoutMinHeight: =48
                         Height: =48
                         FillPortions: =0
+                        Width: =App.Width - 40
                         Fill: =RGBA(0, 0, 0, 0)
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -1040,7 +1043,7 @@ Screens:
                               FillPortions: =1
                               Fill: =C_White
                               Height: =48
-                              Width: =Parent.Width
+                              Width: =(App.Width - 52) / 2
                               X: =0
                               Y: =0
                               RadiusBottomLeft: =24
@@ -1057,7 +1060,7 @@ Screens:
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
                                     BorderRadius: =24
-                                    Font: =AppFont
+                                    Font: =Font.'Segoe UI'
                                     FontColor: =C_Ink2
                                     FontSize: =15
                                     FontWeight: =FontWeight.Bold
@@ -1074,7 +1077,7 @@ Screens:
                               FillPortions: =1
                               Fill: =C_Accent
                               Height: =48
-                              Width: =Parent.Width
+                              Width: =(App.Width - 52) / 2
                               X: =0
                               Y: =0
                               RadiusBottomLeft: =24
@@ -1091,7 +1094,7 @@ Screens:
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
                                     BorderRadius: =24
-                                    Font: =AppFont
+                                    Font: =Font.'Segoe UI'
                                     FontColor: =C_White
                                     FontSize: =15
                                     FontWeight: =FontWeight.Bold

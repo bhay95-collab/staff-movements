@@ -46,7 +46,7 @@ Screens:
                   FillPortions: =0
                   Fill: =RGBA(7, 95, 115, 1)
                   Height: =76
-                  Width: =Parent.Width
+                  Width: =App.Width
                   X: =0
                   Y: =0
                   RadiusBottomLeft: =0
@@ -109,6 +109,7 @@ Screens:
                   AlignInContainer: =AlignInContainer.SetByContainer
                   LayoutMinHeight: =200
                   FillPortions: =1
+                  Width: =App.Width
                   Fill: =RGBA(0, 0, 0, 0)
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -132,6 +133,7 @@ Screens:
                         LayoutMinHeight: =40
                         Height: =40
                         FillPortions: =0
+                        Width: =App.Width - 32
                         Fill: =RGBA(0, 0, 0, 0)
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -156,7 +158,7 @@ Screens:
                               FillPortions: =1
                               Fill: =If(avType = "Manual Wheelchair", C_Accent, C_White)
                               Height: =40
-                              Width: =Parent.Width
+                              Width: =(App.Width - 32 - 16) / 3
                               X: =0
                               Y: =0
                               RadiusBottomLeft: =20
@@ -173,7 +175,7 @@ Screens:
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
                                     BorderRadius: =20
-                                    Font: =AppFont
+                                    Font: =Font.'Segoe UI'
                                     FontColor: =If(avType = "Manual Wheelchair", C_White, C_Ink2)
                                     FontSize: =13
                                     FontWeight: =FontWeight.Bold
@@ -190,7 +192,7 @@ Screens:
                               FillPortions: =1
                               Fill: =If(avType = "Tilt in Space", C_Accent, C_White)
                               Height: =40
-                              Width: =Parent.Width
+                              Width: =(App.Width - 32 - 16) / 3
                               X: =0
                               Y: =0
                               RadiusBottomLeft: =20
@@ -207,7 +209,7 @@ Screens:
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
                                     BorderRadius: =20
-                                    Font: =AppFont
+                                    Font: =Font.'Segoe UI'
                                     FontColor: =If(avType = "Tilt in Space", C_White, C_Ink2)
                                     FontSize: =13
                                     FontWeight: =FontWeight.Bold
@@ -224,7 +226,7 @@ Screens:
                               FillPortions: =1
                               Fill: =If(avType = "Power Wheelchair", C_Accent, C_White)
                               Height: =40
-                              Width: =Parent.Width
+                              Width: =(App.Width - 32 - 16) / 3
                               X: =0
                               Y: =0
                               RadiusBottomLeft: =20
@@ -241,7 +243,7 @@ Screens:
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
                                     BorderRadius: =20
-                                    Font: =AppFont
+                                    Font: =Font.'Segoe UI'
                                     FontColor: =If(avType = "Power Wheelchair", C_White, C_Ink2)
                                     FontSize: =13
                                     FontWeight: =FontWeight.Bold
@@ -258,7 +260,7 @@ Screens:
                         FillPortions: =0
                         Fill: =C_White
                         Height: =76
-                        Width: =Parent.Width
+                        Width: =App.Width - 32
                         X: =0
                         Y: =0
                         RadiusBottomLeft: =16
@@ -305,7 +307,7 @@ Screens:
                         Items: =SortByColumns(AddColumns(GroupBy(Filter(colAvail, cType = avType && !IsBlank(cWidth)), cWidth, Rows), Total, CountRows(Rows), Free, CountRows(Filter(Rows, cStatus = "Available"))), "cWidth", SortOrder.Ascending)
                         TemplatePadding: =0
                         TemplateSize: =70
-                        Width: =Parent.Width
+                        Width: =App.Width - 32
                       Children:
                         - conRow_Av:
                             Control: GroupContainer@1.5.0
@@ -415,7 +417,7 @@ Screens:
                         Size: =12
                         Height: =20
                         Text: ="Tap a width to see the available chairs."
-                        Width: =Parent.Width
+                        Width: =App.Width - 32
                         X: =0
                         Y: =0
                         Align: =Align.Center

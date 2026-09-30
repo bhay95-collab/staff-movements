@@ -41,7 +41,7 @@ Screens:
                   FillPortions: =0
                   Fill: =RGBA(7, 95, 115, 1)
                   Height: =76
-                  Width: =Parent.Width
+                  Width: =App.Width
                   X: =0
                   Y: =0
                   RadiusBottomLeft: =0
@@ -104,6 +104,7 @@ Screens:
                   AlignInContainer: =AlignInContainer.SetByContainer
                   LayoutMinHeight: =200
                   FillPortions: =1
+                  Width: =App.Width
                   Fill: =RGBA(0, 0, 0, 0)
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -127,6 +128,7 @@ Screens:
                         LayoutMinHeight: =40
                         Height: =40
                         FillPortions: =0
+                        Width: =App.Width - 32
                         Fill: =RGBA(0, 0, 0, 0)
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -151,7 +153,7 @@ Screens:
                               FillPortions: =1
                               Fill: =If(meTab = "All", C_Accent, C_White)
                               Height: =40
-                              Width: =Parent.Width
+                              Width: =(App.Width - 32 - 16) / 3
                               X: =0
                               Y: =0
                               RadiusBottomLeft: =20
@@ -168,7 +170,7 @@ Screens:
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
                                     BorderRadius: =20
-                                    Font: =AppFont
+                                    Font: =Font.'Segoe UI'
                                     FontColor: =If(meTab = "All", C_White, C_Ink2)
                                     FontSize: =13
                                     FontWeight: =FontWeight.Bold
@@ -185,7 +187,7 @@ Screens:
                               FillPortions: =1
                               Fill: =If(meTab = "Today", C_Accent, C_White)
                               Height: =40
-                              Width: =Parent.Width
+                              Width: =(App.Width - 32 - 16) / 3
                               X: =0
                               Y: =0
                               RadiusBottomLeft: =20
@@ -202,7 +204,7 @@ Screens:
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
                                     BorderRadius: =20
-                                    Font: =AppFont
+                                    Font: =Font.'Segoe UI'
                                     FontColor: =If(meTab = "Today", C_White, C_Ink2)
                                     FontSize: =13
                                     FontWeight: =FontWeight.Bold
@@ -219,7 +221,7 @@ Screens:
                               FillPortions: =1
                               Fill: =If(meTab = "Old", C_Accent, C_White)
                               Height: =40
-                              Width: =Parent.Width
+                              Width: =(App.Width - 32 - 16) / 3
                               X: =0
                               Y: =0
                               RadiusBottomLeft: =20
@@ -236,7 +238,7 @@ Screens:
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
                                     BorderRadius: =20
-                                    Font: =AppFont
+                                    Font: =Font.'Segoe UI'
                                     FontColor: =If(meTab = "Old", C_White, C_Ink2)
                                     FontSize: =13
                                     FontWeight: =FontWeight.Bold
@@ -254,7 +256,7 @@ Screens:
                         Items: =Sort(Switch(meTab, "Today", Filter(colMine, 'Date Signed Out' = Today()), "Old", Filter(colMine, 'Date Signed Out' <= DateAdd(Today(), -42)), colMine), 'Date Signed Out', SortOrder.Descending)
                         TemplatePadding: =0
                         TemplateSize: =92
-                        Width: =Parent.Width
+                        Width: =App.Width - 32
                       Children:
                         - conRow_Me:
                             Control: GroupContainer@1.5.0
@@ -391,7 +393,7 @@ Screens:
                         Size: =13
                         Height: =40
                         Text: =Switch(meTab, "Today", "Nothing allocated by you today.", "Old", "Nothing signed out for 6 weeks or more.", "You have no equipment signed out.")
-                        Width: =Parent.Width
+                        Width: =App.Width - 32
                         X: =0
                         Y: =0
                         Align: =Align.Center
@@ -405,7 +407,7 @@ Screens:
                   FillPortions: =0
                   Fill: =C_White
                   Height: =80
-                  Width: =Parent.Width
+                  Width: =App.Width
                   X: =0
                   Y: =0
                   RadiusBottomLeft: =0
@@ -441,7 +443,7 @@ Screens:
                             Properties:
                               Appearance: ='ButtonCanvas.Appearance'.Transparent
                               BorderRadius: =24
-                              Font: =AppFont
+                              Font: =Font.'Segoe UI'
                               FontColor: =C_White
                               FontSize: =15
                               FontWeight: =FontWeight.Bold

@@ -39,7 +39,7 @@ Screens:
                   FillPortions: =0
                   Fill: =RGBA(7, 95, 115, 1)
                   Height: =76
-                  Width: =Parent.Width
+                  Width: =App.Width
                   X: =0
                   Y: =0
                   RadiusBottomLeft: =0
@@ -102,6 +102,7 @@ Screens:
                   AlignInContainer: =AlignInContainer.SetByContainer
                   LayoutMinHeight: =200
                   FillPortions: =1
+                  Width: =App.Width
                   Fill: =RGBA(0, 0, 0, 0)
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -126,7 +127,7 @@ Screens:
                         FillPortions: =0
                         Fill: =C_White
                         Height: =48
-                        Width: =Parent.Width
+                        Width: =App.Width - 32
                         X: =0
                         Y: =0
                         RadiusBottomLeft: =12
@@ -170,6 +171,7 @@ Screens:
                         LayoutMinHeight: =40
                         Height: =40
                         FillPortions: =0
+                        Width: =App.Width - 32
                         Fill: =RGBA(0, 0, 0, 0)
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -194,7 +196,7 @@ Screens:
                               FillPortions: =1
                               Fill: =If(acWard = "All", C_Accent, C_White)
                               Height: =40
-                              Width: =Parent.Width
+                              Width: =(App.Width - 32 - 32) / 5
                               X: =0
                               Y: =0
                               RadiusBottomLeft: =20
@@ -211,7 +213,7 @@ Screens:
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
                                     BorderRadius: =20
-                                    Font: =AppFont
+                                    Font: =Font.'Segoe UI'
                                     FontColor: =If(acWard = "All", C_White, C_Ink2)
                                     FontSize: =13
                                     FontWeight: =FontWeight.Bold
@@ -228,7 +230,7 @@ Screens:
                               FillPortions: =1
                               Fill: =If(acWard = "4A", C_Accent, C_White)
                               Height: =40
-                              Width: =Parent.Width
+                              Width: =(App.Width - 32 - 32) / 5
                               X: =0
                               Y: =0
                               RadiusBottomLeft: =20
@@ -245,7 +247,7 @@ Screens:
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
                                     BorderRadius: =20
-                                    Font: =AppFont
+                                    Font: =Font.'Segoe UI'
                                     FontColor: =If(acWard = "4A", C_White, C_Ink2)
                                     FontSize: =13
                                     FontWeight: =FontWeight.Bold
@@ -262,7 +264,7 @@ Screens:
                               FillPortions: =1
                               Fill: =If(acWard = "4B", C_Accent, C_White)
                               Height: =40
-                              Width: =Parent.Width
+                              Width: =(App.Width - 32 - 32) / 5
                               X: =0
                               Y: =0
                               RadiusBottomLeft: =20
@@ -279,7 +281,7 @@ Screens:
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
                                     BorderRadius: =20
-                                    Font: =AppFont
+                                    Font: =Font.'Segoe UI'
                                     FontColor: =If(acWard = "4B", C_White, C_Ink2)
                                     FontSize: =13
                                     FontWeight: =FontWeight.Bold
@@ -296,7 +298,7 @@ Screens:
                               FillPortions: =1
                               Fill: =If(acWard = "5A", C_Accent, C_White)
                               Height: =40
-                              Width: =Parent.Width
+                              Width: =(App.Width - 32 - 32) / 5
                               X: =0
                               Y: =0
                               RadiusBottomLeft: =20
@@ -313,7 +315,7 @@ Screens:
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
                                     BorderRadius: =20
-                                    Font: =AppFont
+                                    Font: =Font.'Segoe UI'
                                     FontColor: =If(acWard = "5A", C_White, C_Ink2)
                                     FontSize: =13
                                     FontWeight: =FontWeight.Bold
@@ -330,7 +332,7 @@ Screens:
                               FillPortions: =1
                               Fill: =If(acWard = "6A", C_Accent, C_White)
                               Height: =40
-                              Width: =Parent.Width
+                              Width: =(App.Width - 32 - 32) / 5
                               X: =0
                               Y: =0
                               RadiusBottomLeft: =20
@@ -347,7 +349,7 @@ Screens:
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
                                     BorderRadius: =20
-                                    Font: =AppFont
+                                    Font: =Font.'Segoe UI'
                                     FontColor: =If(acWard = "6A", C_White, C_Ink2)
                                     FontSize: =13
                                     FontWeight: =FontWeight.Bold
@@ -367,7 +369,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =22
                         Text: =CountRows(galAlloc_Ac.AllItems) & " signed out" & If(acWard = "All", "", " on " & acWard)
-                        Width: =Parent.Width
+                        Width: =App.Width - 32
                         X: =0
                         Y: =0
                         Wrap: =false
@@ -382,7 +384,7 @@ Screens:
                           =With({ q: Lower(Trim(txtSearch_Ac.Text)) }, SortByColumns(Filter(colAllocated, (acWard = "All" || Ward.Value = acWard) && (IsBlank(q) || q in Lower(Title) || q in Lower('Patient Name') || q in Lower(Physiotherapist) || q in Lower(URN) || q in Lower(Width.Value))), "Title", SortOrder.Ascending))
                         TemplatePadding: =0
                         TemplateSize: =102
-                        Width: =Parent.Width
+                        Width: =App.Width - 32
                       Children:
                         - conRow_Ac:
                             Control: GroupContainer@1.5.0
@@ -519,7 +521,7 @@ Screens:
                         Size: =13
                         Height: =40
                         Text: ="Nothing matches."
-                        Width: =Parent.Width
+                        Width: =App.Width - 32
                         X: =0
                         Y: =0
                         Align: =Align.Center
