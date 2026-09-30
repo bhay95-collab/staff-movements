@@ -153,3 +153,20 @@ Three cards: filters (left), list (middle), item details (right).
 - Filters: Category, Wheelchair type, Width, Depth, Height, Barcode, "Service due only" tick. Reset button clears all.
 - List: tap anywhere on a row to show it in the details card. Days-in-use pill goes red "SERVICE DUE" above 100 days.
 - Removed: Patient / URN filters (available items have no patient) and the old row click that opened a blank patient.
+
+---
+
+## Audit Oversight – `Audit_Oversight_New.pa.yaml`
+
+Replaces `scrAuditOversight`. Screen name is `Audit_Oversight_New`: delete the old screen, then rename this one to `scrAuditOversight` (so every `Navigate(scrAuditOversight …)` keeps working).
+
+Layout: filter bar, 6 summary tiles, "By ward" list (left), audits list (right), details popup.
+
+How it works (one place for the filter logic instead of 8 copies):
+- `btnLoad_Au` (hidden): loads audits for the date range, builds the clinician list. Runs on open and when dates change.
+- `btnFilter_Au` (hidden): applies clinician, ward, outcome and the Risks / Mismatch / Untagged toggles. Every filter control just calls it.
+- Summary tiles follow date + ward + clinician only. Pills (Risks / Mismatch / Untagged) and the Outcome filter change the audits list only, so the tiles stay stable.
+- Tap a ward on the left to filter to it. Tap again to clear.
+- New variables and collections all start `au` / `colAu`, so nothing clashes with the old screen.
+- "Untagged" everywhere = `TagResult` is not "OK".
+- Removed: the unwired "Usage Dashboard" button (it had no action).
