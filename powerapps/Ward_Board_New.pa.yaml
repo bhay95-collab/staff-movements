@@ -30,6 +30,9 @@ Screens:
         Set(wdPulseOn, false);
         Set(wdSelID, Blank());
         Set(wdFilter, "All");
+        Set(wdShowMove, false);
+        Set(wdMoveFromID, Blank());
+        Set(wdMoveTargetID, Blank());
 
         Select(btnLoadData_Ward)
       Fill: =RGBA(235, 242, 248, 1)
@@ -1290,132 +1293,140 @@ Screens:
                 Properties:
                   Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
-                  Height: =18
-                  Text: |-
-                    ="Flags:  F falls   C contact" & If(wdShowNDIS, "   N NDIS", "") & "   M maintenance"
-                  Width: =240
-                  X: =660
-                  Y: =19
-                  Align: =Align.Right
+                  Size: =10
+                  Height: =14
+                  Text: ="F falls risk      C contact precautions" & If(wdShowNDIS, "      N NDIS", "") & "      M maintenance"
+                  Width: =875
+                  X: =20
+                  Y: =638
+                  Wrap: =false
             - lblH_BED_WB:
                 Control: Label@2.5.1
                 Properties:
                   Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =10
+                  Size: =9
                   FontWeight: =FontWeight.Bold
                   Height: =16
                   Text: ="BED"
-                  Width: =56
+                  Width: =64
                   X: =22
                   Y: =58
                   Align: =Align.Center
+                  Wrap: =false
             - lblH_PATIENT_WB:
                 Control: Label@2.5.1
                 Properties:
                   Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =10
+                  Size: =9
                   FontWeight: =FontWeight.Bold
                   Height: =16
                   Text: ="PATIENT"
                   Width: =190
                   X: =94
                   Y: =58
+                  Wrap: =false
             - lblH_AFRM_WB:
                 Control: Label@2.5.1
                 Properties:
                   Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =10
+                  Size: =9
                   FontWeight: =FontWeight.Bold
                   Height: =16
                   Text: ="AFRM"
                   Width: =92
                   X: =298
                   Y: =58
+                  Wrap: =false
             - lblH_PHYSIO_WB:
                 Control: Label@2.5.1
                 Properties:
                   Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =10
+                  Size: =9
                   FontWeight: =FontWeight.Bold
                   Height: =16
                   Text: ="PHYSIO"
                   Width: =140
                   X: =402
                   Y: =58
+                  Wrap: =false
             - lblH_ACUITY_WB:
                 Control: Label@2.5.1
                 Properties:
                   Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =10
+                  Size: =9
                   FontWeight: =FontWeight.Bold
                   Height: =16
                   Text: ="ACUITY"
-                  Width: =44
-                  X: =556
+                  Width: =60
+                  X: =548
                   Y: =58
                   Align: =Align.Center
+                  Wrap: =false
             - lblH_LOS_WB:
                 Control: Label@2.5.1
                 Properties:
                   Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =10
+                  Size: =9
                   FontWeight: =FontWeight.Bold
                   Height: =16
                   Text: ="LOS"
-                  Width: =46
-                  X: =604
+                  Width: =50
+                  X: =610
                   Y: =58
                   Align: =Align.Center
+                  Wrap: =false
             - lblH_EDD_WB:
                 Control: Label@2.5.1
                 Properties:
                   Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =10
+                  Size: =9
                   FontWeight: =FontWeight.Bold
                   Height: =16
                   Text: ="EDD"
-                  Width: =100
-                  X: =656
+                  Width: =96
+                  X: =664
                   Y: =58
+                  Wrap: =false
             - lblH_AROC_WB:
                 Control: Label@2.5.1
                 Properties:
                   Visible: =wdShowAROC
                   Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =10
+                  Size: =9
                   FontWeight: =FontWeight.Bold
                   Height: =16
                   Text: ="AROC"
-                  Width: =82
-                  X: =762
+                  Width: =70
+                  X: =764
                   Y: =58
+                  Wrap: =false
             - lblH_FLAGS_WB:
                 Control: Label@2.5.1
                 Properties:
                   Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =10
+                  Size: =9
                   FontWeight: =FontWeight.Bold
                   Height: =16
                   Text: ="FLAGS"
                   Width: =50
                   X: =846
                   Y: =58
+                  Wrap: =false
             - Gallery_Beds_WB:
                 Control: Gallery@2.15.0
                 Variant: Vertical
                 Properties:
-                  Height: =574
-                  Items: =Filter(colWard, !IsBlank(ID) && Switch(wdFilter, "Patients", !IsBlank(Trim(Patient)), "Mine", !IsBlank(LookUp(PT_Users, Lower(Email) = Lower(User().Email))), "EDD", !IsBlank(Trim(Patient)) && !IsBlank(EDD) && EDD <= DateAdd(Today(), 3), "NoPT", !IsBlank(Trim(Patient)) && (IsBlank(PT_Users) || CountRows(PT_Users) = 0), true))
+                  Height: =552
+                  Items: =SortByColumns(Filter(colWard, !IsBlank(ID) && Switch(wdFilter, "Patients", !IsBlank(Trim(Patient)), "Mine", !IsBlank(LookUp(PT_Users, Lower(Email) = Lower(User().Email))), "EDD", !IsBlank(Trim(Patient)) && !IsBlank(EDD) && EDD <= DateAdd(Today(), 3), "NoPT", !IsBlank(Trim(Patient)) && (IsBlank(PT_Users) || CountRows(PT_Users) = 0), true)), "Bed", SortOrder.Ascending)
                   TemplatePadding: =0
                   TemplateSize: =60
                   Width: =915
@@ -1457,15 +1468,16 @@ Screens:
                             Properties:
                               Font: =Font.'Segoe UI'
                               Color: =If(!IsBlank(Trim(ThisItem.Patient)), RGBA(14, 28, 42, 1), RGBA(140, 155, 174, 1))
-                              Size: =20
+                              Size: =18
                               FontWeight: =FontWeight.Bold
                               Height: =54
                               Text: =Text(ThisItem.Bed)
-                              Width: =56
+                              Width: =64
                               X: =12
                               Y: =0
                               Align: =Align.Center
                               VerticalAlign: =VerticalAlign.Middle
+                              Wrap: =false
                         - lblEmpty_WB:
                             Control: Label@2.5.1
                             Properties:
@@ -1556,13 +1568,14 @@ Screens:
                               Visible: =!IsBlank(Trim(ThisItem.Patient))
                               Font: =Font.'Segoe UI'
                               Color: =If((IsBlank(ThisItem.PT_Users) || CountRows(ThisItem.PT_Users) = 0), RGBA(178, 105, 0, 1), RGBA(58, 80, 104, 1))
-                              Size: =13
+                              Size: =12
                               FontWeight: =FontWeight.Bold
                               Height: =20
                               Text: =If((IsBlank(ThisItem.PT_Users) || CountRows(ThisItem.PT_Users) = 0), "No physio", Coalesce(First(ThisItem.PT_Users).DisplayName, First(ThisItem.PT_Users).Email))
                               Width: =148
                               X: =392
                               Y: =If((IsBlank(ThisItem.PT_Users) || CountRows(ThisItem.PT_Users) = 0), 17, 8)
+                              Wrap: =false
                         - lblPTmore_WB:
                             Control: Label@2.5.1
                             Properties:
@@ -1614,15 +1627,16 @@ Screens:
                               Visible: =!IsBlank(Trim(ThisItem.Patient))
                               Font: =Font.'Segoe UI'
                               Color: =RGBA(58, 80, 104, 1)
-                              Size: =13
+                              Size: =12
                               FontWeight: =FontWeight.Bold
                               Height: =54
                               Text: =If(IsBlank(ThisItem.'Admission Date'), "—", DateDiff(ThisItem.'Admission Date', Today(), TimeUnit.Days) & "d")
-                              Width: =46
-                              X: =594
+                              Width: =50
+                              X: =596
                               Y: =0
                               Align: =Align.Center
                               VerticalAlign: =VerticalAlign.Middle
+                              Wrap: =false
                         - lblEdd_WB:
                             Control: Label@2.5.1
                             Properties:
@@ -1654,14 +1668,15 @@ Screens:
                               Visible: =(!IsBlank(Trim(ThisItem.Patient))) && (wdShowAROC)
                               Font: =Font.'Segoe UI'
                               Color: =If(ThisItem.Maintenance = true, RGBA(124, 77, 160, 1), If(IsBlank(ThisItem.'AROC EDD'), RGBA(140, 155, 174, 1), RGBA(58, 80, 104, 1)))
-                              Size: =13
+                              Size: =12
                               FontWeight: =FontWeight.Bold
                               Height: =54
-                              Text: =If(ThisItem.Maintenance = true, "Maintenance", If(IsBlank(ThisItem.'AROC EDD'), "—", Text(ThisItem.'AROC EDD', "d mmm")))
-                              Width: =82
-                              X: =752
+                              Text: =If(ThisItem.Maintenance = true, "Maint.", If(IsBlank(ThisItem.'AROC EDD'), "—", Text(ThisItem.'AROC EDD', "d mmm")))
+                              Width: =70
+                              X: =754
                               Y: =0
                               VerticalAlign: =VerticalAlign.Middle
+                              Wrap: =false
                         - dotF_WB:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -1869,11 +1884,11 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              BorderColor: =RGBA(14, 42, 70, 0.22)
+                              BorderColor: =RGBA(14, 42, 70, 0.12)
                               BorderStyle: =BorderStyle.Solid
                               BorderThickness: =1
                               DropShadow: =DropShadow.None
-                              Fill: =RGBA(255, 255, 255, 1)
+                              Fill: =RGBA(235, 242, 248, 1)
                               Height: =44
                               Width: =84
                               X: =20
@@ -1883,23 +1898,35 @@ Screens:
                               RadiusTopLeft: =10
                               RadiusTopRight: =10
                             Children:
-                              - TextInput_Bed:
-                                  Control: Classic/TextInput@2.3.2
+                              - lblBedCap_WB:
+                                  Control: Label@2.5.1
                                   Properties:
-                                    Align: =Align.Center
-                                    BorderStyle: =BorderStyle.None
-                                    Color: =RGBA(14, 28, 42, 1)
-                                    Default: =If(IsBlank(ThisItem.Bed), "", Text(ThisItem.Bed))
                                     Font: =Font.'Segoe UI'
+                                    Color: =RGBA(140, 155, 174, 1)
+                                    Size: =9
                                     FontWeight: =FontWeight.Bold
-                                    Height: =44
+                                    Height: =12
+                                    Text: ="BED"
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =3
+                                    Align: =Align.Center
+                                    Wrap: =false
+                              - lblBedNum_WB:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =Font.'Segoe UI'
+                                    Color: =RGBA(14, 28, 42, 1)
                                     Size: =20
-                                    Width: =84
-                                    OnChange: |-
-                                      =If(
-                                          IsNumeric(Self.Text) && Value(Self.Text) <> Coalesce(ThisItem.Bed, -1),
-                                          Patch(colWard, ThisItem, {Bed: Value(Self.Text), IsDirty: true})
-                                      )
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =28
+                                    Text: =Text(ThisItem.Bed)
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =13
+                                    Align: =Align.Center
+                                    Wrap: =false
+                                    VerticalAlign: =VerticalAlign.Middle
                         - lblSelName_WB:
                             Control: Label@2.5.1
                             Properties:
@@ -1933,7 +1960,7 @@ Screens:
                               DropShadow: =DropShadow.None
                               Fill: =RGBA(26, 90, 153, 1)
                               Height: =38
-                              Width: =360
+                              Width: =240
                               X: =20
                               Y: =72
                               RadiusBottomLeft: =19
@@ -1951,7 +1978,7 @@ Screens:
                                     FontSize: =14
                                     FontWeight: =FontWeight.Bold
                                     Height: =38
-                                    Width: =360
+                                    Width: =240
                                     Text: ="Open patient record  ›"
                                     OnSelect: |-
                                       =If(
@@ -1968,6 +1995,40 @@ Screens:
 
                                           Navigate(Patient_Detail_Screen, ScreenTransition.Fade)
                                       )
+                        - conMove_WB:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              BorderColor: =RGBA(26, 90, 153, 1)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                              Fill: =RGBA(255, 255, 255, 1)
+                              Height: =38
+                              Width: =112
+                              X: =268
+                              Y: =72
+                              RadiusBottomLeft: =19
+                              RadiusBottomRight: =19
+                              RadiusTopLeft: =19
+                              RadiusTopRight: =19
+                            Children:
+                              - btnMove_WB:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =19
+                                    Font: =Font.'Segoe UI'
+                                    FontColor: =RGBA(26, 90, 153, 1)
+                                    FontSize: =14
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =38
+                                    Width: =112
+                                    Text: ="Move bed"
+                                    OnSelect: |-
+                                      =Set(wdMoveFromID, ThisItem.ID);
+                                      Set(wdMoveTargetID, Blank());
+                                      Set(wdShowMove, true)
                         - capDx_WB:
                             Control: Label@2.5.1
                             Properties:
@@ -2599,12 +2660,12 @@ Screens:
                                   Properties:
                                     Font: =Font.'Segoe UI'
                                     Color: =If(Coalesce(ThisItem.'Falls Risk', false), RGBA(0, 144, 153, 1), RGBA(58, 80, 104, 1))
-                                    Size: =12
+                                    Size: =11
                                     FontWeight: =FontWeight.Bold
                                     Height: =36
                                     Text: ="Falls risk"
-                                    Width: =130
-                                    X: =14
+                                    Width: =136
+                                    X: =12
                                     Y: =0
                                     VerticalAlign: =VerticalAlign.Middle
                               - conFalls_WBC:
@@ -2656,12 +2717,12 @@ Screens:
                                   Properties:
                                     Font: =Font.'Segoe UI'
                                     Color: =If(Coalesce(ThisItem.Contact, false), RGBA(178, 105, 0, 1), RGBA(58, 80, 104, 1))
-                                    Size: =12
+                                    Size: =11
                                     FontWeight: =FontWeight.Bold
                                     Height: =36
                                     Text: ="Contact precautions"
-                                    Width: =130
-                                    X: =14
+                                    Width: =136
+                                    X: =12
                                     Y: =0
                                     VerticalAlign: =VerticalAlign.Middle
                               - conContact_WBC:
@@ -2714,12 +2775,12 @@ Screens:
                                   Properties:
                                     Font: =Font.'Segoe UI'
                                     Color: =If(Coalesce(ThisItem.NDIS, false), RGBA(26, 90, 153, 1), RGBA(58, 80, 104, 1))
-                                    Size: =12
+                                    Size: =11
                                     FontWeight: =FontWeight.Bold
                                     Height: =36
                                     Text: ="NDIS"
-                                    Width: =130
-                                    X: =14
+                                    Width: =136
+                                    X: =12
                                     Y: =0
                                     VerticalAlign: =VerticalAlign.Middle
                               - conNdis_WBC:
@@ -2771,12 +2832,12 @@ Screens:
                                   Properties:
                                     Font: =Font.'Segoe UI'
                                     Color: =If(Coalesce(ThisItem.Maintenance, false), RGBA(124, 77, 160, 1), RGBA(58, 80, 104, 1))
-                                    Size: =12
+                                    Size: =11
                                     FontWeight: =FontWeight.Bold
                                     Height: =36
                                     Text: ="Maintenance"
-                                    Width: =130
-                                    X: =14
+                                    Width: =136
+                                    X: =12
                                     Y: =0
                                     VerticalAlign: =VerticalAlign.Middle
                               - conMaint_WBC:
@@ -3614,7 +3675,7 @@ Screens:
                             Variant: Vertical
                             Properties:
                               Height: =640
-                              Items: =Filter(colWard, !IsBlank(ID))
+                              Items: =SortByColumns(Filter(colWard, !IsBlank(ID) && !IsBlank(Trim(Patient))), "Bed", SortOrder.Ascending)
                               TemplateSize: =25
                               Width: =652
                             Children:
@@ -3897,3 +3958,281 @@ Screens:
                               Width: =485
                               Y: =If(Coalesce(varMeDirectory.Discipline.Value, "") = "Physio", 452, 110)
                               X: =14
+      - conMoveBed_WB:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(14, 28, 42, 0.45)
+            Height: =768
+            Visible: =wdShowMove
+            Width: =1366
+            X: =0
+            Y: =0
+          Children:
+            - btnMvScrim_WB:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  BorderStyle: =BorderStyle.None
+                  Height: =768
+                  Width: =1366
+                  X: =0
+                  Y: =0
+                  Text: =""
+                  OnSelect: =Set(wdShowMove, false)
+            - Wd_MoveCard:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =560
+                  Width: =520
+                  X: =423
+                  Y: =104
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                Children:
+                  - lblMvTitle_WB:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
+                        Size: =20
+                        FontWeight: =FontWeight.Bold
+                        Height: =30
+                        Text: ="Move " & Coalesce(LookUp(colWard, ID = wdMoveFromID).Patient, "patient")
+                        Width: =480
+                        X: =20
+                        Y: =18
+                        Wrap: =false
+                  - lblMvSub_WB:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =12
+                        Height: =36
+                        Text: ="Now in bed " & Text(LookUp(colWard, ID = wdMoveFromID).Bed) & ".  Pick the new bed. If it is occupied, the two patients swap beds."
+                        Width: =480
+                        X: =20
+                        Y: =50
+                  - Gallery_MoveBeds_WB:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        Height: =352
+                        Items: =SortByColumns(Filter(colWard, !IsBlank(ID) && ID <> wdMoveFromID), "Bed", SortOrder.Ascending)
+                        TemplatePadding: =0
+                        TemplateSize: =52
+                        Width: =480
+                        X: =20
+                        Y: =96
+                      Children:
+                        - Wd_MoveRow:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              BorderColor: =If(wdMoveTargetID = ThisItem.ID, RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =If(wdMoveTargetID = ThisItem.ID, 2, 1)
+                              DropShadow: =DropShadow.None
+                              Fill: =If(wdMoveTargetID = ThisItem.ID, RGBA(26, 90, 153, 0.08), RGBA(244, 249, 252, 1))
+                              Height: =44
+                              Width: =Parent.TemplateWidth - 8
+                              X: =4
+                              Y: =4
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                            Children:
+                              - lblMvBed_WB:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =Font.'Segoe UI'
+                                    Color: =RGBA(14, 28, 42, 1)
+                                    Size: =18
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =44
+                                    Text: =Text(ThisItem.Bed)
+                                    Width: =70
+                                    X: =8
+                                    Y: =0
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Wrap: =false
+                              - conMvEmpty_WB:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Visible: =!(!IsBlank(Trim(ThisItem.Patient)))
+                                    BorderColor: =RGBA(232, 246, 240, 1)
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                    Fill: =RGBA(232, 246, 240, 1)
+                                    Height: =26
+                                    Width: =76
+                                    X: =92
+                                    Y: =9
+                                    RadiusBottomLeft: =13
+                                    RadiusBottomRight: =13
+                                    RadiusTopLeft: =13
+                                    RadiusTopRight: =13
+                                  Children:
+                                    - lblMvEmpty_WB:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Font: =Font.'Segoe UI'
+                                          Color: =RGBA(12, 122, 82, 1)
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Text: ="Empty"
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =0
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                              - lblMvName_WB:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Visible: =!IsBlank(Trim(ThisItem.Patient))
+                                    Font: =Font.'Segoe UI'
+                                    Color: =RGBA(58, 80, 104, 1)
+                                    Size: =14
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =44
+                                    Text: =ThisItem.Patient
+                                    Width: =Parent.Width - 190
+                                    X: =92
+                                    Y: =0
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Wrap: =false
+                              - lblMvSwap_WB:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Visible: =!IsBlank(Trim(ThisItem.Patient))
+                                    Font: =Font.'Segoe UI'
+                                    Color: =RGBA(140, 155, 174, 1)
+                                    Size: =11
+                                    Height: =44
+                                    Text: ="swap"
+                                    Width: =64
+                                    X: =Parent.Width - 76
+                                    Y: =0
+                                    Align: =Align.Right
+                                    VerticalAlign: =VerticalAlign.Middle
+                              - btnMvRow_WB:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderStyle: =BorderStyle.None
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =0
+                                    Text: =""
+                                    OnSelect: =Set(wdMoveTargetID, ThisItem.ID)
+                  - lblMvSum_WB:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(26, 90, 153, 1)
+                        Size: =13
+                        FontWeight: =FontWeight.Bold
+                        Height: =32
+                        Text: |-
+                          =With({s: LookUp(colWard, ID = wdMoveFromID), t: LookUp(colWard, ID = wdMoveTargetID)}, If(IsBlank(t), "Select a bed above.", IsBlank(Trim(t.Patient)), s.Patient & " moves to bed " & t.Bed & ".", s.Patient & " and " & t.Patient & " swap beds (" & s.Bed & " and " & t.Bed & ")."))
+                        Width: =480
+                        X: =20
+                        Y: =458
+                  - conMvCancel_WB:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =44
+                        Width: =230
+                        X: =20
+                        Y: =500
+                        RadiusBottomLeft: =22
+                        RadiusBottomRight: =22
+                        RadiusTopLeft: =22
+                        RadiusTopRight: =22
+                      Children:
+                        - btnMvCancel_WB:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =22
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(58, 80, 104, 1)
+                              FontSize: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =44
+                              Width: =230
+                              Text: ="Cancel"
+                              OnSelect: =Set(wdShowMove, false)
+                  - conMvGo_WB:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(26, 90, 153, 1)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =If(IsBlank(wdMoveTargetID), RGBA(210, 218, 227, 1), RGBA(26, 90, 153, 1))
+                        Height: =44
+                        Width: =230
+                        X: =270
+                        Y: =500
+                        RadiusBottomLeft: =22
+                        RadiusBottomRight: =22
+                        RadiusTopLeft: =22
+                        RadiusTopRight: =22
+                      Children:
+                        - btnMvGo_WB:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =22
+                              DisplayMode: =If(IsBlank(wdMoveTargetID), DisplayMode.Disabled, DisplayMode.Edit)
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(255, 255, 255, 1)
+                              FontSize: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =44
+                              Width: =230
+                              Text: =If(IsBlank(LookUp(colWard, ID = wdMoveTargetID).Patient), "Move here", "Swap beds")
+                              OnSelect: |-
+                                =With(
+                                    { s: LookUp(colWard, ID = wdMoveFromID), t: LookUp(colWard, ID = wdMoveTargetID) },
+                                    If(
+                                        IsBlank(s) || IsBlank(t) || s.ID = t.ID,
+                                        Notify("Pick a bed to move to.", NotificationType.Warning),
+
+                                        // the two beds trade numbers (an empty bed just takes the old number)
+                                        Patch(colWard, t, { Bed: s.Bed, IsDirty: true });
+                                        Patch(colWard, s, { Bed: t.Bed, IsDirty: true });
+
+                                        Set(wdSelID, s.ID);
+                                        Set(wdShowMove, false);
+                                        Set(wdMoveTargetID, Blank());
+                                        Notify(
+                                            If(
+                                                IsBlank(Trim(t.Patient)),
+                                                s.Patient & " moved to bed " & t.Bed & ". Press Save to keep the change.",
+                                                s.Patient & " and " & t.Patient & " swapped beds. Press Save to keep the change."
+                                            ),
+                                            NotificationType.Success
+                                        )
+                                    )
+                                )

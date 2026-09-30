@@ -259,6 +259,13 @@ Only the bed list changed. Load, Save, Discard, header buttons, and the add-pati
 
 Why: the old rows put ~12 editable controls in every row. Now the rows are plain text and there is one set of editing controls, so the screen is faster and reads like a ward board.
 
-Removed: OT / SP pickers (they were already hidden), and editing the bed number inline (it now lives in the panel).
+Removed: OT / SP pickers (they were already hidden).
 
 Removed from the ward screen: the hidden discharge clean-up button, the `colWardPendingDischarge` queue, and every reference to `Patient_Outcome_Measures` / `Patient_Exercise_Setups`. Discharge now just clears the bed; Save commits it.
+
+### Bed moves (Ward board)
+- Beds are always listed in bed-number order (sorted live, so a move re-sorts straight away).
+- Panel > **Move bed** opens a list of every other bed. Empty beds are marked "Empty", occupied beds "swap".
+- Pick a bed and confirm: the two beds trade numbers. An empty bed just takes the old number; an occupied bed swaps the two patients' beds. Both rows are marked as changed, so **Save** writes both and **Discard** undoes it.
+- Bed numbers can no longer be typed in (typing "415" would have swapped through 4, 41, 415).
+- Spacing fixes: bed number, length of stay, column headings and the AROC "Maint." tag no longer wrap; the flag key moved to the bottom of the board.
