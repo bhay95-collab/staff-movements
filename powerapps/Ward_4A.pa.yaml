@@ -2,332 +2,379 @@ Screens:
   Ward 4A:
     Properties:
       ImagePosition: =ImagePosition.Fill
-      OnVisible: |+
+      OnVisible: |-
         =// =======================================================
-        // WARD 4A – SCREEN OnVisible (PERSON AWARE + combo support + CHARTS)
-        // Stable key = Claims
+        // WARD 4A – SCREEN OnVisible
+        // The heavy lifting lives in two hidden buttons so the SAME code is
+        // shared by OnVisible, Save and Discard (no copy/paste drift):
+        //   btnLoadData_4A       -> reloads colWard4A + clinician option lists,
+        //                           then calls btnRebuildCharts_4A
+        //   btnRebuildCharts_4A  -> rebuilds all chart collections
+        //                           (also called by Save)
         // =======================================================
 
         Set(var4A_Loading, true);
+        Set(varHasUnsavedChanges_4A, false);
 
-        // --------------------------------------
-        // Typed empty People table (keeps schema so DisplayName/Email are recognised)
-        // --------------------------------------
-        Set(
-            varEmptyPeople,
-            FirstN(
-                Table(
-                    {
-                        Claims: "",
-                        DisplayName: "",
-                        Email: "",
-                        Department: "",
-                        JobTitle: "",
-                        Picture: ""
-                    }
-                ),
-                0
-            )
-        );
+        // Discharge clean-up queue (patient names whose related data is deleted on Save)
+        ClearCollect(colPendingDischarge4A, FirstN(Table({ PatientName: "" }), 0));
 
-        // --------------------------------------
-        // 0) Rebuild ward cache
-        //    + local typed Key tables used by ComboBox defaults
-        // --------------------------------------
-        ClearCollect(
-            colWard4A,
-            AddColumns(
-                SortByColumns(Ward_4A_Shared, "field_1", SortOrder.Ascending),
-                IsDirty, false,
-
-                PTKeys,
-                If(
-                    IsBlank(PT_Users) || CountRows(PT_Users) = 0,
-                    FirstN(Table({ Key: "" }), 0),
-                    ForAll(PT_Users, { Key: Lower(Trim(Claims)) })
-                ),
-
-                OTKeys,
-                If(
-                    IsBlank(OT_Users) || CountRows(OT_Users) = 0,
-                    FirstN(Table({ Key: "" }), 0),
-                    ForAll(OT_Users, { Key: Lower(Trim(Claims)) })
-                ),
-
-                SPKeys,
-                If(
-                    IsBlank(SP_Users) || CountRows(SP_Users) = 0,
-                    FirstN(Table({ Key: "" }), 0),
-                    ForAll(SP_Users, { Key: Lower(Trim(Claims)) })
-                )
-            )
-        );
-
-        // --------------------------------------
-        // 0a) Clinician option collections (flat schema)
-        //     These MUST use same key: Person.Claims
-        // --------------------------------------
-
-        // Physio options
-        ClearCollect(
-            colClinicians_Physio,
-            AddColumns(
-                Filter(ClinicianDirectory, Discipline.Value = "Physio" && !IsBlank(Person)),
-                DisplayNameFlat, Coalesce(Person.DisplayName, Person.Email, ""),
-                DisplayKey, Lower(Trim(Person.Claims)),
-                PersonRec, Person
-            )
-        );
-
-        // OT options
-        ClearCollect(
-            colClinicians_OT,
-            AddColumns(
-                Filter(ClinicianDirectory, Discipline.Value = "OT" && !IsBlank(Person)),
-                DisplayNameFlat, Coalesce(Person.DisplayName, Person.Email, ""),
-                DisplayKey, Lower(Trim(Person.Claims)),
-                PersonRec, Person
-            )
-        );
-
-        // SP options
-        ClearCollect(
-            colClinicians_SP,
-            AddColumns(
-                Filter(ClinicianDirectory, Discipline.Value = "SP" && !IsBlank(Person)),
-                DisplayNameFlat, Coalesce(Person.DisplayName, Person.Email, ""),
-                DisplayKey, Lower(Trim(Person.Claims)),
-                PersonRec, Person
-            )
-        );
-
-        // --------------------------------------
-        // 0b) Who am I? (optional)
-        // --------------------------------------
-        Set(
-            varMeDirectory,
-            LookUp(ClinicianDirectory, Lower(Person.Email) = Lower(User().Email))
-        );
-
-        // --------------------------------------
-        // Base set of real patients on 4A
-        // --------------------------------------
-        Set(var4ABasePatients, Filter(colWard4A, !IsBlank(Patient)));
-
-        // =======================================================
-        // CHART BUILD (Diagnosis + Patients per clinician + Acuity per clinician)
-        // =======================================================
-        // =======================================================
-        // REBUILD 4A CHARTS (call after load + after successful save)
-        // Source of truth: colWard4A
-        // =======================================================
-
-        // Base set of real patients on 4A
-        Set(var4ABasePatients, Filter(colWard4A, !IsBlank(Patient)));
-
-        // ------------------------------
-        // 1) Diagnosis Summary (Pie)
-        // ------------------------------
-        Set(var4A_DiagTotal, CountRows(var4ABasePatients));
-        Clear(col4A_DiagnosisSummary);
-
-        ForAll(
-            Table(
-                {Diag: "Ortho"},
-                {Diag: "Recon"},
-                {Diag: "TBI"},
-                {Diag: "Amp"},
-                {Diag: "SCI"},
-                {Diag: "Trauma"},
-                {Diag: "Stroke"},
-                {Diag: "Neuro"}
-            ) As d,
-            With(
-                {
-                    thisCount:
-                        CountRows(
-                            Filter(
-                                var4ABasePatients,
-                                !IsBlank(Diagnosis) && Diagnosis.Value = d.Diag
-                            )
-                        )
-                },
-                With(
-                    {
-                        thisPercent:
-                            If(
-                                var4A_DiagTotal = 0,
-                                0,
-                                Round(thisCount * 100 / var4A_DiagTotal, 0)
-                            )
-                    },
-                    Collect(
-                        col4A_DiagnosisSummary,
-                        {
-                            Label: d.Diag,
-                            Count: thisCount,
-                            DisplayLabel: d.Diag & " (" & thisPercent & "%)"
-                        }
-                    )
-                )
-            )
-        );
-
-        // ------------------------------
-        // 2) Flatten assignments (PT / OT / SP)
-        // ------------------------------
-        Clear(col4A_PT_Assign);
-        Clear(col4A_OT_Assign);
-        Clear(col4A_SP_Assign);
-
-        ForAll(
-            var4ABasePatients As p,
-
-            ForAll(
-                If(IsBlank(p.PT_Users) || CountRows(p.PT_Users)=0, varEmptyPeople, p.PT_Users) As u,
-                If(!IsBlank(u.Claims),
-                    Collect(
-                        col4A_PT_Assign,
-                        {
-                            PatientID: p.ID,
-                            ClinicianClaims: Lower(Trim(u.Claims)),
-                            ClinicianName: Coalesce(u.DisplayName, u.Email, "<unknown>"),
-                            Acuity: Coalesce(p.'Acuity Score', 0)
-                        }
-                    )
-                )
-            );
-
-            ForAll(
-                If(IsBlank(p.OT_Users) || CountRows(p.OT_Users)=0, varEmptyPeople, p.OT_Users) As u,
-                If(!IsBlank(u.Claims),
-                    Collect(
-                        col4A_OT_Assign,
-                        {
-                            PatientID: p.ID,
-                            ClinicianClaims: Lower(Trim(u.Claims)),
-                            ClinicianName: Coalesce(u.DisplayName, u.Email, "<unknown>"),
-                            Acuity: Coalesce(p.'Acuity Score', 0)
-                        }
-                    )
-                )
-            );
-
-            ForAll(
-                If(IsBlank(p.SP_Users) || CountRows(p.SP_Users)=0, varEmptyPeople, p.SP_Users) As u,
-                If(!IsBlank(u.Claims),
-                    Collect(
-                        col4A_SP_Assign,
-                        {
-                            PatientID: p.ID,
-                            ClinicianClaims: Lower(Trim(u.Claims)),
-                            ClinicianName: Coalesce(u.DisplayName, u.Email, "<unknown>"),
-                            Acuity: Coalesce(p.'Acuity Score', 0)
-                        }
-                    )
-                )
-            )
-        );
-
-        // ------------------------------
-        // 3) Pie charts: Patients per clinician
-        // (OPTIONAL improvement: count distinct patients per clinician)
-        // ------------------------------
-        Clear(col4A_PatientsPerPT);
-        ForAll(
-            GroupBy(col4A_PT_Assign, ClinicianName, Rows) As g,
-            Collect(
-                col4A_PatientsPerPT,
-                {
-                    Label: g.ClinicianName,
-                    Count: CountRows(Distinct(g.Rows, PatientID)),
-                    DisplayLabel: g.ClinicianName & " (" & CountRows(Distinct(g.Rows, PatientID)) & ")"
-                }
-            )
-        );
-
-        Clear(col4A_PatientsPerOT);
-        ForAll(
-            GroupBy(col4A_OT_Assign, ClinicianName, Rows) As g,
-            Collect(
-                col4A_PatientsPerOT,
-                {
-                    Label: g.ClinicianName,
-                    Count: CountRows(Distinct(g.Rows, PatientID)),
-                    DisplayLabel: g.ClinicianName & " (" & CountRows(Distinct(g.Rows, PatientID)) & ")"
-                }
-            )
-        );
-
-        Clear(col4A_PatientsPerSP);
-        ForAll(
-            GroupBy(col4A_SP_Assign, ClinicianName, Rows) As g,
-            Collect(
-                col4A_PatientsPerSP,
-                {
-                    Label: g.ClinicianName,
-                    Count: CountRows(Distinct(g.Rows, PatientID)),
-                    DisplayLabel: g.ClinicianName & " (" & CountRows(Distinct(g.Rows, PatientID)) & ")"
-                }
-            )
-        );
-
-        // ------------------------------
-        // 4) Bar charts: Total acuity per clinician (PT + OT)
-        // ------------------------------
-        Clear(col4A_AcuityPerPT);
-        ForAll(
-            GroupBy(col4A_PT_Assign, ClinicianName, Rows) As g,
-            Collect(
-                col4A_AcuityPerPT,
-                {
-                    Label: g.ClinicianName,
-                    TotalAcuity: Sum(g.Rows, Acuity)
-                }
-            )
-        );
-
-        Clear(col4A_AcuityPerOT);
-        ForAll(
-            GroupBy(col4A_OT_Assign, ClinicianName, Rows) As g,
-            Collect(
-                col4A_AcuityPerOT,
-                {
-                    Label: g.ClinicianName,
-                    TotalAcuity: Sum(g.Rows, Acuity)
-                }
-            )
-        );
-
-        Set(var4A_Loading, false);
+        Select(btnLoadData_4A)
+      Fill: =RGBA(235, 242, 248, 1)
     Children:
+      - btnRebuildCharts_4A:
+          Control: Button@0.0.45
+          Properties:
+            Height: =10
+            Visible: =false
+            Width: =10
+            X: =10
+            Y: =0
+            Text: ="Charts"
+            OnSelect: |-
+              =// =======================================================
+              // REBUILD 4A CHARTS (shared: load + after successful Save)
+              // Source of truth: colWard4A
+              // =======================================================
+
+              // Typed empty People table (keeps schema so DisplayName/Email are recognised)
+              Set(
+                  varEmptyPeople,
+                  FirstN(
+                      Table(
+                          {
+                              Claims: "",
+                              DisplayName: "",
+                              Email: "",
+                              Department: "",
+                              JobTitle: "",
+                              Picture: ""
+                          }
+                      ),
+                      0
+                  )
+              );
+
+              // Base set of real patients on 4A
+              Set(var4ABasePatients, Filter(colWard4A, !IsBlank(Patient)));
+
+              // ------------------------------
+              // 1) Diagnosis Summary (Pie)
+              // ------------------------------
+              Set(var4A_DiagTotal, CountRows(var4ABasePatients));
+              Clear(col4A_DiagnosisSummary);
+
+              ForAll(
+                  Table(
+                      {Diag: "Ortho"},
+                      {Diag: "Recon"},
+                      {Diag: "TBI"},
+                      {Diag: "Amp"},
+                      {Diag: "SCI"},
+                      {Diag: "Trauma"},
+                      {Diag: "Stroke"},
+                      {Diag: "Neuro"}
+                  ) As d,
+                  With(
+                      {
+                          thisCount:
+                              CountRows(
+                                  Filter(
+                                      var4ABasePatients,
+                                      !IsBlank(Diagnosis) && Diagnosis.Value = d.Diag
+                                  )
+                              )
+                      },
+                      With(
+                          {
+                              thisPercent:
+                                  If(
+                                      var4A_DiagTotal = 0,
+                                      0,
+                                      Round(thisCount * 100 / var4A_DiagTotal, 0)
+                                  )
+                          },
+                          Collect(
+                              col4A_DiagnosisSummary,
+                              {
+                                  Label: d.Diag,
+                                  Count: thisCount,
+                                  DisplayLabel: d.Diag & " (" & thisPercent & "%)"
+                              }
+                          )
+                      )
+                  )
+              );
+
+              // ------------------------------
+              // 2) Flatten assignments (PT / OT / SP)
+              // ------------------------------
+              Clear(col4A_PT_Assign);
+              Clear(col4A_OT_Assign);
+              Clear(col4A_SP_Assign);
+
+              ForAll(
+                  var4ABasePatients As p,
+
+                  ForAll(
+                      If(IsBlank(p.PT_Users) || CountRows(p.PT_Users)=0, varEmptyPeople, p.PT_Users) As u,
+                      If(!IsBlank(u.Claims),
+                          Collect(
+                              col4A_PT_Assign,
+                              {
+                                  PatientID: p.ID,
+                                  ClinicianClaims: Lower(Trim(u.Claims)),
+                                  ClinicianName: Coalesce(u.DisplayName, u.Email, "<unknown>"),
+                                  Acuity: Coalesce(p.'Acuity Score', 0)
+                              }
+                          )
+                      )
+                  );
+
+                  ForAll(
+                      If(IsBlank(p.OT_Users) || CountRows(p.OT_Users)=0, varEmptyPeople, p.OT_Users) As u,
+                      If(!IsBlank(u.Claims),
+                          Collect(
+                              col4A_OT_Assign,
+                              {
+                                  PatientID: p.ID,
+                                  ClinicianClaims: Lower(Trim(u.Claims)),
+                                  ClinicianName: Coalesce(u.DisplayName, u.Email, "<unknown>"),
+                                  Acuity: Coalesce(p.'Acuity Score', 0)
+                              }
+                          )
+                      )
+                  );
+
+                  ForAll(
+                      If(IsBlank(p.SP_Users) || CountRows(p.SP_Users)=0, varEmptyPeople, p.SP_Users) As u,
+                      If(!IsBlank(u.Claims),
+                          Collect(
+                              col4A_SP_Assign,
+                              {
+                                  PatientID: p.ID,
+                                  ClinicianClaims: Lower(Trim(u.Claims)),
+                                  ClinicianName: Coalesce(u.DisplayName, u.Email, "<unknown>"),
+                                  Acuity: Coalesce(p.'Acuity Score', 0)
+                              }
+                          )
+                      )
+                  )
+              );
+
+              // ------------------------------
+              // 3) Pie charts: Patients per clinician
+              // ------------------------------
+              Clear(col4A_PatientsPerPT);
+              ForAll(
+                  GroupBy(col4A_PT_Assign, ClinicianName, Rows) As g,
+                  Collect(
+                      col4A_PatientsPerPT,
+                      {
+                          Label: g.ClinicianName,
+                          Count: CountRows(Distinct(g.Rows, PatientID)),
+                          DisplayLabel: g.ClinicianName & " (" & CountRows(Distinct(g.Rows, PatientID)) & ")"
+                      }
+                  )
+              );
+
+              Clear(col4A_PatientsPerOT);
+              ForAll(
+                  GroupBy(col4A_OT_Assign, ClinicianName, Rows) As g,
+                  Collect(
+                      col4A_PatientsPerOT,
+                      {
+                          Label: g.ClinicianName,
+                          Count: CountRows(Distinct(g.Rows, PatientID)),
+                          DisplayLabel: g.ClinicianName & " (" & CountRows(Distinct(g.Rows, PatientID)) & ")"
+                      }
+                  )
+              );
+
+              Clear(col4A_PatientsPerSP);
+              ForAll(
+                  GroupBy(col4A_SP_Assign, ClinicianName, Rows) As g,
+                  Collect(
+                      col4A_PatientsPerSP,
+                      {
+                          Label: g.ClinicianName,
+                          Count: CountRows(Distinct(g.Rows, PatientID)),
+                          DisplayLabel: g.ClinicianName & " (" & CountRows(Distinct(g.Rows, PatientID)) & ")"
+                      }
+                  )
+              );
+
+              // ------------------------------
+              // 4) Bar charts: Total acuity per clinician (PT + OT)
+              // ------------------------------
+              Clear(col4A_AcuityPerPT);
+              ForAll(
+                  GroupBy(col4A_PT_Assign, ClinicianName, Rows) As g,
+                  Collect(
+                      col4A_AcuityPerPT,
+                      {
+                          Label: g.ClinicianName,
+                          TotalAcuity: Sum(g.Rows, Acuity)
+                      }
+                  )
+              );
+
+              Clear(col4A_AcuityPerOT);
+              ForAll(
+                  GroupBy(col4A_OT_Assign, ClinicianName, Rows) As g,
+                  Collect(
+                      col4A_AcuityPerOT,
+                      {
+                          Label: g.ClinicianName,
+                          TotalAcuity: Sum(g.Rows, Acuity)
+                      }
+                  )
+              );
+
+              Set(var4A_Loading, false)
+      - btnLoadData_4A:
+          Control: Button@0.0.45
+          Properties:
+            Height: =10
+            Visible: =false
+            Width: =10
+            X: =0
+            Y: =0
+            Text: ="Load"
+            OnSelect: |-
+              =// =======================================================
+              // LOAD WARD 4A DATA (shared: OnVisible + Discard)
+              // Stable key = Claims
+              // =======================================================
+
+              // --------------------------------------
+              // 0) Rebuild ward cache
+              //    + local typed Key tables used by ComboBox defaults
+              // --------------------------------------
+              ClearCollect(
+                  colWard4A,
+                  AddColumns(
+                      SortByColumns(Ward_4A_Shared, "field_1", SortOrder.Ascending),
+                      IsDirty, false,
+
+                      PTKeys,
+                      If(
+                          IsBlank(PT_Users) || CountRows(PT_Users) = 0,
+                          FirstN(Table({ Key: "" }), 0),
+                          ForAll(PT_Users, { Key: Lower(Trim(Claims)) })
+                      ),
+
+                      OTKeys,
+                      If(
+                          IsBlank(OT_Users) || CountRows(OT_Users) = 0,
+                          FirstN(Table({ Key: "" }), 0),
+                          ForAll(OT_Users, { Key: Lower(Trim(Claims)) })
+                      ),
+
+                      SPKeys,
+                      If(
+                          IsBlank(SP_Users) || CountRows(SP_Users) = 0,
+                          FirstN(Table({ Key: "" }), 0),
+                          ForAll(SP_Users, { Key: Lower(Trim(Claims)) })
+                      )
+                  )
+              );
+
+              // --------------------------------------
+              // 0a) Clinician option collections (flat schema)
+              //     These MUST use same key: Person.Claims
+              // --------------------------------------
+
+              // Physio options
+              ClearCollect(
+                  colClinicians_Physio,
+                  AddColumns(
+                      Filter(ClinicianDirectory, Discipline.Value = "Physio" && !IsBlank(Person)),
+                      DisplayNameFlat, Coalesce(Person.DisplayName, Person.Email, ""),
+                      DisplayKey, Lower(Trim(Person.Claims)),
+                      PersonRec, Person
+                  )
+              );
+
+              // OT options
+              ClearCollect(
+                  colClinicians_OT,
+                  AddColumns(
+                      Filter(ClinicianDirectory, Discipline.Value = "OT" && !IsBlank(Person)),
+                      DisplayNameFlat, Coalesce(Person.DisplayName, Person.Email, ""),
+                      DisplayKey, Lower(Trim(Person.Claims)),
+                      PersonRec, Person
+                  )
+              );
+
+              // SP options
+              ClearCollect(
+                  colClinicians_SP,
+                  AddColumns(
+                      Filter(ClinicianDirectory, Discipline.Value = "SP" && !IsBlank(Person)),
+                      DisplayNameFlat, Coalesce(Person.DisplayName, Person.Email, ""),
+                      DisplayKey, Lower(Trim(Person.Claims)),
+                      PersonRec, Person
+                  )
+              );
+
+              // --------------------------------------
+              // 0b) Who am I? (optional)
+              // --------------------------------------
+              Set(
+                  varMeDirectory,
+                  LookUp(ClinicianDirectory, Lower(Person.Email) = Lower(User().Email))
+              );
+
+              // Chart collections are rebuilt from the fresh data
+              Select(btnRebuildCharts_4A)
       - 4A_Title:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            DropShadow: =DropShadow.Bold
-            Fill: =RGBA(35, 100, 153, 1)
+            DropShadow: =DropShadow.Regular
+            Fill: =RGBA(7, 95, 115, 1)
             Height: =70
-            RadiusBottomLeft: =20
-            RadiusBottomRight: =20
-            RadiusTopLeft: =20
-            RadiusTopRight: =20
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
             Width: =1333
             X: =18
             Y: =12
           Children:
+            - imgHeaderGradient_4A:
+                Control: Image@2.2.3
+                Properties:
+                  Height: =Parent.Height
+                  Image: ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' width='1333' height='70' viewBox='0 0 1333 70' preserveAspectRatio='none'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001D46'/><stop offset='0.48' stop-color='#075F73'/><stop offset='1' stop-color='#00838A'/></linearGradient><linearGradient id='b' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001B36' stop-opacity='0.46'/><stop offset='0.45' stop-color='#002036' stop-opacity='0.18'/><stop offset='1' stop-color='#002036' stop-opacity='0.06'/></linearGradient></defs><rect width='1333' height='70' rx='18' fill='url(#a)'/><rect width='1333' height='70' rx='18' fill='url(#b)'/></svg>")
+                  ImagePosition: =ImagePosition.Fill
+                  Width: =Parent.Width
             - TextCanvas7:
                 Control: Text@0.0.51
                 Properties:
-                  Font: =Font.Verdana
+                  Font: =Font.'Segoe UI'
                   FontColor: =RGBA(255, 255, 255, 1)
-                  Height: =70
-                  Size: =40
+                  Height: =36
+                  Size: =28
                   Text: ="Ward 4A"
                   VerticalAlign: =VerticalAlign.Middle
                   Weight: ='TextCanvas.Weight'.Bold
-                  Width: =282
+                  Width: =240
                   X: =76
+                  Y: =8
+            - TextCanvas7_Sub:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 0.88)
+                  Height: =20
+                  Size: =12
+                  Text: =CountRows(var4ABasePatients) & If(CountRows(var4ABasePatients) = 1, " patient", " patients") & " on ward"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =240
+                  X: =76
+                  Y: =42
             - ButtonCanvas31_1:
                 Control: Button@0.0.45
                 Properties:
@@ -364,8 +411,9 @@ Screens:
                   PaddingLeft: =8
                   PaddingRight: =8
                   PaddingTop: =8
-                  Width: =940
-                  X: =379
+                  Width: =754
+                  X: =566
+                  LayoutJustifyContent: =LayoutJustifyContent.End
                 Children:
                   - Container52:
                       Control: GroupContainer@1.5.0
@@ -377,15 +425,15 @@ Screens:
                         BorderThickness: =2
                         DropShadow: =DropShadow.Semibold
                         Fill: =RGBA(255, 255, 255, 1)
-                        Height: =39
+                        Height: =40
                         LayoutMaxHeight: =40
                         LayoutMinHeight: =10
-                        LayoutMinWidth: =100
-                        RadiusBottomLeft: =12
-                        RadiusBottomRight: =12
-                        RadiusTopLeft: =12
-                        RadiusTopRight: =12
-                        Width: =142
+                        LayoutMinWidth: =120
+                        RadiusBottomLeft: =20
+                        RadiusBottomRight: =20
+                        RadiusTopLeft: =20
+                        RadiusTopRight: =20
+                        Width: =120
                         X: =629
                         Y: =15
                       Children:
@@ -402,25 +450,25 @@ Screens:
                               BorderRadiusTopRight: =20
                               BorderStyle: =BorderStyle.None
                               BorderThickness: =3
-                              Font: =Font.Verdana
-                              FontColor: =RGBA(79, 90, 94, 1)
-                              FontSize: =18
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(7, 58, 87, 1)
+                              FontSize: =14
                               FontWeight: =FontWeight.Bold
-                              Height: =39
+                              Height: =Parent.Height
                               Icon: ="Edit"
                               IconStyle: ='ButtonCanvas.IconStyle'.Filled
                               Layout: ='ButtonCanvas.Layout'.TextOnly
                               OnSelect: |-
                                 =If(
-                                    varHasUnsavedChanges_4A,
+                                    !IsEmpty(Filter(colWard4A, IsDirty)),
                                     Notify(
-                                        "You have unsaved changes for Ward 4A. Please tap Save before leaving.",
+                                        "You have unsaved changes for Ward 4A. Please Save (or Discard) before leaving.",
                                         NotificationType.Error
                                     ),
                                     Navigate('4AHandover', ScreenTransition.Fade)
-                                );
+                                )
                               Text: ="Handover"
-                              Width: =224
+                              Width: =Parent.Width
                   - Container53:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
@@ -431,15 +479,15 @@ Screens:
                         BorderThickness: =2
                         DropShadow: =DropShadow.Semibold
                         Fill: =RGBA(255, 255, 255, 1)
-                        Height: =39
+                        Height: =40
                         LayoutMaxHeight: =40
                         LayoutMinHeight: =10
-                        LayoutMinWidth: =220
-                        RadiusBottomLeft: =12
-                        RadiusBottomRight: =12
-                        RadiusTopLeft: =12
-                        RadiusTopRight: =12
-                        Width: =223
+                        LayoutMinWidth: =175
+                        RadiusBottomLeft: =20
+                        RadiusBottomRight: =20
+                        RadiusTopLeft: =20
+                        RadiusTopRight: =20
+                        Width: =175
                         X: =397
                         Y: =15
                       Children:
@@ -456,11 +504,11 @@ Screens:
                               BorderRadiusTopRight: =20
                               BorderStyle: =BorderStyle.None
                               BorderThickness: =3
-                              Font: =Font.Verdana
-                              FontColor: =RGBA(79, 90, 94, 1)
-                              FontSize: =18
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(7, 58, 87, 1)
+                              FontSize: =14
                               FontWeight: =FontWeight.Bold
-                              Height: =39
+                              Height: =Parent.Height
                               Icon: ="Open"
                               IconStyle: ='ButtonCanvas.IconStyle'.Filled
                               OnSelect: |
@@ -468,7 +516,7 @@ Screens:
                                     "ms-excel:ofe|u|https://healthqld.sharepoint.com/teams/PhysioDreamTeam/Shared%20Documents/General/Acuity%20Tool/AROC%20Calculator.xlsx"
                                 )
                               Text: ="AROC Calculator"
-                              Width: =220
+                              Width: =Parent.Width
                   - Container55:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
@@ -479,15 +527,15 @@ Screens:
                         BorderThickness: =2
                         DropShadow: =DropShadow.Semibold
                         Fill: =RGBA(255, 255, 255, 1)
-                        Height: =39
+                        Height: =40
                         LayoutMaxHeight: =40
                         LayoutMinHeight: =10
-                        LayoutMinWidth: =220
-                        RadiusBottomLeft: =12
-                        RadiusBottomRight: =12
-                        RadiusTopLeft: =12
-                        RadiusTopRight: =12
-                        Width: =200
+                        LayoutMinWidth: =150
+                        RadiusBottomLeft: =20
+                        RadiusBottomRight: =20
+                        RadiusTopLeft: =20
+                        RadiusTopRight: =20
+                        Width: =150
                         X: =184
                         Y: =15
                       Children:
@@ -504,11 +552,11 @@ Screens:
                               BorderRadiusTopRight: =20
                               BorderStyle: =BorderStyle.None
                               BorderThickness: =3
-                              Font: =Font.Verdana
-                              FontColor: =RGBA(79, 90, 94, 1)
-                              FontSize: =18
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(7, 58, 87, 1)
+                              FontSize: =14
                               FontWeight: =FontWeight.Bold
-                              Height: =39
+                              Height: =Parent.Height
                               Icon: ="Mail"
                               IconStyle: ='ButtonCanvas.IconStyle'.Filled
                               Layout: ='ButtonCanvas.Layout'.IconBefore
@@ -597,7 +645,7 @@ Screens:
                                     Notify("No patients with EDD in the next 7 days.", NotificationType.Information)
                                 );
                               Text: ="EDD Summary"
-                              Width: =220
+                              Width: =Parent.Width
                   - Container210:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
@@ -605,92 +653,65 @@ Screens:
                         AlignInContainer: =AlignInContainer.Center
                         DropShadow: =DropShadow.Semibold
                         Fill: =RGBA(255, 255, 255, 1)
-                        Height: =39
+                        Height: =40
                         LayoutMaxHeight: =40
                         LayoutMinHeight: =10
-                        LayoutMinWidth: =100
-                        RadiusBottomLeft: =12
-                        RadiusBottomRight: =12
-                        RadiusTopLeft: =12
-                        RadiusTopRight: =12
-                        Width: =171
+                        LayoutMinWidth: =170
+                        RadiusBottomLeft: =20
+                        RadiusBottomRight: =20
+                        RadiusTopLeft: =20
+                        RadiusTopRight: =20
+                        Width: =170
                         X: =530
                         Y: =15
+                        BorderStyle: =BorderStyle.None
                       Children:
                         - ButtonCanvas15:
                             Control: Button@0.0.45
                             Properties:
                               Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              Font: =Font.Verdana
-                              FontSize: =18
+                              Font: =Font.'Segoe UI'
+                              FontSize: =14
                               FontWeight: =FontWeight.Bold
-                              Height: =39
+                              Height: =Parent.Height
                               OnSelect: =Set(locShowPatientList_4A,true)
                               Text: ="Patient List/Data"
-                              Width: =224
+                              Width: =Parent.Width
+                              FontColor: =RGBA(7, 58, 87, 1)
+                              BorderRadius: =20
             - Container62:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
-                  BorderColor: |
-                    =If(
-                        varHasUnsavedChanges_4A && varPulseOn_4A,
-                        RGBA(255, 255, 0, 1),          // bright yellow glow
-                        RGBA(122, 138, 143, 1)         // subtle neutral when off
-                    )
-                  BorderStyle: =BorderStyle.None
-                  BorderThickness: |
-                    =If(
-                        varHasUnsavedChanges_4A && varPulseOn_4A,
-                        3,
-                        1
-                    )
-                  DropShadow: =DropShadow.Bold
-                  Fill: |
-                    =If(
-                        // No unsaved changes → normal green
-                        !varHasUnsavedChanges_4A,
-                        RGBA(152, 208, 70, 1),
-
-                        // Unsaved changes → pulse between two greens
-                        If(
-                            varPulseOn_4A,
-                            RGBA(152, 208, 70, 1),      // base green
-                            RGBA(192, 228, 110, 1)      // lighter green for pulse
-                        )
-                    )
-                  Height: =53
-                  RadiusBottomLeft: =20
-                  RadiusBottomRight: =20
-                  RadiusTopLeft: =20
-                  RadiusTopRight: =20
-                  Visible: |+
-                    =CountRows(Filter(colWard4A, IsDirty)) > 0
-                  Width: =64
-                  X: =301
-                  Y: =8
+                  BorderColor: =If(varPulseOn_4A, RGBA(255, 210, 74, 1), RGBA(255, 255, 255, 0.4))
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =If(varPulseOn_4A, 3, 1)
+                  DropShadow: =DropShadow.Regular
+                  Fill: =If(varPulseOn_4A, RGBA(18, 150, 100, 1), RGBA(12, 122, 82, 1))
+                  Height: =46
+                  RadiusBottomLeft: =23
+                  RadiusBottomRight: =23
+                  RadiusTopLeft: =23
+                  RadiusTopRight: =23
+                  Visible: =!IsEmpty(Filter(colWard4A, IsDirty))
+                  Width: =100
+                  X: =326
+                  Y: =12
                 Children:
-                  - Icon_Save_4A:
-                      Control: Icon@0.0.7
-                      Properties:
-                        Height: =53
-                        Icon: ="Save"
-                        IconColor: =RGBA(255, 255, 255, 1)
-                        Width: =64
                   - ButtonCanvas21:
                       Control: Button@0.0.45
                       Properties:
                         Appearance: ='ButtonCanvas.Appearance'.Transparent
                         BorderColor: =RGBA(53, 61, 63, 1)
-                        BorderRadius: =20
+                        BorderRadius: =23
                         BorderStyle: =BorderStyle.None
                         BorderThickness: =2
                         FontColor: =RGBA(255, 255, 255, 1)
-                        FontSize: =40
-                        Height: =53
+                        FontSize: =14
+                        Height: =46
                         Icon: ="Save"
-                        Layout: ='ButtonCanvas.Layout'.TextOnly
-                        OnSelect: |
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        OnSelect: |-
                           =// ======================================
                           // SAVE WARD 4A (handles new + existing rows)
                           // ======================================
@@ -825,189 +846,31 @@ Screens:
                                   // ✅ ALL rows saved successfully
                                   Set(varHasUnsavedChanges_4A, false);
 
-                                  // =======================================================
-                                  // REBUILD 4A CHARTS (call after load + after successful save)
-                                  // Source of truth: colWard4A
-                                  // =======================================================
-
-                                  // Base set of real patients on 4A
-                                  Set(var4ABasePatients, Filter(colWard4A, !IsBlank(Patient)));
-
-                                  // ------------------------------
-                                  // 1) Diagnosis Summary (Pie)
-                                  // ------------------------------
-                                  Set(var4A_DiagTotal, CountRows(var4ABasePatients));
-                                  Clear(col4A_DiagnosisSummary);
-
+                                  // --------------------------------------
+                                  // Delete related records for patients discharged in this session.
+                                  // (Deferred to here so nothing is destroyed until the user saves.)
+                                  // Skips any name that is back on the ward (e.g. re-admitted before saving).
+                                  // --------------------------------------
                                   ForAll(
-                                      Table(
-                                          {Diag: "Ortho"},
-                                          {Diag: "Recon"},
-                                          {Diag: "TBI"},
-                                          {Diag: "Amp"},
-                                          {Diag: "SCI"},
-                                          {Diag: "Trauma"},
-                                          {Diag: "Stroke"},
-                                          {Diag: "Neuro"}
-                                      ) As d,
-                                      With(
-                                          {
-                                              thisCount:
-                                                  CountRows(
-                                                      Filter(
-                                                          var4ABasePatients,
-                                                          !IsBlank(Diagnosis) && Diagnosis.Value = d.Diag
-                                                      )
-                                                  )
-                                          },
-                                          With(
-                                              {
-                                                  thisPercent:
-                                                      If(
-                                                          var4A_DiagTotal = 0,
-                                                          0,
-                                                          Round(thisCount * 100 / var4A_DiagTotal, 0)
-                                                      )
-                                              },
-                                              Collect(
-                                                  col4A_DiagnosisSummary,
-                                                  {
-                                                      Label: d.Diag,
-                                                      Count: thisCount,
-                                                      DisplayLabel: d.Diag & " (" & thisPercent & "%)"
-                                                  }
-                                              )
-                                          )
+                                      colPendingDischarge4A As d,
+                                      If(
+                                          IsBlank(LookUp(colWard4A, Patient = d.PatientName)),
+                                          RemoveIf(Patient_Outcome_Measures, PatientName = d.PatientName);
+                                          RemoveIf(Patient_Exercise_Setups, Patient = d.PatientName)
+                                      )
+                                  );
+                                  Clear(colPendingDischarge4A);
+
+                                  If(
+                                      !IsEmpty(Errors(Patient_Outcome_Measures)) || !IsEmpty(Errors(Patient_Exercise_Setups)),
+                                      Notify(
+                                          "Ward saved, but some related patient data could not be deleted. Please tell an admin.",
+                                          NotificationType.Warning
                                       )
                                   );
 
-                                  // ------------------------------
-                                  // 2) Flatten assignments (PT / OT / SP)
-                                  // ------------------------------
-                                  Clear(col4A_PT_Assign);
-                                  Clear(col4A_OT_Assign);
-                                  Clear(col4A_SP_Assign);
-
-                                  ForAll(
-                                      var4ABasePatients As p,
-
-                                      ForAll(
-                                          If(IsBlank(p.PT_Users) || CountRows(p.PT_Users)=0, varEmptyPeople, p.PT_Users) As u,
-                                          If(
-                                              !IsBlank(u.Claims),
-                                              Collect(
-                                                  col4A_PT_Assign,
-                                                  {
-                                                      PatientID: p.ID,
-                                                      ClinicianClaims: Lower(Trim(u.Claims)),
-                                                      ClinicianName: Coalesce(u.DisplayName, u.Email, "<unknown>"),
-                                                      Acuity: Coalesce(p.'Acuity Score', 0)
-                                                  }
-                                              )
-                                          )
-                                      );
-
-                                      ForAll(
-                                          If(IsBlank(p.OT_Users) || CountRows(p.OT_Users)=0, varEmptyPeople, p.OT_Users) As u,
-                                          If(
-                                              !IsBlank(u.Claims),
-                                              Collect(
-                                                  col4A_OT_Assign,
-                                                  {
-                                                      PatientID: p.ID,
-                                                      ClinicianClaims: Lower(Trim(u.Claims)),
-                                                      ClinicianName: Coalesce(u.DisplayName, u.Email, "<unknown>"),
-                                                      Acuity: Coalesce(p.'Acuity Score', 0)
-                                                  }
-                                              )
-                                          )
-                                      );
-
-                                      ForAll(
-                                          If(IsBlank(p.SP_Users) || CountRows(p.SP_Users)=0, varEmptyPeople, p.SP_Users) As u,
-                                          If(
-                                              !IsBlank(u.Claims),
-                                              Collect(
-                                                  col4A_SP_Assign,
-                                                  {
-                                                      PatientID: p.ID,
-                                                      ClinicianClaims: Lower(Trim(u.Claims)),
-                                                      ClinicianName: Coalesce(u.DisplayName, u.Email, "<unknown>"),
-                                                      Acuity: Coalesce(p.'Acuity Score', 0)
-                                                  }
-                                              )
-                                          )
-                                      )
-                                  );
-
-                                  // ------------------------------
-                                  // 3) Pie charts: Patients per clinician
-                                  // ------------------------------
-                                  Clear(col4A_PatientsPerPT);
-                                  ForAll(
-                                      GroupBy(col4A_PT_Assign, ClinicianName, Rows) As g,
-                                      Collect(
-                                          col4A_PatientsPerPT,
-                                          {
-                                              Label: g.ClinicianName,
-                                              Count: CountRows(Distinct(g.Rows, PatientID)),
-                                              DisplayLabel: g.ClinicianName & " (" & CountRows(Distinct(g.Rows, PatientID)) & ")"
-                                          }
-                                      )
-                                  );
-
-                                  Clear(col4A_PatientsPerOT);
-                                  ForAll(
-                                      GroupBy(col4A_OT_Assign, ClinicianName, Rows) As g,
-                                      Collect(
-                                          col4A_PatientsPerOT,
-                                          {
-                                              Label: g.ClinicianName,
-                                              Count: CountRows(Distinct(g.Rows, PatientID)),
-                                              DisplayLabel: g.ClinicianName & " (" & CountRows(Distinct(g.Rows, PatientID)) & ")"
-                                          }
-                                      )
-                                  );
-
-                                  Clear(col4A_PatientsPerSP);
-                                  ForAll(
-                                      GroupBy(col4A_SP_Assign, ClinicianName, Rows) As g,
-                                      Collect(
-                                          col4A_PatientsPerSP,
-                                          {
-                                              Label: g.ClinicianName,
-                                              Count: CountRows(Distinct(g.Rows, PatientID)),
-                                              DisplayLabel: g.ClinicianName & " (" & CountRows(Distinct(g.Rows, PatientID)) & ")"
-                                          }
-                                      )
-                                  );
-
-                                  // ------------------------------
-                                  // 4) Bar charts: Total acuity per clinician (PT + OT)
-                                  // ------------------------------
-                                  Clear(col4A_AcuityPerPT);
-                                  ForAll(
-                                      GroupBy(col4A_PT_Assign, ClinicianName, Rows) As g,
-                                      Collect(
-                                          col4A_AcuityPerPT,
-                                          {
-                                              Label: g.ClinicianName,
-                                              TotalAcuity: Sum(g.Rows, Acuity)
-                                          }
-                                      )
-                                  );
-
-                                  Clear(col4A_AcuityPerOT);
-                                  ForAll(
-                                      GroupBy(col4A_OT_Assign, ClinicianName, Rows) As g,
-                                      Collect(
-                                          col4A_AcuityPerOT,
-                                          {
-                                              Label: g.ClinicianName,
-                                              TotalAcuity: Sum(g.Rows, Acuity)
-                                          }
-                                      )
-                                  );
+                                  // Refresh charts (shared code – see btnRebuildCharts_4A)
+                                  Select(btnRebuildCharts_4A);
 
                                   // --------------------------------------
                                   // Wrap up UI state
@@ -1022,22 +885,60 @@ Screens:
                                   )
                               )
                           );
-                        Text: =
-                        Width: =64
+                        Text: ="Save"
+                        Width: =100
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        DisplayMode: =If(locIsSaving, DisplayMode.Disabled, DisplayMode.Edit)
+            - conDiscard_4A:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Regular
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =46
+                  Visible: =!IsEmpty(Filter(colWard4A, IsDirty))
+                  Width: =120
+                  X: =436
+                  Y: =12
+                  RadiusBottomLeft: =23
+                  RadiusBottomRight: =23
+                  RadiusTopLeft: =23
+                  RadiusTopRight: =23
+                Children:
+                  - btnDiscard_4A:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =23
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(180, 26, 26, 1)
+                        FontSize: =14
+                        FontWeight: =FontWeight.Bold
+                        Height: =46
+                        Icon: ="DismissCircle"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        OnSelect: =Set(locShowDiscardWarning_4A, true)
+                        Text: ="Discard"
+                        Width: =120
       - 4A_Acuity:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            DropShadow: =DropShadow.Bold
+            DropShadow: =DropShadow.Light
             Fill: =RGBA(255, 255, 255, 1)
             Height: =658
-            RadiusBottomLeft: =20
-            RadiusBottomRight: =20
-            RadiusTopLeft: =20
-            RadiusTopRight: =20
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
             Width: =1333
             X: =18
             Y: =95
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
           Children:
             - Gallery_Ward4A:
                 Control: Gallery@2.15.0
@@ -1058,37 +959,32 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
-                        BorderColor: |+
-                          =If(
-                              ThisItem.Contact,
-                              RGBA(255, 255, 0, 1),
-                              RGBA(255, 255, 255, 1)
-                          )
-                        BorderThickness: |+
-                          =2
-                        DropShadow: =DropShadow.Regular
+                        BorderColor: =If(ThisItem.Contact, RGBA(245, 176, 0, 1), RGBA(14, 42, 70, 0.12))
+                        BorderThickness: =If(ThisItem.Contact, 3, 1)
+                        DropShadow: =DropShadow.Light
                         Fill: |-
                           =If(
-                          IsBlank(ThisItem.field_2),
-                          RGBA(0, 0, 0, 1),
-                          If(
-                          ThisItem.'Falls Risk',
-                          RGBA(112, 188, 166, 1),
-                          RGBA(214, 221, 224, 0.4)
-                          )
+                              IsBlank(ThisItem.field_2),
+                              RGBA(14, 28, 42, 1),
+                              If(
+                                  ThisItem.'Falls Risk',
+                                  RGBA(204, 234, 230, 1),
+                                  RGBA(244, 249, 252, 1)
+                              )
                           )
                         Height: =88
-                        RadiusBottomLeft: =20
-                        RadiusBottomRight: =20
-                        RadiusTopLeft: =20
-                        RadiusTopRight: =20
+                        RadiusBottomLeft: =14
+                        RadiusBottomRight: =14
+                        RadiusTopLeft: =14
+                        RadiusTopRight: =14
                         Width: =1298
                         X: =1
+                        BorderStyle: =BorderStyle.Solid
                       Children:
                         - TextCanvas14:
                             Control: Text@0.0.51
                             Properties:
-                              BorderColor: =RGBA(53, 61, 63, 1)
+                              BorderColor: =RGBA(14, 42, 70, 0.12)
                               BorderRadius: =12
                               BorderStyle: =BorderStyle.Solid
                               BorderThickness: =1
@@ -1130,6 +1026,8 @@ Screens:
                               RadiusTopRight: =12
                               Size: =24
                               Width: =82
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(14, 28, 42, 1)
                         - TextInput_4APatient:
                             Control: Label@2.5.1
                             Properties:
@@ -1137,7 +1035,7 @@ Screens:
                               BorderColor: =
                               BorderStyle: =BorderStyle.None
                               DisabledBorderColor: =RGBA(0, 0, 0, 0)
-                              FontWeight: =FontWeight.Semibold
+                              FontWeight: =FontWeight.Bold
                               Height: =75
                               OnSelect: |
                                 =If(
@@ -1173,7 +1071,7 @@ Screens:
                                         ScreenTransition.Fade
                                     )
                                 )
-                              Size: =18
+                              Size: =17
                               Text: |
                                 =If(
                                     IsBlank(Trim(ThisItem.Patient)),
@@ -1183,6 +1081,8 @@ Screens:
                               Width: =178
                               X: =82
                               Y: =7
+                              Font: =Font.'Segoe UI'
+                              Color: =If(IsBlank(Trim(ThisItem.Patient)), RGBA(26, 90, 153, 1), RGBA(14, 28, 42, 1))
                         - Label78_3:
                             Control: Label@2.5.1
                             Properties:
@@ -1191,18 +1091,22 @@ Screens:
                               Width: =102
                               X: =906
                               Y: =52
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(58, 80, 104, 1)
+                              Size: =12
+                              FontWeight: =FontWeight.Bold
                         - Container84:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              BorderColor: =RGBA(122, 138, 143, 1)
-                              BorderStyle: =BorderStyle.None
+                              BorderColor: =RGBA(14, 42, 70, 0.12)
+                              BorderStyle: =BorderStyle.Solid
                               BorderThickness: =1
                               Height: =30
-                              RadiusBottomLeft: =12
-                              RadiusBottomRight: =12
-                              RadiusTopLeft: =12
-                              RadiusTopRight: =12
+                              RadiusBottomLeft: =10
+                              RadiusBottomRight: =10
+                              RadiusTopLeft: =10
+                              RadiusTopRight: =10
                               Width: =115
                               X: =1003
                               Y: =52
@@ -1212,12 +1116,13 @@ Screens:
                                   Properties:
                                     BorderStyle: =BorderStyle.None
                                     DefaultDate: =ThisItem.'AROC EDD'
-                                    Fill: |
-                                      =If(IsBlank(ThisItem.Maintenance),
-                                          RGBA(122, 138, 143, 1),
+                                    Fill: |-
+                                      =If(
+                                          IsBlank(ThisItem.Maintenance),
+                                          RGBA(210, 218, 227, 1),
                                           ThisItem.Maintenance = true,
-                                          Color.Black,
-                                          Color.White
+                                          RGBA(14, 28, 42, 1),
+                                          RGBA(255, 255, 255, 1)
                                       )
                                     Height: =30
                                     OnChange: |
@@ -1231,12 +1136,13 @@ Screens:
                                       );
                                     OnSelect: =
                                     Width: =150
+                                    Font: =Font.'Segoe UI'
                         - Checkbox_4ANDIS:
                             Control: Classic/CheckBox@2.1.0
                             Properties:
-                              CheckboxBorderColor: =RGBA(53, 61, 63, 1)
+                              CheckboxBorderColor: =RGBA(26, 90, 153, 1)
                               CheckboxSize: =30
-                              CheckmarkFill: =RGBA(53, 61, 63, 1)
+                              CheckmarkFill: =RGBA(26, 90, 153, 1)
                               Default: =ThisItem.NDIS
                               Height: =30
                               OnCheck: |-
@@ -1263,12 +1169,16 @@ Screens:
                               Text: ="NDIS"
                               X: =1051
                               Y: =5
+                              CheckboxBackgroundFill: =RGBA(255, 255, 255, 1)
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(14, 28, 42, 1)
+                              Size: =13
                         - Checkbox_4AMaintenance:
                             Control: Classic/CheckBox@2.1.0
                             Properties:
-                              CheckboxBorderColor: =RGBA(53, 61, 63, 1)
+                              CheckboxBorderColor: =RGBA(26, 90, 153, 1)
                               CheckboxSize: =30
-                              CheckmarkFill: =RGBA(53, 61, 63, 1)
+                              CheckmarkFill: =RGBA(26, 90, 153, 1)
                               Default: |
                                 =Coalesce(ThisItem.'Maintenance', false)
                               Height: =30
@@ -1294,20 +1204,28 @@ Screens:
                               Text: ="Maintenance"
                               X: =1138
                               Y: =5
+                              CheckboxBackgroundFill: =RGBA(255, 255, 255, 1)
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(14, 28, 42, 1)
+                              Size: =13
                         - Container78:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              DropShadow: =DropShadow.Regular
-                              Fill: =RGBA(255, 0, 0, 1)
+                              DropShadow: =DropShadow.None
+                              Fill: =RGBA(254, 242, 242, 1)
                               Height: =30
-                              RadiusBottomLeft: =12
-                              RadiusBottomRight: =12
-                              RadiusTopLeft: =12
-                              RadiusTopRight: =12
+                              RadiusBottomLeft: =15
+                              RadiusBottomRight: =15
+                              RadiusTopLeft: =15
+                              RadiusTopRight: =15
                               Width: =137
                               X: =1138
                               Y: =52
+                              BorderStyle: =BorderStyle.Solid
+                              BorderColor: =RGBA(180, 26, 26, 0.35)
+                              BorderThickness: =1
+                              Visible: =!IsBlank(Trim(ThisItem.Patient))
                             Children:
                               - Clear Button_4A:
                                   Control: Button@0.0.45
@@ -1315,9 +1233,9 @@ Screens:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
                                     BasePaletteColor: =RGBA(189, 178, 176, 1)
                                     BorderRadius: =15
-                                    Font: =Font.Verdana
-                                    FontColor: =RGBA(255, 255, 255, 1)
-                                    FontSize: =20
+                                    Font: =Font.'Segoe UI'
+                                    FontColor: =RGBA(180, 26, 26, 1)
+                                    FontSize: =14
                                     FontWeight: =FontWeight.Bold
                                     Height: =30
                                     OnSelect: |
@@ -1329,14 +1247,14 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              BorderColor: =RGBA(122, 138, 143, 1)
-                              BorderStyle: =BorderStyle.None
+                              BorderColor: =RGBA(14, 42, 70, 0.12)
+                              BorderStyle: =BorderStyle.Solid
                               BorderThickness: =1
                               Height: =30
-                              RadiusBottomLeft: =12
-                              RadiusBottomRight: =12
-                              RadiusTopLeft: =12
-                              RadiusTopRight: =12
+                              RadiusBottomLeft: =10
+                              RadiusBottomRight: =10
+                              RadiusTopLeft: =10
+                              RadiusTopRight: =10
                               Width: =115
                               X: =361
                               Y: =7
@@ -1400,18 +1318,22 @@ Screens:
                                       );
                                     OnSelect: =
                                     Width: =150
+                                    Font: =Font.'Segoe UI'
+                                    Color: =RGBA(14, 28, 42, 1)
+                                    ChevronBackground: =RGBA(26, 90, 153, 1)
+                                    ChevronHoverBackground: =RGBA(18, 64, 112, 1)
                         - Container83:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              BorderColor: =RGBA(122, 138, 143, 1)
-                              BorderStyle: =BorderStyle.None
+                              BorderColor: =RGBA(14, 42, 70, 0.12)
+                              BorderStyle: =BorderStyle.Solid
                               BorderThickness: =1
                               Height: =30
-                              RadiusBottomLeft: =12
-                              RadiusBottomRight: =12
-                              RadiusTopLeft: =12
-                              RadiusTopRight: =12
+                              RadiusBottomLeft: =10
+                              RadiusBottomRight: =10
+                              RadiusTopLeft: =10
+                              RadiusTopRight: =10
                               Width: =115
                               X: =588
                               Y: =52
@@ -1433,18 +1355,20 @@ Screens:
                                       );
                                     OnSelect: =
                                     Width: =150
+                                    Font: =Font.'Segoe UI'
+                                    Color: =RGBA(14, 28, 42, 1)
                         - Container97:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              BorderColor: =RGBA(122, 138, 143, 1)
-                              BorderStyle: =BorderStyle.None
+                              BorderColor: =RGBA(14, 42, 70, 0.12)
+                              BorderStyle: =BorderStyle.Solid
                               BorderThickness: =1
                               Height: =30
-                              RadiusBottomLeft: =12
-                              RadiusBottomRight: =12
-                              RadiusTopLeft: =12
-                              RadiusTopRight: =12
+                              RadiusBottomLeft: =10
+                              RadiusBottomRight: =10
+                              RadiusTopLeft: =10
+                              RadiusTopRight: =10
                               Width: =115
                               X: =772
                               Y: =52
@@ -1454,12 +1378,12 @@ Screens:
                                   Properties:
                                     BorderStyle: =BorderStyle.None
                                     DefaultDate: =ThisItem.EDD
-                                    Fill: |
+                                    Fill: |-
                                       =If(
                                           IsBlank(ThisItem.EDD),
-                                          RGBA(122, 138, 143, 1),
+                                          RGBA(210, 218, 227, 1),
                                           ThisItem.EDD >= Today() && ThisItem.EDD <= DateAdd(Today(), 3),
-                                          RGBA(255, 191, 0, 1),
+                                          RGBA(251, 230, 176, 1),
                                           RGBA(255, 255, 255, 1)
                                       )
                                     Height: =30
@@ -1473,26 +1397,32 @@ Screens:
                                           }
                                       );
                                     Width: =150
+                                    Font: =Font.'Segoe UI'
+                                    Color: =RGBA(14, 28, 42, 1)
                         - Container10:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              DropShadow: =DropShadow.Regular
+                              DropShadow: =DropShadow.None
                               Height: =30
-                              RadiusBottomLeft: =12
-                              RadiusBottomRight: =12
-                              RadiusTopLeft: =12
-                              RadiusTopRight: =12
+                              RadiusBottomLeft: =10
+                              RadiusBottomRight: =10
+                              RadiusTopLeft: =10
+                              RadiusTopRight: =10
                               Width: =200
                               X: =545
                               Y: =7
+                              BorderStyle: =BorderStyle.Solid
+                              BorderColor: =RGBA(14, 42, 70, 0.12)
+                              BorderThickness: =1
+                              Fill: =RGBA(255, 255, 255, 1)
                             Children:
                               - cmb4A_PT:
                                   Control: Classic/ComboBox@2.4.0
                                   Properties:
                                     BorderStyle: =BorderStyle.None
-                                    ChevronBackground: =RGBA(35, 100, 153, 1)
-                                    ChevronHoverBackground: =RGBA(35, 100, 153, 1)
+                                    ChevronBackground: =RGBA(26, 90, 153, 1)
+                                    ChevronHoverBackground: =RGBA(18, 64, 112, 1)
                                     DefaultSelectedItems: |
                                       =Filter(
                                           colClinicians_Physio,
@@ -1547,27 +1477,33 @@ Screens:
                                     OnSelect: =
                                     SearchFields: =["DisplayNameFlat"]
                                     Width: =200
+                                    Font: =Font.'Segoe UI'
+                                    Color: =RGBA(14, 28, 42, 1)
                         - Container10_1:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              DropShadow: =DropShadow.Regular
+                              DropShadow: =DropShadow.None
                               Height: =30
-                              RadiusBottomLeft: =12
-                              RadiusBottomRight: =12
-                              RadiusTopLeft: =12
-                              RadiusTopRight: =12
+                              RadiusBottomLeft: =10
+                              RadiusBottomRight: =10
+                              RadiusTopLeft: =10
+                              RadiusTopRight: =10
                               Visible: =false
                               Width: =200
                               X: =820
                               Y: =7
+                              BorderStyle: =BorderStyle.Solid
+                              BorderColor: =RGBA(14, 42, 70, 0.12)
+                              BorderThickness: =1
+                              Fill: =RGBA(255, 255, 255, 1)
                             Children:
                               - cmb4A_OT:
                                   Control: Classic/ComboBox@2.4.0
                                   Properties:
                                     BorderStyle: =BorderStyle.None
-                                    ChevronBackground: =RGBA(35, 100, 153, 1)
-                                    ChevronHoverBackground: =RGBA(35, 100, 153, 1)
+                                    ChevronBackground: =RGBA(26, 90, 153, 1)
+                                    ChevronHoverBackground: =RGBA(18, 64, 112, 1)
                                     DefaultSelectedItems: |+
                                       =Filter(
                                           colClinicians_OT,
@@ -1622,27 +1558,33 @@ Screens:
                                     OnSelect: =
                                     SearchFields: =["DisplayNameFlat"]
                                     Width: =200
+                                    Font: =Font.'Segoe UI'
+                                    Color: =RGBA(14, 28, 42, 1)
                         - Container10_2:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              DropShadow: =DropShadow.Regular
+                              DropShadow: =DropShadow.None
                               Height: =30
-                              RadiusBottomLeft: =12
-                              RadiusBottomRight: =12
-                              RadiusTopLeft: =12
-                              RadiusTopRight: =12
+                              RadiusBottomLeft: =10
+                              RadiusBottomRight: =10
+                              RadiusTopLeft: =10
+                              RadiusTopRight: =10
                               Visible: =false
                               Width: =200
                               X: =1075
                               Y: =7
+                              BorderStyle: =BorderStyle.Solid
+                              BorderColor: =RGBA(14, 42, 70, 0.12)
+                              BorderThickness: =1
+                              Fill: =RGBA(255, 255, 255, 1)
                             Children:
                               - cmb4A_SP:
                                   Control: Classic/ComboBox@2.4.0
                                   Properties:
                                     BorderStyle: =BorderStyle.None
-                                    ChevronBackground: =RGBA(35, 100, 153, 1)
-                                    ChevronHoverBackground: =RGBA(35, 100, 153, 1)
+                                    ChevronBackground: =RGBA(26, 90, 153, 1)
+                                    ChevronHoverBackground: =RGBA(18, 64, 112, 1)
                                     DefaultSelectedItems: |+
                                       =Filter(
                                           colClinicians_SP,
@@ -1697,6 +1639,8 @@ Screens:
                                     OnSelect: =
                                     SearchFields: =["DisplayNameFlat"]
                                     Width: =200
+                                    Font: =Font.'Segoe UI'
+                                    Color: =RGBA(14, 28, 42, 1)
                         - Label78:
                             Control: Label@2.5.1
                             Properties:
@@ -1705,6 +1649,10 @@ Screens:
                               Width: =96
                               X: =497
                               Y: =52
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(58, 80, 104, 1)
+                              Size: =12
+                              FontWeight: =FontWeight.Bold
                         - Label78_1:
                             Control: Label@2.5.1
                             Properties:
@@ -1713,6 +1661,10 @@ Screens:
                               Width: =96
                               X: =270
                               Y: =7
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(58, 80, 104, 1)
+                              Size: =12
+                              FontWeight: =FontWeight.Bold
                         - Label78_2:
                             Control: Label@2.5.1
                             Properties:
@@ -1721,6 +1673,10 @@ Screens:
                               Width: =56
                               X: =723
                               Y: =52
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(58, 80, 104, 1)
+                              Size: =12
+                              FontWeight: =FontWeight.Bold
                         - Label78_4:
                             Control: Label@2.5.1
                             Properties:
@@ -1729,6 +1685,10 @@ Screens:
                               Width: =56
                               X: =497
                               Y: =7
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(58, 80, 104, 1)
+                              Size: =12
+                              FontWeight: =FontWeight.Bold
                         - Label78_5:
                             Control: Label@2.5.1
                             Properties:
@@ -1738,6 +1698,10 @@ Screens:
                               Width: =56
                               X: =785
                               Y: =7
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(58, 80, 104, 1)
+                              Size: =12
+                              FontWeight: =FontWeight.Bold
                         - Label78_6:
                             Control: Label@2.5.1
                             Properties:
@@ -1747,19 +1711,26 @@ Screens:
                               Width: =56
                               X: =1039
                               Y: =7
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(58, 80, 104, 1)
+                              Size: =12
+                              FontWeight: =FontWeight.Bold
                         - Container88:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
                               Fill: =RGBA(255, 255, 255, 1)
                               Height: =30
-                              RadiusBottomLeft: =12
-                              RadiusBottomRight: =12
-                              RadiusTopLeft: =12
-                              RadiusTopRight: =12
+                              RadiusBottomLeft: =10
+                              RadiusBottomRight: =10
+                              RadiusTopLeft: =10
+                              RadiusTopRight: =10
                               Width: =115
                               X: =361
                               Y: =52
+                              BorderStyle: =BorderStyle.Solid
+                              BorderColor: =RGBA(14, 42, 70, 0.12)
+                              BorderThickness: =1
                             Children:
                               - TextInput_4AAcuity:
                                   Control: Classic/TextInput@2.3.2
@@ -1783,6 +1754,9 @@ Screens:
                                     RadiusTopLeft: =10
                                     RadiusTopRight: =10
                                     Width: =115
+                                    Font: =Font.'Segoe UI'
+                                    Color: =RGBA(14, 28, 42, 1)
+                                    FontWeight: =FontWeight.Bold
                         - Label78_7:
                             Control: Label@2.5.1
                             Properties:
@@ -1791,12 +1765,16 @@ Screens:
                               Width: =96
                               X: =270
                               Y: =52
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(58, 80, 104, 1)
+                              Size: =12
+                              FontWeight: =FontWeight.Bold
                         - Checkbox_4AMaintenance_1:
                             Control: Classic/CheckBox@2.1.0
                             Properties:
-                              CheckboxBorderColor: =RGBA(53, 61, 63, 1)
+                              CheckboxBorderColor: =RGBA(26, 90, 153, 1)
                               CheckboxSize: =30
-                              CheckmarkFill: =RGBA(53, 61, 63, 1)
+                              CheckmarkFill: =RGBA(26, 90, 153, 1)
                               Default: |
                                 =Coalesce(ThisItem.'Falls Risk', false)
                               Height: =30
@@ -1823,12 +1801,16 @@ Screens:
                               Width: =111
                               X: =749
                               Y: =5
+                              CheckboxBackgroundFill: =RGBA(255, 255, 255, 1)
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(14, 28, 42, 1)
+                              Size: =13
                         - Checkbox_4AMaintenance_2:
                             Control: Classic/CheckBox@2.1.0
                             Properties:
-                              CheckboxBorderColor: =RGBA(53, 61, 63, 1)
+                              CheckboxBorderColor: =RGBA(26, 90, 153, 1)
                               CheckboxSize: =30
-                              CheckmarkFill: =RGBA(53, 61, 63, 1)
+                              CheckmarkFill: =RGBA(26, 90, 153, 1)
                               Default: |
                                 =Coalesce(ThisItem.'Contact', false)
                               Height: =30
@@ -1855,10 +1837,14 @@ Screens:
                               Width: =190
                               X: =860
                               Y: =5
+                              CheckboxBackgroundFill: =RGBA(255, 255, 255, 1)
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(14, 28, 42, 1)
+                              Size: =13
       - Rectangle3:
           Control: Rectangle@2.3.0
           Properties:
-            Fill: =RGBA(0,0,0,0.3)
+            Fill: =RGBA(14, 28, 42, 0.42)
             Height: =Parent.Height
             Visible: =locShowIDPopup4A
             Width: =Parent.Width
@@ -1868,77 +1854,105 @@ Screens:
           Properties:
             DropShadow: =DropShadow.Bold
             Fill: =RGBA(255, 255, 255, 1)
-            Height: =490
-            RadiusBottomLeft: =40
-            RadiusBottomRight: =40
-            RadiusTopLeft: =40
-            RadiusTopRight: =40
+            Height: =440
+            RadiusBottomLeft: =20
+            RadiusBottomRight: =20
+            RadiusTopLeft: =20
+            RadiusTopRight: =20
             Visible: =locShowIDPopup4A
             Width: =824
-            X: =276
-            Y: =177
+            X: =271
+            Y: =164
           Children:
+            - Label13_Sub:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(58, 80, 104, 1)
+                  Size: =13
+                  Height: =24
+                  Text: ="Enter the patient's details to place them in this bed."
+                  Width: =824
+                  Y: =72
             - Label13:
                 Control: Label@2.5.1
                 Properties:
                   Align: =Align.Center
                   FontWeight: =FontWeight.Bold
-                  Height: =64
-                  Size: =30
+                  Height: =44
+                  Size: =24
                   Text: ="Add Patient Details"
                   Width: =824
-                  Y: =30
+                  Y: =26
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
             - TextInput_ID_Name:
                 Control: Classic/TextInput@2.3.2
                 Properties:
                   Align: =Align.Center
-                  BorderColor: =RGBA(122, 138, 143, 1)
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
                   Default: =
                   Height: =60
                   HintText: ="Patient Name"
-                  RadiusBottomLeft: =20
-                  RadiusBottomRight: =20
-                  RadiusTopLeft: =20
-                  RadiusTopRight: =20
-                  Size: =20
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  Size: =18
                   Width: =706
                   X: =54
                   Y: =109
+                  BorderThickness: =1
+                  FocusedBorderColor: =RGBA(26, 90, 153, 1)
+                  FocusedBorderThickness: =2
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
             - TextInput_ID_URN:
                 Control: Classic/TextInput@2.3.2
                 Properties:
                   Align: =Align.Center
-                  BorderColor: =RGBA(122, 138, 143, 1)
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
                   Default: =
                   Height: =60
                   HintText: ="URN"
                   MaxLength: =8
-                  RadiusBottomLeft: =20
-                  RadiusBottomRight: =20
-                  RadiusTopLeft: =20
-                  RadiusTopRight: =20
-                  Size: =20
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  Size: =18
                   Width: =706
                   X: =54
                   Y: =178
+                  BorderThickness: =1
+                  FocusedBorderColor: =RGBA(26, 90, 153, 1)
+                  FocusedBorderThickness: =2
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
             - TextInput_ID_DOB_Day:
                 Control: Classic/TextInput@2.3.2
                 Properties:
                   Align: =Align.Center
-                  BorderColor: =RGBA(122, 138, 143, 1)
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
                   Default: =
                   Height: =60
                   HintText: ="DD"
                   MaxLength: =2
-                  RadiusBottomLeft: =20
-                  RadiusBottomRight: =20
-                  RadiusTopLeft: =20
-                  RadiusTopRight: =20
-                  Size: =20
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  Size: =18
                   VirtualKeyboardMode: =VirtualKeyboardMode.Numeric
                   Width: =180
                   X: =54
                   Y: =244
+                  BorderThickness: =1
+                  FocusedBorderColor: =RGBA(26, 90, 153, 1)
+                  FocusedBorderThickness: =2
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
             - TextCanvas12_1:
                 Control: Text@0.0.51
                 Properties:
@@ -1951,24 +1965,31 @@ Screens:
                   Width: =76
                   X: =502
                   Y: =244
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(140, 155, 174, 1)
             - TextInput_ID_DOB_Month:
                 Control: Classic/TextInput@2.3.2
                 Properties:
                   Align: =Align.Center
-                  BorderColor: =RGBA(122, 138, 143, 1)
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
                   Default: =
                   Height: =60
                   HintText: ="MM"
                   MaxLength: =2
-                  RadiusBottomLeft: =20
-                  RadiusBottomRight: =20
-                  RadiusTopLeft: =20
-                  RadiusTopRight: =20
-                  Size: =20
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  Size: =18
                   VirtualKeyboardMode: =VirtualKeyboardMode.Numeric
                   Width: =180
                   X: =322
                   Y: =244
+                  BorderThickness: =1
+                  FocusedBorderColor: =RGBA(26, 90, 153, 1)
+                  FocusedBorderThickness: =2
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
             - TextCanvas12:
                 Control: Text@0.0.51
                 Properties:
@@ -1981,47 +2002,54 @@ Screens:
                   Width: =88
                   X: =234
                   Y: =244
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(140, 155, 174, 1)
             - TextInput_ID_DOB_Year:
                 Control: Classic/TextInput@2.3.2
                 Properties:
                   Align: =Align.Center
-                  BorderColor: =RGBA(122, 138, 143, 1)
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
                   Default: =
                   Height: =60
                   HintText: ="YYYY"
                   MaxLength: =4
-                  RadiusBottomLeft: =20
-                  RadiusBottomRight: =20
-                  RadiusTopLeft: =20
-                  RadiusTopRight: =20
-                  Size: =20
-                  VirtualKeyboardMode: =VirtualKeyboardMode.Numeric
-                  Width: =182
-                  X: =578
-                  Y: =244
-            - Container47:
-                Control: GroupContainer@1.5.0
-                Variant: ManualLayout
-                Properties:
-                  DropShadow: =DropShadow.Bold
-                  Fill: =RGBA(35, 100, 153, 1)
-                  Height: =80
                   RadiusBottomLeft: =12
                   RadiusBottomRight: =12
                   RadiusTopLeft: =12
                   RadiusTopRight: =12
-                  Width: =280
-                  X: =425
-                  Y: =351
+                  Size: =18
+                  VirtualKeyboardMode: =VirtualKeyboardMode.Numeric
+                  Width: =182
+                  X: =578
+                  Y: =244
+                  BorderThickness: =1
+                  FocusedBorderColor: =RGBA(26, 90, 153, 1)
+                  FocusedBorderThickness: =2
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+            - Container47:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Regular
+                  Fill: =RGBA(26, 90, 153, 1)
+                  Height: =56
+                  RadiusBottomLeft: =28
+                  RadiusBottomRight: =28
+                  RadiusTopLeft: =28
+                  RadiusTopRight: =28
+                  Width: =250
+                  X: =510
+                  Y: =340
                 Children:
                   - ButtonCanvas28:
                       Control: Button@0.0.45
                       Properties:
                         Appearance: ='ButtonCanvas.Appearance'.Transparent
                         FontColor: =RGBA(255, 255, 255, 1)
-                        FontSize: =30
+                        FontSize: =18
                         FontWeight: =FontWeight.Bold
-                        Height: =80
+                        Height: =56
                         Icon: ="CheckmarkCircle"
                         IconStyle: ='ButtonCanvas.IconStyle'.Filled
                         Layout: ='ButtonCanvas.Layout'.TextOnly
@@ -2089,29 +2117,34 @@ Screens:
                               )
                           );
                         Text: ="Confirm"
-                        Width: =280
+                        Width: =250
+                        Font: =Font.'Segoe UI'
+                        BorderRadius: =28
             - Container47_1:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
-                  DropShadow: =DropShadow.Bold
+                  DropShadow: =DropShadow.None
                   Fill: =RGBA(255, 255, 255, 1)
-                  Height: =80
-                  RadiusBottomLeft: =12
-                  RadiusBottomRight: =12
-                  RadiusTopLeft: =12
-                  RadiusTopRight: =12
-                  Width: =280
-                  X: =109
-                  Y: =351
+                  Height: =56
+                  RadiusBottomLeft: =28
+                  RadiusBottomRight: =28
+                  RadiusTopLeft: =28
+                  RadiusTopRight: =28
+                  Width: =250
+                  X: =248
+                  Y: =340
+                  BorderStyle: =BorderStyle.Solid
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
                 Children:
                   - ButtonCanvas33:
                       Control: Button@0.0.45
                       Properties:
                         Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        FontColor: =RGBA(53, 61, 63, 1)
-                        FontSize: =30
-                        Height: =80
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =18
+                        Height: =56
                         Icon: ="DismissCircle"
                         IconStyle: ='ButtonCanvas.IconStyle'.Filled
                         Layout: ='ButtonCanvas.Layout'.TextOnly
@@ -2124,13 +2157,14 @@ Screens:
                           Reset(TextInput_ID_DOB_Month);
                           Reset(TextInput_ID_DOB_Year);
                         Text: ="Cancel"
-                        Width: =280
+                        Width: =250
+                        Font: =Font.'Segoe UI'
+                        BorderRadius: =28
       - conClearWarning_4A:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            Fill: |+
-              =RGBA(0,0,0,0.4)
+            Fill: =RGBA(14, 28, 42, 0.42)
             Height: =768
             Visible: =locShowClearWarning_4A
             Width: =1366
@@ -2141,70 +2175,78 @@ Screens:
                 Properties:
                   DropShadow: =DropShadow.Bold
                   Fill: =RGBA(255, 255, 255, 1)
-                  Height: =308
+                  Height: =300
                   RadiusBottomLeft: =20
                   RadiusBottomRight: =20
                   RadiusTopLeft: =20
                   RadiusTopRight: =20
                   Width: =743
-                  X: =285
-                  Y: =180
+                  X: =311
+                  Y: =200
                 Children:
+                  - Label24_Detail:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(58, 80, 104, 1)
+                        Size: =16
+                        Height: =110
+                        Text: ="Their Outcome Measures and Exercise Setups will be permanently deleted when you press Save." & Char(10) & Char(10) & "Not sure? Use Discard on the header bar before saving to undo."
+                        Width: =643
+                        X: =50
+                        Y: =84
                   - Label24:
                       Control: Label@2.5.1
                       Properties:
                         Align: =Align.Center
                         FontWeight: =FontWeight.Bold
-                        Height: =205
-                        Size: =22
-                        Text: |+
-                          ="Do you wish to DISCHARGE this Patient from the Ward?" & Char(10) &
-                          "This will permanently delete all associated data (Exercise Setups, Outcome Measures, etc.)"
-                        Width: =666
+                        Height: =44
+                        Size: =24
+                        Text: ="Discharge " & Coalesce(locPendingClearItem_4A.Patient, "this patient") & "?"
+                        Width: =643
                         X: =50
-                        Y: =15
+                        Y: =28
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
                   - Container77:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
-                        DropShadow: =DropShadow.Bold
-                        Fill: =RGBA(35, 100, 153, 1)
-                        Height: =50
-                        RadiusBottomLeft: =12
-                        RadiusBottomRight: =12
-                        RadiusTopLeft: =12
-                        RadiusTopRight: =12
-                        Width: =155
-                        X: =383
-                        Y: =210
+                        DropShadow: =DropShadow.Regular
+                        Fill: =RGBA(180, 26, 26, 1)
+                        Height: =52
+                        RadiusBottomLeft: =26
+                        RadiusBottomRight: =26
+                        RadiusTopLeft: =26
+                        RadiusTopRight: =26
+                        Width: =190
+                        X: =503
+                        Y: =222
                       Children:
                         - ButtonCanvas38:
                             Control: Button@0.0.45
                             Properties:
                               Appearance: ='ButtonCanvas.Appearance'.Transparent
                               FontColor: =RGBA(255, 255, 255, 1)
-                              FontSize: =20
-                              Height: =50
+                              FontSize: =18
+                              Height: =52
                               Icon: ="CheckmarkCircle"
                               IconStyle: ='ButtonCanvas.IconStyle'.Filled
                               Layout: ='ButtonCanvas.Layout'.TextOnly
-                              OnSelect: |+
+                              OnSelect: |-
                                 =// SAFETY: close popup immediately
                                 Set(locShowClearWarning_4A, false);
 
-                                // 1) Delete Outcome Measures for this patient
-                                RemoveIf(
-                                    Patient_Outcome_Measures,
-                                    PatientName = locPendingClearItem_4A.Patient
+                                // 1) Queue the related-data clean-up. NOTHING is deleted yet –
+                                //    Outcome Measures / Exercise Setups are removed when Save succeeds.
+                                If(
+                                    !IsBlank(Trim(locPendingClearItem_4A.Patient)) &&
+                                    IsBlank(LookUp(colPendingDischarge4A, PatientName = locPendingClearItem_4A.Patient)),
+                                    Collect(colPendingDischarge4A, { PatientName: locPendingClearItem_4A.Patient })
                                 );
 
-                                // 2) Delete Exercise Setups for this patient on Ward 4A
-                                RemoveIf(
-                                    Patient_Exercise_Setups,
-                                    Patient = locPendingClearItem_4A.Patient
-                                );
-
-                                // 3) Clear the slot in colWard4A (LOCAL ONLY - Save commits to SharePoint)
+                                // 2) Clear the slot in colWard4A (LOCAL ONLY - Save commits to SharePoint)
                                 Patch(
                                     colWard4A,
                                     locPendingClearItem_4A,
@@ -2287,38 +2329,45 @@ Screens:
                                     }
                                 );
 
-                                // 4) Clear pending variable
+                                // 3) Clear pending variable
                                 Set(locPendingClearItem_4A, Blank());
+                                Set(varHasUnsavedChanges_4A, true);
 
                                 // Notify
                                 Notify(
-                                    "Patient discharged and related data removed. Please Save to finalise.",
+                                    "Patient removed from the list. Press Save to finalise (related data is deleted on Save) or Discard to undo.",
                                     NotificationType.Success
-                                );
-                              Text: ="Confirm"
-                              Width: =155
+                                )
+                              Text: ="Discharge"
+                              Width: =190
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              BorderRadius: =26
                   - Container77_1:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
-                        DropShadow: =DropShadow.Bold
+                        DropShadow: =DropShadow.None
                         Fill: =RGBA(255, 255, 255, 1)
-                        Height: =50
-                        RadiusBottomLeft: =12
-                        RadiusBottomRight: =12
-                        RadiusTopLeft: =12
-                        RadiusTopRight: =12
-                        Width: =155
-                        X: =208
-                        Y: =210
+                        Height: =52
+                        RadiusBottomLeft: =26
+                        RadiusBottomRight: =26
+                        RadiusTopLeft: =26
+                        RadiusTopRight: =26
+                        Width: =190
+                        X: =301
+                        Y: =222
+                        BorderStyle: =BorderStyle.Solid
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
                       Children:
                         - ButtonCanvas39:
                             Control: Button@0.0.45
                             Properties:
                               Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              FontColor: =RGBA(79, 90, 94, 1)
-                              FontSize: =20
-                              Height: =50
+                              FontColor: =RGBA(58, 80, 104, 1)
+                              FontSize: =18
+                              Height: =52
                               Icon: ="DismissCircle"
                               IconStyle: ='ButtonCanvas.IconStyle'.Filled
                               Layout: ='ButtonCanvas.Layout'.TextOnly
@@ -2326,7 +2375,129 @@ Screens:
                                 =Set(locShowClearWarning_4A, false);
                                 Set(locPendingClearItem_4A, Blank());
                               Text: ="Cancel"
-                              Width: =155
+                              Width: =190
+                              Font: =Font.'Segoe UI'
+                              BorderRadius: =26
+      - conDiscardWarning_4A:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(14, 28, 42, 0.42)
+            Height: =768
+            Visible: =locShowDiscardWarning_4A
+            Width: =1366
+          Children:
+            - conDiscardCard_4A:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =270
+                  Width: =640
+                  X: =363
+                  Y: =249
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                Children:
+                  - lblDiscardTitle_4A:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
+                        Size: =24
+                        FontWeight: =FontWeight.Bold
+                        Height: =44
+                        Text: ="Discard unsaved changes?"
+                        Width: =560
+                        X: =40
+                        Y: =28
+                  - lblDiscardDetail_4A:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(58, 80, 104, 1)
+                        Size: =16
+                        Height: =80
+                        Text: ="Every edit since your last save will be lost and the ward will reload from SharePoint."
+                        Width: =560
+                        X: =40
+                        Y: =84
+                  - conDiscardKeep_4A:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =52
+                        Width: =200
+                        X: =114
+                        Y: =190
+                        RadiusBottomLeft: =26
+                        RadiusBottomRight: =26
+                        RadiusTopLeft: =26
+                        RadiusTopRight: =26
+                      Children:
+                        - btnDiscardKeep_4A:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =26
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(58, 80, 104, 1)
+                              FontSize: =18
+                              FontWeight: =FontWeight.Bold
+                              Height: =52
+                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              OnSelect: =Set(locShowDiscardWarning_4A, false)
+                              Text: ="Keep editing"
+                              Width: =200
+                  - conDiscardGo_4A:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(0, 0, 0, 0)
+                        BorderStyle: =BorderStyle.None
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.Regular
+                        Fill: =RGBA(180, 26, 26, 1)
+                        Height: =52
+                        Width: =200
+                        X: =326
+                        Y: =190
+                        RadiusBottomLeft: =26
+                        RadiusBottomRight: =26
+                        RadiusTopLeft: =26
+                        RadiusTopRight: =26
+                      Children:
+                        - btnDiscardGo_4A:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =26
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(255, 255, 255, 1)
+                              FontSize: =18
+                              FontWeight: =FontWeight.Bold
+                              Height: =52
+                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              OnSelect: |-
+                                =Set(locShowDiscardWarning_4A, false);
+                                Set(var4A_Loading, true);
+                                Set(varHasUnsavedChanges_4A, false);
+                                ClearCollect(colPendingDischarge4A, FirstN(Table({ PatientName: "" }), 0));
+                                Refresh(Ward_4A_Shared);
+                                Select(btnLoadData_4A);
+                                Notify("Unsaved changes discarded.", NotificationType.Information)
+                              Text: ="Discard"
+                              Width: =200
       - Timer_Pulse_4A:
           Control: Timer@2.1.0
           Properties:
@@ -2336,8 +2507,7 @@ Screens:
             OnTimerEnd: |+
               =Set(varPulseOn_4A, !varPulseOn_4A)
             Repeat: =true
-            Start: |+
-              =varHasUnsavedChanges_4A
+            Start: =!IsEmpty(Filter(colWard4A, IsDirty))
             Visible: =false
             Width: =85
             X: =1281
@@ -2346,7 +2516,7 @@ Screens:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            Fill: =RGBA(0, 0, 0, 0.4)
+            Fill: =RGBA(14, 28, 42, 0.42)
             Height: =768
             RadiusBottomLeft: =0
             RadiusBottomRight: =0
@@ -2375,6 +2545,7 @@ Screens:
                   Width: =1198
                   X: =81
                   Y: =27
+                  DropShadow: =DropShadow.Bold
                 Children:
                   - Label5:
                       Control: Label@2.5.1
@@ -2385,6 +2556,8 @@ Screens:
                         Size: =18
                         Text: ="Patient List"
                         Width: =664
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
                   - Label5_1:
                       Control: Label@2.5.1
                       Properties:
@@ -2395,20 +2568,25 @@ Screens:
                         Text: ="Ward Data"
                         Width: =534
                         X: =664
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
                   - Container68:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
-                        DropShadow: =DropShadow.Bold
-                        Fill: =RGBA(35, 100, 153, 0.2)
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
                         Height: =640
-                        RadiusBottomLeft: =20
-                        RadiusBottomRight: =20
-                        RadiusTopLeft: =20
-                        RadiusTopRight: =20
+                        RadiusBottomLeft: =16
+                        RadiusBottomRight: =16
+                        RadiusTopLeft: =16
+                        RadiusTopRight: =16
                         Width: =652
                         X: =12
                         Y: =54
+                        BorderStyle: =BorderStyle.Solid
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
                       Children:
                         - Gallery1:
                             Control: Gallery@2.15.0
@@ -2428,15 +2606,18 @@ Screens:
                                   Control: GroupContainer@1.5.0
                                   Variant: ManualLayout
                                   Properties:
-                                    DropShadow: =DropShadow.Regular
+                                    DropShadow: =DropShadow.None
                                     Fill: =RGBA(255, 255, 255, 1)
                                     Height: =29
-                                    RadiusBottomLeft: =12
-                                    RadiusBottomRight: =12
-                                    RadiusTopLeft: =12
-                                    RadiusTopRight: =12
+                                    RadiusBottomLeft: =10
+                                    RadiusBottomRight: =10
+                                    RadiusTopLeft: =10
+                                    RadiusTopRight: =10
                                     Width: =626
                                     X: =5
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderColor: =RGBA(14, 42, 70, 0.12)
+                                    BorderThickness: =1
                                   Children:
                                     - Label7:
                                         Control: Label@2.5.1
@@ -2444,6 +2625,10 @@ Screens:
                                           Height: =29
                                           Text: ="Patient:"
                                           Width: =74
+                                          Font: =Font.'Segoe UI'
+                                          Color: =RGBA(58, 80, 104, 1)
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
                                     - Label8:
                                         Control: Label@2.5.1
                                         Properties:
@@ -2452,6 +2637,9 @@ Screens:
                                           Text: =ThisItem.Patient
                                           Width: =194
                                           X: =60
+                                          Font: =Font.'Segoe UI'
+                                          Color: =RGBA(14, 28, 42, 1)
+                                          Size: =14
                                     - Label7_1:
                                         Control: Label@2.5.1
                                         Properties:
@@ -2459,6 +2647,10 @@ Screens:
                                           Text: ="Physio:"
                                           Width: =74
                                           X: =246
+                                          Font: =Font.'Segoe UI'
+                                          Color: =RGBA(58, 80, 104, 1)
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
                                     - Label8_1:
                                         Control: Label@2.5.1
                                         Properties:
@@ -2472,6 +2664,9 @@ Screens:
                                             )
                                           Width: =194
                                           X: =306
+                                          Font: =Font.'Segoe UI'
+                                          Color: =RGBA(14, 28, 42, 1)
+                                          Size: =14
                                     - Label7_2:
                                         Control: Label@2.5.1
                                         Properties:
@@ -2480,6 +2675,10 @@ Screens:
                                           Width: =74
                                           X: =514
                                           Y: =1
+                                          Font: =Font.'Segoe UI'
+                                          Color: =RGBA(58, 80, 104, 1)
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
                                     - Label8_2:
                                         Control: Label@2.5.1
                                         Properties:
@@ -2489,35 +2688,166 @@ Screens:
                                           Text: =ThisItem.'Acuity Score'
                                           Width: =38
                                           X: =588
+                                          Font: =Font.'Segoe UI'
+                                          Color: =RGBA(14, 28, 42, 1)
                   - Container69:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
-                        DropShadow: =DropShadow.Bold
+                        DropShadow: =DropShadow.Light
                         Height: =640
-                        RadiusBottomLeft: =20
-                        RadiusBottomRight: =20
-                        RadiusTopLeft: =20
-                        RadiusTopRight: =20
+                        RadiusBottomLeft: =18
+                        RadiusBottomRight: =18
+                        RadiusTopLeft: =18
+                        RadiusTopRight: =18
                         Width: =513
                         X: =672
                         Y: =54
+                        Fill: =RGBA(255, 255, 255, 1)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
                       Children:
+                        - conTilePatients_4A:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              BorderColor: =RGBA(14, 42, 70, 0.06)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              Fill: =RGBA(244, 249, 252, 1)
+                              Height: =64
+                              Width: =236
+                              X: =14
+                              Y: =14
+                              RadiusBottomLeft: =14
+                              RadiusBottomRight: =14
+                              RadiusTopLeft: =14
+                              RadiusTopRight: =14
+                            Children:
+                              - lblTilePatientsKey_4A:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =Font.'Segoe UI'
+                                    Color: =RGBA(140, 155, 174, 1)
+                                    Size: =11
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =20
+                                    Text: ="PATIENTS"
+                                    Width: =Parent.Width - 24
+                                    X: =12
+                                    Y: =6
+                              - lblTilePatientsVal_4A:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =Font.'Segoe UI'
+                                    Color: =RGBA(14, 28, 42, 1)
+                                    Size: =26
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =34
+                                    Text: =CountRows(var4ABasePatients)
+                                    Width: =Parent.Width - 24
+                                    X: =12
+                                    Y: =26
+                        - conTileAcuity_4A:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              BorderColor: =RGBA(14, 42, 70, 0.06)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              Fill: =RGBA(244, 249, 252, 1)
+                              Height: =64
+                              Width: =236
+                              X: =263
+                              Y: =14
+                              RadiusBottomLeft: =14
+                              RadiusBottomRight: =14
+                              RadiusTopLeft: =14
+                              RadiusTopRight: =14
+                              Visible: =Coalesce(varMeDirectory.Discipline.Value, "") in ["Physio", "OT"]
+                            Children:
+                              - Label17_16:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =Font.'Segoe UI'
+                                    Color: =RGBA(140, 155, 174, 1)
+                                    Size: =11
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =20
+                                    Text: ="SUM OF WARD ACUITY"
+                                    Width: =Parent.Width - 24
+                                    X: =12
+                                    Y: =6
+                              - Label15_1:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =Font.'Segoe UI'
+                                    Color: =RGBA(14, 28, 42, 1)
+                                    Size: =26
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =34
+                                    Text: =Sum(var4ABasePatients, 'Acuity Score')
+                                    Width: =Parent.Width - 24
+                                    X: =12
+                                    Y: =26
+                        - lblSecPTCaseload_4A:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(14, 28, 42, 1)
+                              Size: =13
+                              FontWeight: =FontWeight.Bold
+                              Height: =20
+                              Text: ="Physio caseload"
+                              Width: =485
+                              X: =14
+                              Y: =90
+                              Visible: =Coalesce(varMeDirectory.Discipline.Value, "") = "Physio"
+                        - lblSecPTAcuity_4A:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(14, 28, 42, 1)
+                              Size: =13
+                              FontWeight: =FontWeight.Bold
+                              Height: =20
+                              Text: ="Physio acuity"
+                              Width: =485
+                              X: =14
+                              Y: =276
+                              Visible: =Coalesce(varMeDirectory.Discipline.Value, "") = "Physio"
+                        - lblSecDiag_4A:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(14, 28, 42, 1)
+                              Size: =13
+                              FontWeight: =FontWeight.Bold
+                              Height: =20
+                              Text: ="Diagnosis mix"
+                              Width: =485
+                              X: =14
+                              Y: =If(Coalesce(varMeDirectory.Discipline.Value, "") = "Physio", 432, 90)
                         - PieChart2_3:
                             Control: PieChart@2.3.0
                             Properties:
-                              Height: =229
+                              Height: =160
                               ItemColorSet: =varChartPalette
                               Items: =col4A_PatientsPerPT
                               Items.Labels: =DisplayLabel
                               Items.Series: =Count
                               Visible: |
                                 =Coalesce(varMeDirectory.Discipline.Value, "") = "Physio"
-                              Width: =513
+                              Width: =485
+                              Font: =Font.'Segoe UI'
+                              X: =14
+                              Y: =110
+                              Size: =11
                         - ColumnChart1_2:
                             Control: BarChart@2.4.0
                             Properties:
-                              Height: =185
+                              Height: =130
                               ItemColorSet: =varChartPalette
                               Items: =col4A_AcuityPerPT
                               Items.Labels: =Label
@@ -2532,13 +2862,14 @@ Screens:
                               Items.Series9: =TotalAcuity
                               Visible: |
                                 =Coalesce(varMeDirectory.Discipline.Value, "") = "Physio"
-                              Width: =513
-                              Y: =172
+                              Width: =485
+                              Y: =296
+                              X: =14
                         - PieChart1_1:
                             Control: PieChart@2.3.0
                             Properties:
-                              Font: =Font.Verdana
-                              Height: =225
+                              Font: =Font.'Segoe UI'
+                              Height: =If(Coalesce(varMeDirectory.Discipline.Value, "") = "Physio", 174, 300)
                               ItemColorSet: |
                                 =[
                                     RGBA(0, 204, 255, 1),    // Ortho
@@ -2555,34 +2886,6 @@ Screens:
                               Items.Labels: =DisplayLabel
                               Items.Series: =Count
                               Size: =11
-                              Width: =513
-                              Y: =343
-                        - Label15_1:
-                            Control: Label@2.5.1
-                            Properties:
-                              Align: =Align.Center
-                              FontWeight: =FontWeight.Bold
-                              Height: =110
-                              Size: =70
-                              Text: |
-                                =Sum(
-                                    var4ABasePatients,
-                                    'Acuity Score'
-                                )
-                              Visible: |
-                                =Coalesce(varMeDirectory.Discipline.Value, "") in ["Physio", "OT"]
-                              Width: =245
-                              X: =268
-                              Y: =530
-                        - Label17_16:
-                            Control: Label@2.5.1
-                            Properties:
-                              Align: =Align.Center
-                              FontWeight: =FontWeight.Bold
-                              Height: =33
-                              Text: ="Sum of Ward Acuity"
-                              Visible: |
-                                =Coalesce(varMeDirectory.Discipline.Value, "") in ["Physio", "OT"]
-                              Width: =245
-                              X: =23
-                              Y: =568
+                              Width: =485
+                              Y: =If(Coalesce(varMeDirectory.Discipline.Value, "") = "Physio", 452, 110)
+                              X: =14
