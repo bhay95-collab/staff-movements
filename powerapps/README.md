@@ -32,16 +32,9 @@ Search the app (Ctrl+F in Studio) for `'Ward 4A'`, `'Ward 4B'`, `'Ward 5A'`, `'W
 
 6A has no NDIS tick and no AROC EDD. Controlled by `wdShowNDIS` / `wdShowAROC` at the top of the screen's `OnVisible`.
 
-## 5. Discharge clean-up – CHECK THESE NAMES
+## 5. Discharge
 
-`btnCleanupDischarged_Ward` deletes Outcome Measures and Exercise Setups for a discharged patient after Save, matching **Name + URN + DOB**. It assumes these column names. Fix any that differ:
-
-| List | Name | URN | DOB |
-|---|---|---|---|
-| `Patient_Outcome_Measures` | `PatientName` | `URN` | `DOB` |
-| `Patient_Exercise_Setups` | `Patient` | `URN` | `DOB` |
-
-If a column is missing or has a different type (e.g. DOB stored as text), only that button shows a red error. Everything else still works.
+Discharge clears the bed locally. Save commits it. Nothing else is deleted: Outcome Measures and Exercise Setups no longer exist in the app.
 
 ## 6. What changed vs the old screens
 
