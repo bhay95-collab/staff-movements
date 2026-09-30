@@ -12,7 +12,7 @@ The old mobile app had **19 fixed-size screens**. This rebuild has **8 responsiv
 | Equipment_Patients, Equipment_Detail_Screen, Equipment_Detail_Tree_Screen | **Allocate** (pick patient, confirm in a bottom sheet) | `M4_Allocate.pa.yaml` |
 | My_Equipment_Screen | **MyEquipment** (All / Today / 6+ weeks tabs, email today's list) | `M5_MyEquipment.pa.yaml` |
 | Allocated_Equipment_Screen | **Allocated** (search + ward filter) | `M6_Allocated.pa.yaml` |
-| Dashboard_Wheelchair_Type, Dashboard_Screen | **Availability** (type tabs, bar per width, tap a width to see the chairs) | `M7_Availability.pa.yaml` |
+| Dashboard_Wheelchair_Type, Dashboard_Screen | **Availability** (Wheelchairs / Cushions / Backrests tabs, wheelchair type tabs, bar per width, tap a width to see the items) | `M7_Availability.pa.yaml` |
 | scrAudit | **Audit** (numbered steps, one scroll, fixed Submit bar) | `M8_Audit.pa.yaml` |
 | App OnStart | **App Formulas** (colours, font, header art, who am I) | `App_Formulas.txt` |
 
@@ -75,7 +75,7 @@ Do this in a **copy** of the current mobile app so every SharePoint connection i
 - Allocate: My patients / All / + Other; tap a patient; fields are pre-filled; Allocate → lands on My equipment → Today.
 - My equipment: three tabs; **Email today's list** arrives in your inbox.
 - All allocated: search by code, patient, physio, URN, width; ward chips.
-- Availability: type tabs; bars; tap a width → Find opens pre-filtered.
+- Availability: Wheelchairs / Cushions / Backrests tabs; wheelchair type tabs (wheelchairs only); bars; tap a width → Find opens pre-filtered for that category and width.
 - Audit: scan or type a code; pick the patient; match banner; toggles; tag result; comment rule; Submit (try one PASS and one FAIL on test data – the FAIL emails the treating physio).
 - Rotate / try a small and a large phone: nothing should be cut off; long pages scroll.
 

@@ -6,12 +6,14 @@ Screens:
         =ClearCollect(
             colAvail,
             AddColumns(
-                Filter(Equipment_Inventory_SharePoint, Category.Value = "Wheelchair"),
+                Filter(Equipment_Inventory_SharePoint, Category.Value in ["Wheelchair", "Cushion", "Backrest"]),
+                cCat, Category.Value,
                 cType, 'Wheelchair Type'.Value,
                 cWidth, Width.Value,
                 cStatus, Status.Value
             )
         );
+        If(IsBlank(avCat), Set(avCat, "Wheelchair"));
         If(IsBlank(avType), Set(avType, "Manual Wheelchair"))
     Children:
       - conRoot_Av:
@@ -85,7 +87,7 @@ Screens:
                         Size: =20
                         FontWeight: =FontWeight.Bold
                         Height: =28
-                        Text: ="Wheelchair availability"
+                        Text: ="Availability"
                         Width: =Parent.Width - 68
                         X: =52
                         Y: =16
@@ -97,7 +99,7 @@ Screens:
                         Color: =RGBA(255, 255, 255, 0.85)
                         Size: =12
                         Height: =20
-                        Text: ="Free chairs by width"
+                        Text: ="Free equipment by width"
                         Width: =Parent.Width - 68
                         X: =52
                         Y: =42
@@ -125,10 +127,122 @@ Screens:
                   RadiusTopLeft: =0
                   RadiusTopRight: =0
                 Children:
+                  - conSegCat_Av:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =40
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =40
+                        Width: =App.Width - 32
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - conSegCatWheelchair_Av:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =If(avCat = "Wheelchair", C_Accent, C_White)
+                              Height: =40
+                              Width: =(App.Width - 32 - 16) / 3
+                              X: =0 * ((App.Width - 32 - 16) / 3 + 8)
+                              Y: =0
+                              RadiusBottomLeft: =20
+                              RadiusBottomRight: =20
+                              RadiusTopLeft: =20
+                              RadiusTopRight: =20
+                              BorderColor: =If(avCat = "Wheelchair", C_Accent, C_Line)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnSegCatWheelchair_Av:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =20
+                                    Font: =Font.'Segoe UI'
+                                    FontColor: =If(avCat = "Wheelchair", C_White, C_Ink2)
+                                    FontSize: =13
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="Wheelchairs"
+                                    OnSelect: =Set(avCat, "Wheelchair")
+                        - conSegCatCushion_Av:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =If(avCat = "Cushion", C_Accent, C_White)
+                              Height: =40
+                              Width: =(App.Width - 32 - 16) / 3
+                              X: =1 * ((App.Width - 32 - 16) / 3 + 8)
+                              Y: =0
+                              RadiusBottomLeft: =20
+                              RadiusBottomRight: =20
+                              RadiusTopLeft: =20
+                              RadiusTopRight: =20
+                              BorderColor: =If(avCat = "Cushion", C_Accent, C_Line)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnSegCatCushion_Av:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =20
+                                    Font: =Font.'Segoe UI'
+                                    FontColor: =If(avCat = "Cushion", C_White, C_Ink2)
+                                    FontSize: =13
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="Cushions"
+                                    OnSelect: =Set(avCat, "Cushion")
+                        - conSegCatBackrest_Av:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =If(avCat = "Backrest", C_Accent, C_White)
+                              Height: =40
+                              Width: =(App.Width - 32 - 16) / 3
+                              X: =2 * ((App.Width - 32 - 16) / 3 + 8)
+                              Y: =0
+                              RadiusBottomLeft: =20
+                              RadiusBottomRight: =20
+                              RadiusTopLeft: =20
+                              RadiusTopRight: =20
+                              BorderColor: =If(avCat = "Backrest", C_Accent, C_Line)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnSegCatBackrest_Av:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =20
+                                    Font: =Font.'Segoe UI'
+                                    FontColor: =If(avCat = "Backrest", C_White, C_Ink2)
+                                    FontSize: =13
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="Backrests"
+                                    OnSelect: =Set(avCat, "Backrest")
                   - conSegType_Av:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
+                        Visible: =avCat = "Wheelchair"
                         AlignInContainer: =AlignInContainer.SetByContainer
                         LayoutMinHeight: =40
                         FillPortions: =0
@@ -265,7 +379,7 @@ Screens:
                               Size: =26
                               FontWeight: =FontWeight.Bold
                               Height: =34
-                              Text: =CountRows(Filter(Filter(colAvail, cType = avType && !IsBlank(cWidth)), cStatus = "Available")) & " of " & CountRows(Filter(colAvail, cType = avType && !IsBlank(cWidth)))
+                              Text: =CountRows(Filter(Filter(colAvail, cCat = avCat && (avCat <> "Wheelchair" || cType = avType) && !IsBlank(cWidth)), cStatus = "Available")) & " of " & CountRows(Filter(colAvail, cCat = avCat && (avCat <> "Wheelchair" || cType = avType) && !IsBlank(cWidth)))
                               Width: =Parent.Width - 32
                               X: =16
                               Y: =10
@@ -277,7 +391,7 @@ Screens:
                               Color: =C_Muted
                               Size: =12
                               Height: =20
-                              Text: ="available right now  ·  " & avType
+                              Text: ="available right now  ·  " & If(avCat = "Wheelchair", avType, avCat & "s")
                               Width: =Parent.Width - 32
                               X: =16
                               Y: =46
@@ -289,7 +403,7 @@ Screens:
                         AlignInContainer: =AlignInContainer.SetByContainer
                         LayoutMinHeight: =120
                         FillPortions: =1
-                        Items: =SortByColumns(AddColumns(GroupBy(Filter(colAvail, cType = avType && !IsBlank(cWidth)), cWidth, Rows), Total, CountRows(Rows), Free, CountRows(Filter(Rows, cStatus = "Available"))), "cWidth", SortOrder.Ascending)
+                        Items: =SortByColumns(AddColumns(GroupBy(Filter(colAvail, cCat = avCat && (avCat <> "Wheelchair" || cType = avType) && !IsBlank(cWidth)), cWidth, Rows), Total, CountRows(Rows), Free, CountRows(Filter(Rows, cStatus = "Available"))), "cWidth", SortOrder.Ascending)
                         TemplatePadding: =0
                         TemplateSize: =70
                         Width: =App.Width - 32
@@ -389,7 +503,7 @@ Screens:
                                     Y: =0
                                     Text: =""
                                     OnSelect: |-
-                                      =Set(fdCat, "Wheelchair"); Set(fdType, avType); Set(fdBrand, Blank()); Set(fdModel, Blank()); Set(fdWidth, ThisItem.cWidth); Set(fdDepth, Blank()); Set(fdHeight, Blank());
+                                      =Set(fdCat, avCat); Set(fdType, If(avCat = "Wheelchair", avType, Blank())); Set(fdBrand, Blank()); Set(fdModel, Blank()); Set(fdWidth, ThisItem.cWidth); Set(fdDepth, Blank()); Set(fdHeight, Blank());
                                       Navigate(Find, ScreenTransition.Cover)
                   - lblHint_Av:
                       Control: Label@2.5.1
@@ -401,7 +515,7 @@ Screens:
                         Color: =C_Muted
                         Size: =12
                         Height: =20
-                        Text: ="Tap a width to see the available chairs."
+                        Text: =Concatenate("Tap a width to see the available ", Lower(avCat), "s.")
                         Width: =App.Width - 32
                         X: =0
                         Y: =0
