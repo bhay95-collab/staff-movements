@@ -112,5 +112,5 @@ Replaces `Equipment_Screen`. Same three columns, new look (header bar, white car
 
 ## Swap it in
 1. Paste `Equipment_Main.pa.yaml` (appears as `Equipment_Main`).
-2. Search the app for `Equipment_Screen`: change every `Navigate(Equipment_Screen ...)` to `Navigate(Equipment_Main ...)`. (Home_Main already opens `Equipment_Screen`: change that button, or paste the updated Home_Main.)
+2. Search the app for `Equipment_Screen`: change every `Navigate(Equipment_Screen ...)` to `Navigate(Equipment_Main ...)`. (Home_Main from commit onward already opens `Equipment_Main`.)
 3. Delete `Equipment_Screen` when nothing points at it.
