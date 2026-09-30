@@ -1,0 +1,1193 @@
+Screens:
+  Allocate:
+    Properties:
+      Fill: =C_Bg
+      OnVisible: |-
+        =// Patients on all four wards (one shape for every ward)
+        ClearCollect(
+            colPatients,
+            ForAll(
+                Filter(Ward_4A_Shared, !IsBlank(Patient)) As r,
+                {
+                    ID: r.ID,
+                    Ward: "4A",
+                    Bed: r.Bed,
+                    Name: r.Patient,
+                    URN: r.URN,
+                    DOB: r.DOB,
+                    PT_Users: r.PT_Users,
+                    Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
+                    DisplayText: r.Patient & "  ·  4A  ·  URN " & r.URN
+                }
+            )
+        );
+        Collect(
+            colPatients,
+            ForAll(
+                Filter(Ward_4B_Shared, !IsBlank(Patient)) As r,
+                {
+                    ID: r.ID,
+                    Ward: "4B",
+                    Bed: r.Bed,
+                    Name: r.Patient,
+                    URN: r.URN,
+                    DOB: r.DOB,
+                    PT_Users: r.PT_Users,
+                    Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
+                    DisplayText: r.Patient & "  ·  4B  ·  URN " & r.URN
+                }
+            )
+        );
+        Collect(
+            colPatients,
+            ForAll(
+                Filter(Ward_5A_Shared, !IsBlank(Patient)) As r,
+                {
+                    ID: r.ID,
+                    Ward: "5A",
+                    Bed: r.Bed,
+                    Name: r.Patient,
+                    URN: r.URN,
+                    DOB: r.DOB,
+                    PT_Users: r.PT_Users,
+                    Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
+                    DisplayText: r.Patient & "  ·  5A  ·  URN " & r.URN
+                }
+            )
+        );
+        Collect(
+            colPatients,
+            ForAll(
+                Filter(Ward_6A_Shared, !IsBlank(Patient)) As r,
+                {
+                    ID: r.ID,
+                    Ward: "6A",
+                    Bed: r.Bed,
+                    Name: r.Patient,
+                    URN: r.URN,
+                    DOB: r.DOB,
+                    PT_Users: r.PT_Users,
+                    Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
+                    DisplayText: r.Patient & "  ·  6A  ·  URN " & r.URN
+                }
+            )
+        );
+
+        // Start on "My patients" when you have any
+        Set(alView, If(IsEmpty(Filter(colPatients, Mine)), "All", "Mine"));
+        Set(alShowForm, false);
+        Set(alPatient, Blank());
+        Set(alItem, LookUp(Equipment_Inventory_SharePoint, ID = varItemID));
+        Reset(txtSearch_Al)
+    Children:
+      - btnOpenForm_Al:
+          Control: Button@0.0.45
+          Properties:
+            Height: =1
+            Width: =1
+            X: =0
+            Y: =0
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =Reset(txtName_Al);
+              Reset(txtURN_Al);
+              Reset(dpDOB_Al);
+              Reset(ddWard_Al);
+              Reset(txtPhysio_Al);
+              Reset(dpOut_Al);
+              Set(alShowForm, true)
+      - conRoot_Al:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            Fill: =C_Bg
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+            LayoutJustifyContent: =LayoutJustifyContent.Start
+            LayoutGap: =0
+            PaddingTop: =0
+            PaddingRight: =0
+            PaddingBottom: =0
+            PaddingLeft: =0
+            DropShadow: =DropShadow.None
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =Parent.Height
+          Children:
+            - conHdr_Al:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  AlignInContainer: =AlignInContainer.SetByContainer
+                  LayoutMinHeight: =76
+                  FillPortions: =0
+                  Fill: =RGBA(7, 95, 115, 1)
+                  Height: =76
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  DropShadow: =DropShadow.None
+                Children:
+                  - imgHdr_Al:
+                      Control: Image@2.2.3
+                      Properties:
+                        Height: =Parent.Height
+                        Image: =HeaderImage
+                        ImagePosition: =ImagePosition.Fill
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                  - btnBack_Al:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        FontColor: =C_White
+                        FontSize: =28
+                        Height: =48
+                        Icon: ="ChevronLeft"
+                        Text: =""
+                        Width: =48
+                        X: =4
+                        Y: =14
+                        OnSelect: =Back(ScreenTransition.UnCoverRight)
+                  - lblHdrT_Al:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =AppFont
+                        Color: =C_White
+                        Size: =20
+                        FontWeight: =FontWeight.Bold
+                        Height: =28
+                        Text: ="Allocate"
+                        Width: =Parent.Width - 68
+                        X: =52
+                        Y: =16
+                        Wrap: =false
+                  - lblHdrS_Al:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =AppFont
+                        Color: =RGBA(255, 255, 255, 0.85)
+                        Size: =12
+                        Height: =20
+                        Text: ="Choose the patient"
+                        Width: =Parent.Width - 68
+                        X: =52
+                        Y: =42
+                        Wrap: =false
+            - conBody_Al:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  AlignInContainer: =AlignInContainer.SetByContainer
+                  LayoutMinHeight: =200
+                  FillPortions: =1
+                  Fill: =RGBA(0, 0, 0, 0)
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutJustifyContent: =LayoutJustifyContent.Start
+                  LayoutGap: =10
+                  PaddingTop: =12
+                  PaddingRight: =16
+                  PaddingBottom: =8
+                  PaddingLeft: =16
+                  DropShadow: =DropShadow.None
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                Children:
+                  - conItem_Al:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =58
+                        FillPortions: =0
+                        Fill: =C_White
+                        Height: =58
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =14
+                        RadiusBottomRight: =14
+                        RadiusTopLeft: =14
+                        RadiusTopRight: =14
+                        BorderColor: =C_Line
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - conItemBar_Al:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =Switch(alItem.Category.Value, "Wheelchair", RGBA(166, 199, 130, 1), "Cushion", RGBA(0, 144, 153, 1), "Backrest", RGBA(0, 200, 210, 1), RGBA(210, 218, 227, 1))
+                              Height: =Parent.Height
+                              Width: =6
+                              X: =0
+                              Y: =0
+                              RadiusBottomLeft: =14
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =14
+                              RadiusTopRight: =0
+                              DropShadow: =DropShadow.None
+                        - capItem_Al:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Text: ="ALLOCATING"
+                              Width: =Parent.Width - 36
+                              X: =18
+                              Y: =8
+                              Wrap: =false
+                        - lblItem_Al:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =24
+                              Text: =alItem.Title & "  ·  " & Coalesce(Trim(alItem.Brand & " " & alItem.Model), "")
+                              Width: =Parent.Width - 36
+                              X: =18
+                              Y: =26
+                              Wrap: =false
+                  - conSearch_Al:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =48
+                        FillPortions: =0
+                        Fill: =C_White
+                        Height: =48
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        BorderColor: =RGBA(14, 42, 70, 0.22)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - icoSearch_Al:
+                            Control: ModernIcon@1.1.1
+                            Properties:
+                              Height: =24
+                              Icon: ="Search"
+                              IconColor: =C_Muted
+                              Width: =24
+                              X: =12
+                              Y: =12
+                        - txtSearch_Al:
+                            Control: Classic/TextInput@2.3.2
+                            Properties:
+                              BorderStyle: =BorderStyle.None
+                              Color: =C_Ink
+                              Default: =""
+                              DelayOutput: =true
+                              Fill: =RGBA(0, 0, 0, 0)
+                              Font: =AppFont
+                              Height: =Parent.Height
+                              HintText: ="Search name or URN"
+                              Size: =15
+                              Width: =Parent.Width - 44
+                              X: =40
+                              Y: =0
+                  - conViews_Al:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =40
+                        Height: =40
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutJustifyContent: =LayoutJustifyContent.Start
+                        LayoutGap: =8
+                        PaddingTop: =0
+                        PaddingRight: =0
+                        PaddingBottom: =0
+                        PaddingLeft: =0
+                        DropShadow: =DropShadow.None
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                      Children:
+                        - conViewMine_Al:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Stretch
+                              LayoutMinWidth: =40
+                              FillPortions: =1
+                              Fill: =If(alView = "Mine", C_Accent, C_White)
+                              Height: =40
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              RadiusBottomLeft: =20
+                              RadiusBottomRight: =20
+                              RadiusTopLeft: =20
+                              RadiusTopRight: =20
+                              BorderColor: =If(alView = "Mine", C_Accent, C_Line)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnViewMine_Al:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =20
+                                    Font: =AppFont
+                                    FontColor: =If(alView = "Mine", C_White, C_Ink2)
+                                    FontSize: =13
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="My patients  ·  " & CountRows(Filter(colPatients, Mine))
+                                    OnSelect: =Set(alView, "Mine")
+                        - conViewAll_Al:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Stretch
+                              LayoutMinWidth: =40
+                              FillPortions: =1
+                              Fill: =If(alView = "All", C_Accent, C_White)
+                              Height: =40
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              RadiusBottomLeft: =20
+                              RadiusBottomRight: =20
+                              RadiusTopLeft: =20
+                              RadiusTopRight: =20
+                              BorderColor: =If(alView = "All", C_Accent, C_Line)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnViewAll_Al:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =20
+                                    Font: =AppFont
+                                    FontColor: =If(alView = "All", C_White, C_Ink2)
+                                    FontSize: =13
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="All  ·  " & CountRows(colPatients)
+                                    OnSelect: =Set(alView, "All")
+                        - conOther_Al:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Stretch
+                              FillPortions: =0
+                              Fill: =C_White
+                              Height: =40
+                              Width: =96
+                              X: =0
+                              Y: =0
+                              RadiusBottomLeft: =20
+                              RadiusBottomRight: =20
+                              RadiusTopLeft: =20
+                              RadiusTopRight: =20
+                              BorderColor: =C_Accent
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnOther_Al:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =20
+                                    Font: =AppFont
+                                    FontColor: =C_Accent
+                                    FontSize: =13
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="+ Other"
+                                    OnSelect: |-
+                                      =Set(alPatient, Blank());
+                                      Select(btnOpenForm_Al)
+                  - galPts_Al:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =120
+                        FillPortions: =1
+                        Items: =SortByColumns(Filter(colPatients, (alView = "All" || Mine) && (IsBlank(Trim(txtSearch_Al.Text)) || Lower(Trim(txtSearch_Al.Text)) in Lower(Name) || Trim(txtSearch_Al.Text) in URN)), "Ward", SortOrder.Ascending, "Bed", SortOrder.Ascending)
+                        TemplatePadding: =0
+                        TemplateSize: =70
+                        Width: =Parent.Width
+                      Children:
+                        - conPt_Al:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_White
+                              Height: =62
+                              Width: =Parent.TemplateWidth
+                              X: =0
+                              Y: =4
+                              RadiusBottomLeft: =14
+                              RadiusBottomRight: =14
+                              RadiusTopLeft: =14
+                              RadiusTopRight: =14
+                              BorderColor: =C_Line
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - conPtWard_Al:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =Switch(ThisItem.Ward, "4A", RGBA(166, 199, 130, 1), "4B", RGBA(35, 100, 153, 1), "5A", RGBA(0, 144, 153, 1), "6A", RGBA(0, 200, 210, 1), RGBA(210, 218, 227, 1))
+                                    Height: =42
+                                    Width: =42
+                                    X: =12
+                                    Y: =10
+                                    RadiusBottomLeft: =12
+                                    RadiusBottomRight: =12
+                                    RadiusTopLeft: =12
+                                    RadiusTopRight: =12
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - lblPtWard_Al:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Font: =AppFont
+                                          Color: =If(ThisItem.Ward = "4A" || ThisItem.Ward = "6A", C_Ink, C_White)
+                                          Size: =13
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Text: =ThisItem.Ward
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =0
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Wrap: =false
+                              - lblPtName_Al:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =AppFont
+                                    Color: =C_Ink
+                                    Size: =15
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =24
+                                    Text: =ThisItem.Name
+                                    Width: =Parent.Width - 104
+                                    X: =66
+                                    Y: =10
+                                    Wrap: =false
+                              - lblPtSub_Al:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =AppFont
+                                    Color: =C_Muted
+                                    Size: =12
+                                    Height: =18
+                                    Text: ="Bed " & ThisItem.Bed & "  ·  URN " & Coalesce(ThisItem.URN, "—")
+                                    Width: =Parent.Width - 104
+                                    X: =66
+                                    Y: =34
+                                    Wrap: =false
+                              - icoPtGo_Al:
+                                  Control: ModernIcon@1.1.1
+                                  Properties:
+                                    Height: =24
+                                    Icon: ="ChevronRight"
+                                    IconColor: =C_Muted
+                                    Width: =24
+                                    X: =Parent.Width - 34
+                                    Y: =19
+                              - btnPt_Al:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderStyle: =BorderStyle.None
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =0
+                                    Text: =""
+                                    OnSelect: |-
+                                      =Set(alPatient, ThisItem);
+                                      Select(btnOpenForm_Al)
+                  - lblEmpty_Al:
+                      Control: Label@2.5.1
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =40
+                        FillPortions: =0
+                        Font: =AppFont
+                        Color: =C_Muted
+                        Size: =13
+                        Height: =40
+                        Text: =If(alView = "Mine" && IsEmpty(Filter(colPatients, Mine)), "No patients are allocated to you. Tap All.", "No patients found.")
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        Align: =Align.Center
+                        Visible: =IsEmpty(galPts_Al.AllItems)
+      - conOverlay_Al:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(14, 28, 42, 0.45)
+            Height: =Parent.Height
+            Width: =Parent.Width
+            X: =0
+            Y: =0
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            DropShadow: =DropShadow.None
+            Visible: =alShowForm
+          Children:
+            - btnScrim_Al:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  BorderStyle: =BorderStyle.None
+                  Height: =Parent.Height
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+                  Text: =""
+                  OnSelect: =Set(alShowForm, false)
+            - conSheet_Al:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  Fill: =C_White
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutJustifyContent: =LayoutJustifyContent.Start
+                  LayoutGap: =10
+                  PaddingTop: =20
+                  PaddingRight: =20
+                  PaddingBottom: =24
+                  PaddingLeft: =20
+                  DropShadow: =DropShadow.None
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =22
+                  RadiusTopRight: =22
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  X: =0
+                  Width: =Parent.Width
+                  Height: =Min(Parent.Height - 40, 640)
+                  Y: =Parent.Height - Self.Height
+                Children:
+                  - lblSheetT_Al:
+                      Control: Label@2.5.1
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =32
+                        FillPortions: =0
+                        Font: =AppFont
+                        Color: =C_Ink
+                        Size: =19
+                        FontWeight: =FontWeight.Bold
+                        Height: =32
+                        Text: =If(IsBlank(alPatient), "Other patient", "Allocate to " & alPatient.Name)
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        Wrap: =false
+                  - fldName_Al:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =64
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =64
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - capName_Al:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Text: ="PATIENT NAME"
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Wrap: =false
+                        - boxName_Al:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_White
+                              Height: =44
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =20
+                              RadiusBottomLeft: =10
+                              RadiusBottomRight: =10
+                              RadiusTopLeft: =10
+                              RadiusTopRight: =10
+                              BorderColor: =RGBA(14, 42, 70, 0.22)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - txtName_Al:
+                                  Control: Classic/TextInput@2.3.2
+                                  Properties:
+                                    BorderStyle: =BorderStyle.None
+                                    Color: =C_Ink
+                                    Default: =Coalesce(alPatient.Name, "")
+                                    Fill: =RGBA(0, 0, 0, 0)
+                                    Font: =AppFont
+                                    Height: =Parent.Height
+                                    HintText: ="Full name"
+                                    Size: =15
+                                    Width: =Parent.Width - 8
+                                    X: =4
+                                    Y: =0
+                  - fldURN_Al:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =64
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =64
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - capURN_Al:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Text: ="URN"
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Wrap: =false
+                        - boxURN_Al:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_White
+                              Height: =44
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =20
+                              RadiusBottomLeft: =10
+                              RadiusBottomRight: =10
+                              RadiusTopLeft: =10
+                              RadiusTopRight: =10
+                              BorderColor: =RGBA(14, 42, 70, 0.22)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - txtURN_Al:
+                                  Control: Classic/TextInput@2.3.2
+                                  Properties:
+                                    BorderStyle: =BorderStyle.None
+                                    Color: =C_Ink
+                                    Default: =Coalesce(alPatient.URN, "")
+                                    Fill: =RGBA(0, 0, 0, 0)
+                                    Font: =AppFont
+                                    Height: =Parent.Height
+                                    HintText: ="URN"
+                                    Size: =15
+                                    Width: =Parent.Width - 8
+                                    X: =4
+                                    Y: =0
+                  - fldDOB_Al:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =64
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =64
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - capDOB_Al:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Text: ="DATE OF BIRTH (OPTIONAL)"
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Wrap: =false
+                        - boxDOB_Al:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_White
+                              Height: =44
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =20
+                              RadiusBottomLeft: =10
+                              RadiusBottomRight: =10
+                              RadiusTopLeft: =10
+                              RadiusTopRight: =10
+                              BorderColor: =RGBA(14, 42, 70, 0.22)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - dpDOB_Al:
+                                  Control: Classic/DatePicker@2.6.0
+                                  Properties:
+                                    BorderStyle: =BorderStyle.None
+                                    Color: =C_Ink
+                                    DefaultDate: =alPatient.DOB
+                                    Font: =AppFont
+                                    Height: =Parent.Height
+                                    InputTextPlaceholder: ="Not set"
+                                    Size: =15
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =0
+                  - fldWard_Al:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =64
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =64
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - capWard_Al:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Text: ="WARD"
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Wrap: =false
+                        - boxWard_Al:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_White
+                              Height: =44
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =20
+                              RadiusBottomLeft: =10
+                              RadiusBottomRight: =10
+                              RadiusTopLeft: =10
+                              RadiusTopRight: =10
+                              BorderColor: =RGBA(14, 42, 70, 0.22)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - ddWard_Al:
+                                  Control: Classic/DropDown@2.3.1
+                                  Properties:
+                                    AllowEmptySelection: =true
+                                    BorderStyle: =BorderStyle.None
+                                    ChevronBackground: =C_Accent
+                                    ChevronFill: =C_White
+                                    Color: =C_Ink
+                                    Default: =Coalesce(alPatient.Ward, "")
+                                    Font: =AppFont
+                                    Height: =Parent.Height
+                                    Items: =Choices(Equipment_Inventory_SharePoint.Ward)
+                                    Items.Value: =Value
+                                    Size: =15
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =0
+                  - fldPhysio_Al:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =64
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =64
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - capPhysio_Al:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Text: ="PHYSIOTHERAPIST"
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Wrap: =false
+                        - boxPhysio_Al:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_White
+                              Height: =44
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =20
+                              RadiusBottomLeft: =10
+                              RadiusBottomRight: =10
+                              RadiusTopLeft: =10
+                              RadiusTopRight: =10
+                              BorderColor: =RGBA(14, 42, 70, 0.22)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - txtPhysio_Al:
+                                  Control: Classic/TextInput@2.3.2
+                                  Properties:
+                                    BorderStyle: =BorderStyle.None
+                                    Color: =C_Ink
+                                    Default: =MeName
+                                    Fill: =RGBA(0, 0, 0, 0)
+                                    Font: =AppFont
+                                    Height: =Parent.Height
+                                    HintText: ="Physio name"
+                                    Size: =15
+                                    Width: =Parent.Width - 8
+                                    X: =4
+                                    Y: =0
+                  - fldOut_Al:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =64
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =64
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - capOut_Al:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Text: ="DATE SIGNED OUT"
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Wrap: =false
+                        - boxOut_Al:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_White
+                              Height: =44
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =20
+                              RadiusBottomLeft: =10
+                              RadiusBottomRight: =10
+                              RadiusTopLeft: =10
+                              RadiusTopRight: =10
+                              BorderColor: =RGBA(14, 42, 70, 0.22)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - dpOut_Al:
+                                  Control: Classic/DatePicker@2.6.0
+                                  Properties:
+                                    BorderStyle: =BorderStyle.None
+                                    Color: =C_Ink
+                                    DefaultDate: =Today()
+                                    Font: =AppFont
+                                    Height: =Parent.Height
+                                    InputTextPlaceholder: ="Select date"
+                                    Size: =15
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =0
+                  - conFormBtns_Al:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =48
+                        Height: =48
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutJustifyContent: =LayoutJustifyContent.Start
+                        LayoutGap: =12
+                        PaddingTop: =0
+                        PaddingRight: =0
+                        PaddingBottom: =0
+                        PaddingLeft: =0
+                        DropShadow: =DropShadow.None
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                      Children:
+                        - conFormNo_Al:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Stretch
+                              LayoutMinWidth: =40
+                              FillPortions: =1
+                              Fill: =C_White
+                              Height: =48
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              RadiusBottomLeft: =24
+                              RadiusBottomRight: =24
+                              RadiusTopLeft: =24
+                              RadiusTopRight: =24
+                              BorderColor: =C_Line
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnFormNo_Al:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =24
+                                    Font: =AppFont
+                                    FontColor: =C_Ink2
+                                    FontSize: =15
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="Cancel"
+                                    OnSelect: =Set(alShowForm, false)
+                        - conFormGo_Al:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Stretch
+                              LayoutMinWidth: =40
+                              FillPortions: =1
+                              Fill: =C_Accent
+                              Height: =48
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              RadiusBottomLeft: =24
+                              RadiusBottomRight: =24
+                              RadiusTopLeft: =24
+                              RadiusTopRight: =24
+                              BorderColor: =C_Accent
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnFormGo_Al:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =24
+                                    Font: =AppFont
+                                    FontColor: =C_White
+                                    FontSize: =15
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="Allocate"
+                                    OnSelect: |-
+                                      =With(
+                                          { it: LookUp(Equipment_Inventory_SharePoint, ID = varItemID) },
+                                          If(
+                                              IsBlank(it) || Coalesce(it.Status.Value, "") <> "Available",
+                                              Notify("This item is no longer available (someone may have just allocated it).", NotificationType.Error),
+
+                                              IsBlank(Trim(txtName_Al.Text)) || IsBlank(Trim(txtURN_Al.Text)) || IsBlank(ddWard_Al.Selected.Value) ||
+                                              IsBlank(Trim(txtPhysio_Al.Text)) || IsBlank(dpOut_Al.SelectedDate),
+                                              Notify("Please complete patient, URN, ward, physio and date.", NotificationType.Warning),
+
+                                              With(
+                                                  {
+                                                      episodeKey: "EQ-" & Text(it.ID) & "-" & Text(Now(), "yyyymmddhhmmss") & "-" & Left(Text(GUID()), 8),
+                                                      actionTime: Now(),
+                                                      ptName: Trim(txtName_Al.Text),
+                                                      ptURN: Trim(txtURN_Al.Text),
+                                                      ptDOB: dpDOB_Al.SelectedDate,
+                                                      ward: ddWard_Al.Selected.Value,
+                                                      physio: Trim(txtPhysio_Al.Text),
+                                                      outDate: dpOut_Al.SelectedDate
+                                                  },
+
+                                                  // 1) inventory -> Allocated
+                                                  Patch(
+                                                      Equipment_Inventory_SharePoint,
+                                                      it,
+                                                      {
+                                                          'Patient Name': ptName,
+                                                          URN: ptURN,
+                                                          DOB: ptDOB,
+                                                          Physiotherapist: physio,
+                                                          'Date Signed Out': outDate,
+                                                          Ward: { Value: ward },
+                                                          Status: { Value: "Allocated" },
+                                                          CurrentEpisodeKey: episodeKey
+                                                      }
+                                                  );
+
+                                                  If(
+                                                      !IsEmpty(Errors(Equipment_Inventory_SharePoint)),
+                                                      Notify("Could not save the allocation. Please try again.", NotificationType.Error),
+
+                                                      // 2) usage log: sign-out row
+                                                      Patch(
+                                                          Equipment_Usage_Log,
+                                                          Defaults(Equipment_Usage_Log),
+                                                          {
+                                                              Title: episodeKey & " - Sign Out",
+                                                              EpisodeKey: episodeKey,
+                                                              EventType: { Value: "Sign Out" },
+                                                              EpisodeStatus: { Value: "Open" },
+                                                              EventDateTime: actionTime,
+                                                              EquipmentItemID: it.ID,
+                                                              EquipmentTitle: it.Title,
+                                                              Category: Coalesce(it.Category.Value, ""),
+                                                              Brand: Coalesce(it.Brand, ""),
+                                                              Model: Coalesce(it.Model, ""),
+                                                              Width: Coalesce(it.Width.Value, ""),
+                                                              Depth: Coalesce(it.Depth.Value, ""),
+                                                              Height: Coalesce(it.Height.Value, ""),
+                                                              SWL: Coalesce(it.SWL, ""),
+                                                              WheelchairType: Coalesce(it.'Wheelchair Type'.Value, ""),
+                                                              LocationAtEvent: Coalesce(it.Location.Value, ""),
+                                                              Ward: ward,
+                                                              PatientName: ptName,
+                                                              URN: ptURN,
+                                                              DOB: ptDOB,
+                                                              Physiotherapist: physio,
+                                                              DateSignedOut: outDate,
+                                                              DateReturned: Blank(),
+                                                              DaysSignedOutThisEpisode: Blank(),
+                                                              TotalDaysSignedOutAfterEvent: Coalesce(it.TotalDaysSignedOut, 0),
+                                                              Over100DaysAfterEvent: Coalesce(it.TotalDaysSignedOut, 0) > 100,
+                                                              ServiceRequired: Coalesce(it.TotalDaysSignedOut, 0) > 100,
+                                                              IsHighRiskEquipment: Coalesce(it.IsHighRiskEquipment, false),
+                                                              OutOfService: Coalesce(it.OutOfService, false),
+                                                              IsActive: Coalesce(it.IsActive, true),
+                                                              StatusAfterEvent: "Allocated",
+                                                              ActionedByName: MeName,
+                                                              ActionedByEmail: User().Email,
+                                                              SourceApp: { Value: "Mobile" },
+                                                              Notes: ""
+                                                          }
+                                                      );
+                                                      Set(alShowForm, false);
+                                                      Notify(it.Title & " allocated to " & ptName & ".", NotificationType.Success);
+                                                      Set(meTab, "Today");
+                                                      Navigate(MyEquipment, ScreenTransition.UnCover)
+                                                  )
+                                              )
+                                          )
+                                      )

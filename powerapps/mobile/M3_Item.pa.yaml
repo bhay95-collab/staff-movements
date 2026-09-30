@@ -1,0 +1,915 @@
+Screens:
+  Item:
+    Properties:
+      Fill: =C_Bg
+      OnVisible: |-
+        =// Always read the item fresh (someone else may have changed it)
+        Set(itItem, LookUp(Equipment_Inventory_SharePoint, ID = varItemID));
+        Set(itShowReturn, false)
+    Children:
+      - conRoot_It:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            Fill: =C_Bg
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+            LayoutJustifyContent: =LayoutJustifyContent.Start
+            LayoutGap: =0
+            PaddingTop: =0
+            PaddingRight: =0
+            PaddingBottom: =0
+            PaddingLeft: =0
+            DropShadow: =DropShadow.None
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =Parent.Height
+          Children:
+            - conHdr_It:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  AlignInContainer: =AlignInContainer.SetByContainer
+                  LayoutMinHeight: =76
+                  FillPortions: =0
+                  Fill: =RGBA(7, 95, 115, 1)
+                  Height: =76
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  DropShadow: =DropShadow.None
+                Children:
+                  - imgHdr_It:
+                      Control: Image@2.2.3
+                      Properties:
+                        Height: =Parent.Height
+                        Image: =HeaderImage
+                        ImagePosition: =ImagePosition.Fill
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                  - btnBack_It:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        FontColor: =C_White
+                        FontSize: =28
+                        Height: =48
+                        Icon: ="ChevronLeft"
+                        Text: =""
+                        Width: =48
+                        X: =4
+                        Y: =14
+                        OnSelect: =Back(ScreenTransition.UnCoverRight)
+                  - lblHdrT_It:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =AppFont
+                        Color: =C_White
+                        Size: =20
+                        FontWeight: =FontWeight.Bold
+                        Height: =28
+                        Text: =Coalesce(itItem.Title, "Equipment")
+                        Width: =Parent.Width - 68
+                        X: =52
+                        Y: =16
+                        Wrap: =false
+                  - lblHdrS_It:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =AppFont
+                        Color: =RGBA(255, 255, 255, 0.85)
+                        Size: =12
+                        Height: =20
+                        Text: =Coalesce(itItem.Category.Value, "") & "  ·  " & Coalesce(itItem.Status.Value, "")
+                        Width: =Parent.Width - 68
+                        X: =52
+                        Y: =42
+                        Wrap: =false
+            - conBody_It:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  AlignInContainer: =AlignInContainer.SetByContainer
+                  LayoutMinHeight: =120
+                  FillPortions: =1
+                  Fill: =RGBA(0, 0, 0, 0)
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutJustifyContent: =LayoutJustifyContent.Start
+                  LayoutGap: =12
+                  PaddingTop: =16
+                  PaddingRight: =16
+                  PaddingBottom: =16
+                  PaddingLeft: =16
+                  DropShadow: =DropShadow.None
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                Children:
+                  - conDetail_It:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =262
+                        FillPortions: =0
+                        Fill: =C_White
+                        Height: =262
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =18
+                        RadiusBottomRight: =18
+                        RadiusTopLeft: =18
+                        RadiusTopRight: =18
+                        BorderColor: =C_Line
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.Light
+                      Children:
+                        - lblName_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =20
+                              FontWeight: =FontWeight.Bold
+                              Height: =28
+                              Text: =Coalesce(Trim(itItem.Brand & " " & itItem.Model), itItem.Title)
+                              Width: =Parent.Width - 32
+                              X: =16
+                              Y: =14
+                              Wrap: =false
+                        - conCat_It:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =Switch(itItem.Category.Value, "Wheelchair", RGBA(166, 199, 130, 1), "Cushion", RGBA(0, 144, 153, 1), "Backrest", RGBA(0, 200, 210, 1), RGBA(210, 218, 227, 1))
+                              Height: =26
+                              Width: =110
+                              X: =16
+                              Y: =48
+                              RadiusBottomLeft: =13
+                              RadiusBottomRight: =13
+                              RadiusTopLeft: =13
+                              RadiusTopRight: =13
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - lblCat_It:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =AppFont
+                                    Color: =C_Ink
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Text: =Coalesce(itItem.Category.Value, "—")
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =0
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Wrap: =false
+                        - conStatus_It:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =Switch(Coalesce(itItem.Status.Value, ""), "Available", C_GoodBg, "Allocated", C_AccentSoft, C_DangerBg)
+                              Height: =26
+                              Width: =116
+                              X: =134
+                              Y: =48
+                              RadiusBottomLeft: =13
+                              RadiusBottomRight: =13
+                              RadiusTopLeft: =13
+                              RadiusTopRight: =13
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - lblStatus_It:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =AppFont
+                                    Color: =Switch(Coalesce(itItem.Status.Value, ""), "Available", C_Good, "Allocated", C_Accent, C_Danger)
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Text: =Coalesce(itItem.Status.Value, "Unknown")
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =0
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Wrap: =false
+                        - capKType_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Text: ="TYPE"
+                              Width: =Parent.Width / 2 - 20
+                              X: =16
+                              Y: =88
+                              Wrap: =false
+                        - lblVType_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =22
+                              Text: =Coalesce(itItem.'Wheelchair Type'.Value, "—")
+                              Width: =Parent.Width / 2 - 20
+                              X: =16
+                              Y: =104
+                              Wrap: =false
+                        - capKWidth_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Text: ="WIDTH"
+                              Width: =Parent.Width / 2 - 20
+                              X: =Parent.Width / 2 + 4
+                              Y: =88
+                              Wrap: =false
+                        - lblVWidth_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =22
+                              Text: =Coalesce(itItem.Width.Value, "—")
+                              Width: =Parent.Width / 2 - 20
+                              X: =Parent.Width / 2 + 4
+                              Y: =104
+                              Wrap: =false
+                        - capKDepth_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Text: ="DEPTH"
+                              Width: =Parent.Width / 2 - 20
+                              X: =16
+                              Y: =136
+                              Wrap: =false
+                        - lblVDepth_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =22
+                              Text: =Coalesce(itItem.Depth.Value, "—")
+                              Width: =Parent.Width / 2 - 20
+                              X: =16
+                              Y: =152
+                              Wrap: =false
+                        - capKHeight_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Text: ="HEIGHT"
+                              Width: =Parent.Width / 2 - 20
+                              X: =Parent.Width / 2 + 4
+                              Y: =136
+                              Wrap: =false
+                        - lblVHeight_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =22
+                              Text: =Coalesce(itItem.Height.Value, "—")
+                              Width: =Parent.Width / 2 - 20
+                              X: =Parent.Width / 2 + 4
+                              Y: =152
+                              Wrap: =false
+                        - capKLoc_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Text: ="LOCATION"
+                              Width: =Parent.Width / 2 - 20
+                              X: =16
+                              Y: =184
+                              Wrap: =false
+                        - lblVLoc_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =22
+                              Text: =Coalesce(itItem.Location.Value, "—")
+                              Width: =Parent.Width / 2 - 20
+                              X: =16
+                              Y: =200
+                              Wrap: =false
+                        - capKSwl_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Text: ="SWL"
+                              Width: =Parent.Width / 2 - 20
+                              X: =Parent.Width / 2 + 4
+                              Y: =184
+                              Wrap: =false
+                        - lblVSwl_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =22
+                              Text: =Coalesce(Text(itItem.SWL), "—")
+                              Width: =Parent.Width / 2 - 20
+                              X: =Parent.Width / 2 + 4
+                              Y: =200
+                              Wrap: =false
+                        - lblDays_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =12
+                              Height: =20
+                              Text: ="In use " & Coalesce(itItem.TotalDaysSignedOut, 0) & " days this year"
+                              Width: =Parent.Width - 32
+                              X: =16
+                              Y: =230
+                              Wrap: =false
+                  - conService_It:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =64
+                        FillPortions: =0
+                        Fill: =C_DangerBg
+                        Height: =64
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =14
+                        RadiusBottomRight: =14
+                        RadiusTopLeft: =14
+                        RadiusTopRight: =14
+                        BorderColor: =RGBA(180, 26, 26, 0.35)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Visible: =Coalesce(itItem.TotalDaysSignedOut, 0) > 100
+                      Children:
+                        - lblService_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Danger
+                              Size: =13
+                              FontWeight: =FontWeight.Bold
+                              Height: =48
+                              Text: |-
+                                ="Over 100 days in use this year. Needs a Full Service: set it aside and contact CA."
+                              Width: =Parent.Width - 28
+                              X: =14
+                              Y: =8
+                  - conAlloc_It:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =196
+                        FillPortions: =0
+                        Fill: =C_White
+                        Height: =196
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =18
+                        RadiusBottomRight: =18
+                        RadiusTopLeft: =18
+                        RadiusTopRight: =18
+                        BorderColor: =C_Line
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.Light
+                        Visible: =Coalesce(itItem.Status.Value, "") = "Allocated"
+                      Children:
+                        - capAlloc_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Text: ="SIGNED OUT TO"
+                              Width: =Parent.Width
+                              X: =16
+                              Y: =14
+                              Wrap: =false
+                        - lblPt_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =20
+                              FontWeight: =FontWeight.Bold
+                              Height: =28
+                              Text: =Coalesce(itItem.'Patient Name', "—")
+                              Width: =Parent.Width - 32
+                              X: =16
+                              Y: =32
+                              Wrap: =false
+                        - lblPtSub_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =12
+                              Height: =20
+                              Text: ="URN " & Coalesce(itItem.URN, "—") & If(IsBlank(itItem.DOB), "", "  ·  DOB " & Text(itItem.DOB, "dd/mm/yyyy"))
+                              Width: =Parent.Width - 32
+                              X: =16
+                              Y: =60
+                              Wrap: =false
+                        - capKWard_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Text: ="WARD"
+                              Width: =Parent.Width / 2 - 20
+                              X: =16
+                              Y: =90
+                              Wrap: =false
+                        - lblVWard_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =22
+                              Text: =Coalesce(itItem.Ward.Value, "—")
+                              Width: =Parent.Width / 2 - 20
+                              X: =16
+                              Y: =106
+                              Wrap: =false
+                        - capKPhysio_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Text: ="PHYSIO"
+                              Width: =Parent.Width / 2 - 20
+                              X: =Parent.Width / 2 + 4
+                              Y: =90
+                              Wrap: =false
+                        - lblVPhysio_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =22
+                              Text: =Coalesce(itItem.Physiotherapist, "—")
+                              Width: =Parent.Width / 2 - 20
+                              X: =Parent.Width / 2 + 4
+                              Y: =106
+                              Wrap: =false
+                        - capKOut_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Text: ="SIGNED OUT"
+                              Width: =Parent.Width / 2 - 20
+                              X: =16
+                              Y: =140
+                              Wrap: =false
+                        - lblVOut_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =22
+                              Text: =Coalesce(Text(itItem.'Date Signed Out', "d mmm yyyy"), "—")
+                              Width: =Parent.Width / 2 - 20
+                              X: =16
+                              Y: =156
+                              Wrap: =false
+                        - capKDays_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Text: ="DAYS OUT"
+                              Width: =Parent.Width / 2 - 20
+                              X: =Parent.Width / 2 + 4
+                              Y: =140
+                              Wrap: =false
+                        - lblVDays_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =22
+                              Text: =Coalesce(If(IsBlank(itItem.'Date Signed Out'), Blank(), DateDiff(itItem.'Date Signed Out', Today(), TimeUnit.Days) & If(DateDiff(itItem.'Date Signed Out', Today(), TimeUnit.Days) = 1, " day", " days")), "—")
+                              Width: =Parent.Width / 2 - 20
+                              X: =Parent.Width / 2 + 4
+                              Y: =156
+                              Wrap: =false
+            - conFoot_It:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  AlignInContainer: =AlignInContainer.SetByContainer
+                  LayoutMinHeight: =80
+                  FillPortions: =0
+                  Fill: =C_White
+                  Height: =80
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  BorderColor: =C_Line
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                Children:
+                  - conMain_It:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        Fill: =If(Coalesce(itItem.Status.Value, "") = "Available" || Coalesce(itItem.Status.Value, "") = "Allocated", C_Accent, C_Muted)
+                        Height: =48
+                        Width: =Parent.Width - 32
+                        X: =16
+                        Y: =16
+                        RadiusBottomLeft: =24
+                        RadiusBottomRight: =24
+                        RadiusTopLeft: =24
+                        RadiusTopRight: =24
+                        BorderColor: =If(Coalesce(itItem.Status.Value, "") = "Available" || Coalesce(itItem.Status.Value, "") = "Allocated", C_Accent, C_Muted)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - btnMain_It:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =24
+                              Font: =AppFont
+                              FontColor: =C_White
+                              FontSize: =16
+                              FontWeight: =FontWeight.Bold
+                              Height: =Parent.Height
+                              Width: =Parent.Width
+                              Text: =If(Coalesce(itItem.Status.Value, "") = "Available", "Allocate to a patient", Coalesce(itItem.Status.Value, "") = "Allocated", "Return equipment", "Not available  ·  " & Coalesce(itItem.Status.Value, ""))
+                              OnSelect: =If(Coalesce(itItem.Status.Value, "") = "Available", Navigate(Allocate, ScreenTransition.Cover), Coalesce(itItem.Status.Value, "") = "Allocated", Set(itShowReturn, true))
+                              DisplayMode: =If(Coalesce(itItem.Status.Value, "") = "Available" || Coalesce(itItem.Status.Value, "") = "Allocated", DisplayMode.Edit, DisplayMode.Disabled)
+      - conOverlay_It:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(14, 28, 42, 0.45)
+            Height: =Parent.Height
+            Width: =Parent.Width
+            X: =0
+            Y: =0
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            DropShadow: =DropShadow.None
+            Visible: =itShowReturn
+          Children:
+            - btnScrim_It:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  BorderStyle: =BorderStyle.None
+                  Height: =Parent.Height
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+                  Text: =""
+                  OnSelect: =Set(itShowReturn, false)
+            - conSheet_It:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  Fill: =C_White
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutJustifyContent: =LayoutJustifyContent.Start
+                  LayoutGap: =10
+                  PaddingTop: =20
+                  PaddingRight: =20
+                  PaddingBottom: =24
+                  PaddingLeft: =20
+                  DropShadow: =DropShadow.None
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =22
+                  RadiusTopRight: =22
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  X: =0
+                  Width: =Parent.Width
+                  Height: =Min(Parent.Height - 40, 220)
+                  Y: =Parent.Height - Self.Height
+                Children:
+                  - lblSheetT_It:
+                      Control: Label@2.5.1
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =32
+                        FillPortions: =0
+                        Font: =AppFont
+                        Color: =C_Ink
+                        Size: =19
+                        FontWeight: =FontWeight.Bold
+                        Height: =32
+                        Text: ="Return " & itItem.Title & "?"
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        Wrap: =false
+                  - lblRetBody_It:
+                      Control: Label@2.5.1
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =60
+                        FillPortions: =0
+                        Font: =AppFont
+                        Color: =C_Ink2
+                        Size: =14
+                        Height: =60
+                        Text: ="It will be marked Available and signed in by you." & Char(10) & "Out for " & DateDiff(itItem.'Date Signed Out', Today(), TimeUnit.Days) & " days with " & Coalesce(itItem.'Patient Name', "the patient") & "."
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                  - conRetBtns_It:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =48
+                        Height: =48
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutJustifyContent: =LayoutJustifyContent.Start
+                        LayoutGap: =12
+                        PaddingTop: =0
+                        PaddingRight: =0
+                        PaddingBottom: =0
+                        PaddingLeft: =0
+                        DropShadow: =DropShadow.None
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                      Children:
+                        - conRetNo_It:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Stretch
+                              LayoutMinWidth: =40
+                              FillPortions: =1
+                              Fill: =C_White
+                              Height: =48
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              RadiusBottomLeft: =24
+                              RadiusBottomRight: =24
+                              RadiusTopLeft: =24
+                              RadiusTopRight: =24
+                              BorderColor: =C_Line
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnRetNo_It:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =24
+                                    Font: =AppFont
+                                    FontColor: =C_Ink2
+                                    FontSize: =15
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="Cancel"
+                                    OnSelect: =Set(itShowReturn, false)
+                        - conRetGo_It:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Stretch
+                              LayoutMinWidth: =40
+                              FillPortions: =1
+                              Fill: =C_Accent
+                              Height: =48
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              RadiusBottomLeft: =24
+                              RadiusBottomRight: =24
+                              RadiusTopLeft: =24
+                              RadiusTopRight: =24
+                              BorderColor: =C_Accent
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnRetGo_It:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =24
+                                    Font: =AppFont
+                                    FontColor: =C_White
+                                    FontSize: =15
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="Return"
+                                    OnSelect: |-
+                                      =If(
+                                          IsBlank(itItem) || Coalesce(itItem.Status.Value, "") <> "Allocated" || IsBlank(itItem.'Date Signed Out'),
+                                          Notify("This item is not signed out, so it cannot be returned.", NotificationType.Error),
+                                          With(
+                                              {
+                                                  returnDate: Today(),
+                                                  actionTime: Now(),
+                                                  episodeKey: Coalesce(
+                                                      itItem.CurrentEpisodeKey,
+                                                      "LEGACY-RETURN-" & Text(itItem.ID) & "-" & Text(Now(), "yyyymmddhhmmss") & "-" & Left(Text(GUID()), 8)
+                                                  ),
+                                                  daysThisEpisode: Max(0, DateDiff(itItem.'Date Signed Out', Today(), TimeUnit.Days))
+                                              },
+                                              With(
+                                                  { newTotalDays: Coalesce(itItem.TotalDaysSignedOut, 0) + daysThisEpisode },
+
+                                                  // 1) inventory -> Available
+                                                  Patch(
+                                                      Equipment_Inventory_SharePoint,
+                                                      itItem,
+                                                      {
+                                                          Status: { Value: "Available" },
+                                                          'Patient Name': "",
+                                                          URN: "",
+                                                          Physiotherapist: "",
+                                                          DOB: Blank(),
+                                                          'Date Returned': returnDate,
+                                                          Ward: Blank(),
+                                                          'Signed In By': MeName,
+                                                          CurrentEpisodeKey: Blank(),
+                                                          TotalDaysSignedOut: newTotalDays
+                                                      }
+                                                  );
+
+                                                  // 2) usage log: sign-in row
+                                                  Patch(
+                                                      Equipment_Usage_Log,
+                                                      Defaults(Equipment_Usage_Log),
+                                                      {
+                                                          Title: episodeKey & " - Sign In",
+                                                          EpisodeKey: episodeKey,
+                                                          EventType: { Value: "Sign In" },
+                                                          EpisodeStatus: { Value: If(IsBlank(itItem.CurrentEpisodeKey), "Legacy unmatched", "Closed") },
+                                                          EventDateTime: actionTime,
+                                                          EquipmentItemID: itItem.ID,
+                                                          EquipmentTitle: itItem.Title,
+                                                          Category: Coalesce(itItem.Category.Value, ""),
+                                                          Brand: Coalesce(itItem.Brand, ""),
+                                                          Model: Coalesce(itItem.Model, ""),
+                                                          Width: Coalesce(itItem.Width.Value, ""),
+                                                          Depth: Coalesce(itItem.Depth.Value, ""),
+                                                          Height: Coalesce(itItem.Height.Value, ""),
+                                                          SWL: Coalesce(itItem.SWL, ""),
+                                                          WheelchairType: Coalesce(itItem.'Wheelchair Type'.Value, ""),
+                                                          LocationAtEvent: Coalesce(itItem.Location.Value, ""),
+                                                          Ward: Coalesce(itItem.Ward.Value, ""),
+                                                          PatientName: Coalesce(itItem.'Patient Name', ""),
+                                                          URN: Coalesce(itItem.URN, ""),
+                                                          DOB: itItem.DOB,
+                                                          Physiotherapist: Coalesce(itItem.Physiotherapist, ""),
+                                                          DateSignedOut: itItem.'Date Signed Out',
+                                                          DateReturned: returnDate,
+                                                          DaysSignedOutThisEpisode: daysThisEpisode,
+                                                          TotalDaysSignedOutAfterEvent: newTotalDays,
+                                                          Over100DaysAfterEvent: newTotalDays > 100,
+                                                          ServiceRequired: newTotalDays > 100,
+                                                          IsHighRiskEquipment: Coalesce(itItem.IsHighRiskEquipment, false),
+                                                          OutOfService: Coalesce(itItem.OutOfService, false),
+                                                          IsActive: Coalesce(itItem.IsActive, true),
+                                                          StatusAfterEvent: "Available",
+                                                          ActionedByName: MeName,
+                                                          ActionedByEmail: User().Email,
+                                                          SourceApp: { Value: "Mobile" },
+                                                          Notes: If(IsBlank(itItem.CurrentEpisodeKey), "Return completed without an existing CurrentEpisodeKey. This is likely a pre-log allocation.", "")
+                                                      }
+                                                  );
+
+                                                  // 3) close the matching sign-out row
+                                                  With(
+                                                      { signOutRow: LookUp(Equipment_Usage_Log, EpisodeKey = episodeKey && EventType.Value = "Sign Out") },
+                                                      If(
+                                                          !IsBlank(signOutRow.ID),
+                                                          Patch(
+                                                              Equipment_Usage_Log,
+                                                              signOutRow,
+                                                              {
+                                                                  EpisodeStatus: { Value: "Closed" },
+                                                                  DateReturned: returnDate,
+                                                                  DaysSignedOutThisEpisode: daysThisEpisode,
+                                                                  TotalDaysSignedOutAfterEvent: newTotalDays,
+                                                                  Over100DaysAfterEvent: newTotalDays > 100,
+                                                                  ServiceRequired: newTotalDays > 100
+                                                              }
+                                                          )
+                                                      )
+                                                  );
+
+                                                  Notify("Equipment returned.", NotificationType.Success);
+                                                  If(
+                                                      newTotalDays > 100,
+                                                      Notify("Used for over 100 days this year: needs a Full Service. Set it aside and contact CA.", NotificationType.Warning)
+                                                  );
+
+                                                  // show the item again, now Available
+                                                  Set(itShowReturn, false);
+                                                  Set(itItem, LookUp(Equipment_Inventory_SharePoint, ID = varItemID))
+                                              )
+                                          )
+                                      )

@@ -1,0 +1,759 @@
+Screens:
+  Home:
+    Properties:
+      Fill: =C_Bg
+      OnVisible: |-
+        =// Equipment you have had signed out for 6 weeks or more (shown as a reminder card)
+        ClearCollect(
+            colOldAllocations,
+            Filter(
+                Equipment_Inventory_SharePoint,
+                Status.Value = "Allocated" &&
+                Physiotherapist = MeName &&
+                'Date Signed Out' <= DateAdd(Today(), -42)
+            )
+        )
+    Children:
+      - conRoot_Hm:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            Fill: =C_Bg
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+            LayoutJustifyContent: =LayoutJustifyContent.Start
+            LayoutGap: =0
+            PaddingTop: =0
+            PaddingRight: =0
+            PaddingBottom: =0
+            PaddingLeft: =0
+            DropShadow: =DropShadow.None
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =Parent.Height
+          Children:
+            - conHdr_Hm:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  AlignInContainer: =AlignInContainer.SetByContainer
+                  LayoutMinHeight: =132
+                  FillPortions: =0
+                  Fill: =RGBA(7, 95, 115, 1)
+                  Height: =132
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  DropShadow: =DropShadow.None
+                Children:
+                  - imgHdr_Hm:
+                      Control: Image@2.2.3
+                      Properties:
+                        Height: =Parent.Height
+                        Image: =HeaderImage
+                        ImagePosition: =ImagePosition.Fill
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                  - lblKicker_Hm:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =AppFont
+                        Color: =RGBA(255, 255, 255, 0.8)
+                        Size: =11
+                        FontWeight: =FontWeight.Bold
+                        Height: =18
+                        Text: ="STARS PHYSIOTHERAPY"
+                        Width: =Parent.Width - 40
+                        X: =20
+                        Y: =26
+                        Wrap: =false
+                  - lblTitle_Hm:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =AppFont
+                        Color: =C_White
+                        Size: =30
+                        FontWeight: =FontWeight.Bold
+                        Height: =40
+                        Text: ="Equipment"
+                        Width: =Parent.Width - 40
+                        X: =20
+                        Y: =44
+                        Wrap: =false
+                  - lblHello_Hm:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =AppFont
+                        Color: =RGBA(255, 255, 255, 0.9)
+                        Size: =13
+                        Height: =22
+                        Text: ="Hi " & First(Split(MeName, " ")).Value & "  ·  " & Text(Today(), "dddd d mmmm")
+                        Width: =Parent.Width - 40
+                        X: =20
+                        Y: =88
+                        Wrap: =false
+            - conBody_Hm:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  AlignInContainer: =AlignInContainer.SetByContainer
+                  LayoutMinHeight: =200
+                  FillPortions: =1
+                  Fill: =RGBA(0, 0, 0, 0)
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutJustifyContent: =LayoutJustifyContent.Start
+                  LayoutGap: =12
+                  PaddingTop: =16
+                  PaddingRight: =16
+                  PaddingBottom: =24
+                  PaddingLeft: =16
+                  DropShadow: =DropShadow.None
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                Children:
+                  - conScan_Hm:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =112
+                        FillPortions: =0
+                        Fill: =C_Accent
+                        Height: =112
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =20
+                        RadiusBottomRight: =20
+                        RadiusTopLeft: =20
+                        RadiusTopRight: =20
+                        DropShadow: =DropShadow.Light
+                      Children:
+                        - conScanIc_Hm:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =RGBA(255, 255, 255, 0.16)
+                              Height: =56
+                              Width: =56
+                              X: =20
+                              Y: =28
+                              RadiusBottomLeft: =28
+                              RadiusBottomRight: =28
+                              RadiusTopLeft: =28
+                              RadiusTopRight: =28
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - icoScan_Hm:
+                                  Control: ModernIcon@1.1.1
+                                  Properties:
+                                    Height: =28
+                                    Icon: ="Camera"
+                                    IconColor: =C_White
+                                    Width: =28
+                                    X: =14
+                                    Y: =14
+                        - lblScanT_Hm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_White
+                              Size: =20
+                              FontWeight: =FontWeight.Bold
+                              Height: =28
+                              Text: ="Scan equipment"
+                              Width: =Parent.Width - 108
+                              X: =92
+                              Y: =30
+                              Wrap: =false
+                        - lblScanS_Hm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =RGBA(255, 255, 255, 0.85)
+                              Size: =12
+                              Height: =20
+                              Text: ="Allocate, return or check an item"
+                              Width: =Parent.Width - 108
+                              X: =92
+                              Y: =60
+                              Wrap: =false
+                        - scnHome_Hm:
+                            Control: BarcodeReader@1.0.25
+                            Properties:
+                              BorderStyle: =BorderStyle.None
+                              FillColor: =RGBA(0, 0, 0, 0)
+                              HoverFillColor: =RGBA(255, 255, 255, 0.08)
+                              FontSize: =1
+                              Height: =Parent.Height
+                              OnScan: |-
+                                =With(
+                                    { code: Trim(First(scnHome_Hm.Barcodes).Value) },
+                                    With(
+                                        { it: LookUp(Equipment_Inventory_SharePoint, Title = code) },
+                                        If(
+                                            IsBlank(it),
+                                            Notify("Equipment " & code & " was not found. Check the barcode and do not use the equipment.", NotificationType.Error),
+                                            Set(varItemID, it.ID);
+                                            Navigate(Item, ScreenTransition.Cover)
+                                        )
+                                    )
+                                )
+                              ScanningMode: ='BarcodeReader.ScanningMode'.SelectToScan
+                              Text: =""
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                  - conOld_Hm:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =64
+                        FillPortions: =0
+                        Fill: =C_AmberBg
+                        Height: =64
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =16
+                        RadiusBottomRight: =16
+                        RadiusTopLeft: =16
+                        RadiusTopRight: =16
+                        BorderColor: =RGBA(178, 105, 0, 0.35)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Visible: =!IsEmpty(colOldAllocations)
+                      Children:
+                        - lblOldT_Hm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Amber
+                              Size: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =22
+                              Text: =CountRows(colOldAllocations) & If(CountRows(colOldAllocations) = 1, " item", " items") & " signed out 6+ weeks"
+                              Width: =Parent.Width - 48
+                              X: =16
+                              Y: =10
+                              Wrap: =false
+                        - lblOldS_Hm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Amber
+                              Size: =12
+                              Height: =18
+                              Text: ="Tap to review in My equipment"
+                              Width: =Parent.Width - 48
+                              X: =16
+                              Y: =34
+                              Wrap: =false
+                        - icoOld_Hm:
+                            Control: ModernIcon@1.1.1
+                            Properties:
+                              Height: =24
+                              Icon: ="ChevronRight"
+                              IconColor: =C_Amber
+                              Width: =24
+                              X: =Parent.Width - 36
+                              Y: =20
+                        - btnOld_Hm:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderStyle: =BorderStyle.None
+                              Height: =Parent.Height
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Text: =""
+                              OnSelect: |-
+                                =Set(meTab, "Old");
+                                Navigate(MyEquipment, ScreenTransition.Cover)
+                  - capTiles_Hm:
+                      Control: Label@2.5.1
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =18
+                        FillPortions: =0
+                        Font: =AppFont
+                        Color: =C_Muted
+                        Size: =11
+                        FontWeight: =FontWeight.Bold
+                        Height: =18
+                        Text: ="WHAT DO YOU NEED?"
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        Wrap: =false
+                  - conTileFind_Hm:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =72
+                        FillPortions: =0
+                        Fill: =C_White
+                        Height: =72
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =16
+                        RadiusBottomRight: =16
+                        RadiusTopLeft: =16
+                        RadiusTopRight: =16
+                        BorderColor: =C_Line
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.Light
+                      Children:
+                        - conTileIcFind_Hm:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_AccentSoft
+                              Height: =44
+                              Width: =44
+                              X: =14
+                              Y: =14
+                              RadiusBottomLeft: =22
+                              RadiusBottomRight: =22
+                              RadiusTopLeft: =22
+                              RadiusTopRight: =22
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - icoTileFind_Hm:
+                                  Control: ModernIcon@1.1.1
+                                  Properties:
+                                    Height: =24
+                                    Icon: ="Search"
+                                    IconColor: =C_Accent
+                                    Width: =24
+                                    X: =10
+                                    Y: =10
+                        - lblTileTFind_Hm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =16
+                              FontWeight: =FontWeight.Bold
+                              Height: =24
+                              Text: ="Find equipment"
+                              Width: =Parent.Width - 110
+                              X: =72
+                              Y: =14
+                              Wrap: =false
+                        - lblTileSFind_Hm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =12
+                              Height: =20
+                              Text: ="By barcode, or by type and size"
+                              Width: =Parent.Width - 110
+                              X: =72
+                              Y: =38
+                              Wrap: =false
+                        - icoTileGoFind_Hm:
+                            Control: ModernIcon@1.1.1
+                            Properties:
+                              Height: =24
+                              Icon: ="ChevronRight"
+                              IconColor: =C_Muted
+                              Width: =24
+                              X: =Parent.Width - 36
+                              Y: =24
+                        - btnTileFind_Hm:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderStyle: =BorderStyle.None
+                              Height: =Parent.Height
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Text: =""
+                              OnSelect: |-
+                                =Set(fdCat, "Wheelchair"); Set(fdType, Blank()); Set(fdBrand, Blank()); Set(fdModel, Blank()); Set(fdWidth, Blank()); Set(fdDepth, Blank()); Set(fdHeight, Blank());
+                                Navigate(Find, ScreenTransition.Cover)
+                  - conTileMine_Hm:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =72
+                        FillPortions: =0
+                        Fill: =C_White
+                        Height: =72
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =16
+                        RadiusBottomRight: =16
+                        RadiusTopLeft: =16
+                        RadiusTopRight: =16
+                        BorderColor: =C_Line
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.Light
+                      Children:
+                        - conTileIcMine_Hm:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_AccentSoft
+                              Height: =44
+                              Width: =44
+                              X: =14
+                              Y: =14
+                              RadiusBottomLeft: =22
+                              RadiusBottomRight: =22
+                              RadiusTopLeft: =22
+                              RadiusTopRight: =22
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - icoTileMine_Hm:
+                                  Control: ModernIcon@1.1.1
+                                  Properties:
+                                    Height: =24
+                                    Icon: ="Cart"
+                                    IconColor: =C_Accent
+                                    Width: =24
+                                    X: =10
+                                    Y: =10
+                        - lblTileTMine_Hm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =16
+                              FontWeight: =FontWeight.Bold
+                              Height: =24
+                              Text: ="My equipment"
+                              Width: =Parent.Width - 110
+                              X: =72
+                              Y: =14
+                              Wrap: =false
+                        - lblTileSMine_Hm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =12
+                              Height: =20
+                              Text: ="Signed out by you, and today's list"
+                              Width: =Parent.Width - 110
+                              X: =72
+                              Y: =38
+                              Wrap: =false
+                        - icoTileGoMine_Hm:
+                            Control: ModernIcon@1.1.1
+                            Properties:
+                              Height: =24
+                              Icon: ="ChevronRight"
+                              IconColor: =C_Muted
+                              Width: =24
+                              X: =Parent.Width - 36
+                              Y: =24
+                        - btnTileMine_Hm:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderStyle: =BorderStyle.None
+                              Height: =Parent.Height
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Text: =""
+                              OnSelect: |-
+                                =Set(meTab, "All");
+                                Navigate(MyEquipment, ScreenTransition.Cover)
+                  - conTileAlloc_Hm:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =72
+                        FillPortions: =0
+                        Fill: =C_White
+                        Height: =72
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =16
+                        RadiusBottomRight: =16
+                        RadiusTopLeft: =16
+                        RadiusTopRight: =16
+                        BorderColor: =C_Line
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.Light
+                      Children:
+                        - conTileIcAlloc_Hm:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_AccentSoft
+                              Height: =44
+                              Width: =44
+                              X: =14
+                              Y: =14
+                              RadiusBottomLeft: =22
+                              RadiusBottomRight: =22
+                              RadiusTopLeft: =22
+                              RadiusTopRight: =22
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - icoTileAlloc_Hm:
+                                  Control: ModernIcon@1.1.1
+                                  Properties:
+                                    Height: =24
+                                    Icon: ="AppsList"
+                                    IconColor: =C_Accent
+                                    Width: =24
+                                    X: =10
+                                    Y: =10
+                        - lblTileTAlloc_Hm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =16
+                              FontWeight: =FontWeight.Bold
+                              Height: =24
+                              Text: ="All allocated"
+                              Width: =Parent.Width - 110
+                              X: =72
+                              Y: =14
+                              Wrap: =false
+                        - lblTileSAlloc_Hm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =12
+                              Height: =20
+                              Text: ="Everything signed out, by ward"
+                              Width: =Parent.Width - 110
+                              X: =72
+                              Y: =38
+                              Wrap: =false
+                        - icoTileGoAlloc_Hm:
+                            Control: ModernIcon@1.1.1
+                            Properties:
+                              Height: =24
+                              Icon: ="ChevronRight"
+                              IconColor: =C_Muted
+                              Width: =24
+                              X: =Parent.Width - 36
+                              Y: =24
+                        - btnTileAlloc_Hm:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderStyle: =BorderStyle.None
+                              Height: =Parent.Height
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Text: =""
+                              OnSelect: =Navigate(Allocated, ScreenTransition.Cover)
+                  - conTileAvail_Hm:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =72
+                        FillPortions: =0
+                        Fill: =C_White
+                        Height: =72
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =16
+                        RadiusBottomRight: =16
+                        RadiusTopLeft: =16
+                        RadiusTopRight: =16
+                        BorderColor: =C_Line
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.Light
+                      Children:
+                        - conTileIcAvail_Hm:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_AccentSoft
+                              Height: =44
+                              Width: =44
+                              X: =14
+                              Y: =14
+                              RadiusBottomLeft: =22
+                              RadiusBottomRight: =22
+                              RadiusTopLeft: =22
+                              RadiusTopRight: =22
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - icoTileAvail_Hm:
+                                  Control: ModernIcon@1.1.1
+                                  Properties:
+                                    Height: =24
+                                    Icon: ="Eye"
+                                    IconColor: =C_Accent
+                                    Width: =24
+                                    X: =10
+                                    Y: =10
+                        - lblTileTAvail_Hm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =16
+                              FontWeight: =FontWeight.Bold
+                              Height: =24
+                              Text: ="Wheelchair availability"
+                              Width: =Parent.Width - 110
+                              X: =72
+                              Y: =14
+                              Wrap: =false
+                        - lblTileSAvail_Hm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =12
+                              Height: =20
+                              Text: ="How many of each size are free"
+                              Width: =Parent.Width - 110
+                              X: =72
+                              Y: =38
+                              Wrap: =false
+                        - icoTileGoAvail_Hm:
+                            Control: ModernIcon@1.1.1
+                            Properties:
+                              Height: =24
+                              Icon: ="ChevronRight"
+                              IconColor: =C_Muted
+                              Width: =24
+                              X: =Parent.Width - 36
+                              Y: =24
+                        - btnTileAvail_Hm:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderStyle: =BorderStyle.None
+                              Height: =Parent.Height
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Text: =""
+                              OnSelect: =Navigate(Availability, ScreenTransition.Cover)
+                  - conTileAudit_Hm:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =72
+                        FillPortions: =0
+                        Fill: =C_White
+                        Height: =72
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =16
+                        RadiusBottomRight: =16
+                        RadiusTopLeft: =16
+                        RadiusTopRight: =16
+                        BorderColor: =C_Line
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.Light
+                      Children:
+                        - conTileIcAudit_Hm:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_AccentSoft
+                              Height: =44
+                              Width: =44
+                              X: =14
+                              Y: =14
+                              RadiusBottomLeft: =22
+                              RadiusBottomRight: =22
+                              RadiusTopLeft: =22
+                              RadiusTopRight: =22
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - icoTileAudit_Hm:
+                                  Control: ModernIcon@1.1.1
+                                  Properties:
+                                    Height: =24
+                                    Icon: ="CheckmarkCircle"
+                                    IconColor: =C_Accent
+                                    Width: =24
+                                    X: =10
+                                    Y: =10
+                        - lblTileTAudit_Hm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =16
+                              FontWeight: =FontWeight.Bold
+                              Height: =24
+                              Text: ="Equipment audit"
+                              Width: =Parent.Width - 110
+                              X: =72
+                              Y: =14
+                              Wrap: =false
+                        - lblTileSAudit_Hm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =12
+                              Height: =20
+                              Text: ="Check equipment on the ward"
+                              Width: =Parent.Width - 110
+                              X: =72
+                              Y: =38
+                              Wrap: =false
+                        - icoTileGoAudit_Hm:
+                            Control: ModernIcon@1.1.1
+                            Properties:
+                              Height: =24
+                              Icon: ="ChevronRight"
+                              IconColor: =C_Muted
+                              Width: =24
+                              X: =Parent.Width - 36
+                              Y: =24
+                        - btnTileAudit_Hm:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderStyle: =BorderStyle.None
+                              Height: =Parent.Height
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Text: =""
+                              OnSelect: =Navigate(Audit, ScreenTransition.Cover)

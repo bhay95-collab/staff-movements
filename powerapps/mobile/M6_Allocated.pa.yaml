@@ -1,0 +1,526 @@
+Screens:
+  Allocated:
+    Properties:
+      Fill: =C_Bg
+      OnVisible: |-
+        =ClearCollect(colAllocated, Filter(Equipment_Inventory_SharePoint, Status.Value = "Allocated"));
+        Set(acWard, "All");
+        Reset(txtSearch_Ac)
+    Children:
+      - conRoot_Ac:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            Fill: =C_Bg
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+            LayoutJustifyContent: =LayoutJustifyContent.Start
+            LayoutGap: =0
+            PaddingTop: =0
+            PaddingRight: =0
+            PaddingBottom: =0
+            PaddingLeft: =0
+            DropShadow: =DropShadow.None
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =Parent.Height
+          Children:
+            - conHdr_Ac:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  AlignInContainer: =AlignInContainer.SetByContainer
+                  LayoutMinHeight: =76
+                  FillPortions: =0
+                  Fill: =RGBA(7, 95, 115, 1)
+                  Height: =76
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  DropShadow: =DropShadow.None
+                Children:
+                  - imgHdr_Ac:
+                      Control: Image@2.2.3
+                      Properties:
+                        Height: =Parent.Height
+                        Image: =HeaderImage
+                        ImagePosition: =ImagePosition.Fill
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                  - btnBack_Ac:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        FontColor: =C_White
+                        FontSize: =28
+                        Height: =48
+                        Icon: ="ChevronLeft"
+                        Text: =""
+                        Width: =48
+                        X: =4
+                        Y: =14
+                        OnSelect: =Back(ScreenTransition.UnCoverRight)
+                  - lblHdrT_Ac:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =AppFont
+                        Color: =C_White
+                        Size: =20
+                        FontWeight: =FontWeight.Bold
+                        Height: =28
+                        Text: ="All allocated"
+                        Width: =Parent.Width - 68
+                        X: =52
+                        Y: =16
+                        Wrap: =false
+                  - lblHdrS_Ac:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =AppFont
+                        Color: =RGBA(255, 255, 255, 0.85)
+                        Size: =12
+                        Height: =20
+                        Text: ="Everything signed out  ·  tap for details"
+                        Width: =Parent.Width - 68
+                        X: =52
+                        Y: =42
+                        Wrap: =false
+            - conBody_Ac:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  AlignInContainer: =AlignInContainer.SetByContainer
+                  LayoutMinHeight: =200
+                  FillPortions: =1
+                  Fill: =RGBA(0, 0, 0, 0)
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutJustifyContent: =LayoutJustifyContent.Start
+                  LayoutGap: =10
+                  PaddingTop: =12
+                  PaddingRight: =16
+                  PaddingBottom: =8
+                  PaddingLeft: =16
+                  DropShadow: =DropShadow.None
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                Children:
+                  - conSearch_Ac:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =48
+                        FillPortions: =0
+                        Fill: =C_White
+                        Height: =48
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        BorderColor: =RGBA(14, 42, 70, 0.22)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - icoSearch_Ac:
+                            Control: ModernIcon@1.1.1
+                            Properties:
+                              Height: =24
+                              Icon: ="Search"
+                              IconColor: =C_Muted
+                              Width: =24
+                              X: =12
+                              Y: =12
+                        - txtSearch_Ac:
+                            Control: Classic/TextInput@2.3.2
+                            Properties:
+                              BorderStyle: =BorderStyle.None
+                              Color: =C_Ink
+                              Default: =""
+                              DelayOutput: =true
+                              Fill: =RGBA(0, 0, 0, 0)
+                              Font: =AppFont
+                              Height: =Parent.Height
+                              HintText: ="Code, patient, physio, URN or width"
+                              Size: =15
+                              Width: =Parent.Width - 44
+                              X: =40
+                              Y: =0
+                  - conSegWard_Ac:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =40
+                        Height: =40
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutJustifyContent: =LayoutJustifyContent.Start
+                        LayoutGap: =8
+                        PaddingTop: =0
+                        PaddingRight: =0
+                        PaddingBottom: =0
+                        PaddingLeft: =0
+                        DropShadow: =DropShadow.None
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                      Children:
+                        - conSegWardAll_Ac:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Stretch
+                              LayoutMinWidth: =40
+                              FillPortions: =1
+                              Fill: =If(acWard = "All", C_Accent, C_White)
+                              Height: =40
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              RadiusBottomLeft: =20
+                              RadiusBottomRight: =20
+                              RadiusTopLeft: =20
+                              RadiusTopRight: =20
+                              BorderColor: =If(acWard = "All", C_Accent, C_Line)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnSegWardAll_Ac:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =20
+                                    Font: =AppFont
+                                    FontColor: =If(acWard = "All", C_White, C_Ink2)
+                                    FontSize: =13
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="All"
+                                    OnSelect: =Set(acWard, "All")
+                        - conSegWard4A_Ac:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Stretch
+                              LayoutMinWidth: =40
+                              FillPortions: =1
+                              Fill: =If(acWard = "4A", C_Accent, C_White)
+                              Height: =40
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              RadiusBottomLeft: =20
+                              RadiusBottomRight: =20
+                              RadiusTopLeft: =20
+                              RadiusTopRight: =20
+                              BorderColor: =If(acWard = "4A", C_Accent, C_Line)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnSegWard4A_Ac:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =20
+                                    Font: =AppFont
+                                    FontColor: =If(acWard = "4A", C_White, C_Ink2)
+                                    FontSize: =13
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="4A"
+                                    OnSelect: =Set(acWard, "4A")
+                        - conSegWard4B_Ac:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Stretch
+                              LayoutMinWidth: =40
+                              FillPortions: =1
+                              Fill: =If(acWard = "4B", C_Accent, C_White)
+                              Height: =40
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              RadiusBottomLeft: =20
+                              RadiusBottomRight: =20
+                              RadiusTopLeft: =20
+                              RadiusTopRight: =20
+                              BorderColor: =If(acWard = "4B", C_Accent, C_Line)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnSegWard4B_Ac:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =20
+                                    Font: =AppFont
+                                    FontColor: =If(acWard = "4B", C_White, C_Ink2)
+                                    FontSize: =13
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="4B"
+                                    OnSelect: =Set(acWard, "4B")
+                        - conSegWard5A_Ac:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Stretch
+                              LayoutMinWidth: =40
+                              FillPortions: =1
+                              Fill: =If(acWard = "5A", C_Accent, C_White)
+                              Height: =40
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              RadiusBottomLeft: =20
+                              RadiusBottomRight: =20
+                              RadiusTopLeft: =20
+                              RadiusTopRight: =20
+                              BorderColor: =If(acWard = "5A", C_Accent, C_Line)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnSegWard5A_Ac:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =20
+                                    Font: =AppFont
+                                    FontColor: =If(acWard = "5A", C_White, C_Ink2)
+                                    FontSize: =13
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="5A"
+                                    OnSelect: =Set(acWard, "5A")
+                        - conSegWard6A_Ac:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Stretch
+                              LayoutMinWidth: =40
+                              FillPortions: =1
+                              Fill: =If(acWard = "6A", C_Accent, C_White)
+                              Height: =40
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              RadiusBottomLeft: =20
+                              RadiusBottomRight: =20
+                              RadiusTopLeft: =20
+                              RadiusTopRight: =20
+                              BorderColor: =If(acWard = "6A", C_Accent, C_Line)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnSegWard6A_Ac:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =20
+                                    Font: =AppFont
+                                    FontColor: =If(acWard = "6A", C_White, C_Ink2)
+                                    FontSize: =13
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="6A"
+                                    OnSelect: =Set(acWard, "6A")
+                  - lblCount_Ac:
+                      Control: Label@2.5.1
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =22
+                        FillPortions: =0
+                        Font: =AppFont
+                        Color: =C_Ink
+                        Size: =13
+                        FontWeight: =FontWeight.Bold
+                        Height: =22
+                        Text: =CountRows(galAlloc_Ac.AllItems) & " signed out" & If(acWard = "All", "", " on " & acWard)
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        Wrap: =false
+                  - galAlloc_Ac:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =120
+                        FillPortions: =1
+                        Items: |-
+                          =With({ q: Lower(Trim(txtSearch_Ac.Text)) }, SortByColumns(Filter(colAllocated, (acWard = "All" || Ward.Value = acWard) && (IsBlank(q) || q in Lower(Title) || q in Lower('Patient Name') || q in Lower(Physiotherapist) || q in Lower(URN) || q in Lower(Width.Value))), "Title", SortOrder.Ascending))
+                        TemplatePadding: =0
+                        TemplateSize: =102
+                        Width: =Parent.Width
+                      Children:
+                        - conRow_Ac:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_White
+                              Height: =94
+                              Width: =Parent.TemplateWidth
+                              X: =0
+                              Y: =4
+                              RadiusBottomLeft: =14
+                              RadiusBottomRight: =14
+                              RadiusTopLeft: =14
+                              RadiusTopRight: =14
+                              BorderColor: =C_Line
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - conRowBar_Ac:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =Switch(ThisItem.Category.Value, "Wheelchair", RGBA(166, 199, 130, 1), "Cushion", RGBA(0, 144, 153, 1), "Backrest", RGBA(0, 200, 210, 1), RGBA(210, 218, 227, 1))
+                                    Height: =Parent.Height
+                                    Width: =6
+                                    X: =0
+                                    Y: =0
+                                    RadiusBottomLeft: =14
+                                    RadiusBottomRight: =0
+                                    RadiusTopLeft: =14
+                                    RadiusTopRight: =0
+                                    DropShadow: =DropShadow.None
+                              - lblRowT_Ac:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =AppFont
+                                    Color: =C_Ink
+                                    Size: =15
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =24
+                                    Text: =Coalesce(Trim(ThisItem.Brand & " " & ThisItem.Model), ThisItem.Title)
+                                    Width: =Parent.Width - 100
+                                    X: =18
+                                    Y: =8
+                                    Wrap: =false
+                              - lblRow0_Ac:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =AppFont
+                                    Color: =C_Muted
+                                    Size: =12
+                                    Height: =18
+                                    Text: =ThisItem.Title & "  ·  " & Coalesce(ThisItem.Category.Value, "")
+                                    Width: =Parent.Width - 100
+                                    X: =18
+                                    Y: =32
+                                    Wrap: =false
+                              - lblRow1_Ac:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =AppFont
+                                    Color: =C_Ink2
+                                    Size: =12
+                                    Height: =18
+                                    Text: =ThisItem.'Patient Name' & "  ·  Ward " & Coalesce(ThisItem.Ward.Value, "—")
+                                    Width: =Parent.Width - 100
+                                    X: =18
+                                    Y: =50
+                                    Wrap: =false
+                              - lblRow2_Ac:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =AppFont
+                                    Color: =C_Muted
+                                    Size: =12
+                                    Height: =18
+                                    Text: =Coalesce(ThisItem.Physiotherapist, "—") & "  ·  " & Text(ThisItem.'Date Signed Out', "d mmm")
+                                    Width: =Parent.Width - 100
+                                    X: =18
+                                    Y: =68
+                                    Wrap: =false
+                              - conDays_Ac:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =If(DateDiff(ThisItem.'Date Signed Out', Today(), TimeUnit.Days) >= 42, C_DangerBg, C_Bg)
+                                    Height: =26
+                                    Width: =60
+                                    X: =Parent.Width - 74
+                                    Y: =10
+                                    RadiusBottomLeft: =13
+                                    RadiusBottomRight: =13
+                                    RadiusTopLeft: =13
+                                    RadiusTopRight: =13
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - lblDays_Ac:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Font: =AppFont
+                                          Color: =If(DateDiff(ThisItem.'Date Signed Out', Today(), TimeUnit.Days) >= 42, C_Danger, C_Ink2)
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Text: =DateDiff(ThisItem.'Date Signed Out', Today(), TimeUnit.Days) & "d"
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =0
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Wrap: =false
+                              - btnRow_Ac:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderStyle: =BorderStyle.None
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =0
+                                    Text: =""
+                                    OnSelect: |-
+                                      =Set(varItemID, ThisItem.ID);
+                                      Navigate(Item, ScreenTransition.Cover)
+                  - lblEmpty_Ac:
+                      Control: Label@2.5.1
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =40
+                        FillPortions: =0
+                        Font: =AppFont
+                        Color: =C_Muted
+                        Size: =13
+                        Height: =40
+                        Text: ="Nothing matches."
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        Align: =Align.Center
+                        Visible: =IsEmpty(galAlloc_Ac.AllItems)
