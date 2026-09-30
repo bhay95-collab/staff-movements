@@ -939,7 +939,7 @@ Screens:
                         AlignInContainer: =AlignInContainer.SetByContainer
                         LayoutMinHeight: =120
                         FillPortions: =1
-                        Items: =SortByColumns(Filter(colFind, (IsBlank(fdType) || cType = fdType) && (IsBlank(fdBrand) || Brand = fdBrand) && (IsBlank(fdModel) || Model = fdModel) && (IsBlank(fdWidth) || cWidth = fdWidth) && (IsBlank(fdDepth) || cDepth = fdDepth) && (IsBlank(fdHeight) || cHeight = fdHeight)), "Brand", SortOrder.Ascending, "Model", SortOrder.Ascending)
+                        Items: =Sort(Sort(Filter(colFind, (IsBlank(fdType) || cType = fdType) && (IsBlank(fdBrand) || Brand = fdBrand) && (IsBlank(fdModel) || Model = fdModel) && (IsBlank(fdWidth) || cWidth = fdWidth) && (IsBlank(fdDepth) || cDepth = fdDepth) && (IsBlank(fdHeight) || cHeight = fdHeight)), Model), Brand)
                         TemplatePadding: =0
                         TemplateSize: =82
                         Visible: =IsBlank(Trim(txtCode_Fd.Text))
