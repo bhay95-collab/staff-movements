@@ -94,3 +94,23 @@ Replaces `Home_PT` (this supersedes "Home_PT – change 4 buttons" above: the ne
 3. **App → StartScreen** should be `Home_Main`.
 4. Delete `Home_PT` once nothing points at it.
 5. If `WrapCount` on `Gallery_Home` errors, delete that line (tiles then stack in one column).
+
+---
+
+# Equipment screen – `Equipment_Main.pa.yaml`
+
+Replaces `Equipment_Screen`. Same three columns, new look (header bar, white cards, row cards, status pill on the details card).
+
+- **My equipment** (left), **Today's allocations + search by patient** (middle), **Item details** (right).
+- Selected row is highlighted. Item details show Equipment and (if allocated) Sign Out sections.
+- **Bug fixed:** the old `OnVisible` built ward caches from 4A, 4B and 5A into the SAME collection (`colWard`), so they overwrote each other, and it would also overwrite the new ward screen's data. Those caches are removed.
+- **Patient button** now looks the patient up directly in the four ward lists (Name + URN + DOB when the equipment record has them; Name only if URN/DOB are blank). Not found on any ward: the "Patient no longer found" popup, same Return / Leave allocated choices.
+- Return logic (inventory update, usage log, 100-day service warning) is unchanged.
+- Back button no longer checks the old `varHasUnsavedChanges_4A`.
+- Email button says so if nothing was allocated today, instead of sending an empty email.
+- Kept: nav buttons to Allocated / Available / Audit (Audit only for Director, Team Leader, CA4).
+
+## Swap it in
+1. Paste `Equipment_Main.pa.yaml` (appears as `Equipment_Main`).
+2. Search the app for `Equipment_Screen`: change every `Navigate(Equipment_Screen ...)` to `Navigate(Equipment_Main ...)`. (Home_Main already opens `Equipment_Screen`: change that button, or paste the updated Home_Main.)
+3. Delete `Equipment_Screen` when nothing points at it.
