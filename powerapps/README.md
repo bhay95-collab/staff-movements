@@ -114,3 +114,18 @@ Replaces `Equipment_Screen`. Same three columns, new look (header bar, white car
 1. Paste `Equipment_Main.pa.yaml` (appears as `Equipment_Main`).
 2. Search the app for `Equipment_Screen`: change every `Navigate(Equipment_Screen ...)` to `Navigate(Equipment_Main ...)`. (Home_Main from commit onward already opens `Equipment_Main`.)
 3. Delete `Equipment_Screen` when nothing points at it.
+
+---
+
+# Patient detail screen – `Patient_Detail_New.pa.yaml`
+
+Replaces `Patient_Detail_Screen`. Screen name is `Patient_Detail_New` so it cannot clash. After deleting the old screen, **rename the new one to `Patient_Detail_Screen`**: every `Navigate(Patient_Detail_Screen ...)` in the app (Ward_All, Handover_All, Equipment_Main, etc.) then works again automatically.
+
+- Works on the patient's own SharePoint row (`varSelectedPatient`, set by whoever opened the screen). It no longer uses `colWard` / `colWard6A`, so it works from any screen and any ward.
+- The four editable fields (EDD, Maintenance, In-patient falls, Contact precautions) are edited locally, then saved straight to the patient's ward list with the header **Save** (or **Discard**). Back is blocked while there are unsaved edits.
+- Those edits are no longer left as unsaved rows on the ward screen. That old flow lost them when the ward screen reloaded.
+- **Bug fixed:** allocating equipment took the Ward from a view-only dropdown, so it always used the first ward in the list. It now uses the patient's own ward (`4A` / `4B` / `5A` / `6A`).
+- **Bug fixed:** allocating did not save the patient's DOB on the equipment record. It now does.
+- Equipment layout: allocated-to-this-patient list + find-by-barcode (middle), item details with Allocate / Return (right).
+- Therapy tools (Outcome Measures, Exercise Setups, Therapy Summary) are kept but hidden, exactly like the old screen (`conTools_PD`, Visible = false).
+- Hidden OT and Speech rows dropped (they were read-only and hidden).

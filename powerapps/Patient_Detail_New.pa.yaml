@@ -1,0 +1,1768 @@
+Screens:
+  Patient_Detail_New:
+    Properties:
+      Fill: =RGBA(235, 242, 248, 1)
+      ImagePosition: =ImagePosition.Fill
+      OnHidden: =Set(varSelectedItem, Blank())
+      OnVisible: |-
+        =Set(varSearchCode_1, "");
+        Set(varSelectedItem, Blank());
+        Reset(TextInput_SearchCode_1);
+
+        // Re-read this patient's row from their ward list
+        // (also refreshes it when coming back from Exercise Setups / Outcome Measures)
+        With(
+            { id: varSelectedPatient.ID },
+            Switch(
+                varSelectedList,
+                "Ward_4A_Shared", Set(varSelectedPatient, LookUp(Ward_4A_Shared, ID = id)),
+                "Ward_4B_Shared", Set(varSelectedPatient, LookUp(Ward_4B_Shared, ID = id)),
+                "Ward_5A_Shared", Set(varSelectedPatient, LookUp(Ward_5A_Shared, ID = id)),
+                "Ward_6A_Shared", Set(varSelectedPatient, LookUp(Ward_6A_Shared, ID = id))
+            )
+        );
+
+        // Start the editable copy only when the patient changed
+        // (so unsaved edits survive a trip to another screen and back)
+        With(
+            { key: varSelectedList & "|" & varSelectedPatient.ID },
+            If(
+                pdLoadedKey <> key,
+                Set(pdLoadedKey, key);
+                Set(pdEDD, varSelectedPatient.EDD);
+                Set(pdMaint, Coalesce(varSelectedPatient.Maintenance, false));
+                Set(pdFalls, Coalesce(varSelectedPatient.'Falls Risk', false));
+                Set(pdContact, Coalesce(varSelectedPatient.Contact, false))
+            )
+        );
+        Set(pdSaving, false);
+
+        // -------------------------------
+        // Email popup reset (used by other screens)
+        // -------------------------------
+        Set(locShowEmailPopup, false);
+        Clear(colEmailRecipients);
+        Set(locEmailDefaultSubject, "");
+        Set(locEmailDefaultBody, "");
+        Set(
+            varUserIsPhysio,
+            !IsBlank(
+                LookUp(
+                    ClinicianDirectory,
+                    Lower(Person.Email) = Lower(User().Email) &&
+                    Discipline.Value = "Physio"
+                )
+            )
+        )
+    Children:
+      - PD_Title:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Regular
+            Fill: =RGBA(7, 95, 115, 1)
+            Height: =70
+            Width: =1333
+            X: =18
+            Y: =12
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+          Children:
+            - imgHeaderGradient_PD:
+                Control: Image@2.2.3
+                Properties:
+                  Height: =Parent.Height
+                  Image: ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' width='1333' height='70' viewBox='0 0 1333 70' preserveAspectRatio='none'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001D46'/><stop offset='0.48' stop-color='#075F73'/><stop offset='1' stop-color='#00838A'/></linearGradient><linearGradient id='b' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001B36' stop-opacity='0.46'/><stop offset='0.45' stop-color='#002036' stop-opacity='0.18'/><stop offset='1' stop-color='#002036' stop-opacity='0.06'/></linearGradient></defs><rect width='1333' height='70' rx='18' fill='url(#a)'/><rect width='1333' height='70' rx='18' fill='url(#b)'/></svg>")
+                  ImagePosition: =ImagePosition.Fill
+                  Width: =Parent.Width
+            - lblTitle_PD:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  Height: =36
+                  Size: =28
+                  Text: =varSelectedPatient.field_2
+                  VerticalAlign: =VerticalAlign.Middle
+                  Weight: ='TextCanvas.Weight'.Bold
+                  Width: =600
+                  X: =76
+                  Y: =8
+            - lblSub_PD:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 0.88)
+                  Height: =20
+                  Size: =12
+                  Text: ="URN " & Coalesce(varSelectedPatient.URN, "-") & "  ·  DOB " & If(IsBlank(varSelectedPatient.DOB), "-", Text(DateValue(varSelectedPatient.DOB), "dd/mm/yyyy")) & "  ·  Ward " & Mid(varSelectedList, 6, 2) & "  ·  Bed " & Coalesce(varSelectedPatient.Bed, "-")
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =600
+                  X: =76
+                  Y: =42
+            - btnBack_PD:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontSize: =50
+                  Height: =70
+                  Icon: ="ChevronLeft"
+                  Text: =""
+                  X: =1
+                  OnSelect: |-
+                    =If(
+                        (pdEDD <> varSelectedPatient.EDD || pdMaint <> Coalesce(varSelectedPatient.Maintenance, false) || pdFalls <> Coalesce(varSelectedPatient.'Falls Risk', false) || pdContact <> Coalesce(varSelectedPatient.Contact, false)),
+                        Notify(
+                            "You have unsaved changes. Please Save or Discard before leaving.",
+                            NotificationType.Warning
+                        ),
+                        Back(ScreenTransition.Fade)
+                    )
+            - conSave_PD:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Regular
+                  Fill: =RGBA(12, 122, 82, 1)
+                  Height: =46
+                  Visible: =(pdEDD <> varSelectedPatient.EDD || pdMaint <> Coalesce(varSelectedPatient.Maintenance, false) || pdFalls <> Coalesce(varSelectedPatient.'Falls Risk', false) || pdContact <> Coalesce(varSelectedPatient.Contact, false))
+                  Width: =100
+                  X: =700
+                  Y: =12
+                  RadiusBottomLeft: =23
+                  RadiusBottomRight: =23
+                  RadiusTopLeft: =23
+                  RadiusTopRight: =23
+                Children:
+                  - btnSave_PD:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =23
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(255, 255, 255, 1)
+                        FontSize: =14
+                        FontWeight: =FontWeight.Bold
+                        Height: =46
+                        Icon: ="Save"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        DisplayMode: =If(pdSaving, DisplayMode.Disabled, DisplayMode.Edit)
+                        OnSelect: |-
+                          =// Saves the four editable fields straight to this patient's ward list
+                          Set(pdSaving, true);
+                          Switch(
+                              varSelectedList,
+                              "Ward_4A_Shared",
+                                  With(
+                                      {
+                                          spRow:
+                                              Patch(
+                                                  Ward_4A_Shared,
+                                                  LookUp(Ward_4A_Shared, ID = varSelectedPatient.ID),
+                                                  {
+                                                      EDD: pdEDD,
+                                                      Maintenance: pdMaint,
+                                                      'Falls Risk': pdFalls,
+                                                      Contact: pdContact
+                                                  }
+                                              )
+                                      },
+                                      If(
+                                          !IsEmpty(Errors(Ward_4A_Shared, spRow)),
+                                          Notify(
+                                              "Could not save: " & First(Errors(Ward_4A_Shared, spRow)).Message,
+                                              NotificationType.Error
+                                          ),
+                                          Set(varSelectedPatient, spRow);
+                                          Notify("Patient details saved.", NotificationType.Success)
+                                      )
+                                  ),
+                              "Ward_4B_Shared",
+                                  With(
+                                      {
+                                          spRow:
+                                              Patch(
+                                                  Ward_4B_Shared,
+                                                  LookUp(Ward_4B_Shared, ID = varSelectedPatient.ID),
+                                                  {
+                                                      EDD: pdEDD,
+                                                      Maintenance: pdMaint,
+                                                      'Falls Risk': pdFalls,
+                                                      Contact: pdContact
+                                                  }
+                                              )
+                                      },
+                                      If(
+                                          !IsEmpty(Errors(Ward_4B_Shared, spRow)),
+                                          Notify(
+                                              "Could not save: " & First(Errors(Ward_4B_Shared, spRow)).Message,
+                                              NotificationType.Error
+                                          ),
+                                          Set(varSelectedPatient, spRow);
+                                          Notify("Patient details saved.", NotificationType.Success)
+                                      )
+                                  ),
+                              "Ward_5A_Shared",
+                                  With(
+                                      {
+                                          spRow:
+                                              Patch(
+                                                  Ward_5A_Shared,
+                                                  LookUp(Ward_5A_Shared, ID = varSelectedPatient.ID),
+                                                  {
+                                                      EDD: pdEDD,
+                                                      Maintenance: pdMaint,
+                                                      'Falls Risk': pdFalls,
+                                                      Contact: pdContact
+                                                  }
+                                              )
+                                      },
+                                      If(
+                                          !IsEmpty(Errors(Ward_5A_Shared, spRow)),
+                                          Notify(
+                                              "Could not save: " & First(Errors(Ward_5A_Shared, spRow)).Message,
+                                              NotificationType.Error
+                                          ),
+                                          Set(varSelectedPatient, spRow);
+                                          Notify("Patient details saved.", NotificationType.Success)
+                                      )
+                                  ),
+                              "Ward_6A_Shared",
+                                  With(
+                                      {
+                                          spRow:
+                                              Patch(
+                                                  Ward_6A_Shared,
+                                                  LookUp(Ward_6A_Shared, ID = varSelectedPatient.ID),
+                                                  {
+                                                      EDD: pdEDD,
+                                                      Maintenance: pdMaint,
+                                                      'Falls Risk': pdFalls,
+                                                      Contact: pdContact
+                                                  }
+                                              )
+                                      },
+                                      If(
+                                          !IsEmpty(Errors(Ward_6A_Shared, spRow)),
+                                          Notify(
+                                              "Could not save: " & First(Errors(Ward_6A_Shared, spRow)).Message,
+                                              NotificationType.Error
+                                          ),
+                                          Set(varSelectedPatient, spRow);
+                                          Notify("Patient details saved.", NotificationType.Success)
+                                      )
+                                  )
+                          );
+                          Set(pdSaving, false)
+                        Text: ="Save"
+                        Width: =100
+            - conDiscard_PD:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Regular
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =46
+                  Visible: =(pdEDD <> varSelectedPatient.EDD || pdMaint <> Coalesce(varSelectedPatient.Maintenance, false) || pdFalls <> Coalesce(varSelectedPatient.'Falls Risk', false) || pdContact <> Coalesce(varSelectedPatient.Contact, false))
+                  Width: =120
+                  X: =810
+                  Y: =12
+                  RadiusBottomLeft: =23
+                  RadiusBottomRight: =23
+                  RadiusTopLeft: =23
+                  RadiusTopRight: =23
+                Children:
+                  - btnDiscard_PD:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =23
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(180, 26, 26, 1)
+                        FontSize: =14
+                        FontWeight: =FontWeight.Bold
+                        Height: =46
+                        Icon: ="DismissCircle"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        OnSelect: |-
+                          =Set(pdEDD, varSelectedPatient.EDD);
+                          Set(pdMaint, Coalesce(varSelectedPatient.Maintenance, false));
+                          Set(pdFalls, Coalesce(varSelectedPatient.'Falls Risk', false));
+                          Set(pdContact, Coalesce(varSelectedPatient.Contact, false));
+                          Notify("Changes discarded.", NotificationType.Information)
+                        Text: ="Discard"
+                        Width: =120
+            - conTools_PD:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Height: =70
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =10
+                  LayoutJustifyContent: =LayoutJustifyContent.End
+                  PaddingBottom: =8
+                  PaddingLeft: =8
+                  PaddingRight: =8
+                  PaddingTop: =8
+                  Visible: =false
+                  Width: =380
+                  X: =945
+                Children:
+                  - conOutcome_PD:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.Semibold
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =40
+                        LayoutMaxHeight: =40
+                        LayoutMinHeight: =20
+                        LayoutMinWidth: =170
+                        Width: =170
+                        AlignInContainer: =AlignInContainer.Center
+                        BorderStyle: =BorderStyle.None
+                        Visible: =varUserIsPhysio
+                        RadiusBottomLeft: =20
+                        RadiusBottomRight: =20
+                        RadiusTopLeft: =20
+                        RadiusTopRight: =20
+                      Children:
+                        - btnOutcome_PD:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =20
+                              BorderStyle: =BorderStyle.None
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(7, 58, 87, 1)
+                              FontSize: =14
+                              FontWeight: =FontWeight.Bold
+                              Height: =Parent.Height
+                              Width: =Parent.Width
+                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              OnSelect: =Navigate(OutcomeMeasures_Desktop, ScreenTransition.Fade)
+                              Text: ="Outcome Measures"
+                  - conExercise_PD:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.Semibold
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =40
+                        LayoutMaxHeight: =40
+                        LayoutMinHeight: =20
+                        LayoutMinWidth: =160
+                        Width: =160
+                        AlignInContainer: =AlignInContainer.Center
+                        BorderStyle: =BorderStyle.None
+                        Visible: =varUserIsPhysio
+                        RadiusBottomLeft: =20
+                        RadiusBottomRight: =20
+                        RadiusTopLeft: =20
+                        RadiusTopRight: =20
+                      Children:
+                        - btnExercise_PD:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =20
+                              BorderStyle: =BorderStyle.None
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(7, 58, 87, 1)
+                              FontSize: =14
+                              FontWeight: =FontWeight.Bold
+                              Height: =Parent.Height
+                              Width: =Parent.Width
+                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              OnSelect: =Navigate(Exercise_List_Screen, ScreenTransition.Fade)
+                              Text: ="Exercise Setups"
+                  - conSummary_PD:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.Semibold
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =40
+                        LayoutMaxHeight: =40
+                        LayoutMinHeight: =20
+                        LayoutMinWidth: =170
+                        Width: =170
+                        AlignInContainer: =AlignInContainer.Center
+                        BorderStyle: =BorderStyle.None
+                        Visible: =varUserIsPhysio
+                        RadiusBottomLeft: =20
+                        RadiusBottomRight: =20
+                        RadiusTopLeft: =20
+                        RadiusTopRight: =20
+                      Children:
+                        - btnSummary_PD:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =20
+                              BorderStyle: =BorderStyle.None
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(7, 58, 87, 1)
+                              FontSize: =14
+                              FontWeight: =FontWeight.Bold
+                              Height: =Parent.Height
+                              Width: =Parent.Width
+                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              OnSelect: |-
+                                =Set(varWeekStart, DateAdd(Today(), -Weekday(Today(), StartOfWeek.Monday)+1));
+                                Navigate(Weekly_Summary_Screen, ScreenTransition.Fade)
+                              Text: ="Therapy Summary"
+      - PD_CardPatient:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+            DropShadow: =DropShadow.Light
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =658
+            Width: =400
+            X: =18
+            Y: =95
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+          Children:
+            - lblPtTitle_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =16
+                  FontWeight: =FontWeight.Bold
+                  Height: =28
+                  Text: ="Patient"
+                  Width: =200
+                  X: =20
+                  Y: =16
+            - lblDiagCap_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =18
+                  Text: ="DIAGNOSIS"
+                  Width: =200
+                  X: =20
+                  Y: =60
+            - conDiag_PD:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  Fill: |-
+                    =If(
+                        IsBlank(varSelectedPatient.field_3.Value),
+                        RGBA(210, 218, 227, 1),
+                        Switch(
+                            varSelectedPatient.field_3.Value,
+                            "Ortho",  RGBA(0, 204, 255, 1),
+                            "Amp",    RGBA(255, 51, 153, 1),
+                            "TBI",    RGBA(198, 224, 180, 1),
+                            "SCI",    RGBA(180, 198, 231, 1),
+                            "Recon",  RGBA(204, 204, 255, 1),
+                            "Trauma", RGBA(255, 91, 91, 1),
+                            "Stroke", RGBA(233, 143, 214, 1),
+                            "Neuro",  RGBA(255, 204, 153, 1),
+                            RGBA(210, 218, 227, 1)
+                        )
+                    )
+                  Height: =32
+                  Width: =200
+                  X: =20
+                  Y: =80
+                  RadiusBottomLeft: =16
+                  RadiusBottomRight: =16
+                  RadiusTopLeft: =16
+                  RadiusTopRight: =16
+                Children:
+                  - lblDiag_PD:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
+                        Size: =14
+                        FontWeight: =FontWeight.Bold
+                        Height: =32
+                        Text: =Coalesce(varSelectedPatient.field_3.Value, "Not set")
+                        Width: =Parent.Width
+            - lblUrnCap_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =18
+                  Text: ="URN"
+                  Width: =170
+                  X: =20
+                  Y: =130
+            - lblUrn_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =16
+                  FontWeight: =FontWeight.Bold
+                  Height: =28
+                  Text: =Coalesce(Text(varSelectedPatient.URN), "-")
+                  Width: =170
+                  X: =20
+                  Y: =148
+            - lblDobCap_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =18
+                  Text: ="DATE OF BIRTH"
+                  Width: =170
+                  X: =210
+                  Y: =130
+            - lblDob_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =16
+                  FontWeight: =FontWeight.Bold
+                  Height: =28
+                  Text: =If(IsBlank(varSelectedPatient.DOB), "-", Text(DateValue(varSelectedPatient.DOB), "dd/mm/yyyy"))
+                  Width: =170
+                  X: =210
+                  Y: =148
+            - lblPtCap_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =18
+                  Text: ="PHYSIO"
+                  Width: =170
+                  X: =20
+                  Y: =188
+            - lblPt_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =16
+                  FontWeight: =FontWeight.Bold
+                  Height: =28
+                  Text: =Coalesce(Concat(varSelectedPatient.PT_Users, DisplayName, " / "), "-")
+                  Width: =360
+                  X: =20
+                  Y: =206
+            - lblEddCap_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =18
+                  Text: ="EXPECTED DISCHARGE DATE (EDD)"
+                  Width: =360
+                  X: =20
+                  Y: =246
+            - conEdd_PD:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40
+                  Width: =200
+                  X: =20
+                  Y: =268
+                  RadiusBottomLeft: =10
+                  RadiusBottomRight: =10
+                  RadiusTopLeft: =10
+                  RadiusTopRight: =10
+                Children:
+                  - dpEdd_PD:
+                      Control: Classic/DatePicker@2.6.0
+                      Properties:
+                        BorderStyle: =BorderStyle.None
+                        Color: =RGBA(14, 28, 42, 1)
+                        DefaultDate: =pdEDD
+                        Font: =Font.'Segoe UI'
+                        Fill: |-
+                          =If(
+                              IsBlank(pdEDD),
+                              RGBA(210, 218, 227, 1),
+                              pdEDD >= Today() && pdEDD <= DateAdd(Today(), 3),
+                              RGBA(251, 230, 176, 1),
+                              RGBA(255, 255, 255, 1)
+                          )
+                        Height: =40
+                        Size: =14
+                        Width: =Parent.Width
+                        OnChange: =Set(pdEDD, Self.SelectedDate)
+            - conTgMaint_PD:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  Fill: =If(pdMaint, RGBA(26, 90, 153, 0.08), RGBA(244, 249, 252, 1))
+                  Height: =56
+                  Width: =360
+                  X: =20
+                  Y: =340
+                  RadiusBottomLeft: =14
+                  RadiusBottomRight: =14
+                  RadiusTopLeft: =14
+                  RadiusTopRight: =14
+                Children:
+                  - lblTgMaint_PD:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
+                        Size: =14
+                        FontWeight: =FontWeight.Bold
+                        Height: =24
+                        Text: ="Maintenance"
+                        Width: =280
+                        X: =16
+                        Y: =6
+                  - lblTgMaintSub_PD:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =11
+                        Height: =18
+                        Text: ="Long-stay / maintenance patient"
+                        Width: =280
+                        X: =16
+                        Y: =30
+                  - chkMaint_PD:
+                      Control: Classic/CheckBox@2.1.0
+                      Properties:
+                        CheckboxBackgroundFill: =RGBA(255, 255, 255, 1)
+                        CheckboxBorderColor: =RGBA(26, 90, 153, 1)
+                        CheckboxSize: =30
+                        CheckmarkFill: =RGBA(26, 90, 153, 1)
+                        Default: =pdMaint
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        Text: =""
+                        Width: =40
+                        X: =Parent.Width - 56
+                        Y: =8
+                        OnCheck: =Set(pdMaint, true)
+                        OnUncheck: =Set(pdMaint, false)
+            - conTgFalls_PD:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  Fill: =If(pdFalls, RGBA(26, 90, 153, 0.08), RGBA(244, 249, 252, 1))
+                  Height: =56
+                  Width: =360
+                  X: =20
+                  Y: =408
+                  RadiusBottomLeft: =14
+                  RadiusBottomRight: =14
+                  RadiusTopLeft: =14
+                  RadiusTopRight: =14
+                Children:
+                  - lblTgFalls_PD:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
+                        Size: =14
+                        FontWeight: =FontWeight.Bold
+                        Height: =24
+                        Text: ="In-patient falls"
+                        Width: =280
+                        X: =16
+                        Y: =6
+                  - lblTgFallsSub_PD:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =11
+                        Height: =18
+                        Text: ="Has had a fall this admission"
+                        Width: =280
+                        X: =16
+                        Y: =30
+                  - chkFalls_PD:
+                      Control: Classic/CheckBox@2.1.0
+                      Properties:
+                        CheckboxBackgroundFill: =RGBA(255, 255, 255, 1)
+                        CheckboxBorderColor: =RGBA(26, 90, 153, 1)
+                        CheckboxSize: =30
+                        CheckmarkFill: =RGBA(26, 90, 153, 1)
+                        Default: =pdFalls
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        Text: =""
+                        Width: =40
+                        X: =Parent.Width - 56
+                        Y: =8
+                        OnCheck: =Set(pdFalls, true)
+                        OnUncheck: =Set(pdFalls, false)
+            - conTgContact_PD:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  Fill: =If(pdContact, RGBA(26, 90, 153, 0.08), RGBA(244, 249, 252, 1))
+                  Height: =56
+                  Width: =360
+                  X: =20
+                  Y: =476
+                  RadiusBottomLeft: =14
+                  RadiusBottomRight: =14
+                  RadiusTopLeft: =14
+                  RadiusTopRight: =14
+                Children:
+                  - lblTgContact_PD:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
+                        Size: =14
+                        FontWeight: =FontWeight.Bold
+                        Height: =24
+                        Text: ="Contact precautions"
+                        Width: =280
+                        X: =16
+                        Y: =6
+                  - lblTgContactSub_PD:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =11
+                        Height: =18
+                        Text: ="Isolation / contact precautions apply"
+                        Width: =280
+                        X: =16
+                        Y: =30
+                  - chkContact_PD:
+                      Control: Classic/CheckBox@2.1.0
+                      Properties:
+                        CheckboxBackgroundFill: =RGBA(255, 255, 255, 1)
+                        CheckboxBorderColor: =RGBA(26, 90, 153, 1)
+                        CheckboxSize: =30
+                        CheckmarkFill: =RGBA(26, 90, 153, 1)
+                        Default: =pdContact
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        Text: =""
+                        Width: =40
+                        X: =Parent.Width - 56
+                        Y: =8
+                        OnCheck: =Set(pdContact, true)
+                        OnUncheck: =Set(pdContact, false)
+            - lblSaveHint_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  Height: =40
+                  Text: ="Changes here are saved with the Save button at the top."
+                  Width: =360
+                  X: =20
+                  Y: =548
+      - PD_CardEquip:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+            DropShadow: =DropShadow.Light
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =658
+            Width: =440
+            X: =438
+            Y: =95
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+          Children:
+            - lblEqTitle_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =16
+                  FontWeight: =FontWeight.Bold
+                  Height: =28
+                  Width: =400
+                  X: =20
+                  Y: =16
+                  Text: ="Allocated to this patient  ·  " & CountRows(Gallery_PtEquip.AllItems)
+            - Gallery_PtEquip:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =252
+                  Items: |-
+                    =If(
+                        !IsBlank(varSelectedPatient),
+                        Filter(
+                            Equipment_Inventory_SharePoint,
+                            Status.Value = "Allocated" &&
+                            'Patient Name' = varSelectedPatient.field_2 &&
+                            URN = varSelectedPatient.URN
+                        ),
+                        FirstN(Equipment_Inventory_SharePoint, 0) // preserves schema
+                    )
+                  TemplatePadding: =0
+                  TemplateSize: =84
+                  Width: =440
+                  Y: =50
+                  OnSelect: =Set(varSelectedItem, ThisItem)
+                Children:
+                  - PD_RowPt:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =If(varSelectedItem.ID = ThisItem.ID, RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =If(varSelectedItem.ID = ThisItem.ID, 2, 1)
+                        DropShadow: =DropShadow.None
+                        Fill: =If(varSelectedItem.ID = ThisItem.ID, RGBA(26, 90, 153, 0.08), RGBA(244, 249, 252, 1))
+                        Height: =76
+                        Width: =Parent.TemplateWidth - 20
+                        X: =10
+                        Y: =4
+                        RadiusBottomLeft: =14
+                        RadiusBottomRight: =14
+                        RadiusTopLeft: =14
+                        RadiusTopRight: =14
+                      Children:
+                        - lblPe1_PD:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(14, 28, 42, 1)
+                              Size: =14
+                              FontWeight: =FontWeight.Bold
+                              Height: =24
+                              Text: =ThisItem.Brand & " " & ThisItem.Model
+                              Width: =Parent.Width - 28
+                              X: =14
+                              Y: =8
+                        - lblPe2_PD:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(58, 80, 104, 1)
+                              Size: =11
+                              Height: =18
+                              Text: ="Barcode " & ThisItem.Title
+                              Width: =Parent.Width - 28
+                              X: =14
+                              Y: =32
+                        - lblPe3_PD:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(140, 155, 174, 1)
+                              Size: =11
+                              Height: =18
+                              Text: ="Signed out by " & ThisItem.Physiotherapist & "  ·  " & Text(ThisItem.'Date Signed Out', "dd mmm yyyy")
+                              Width: =Parent.Width - 28
+                              X: =14
+                              Y: =52
+            - lblEqEmpty_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Visible: =IsEmpty(Gallery_PtEquip.AllItems)
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =13
+                  Height: =24
+                  Text: ="No equipment allocated to this patient."
+                  Width: =400
+                  X: =20
+                  Y: =130
+            - lblFindTitle_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =16
+                  FontWeight: =FontWeight.Bold
+                  Height: =28
+                  Width: =400
+                  X: =20
+                  Y: =318
+                  Text: ="Find equipment by barcode"
+            - TextInput_SearchCode_1:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
+                  BorderThickness: =1
+                  Color: =RGBA(14, 28, 42, 1)
+                  Default: =""
+                  Fill: =RGBA(255, 255, 255, 1)
+                  FocusedBorderColor: =RGBA(26, 90, 153, 1)
+                  FocusedBorderThickness: =2
+                  Font: =Font.'Segoe UI'
+                  Height: =44
+                  HintText: ="Start typing a barcode"
+                  Size: =14
+                  Width: =400
+                  X: =20
+                  Y: =354
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+            - Gallery_Find:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =240
+                  Items: |-
+                    =If(
+                        !IsBlank(TextInput_SearchCode_1.Text),
+                        Filter(
+                            Equipment_Inventory_SharePoint,
+                            StartsWith(Title, TextInput_SearchCode_1.Text)
+                        ),
+                        Blank()
+                    )
+                  TemplatePadding: =0
+                  TemplateSize: =84
+                  Width: =440
+                  Y: =408
+                  OnSelect: =Set(varSelectedItem, ThisItem)
+                Children:
+                  - PD_RowFind:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =If(varSelectedItem.ID = ThisItem.ID, RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =If(varSelectedItem.ID = ThisItem.ID, 2, 1)
+                        DropShadow: =DropShadow.None
+                        Fill: =If(varSelectedItem.ID = ThisItem.ID, RGBA(26, 90, 153, 0.08), RGBA(244, 249, 252, 1))
+                        Height: =76
+                        Width: =Parent.TemplateWidth - 20
+                        X: =10
+                        Y: =4
+                        RadiusBottomLeft: =14
+                        RadiusBottomRight: =14
+                        RadiusTopLeft: =14
+                        RadiusTopRight: =14
+                      Children:
+                        - lblFd1_PD:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(14, 28, 42, 1)
+                              Size: =14
+                              FontWeight: =FontWeight.Bold
+                              Height: =24
+                              Text: =ThisItem.Brand & " " & ThisItem.Model
+                              Width: =Parent.Width - 28
+                              X: =14
+                              Y: =8
+                        - lblFd2_PD:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(58, 80, 104, 1)
+                              Size: =11
+                              Height: =18
+                              Text: ="Barcode " & ThisItem.Title & "  |  " & ThisItem.Status.Value
+                              Width: =Parent.Width - 28
+                              X: =14
+                              Y: =32
+                        - lblFd3_PD:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(140, 155, 174, 1)
+                              Size: =11
+                              Height: =18
+                              Text: ="W " & ThisItem.Width.Value & "  ·  D " & ThisItem.Depth.Value
+                              Width: =Parent.Width - 28
+                              X: =14
+                              Y: =52
+            - lblFindEmpty_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Visible: =IsEmpty(Gallery_Find.AllItems)
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =13
+                  Height: =24
+                  Text: =If(IsBlank(TextInput_SearchCode_1.Text), "Type a barcode to find equipment to allocate.", "No equipment found for that barcode.")
+                  Width: =400
+                  X: =20
+                  Y: =480
+      - PD_CardDetails:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+            DropShadow: =DropShadow.Light
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =658
+            Width: =453
+            X: =898
+            Y: =95
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+          Children:
+            - lblDetTitle_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =16
+                  FontWeight: =FontWeight.Bold
+                  Height: =28
+                  Width: =280
+                  X: =20
+                  Y: =16
+                  Text: ="Item details"
+            - conStatus_PD:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  Fill: =Switch(true, IsBlank(varSelectedItem), RGBA(210, 218, 227, 1), varSelectedItem.Status.Value = "Allocated", RGBA(26, 90, 153, 1), varSelectedItem.Status.Value = "Available", RGBA(12, 122, 82, 1), RGBA(210, 218, 227, 1))
+                  Height: =28
+                  Width: =130
+                  X: =303
+                  Y: =16
+                  RadiusBottomLeft: =14
+                  RadiusBottomRight: =14
+                  RadiusTopLeft: =14
+                  RadiusTopRight: =14
+                Children:
+                  - lblStatus_PD:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        Font: =Font.'Segoe UI'
+                        Color: =If(IsBlank(varSelectedItem), RGBA(14, 28, 42, 1), RGBA(255, 255, 255, 1))
+                        Size: =12
+                        FontWeight: =FontWeight.Bold
+                        Height: =28
+                        Text: =Switch(true, IsBlank(varSelectedItem), "No item selected", varSelectedItem.Status.Value = "Allocated", "Allocated", varSelectedItem.Status.Value = "Available", "Available", "Unknown")
+                        Width: =Parent.Width
+            - lblSecEq_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(26, 90, 153, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =20
+                  Text: ="EQUIPMENT"
+                  Width: =200
+                  X: =20
+                  Y: =64
+            - lblKBc_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: ="BARCODE"
+                  Width: =110
+                  X: =20
+                  Y: =90
+            - lblVBc_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =14
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: =Coalesce(varSelectedItem.Title, "-")
+                  Width: =290
+                  X: =134
+                  Y: =90
+            - lblKBr_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: ="BRAND"
+                  Width: =110
+                  X: =20
+                  Y: =122
+            - lblVBr_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =14
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: =Coalesce(varSelectedItem.Brand, "-")
+                  Width: =290
+                  X: =134
+                  Y: =122
+            - lblKMd_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: ="MODEL"
+                  Width: =110
+                  X: =20
+                  Y: =154
+            - lblVMd_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =14
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: =Coalesce(varSelectedItem.Model, "-")
+                  Width: =290
+                  X: =134
+                  Y: =154
+            - lblKWd_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: ="WIDTH"
+                  Width: =110
+                  X: =20
+                  Y: =186
+            - lblVWd_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =14
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: =Coalesce(varSelectedItem.Width.Value, "-")
+                  Width: =290
+                  X: =134
+                  Y: =186
+            - lblKDp_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: ="DEPTH"
+                  Width: =110
+                  X: =20
+                  Y: =218
+            - lblVDp_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =14
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: =Coalesce(varSelectedItem.Depth.Value, "-")
+                  Width: =290
+                  X: =134
+                  Y: =218
+            - lblKHt_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: ="HEIGHT"
+                  Width: =110
+                  X: =20
+                  Y: =250
+            - lblVHt_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =14
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: =Coalesce(varSelectedItem.Height.Value, "-")
+                  Width: =290
+                  X: =134
+                  Y: =250
+            - lblKLc_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: ="LOCATION"
+                  Width: =110
+                  X: =20
+                  Y: =282
+            - lblVLc_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =14
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: =Coalesce(varSelectedItem.Location.Value, "-")
+                  Width: =290
+                  X: =134
+                  Y: =282
+            - lblSecSo_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(26, 90, 153, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =20
+                  Text: =If(varSelectedItem.Status.Value = "Allocated", "SIGN OUT", "WILL BE ALLOCATED TO")
+                  Width: =300
+                  X: =20
+                  Y: =328
+            - lblKSoPt_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Visible: =!IsBlank(varSelectedItem)
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: ="PATIENT"
+                  Width: =110
+                  X: =20
+                  Y: =354
+            - lblVSoPt_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Visible: =!IsBlank(varSelectedItem)
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =14
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: =If(varSelectedItem.Status.Value = "Allocated", Coalesce(varSelectedItem.'Patient Name', "-"), Coalesce(varSelectedPatient.field_2, "-"))
+                  Width: =290
+                  X: =134
+                  Y: =354
+            - lblKSoUr_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Visible: =!IsBlank(varSelectedItem)
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: ="URN"
+                  Width: =110
+                  X: =20
+                  Y: =386
+            - lblVSoUr_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Visible: =!IsBlank(varSelectedItem)
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =14
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: =If(varSelectedItem.Status.Value = "Allocated", Coalesce(varSelectedItem.URN, "-"), Coalesce(varSelectedPatient.URN, "-"))
+                  Width: =290
+                  X: =134
+                  Y: =386
+            - lblKSoWa_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Visible: =!IsBlank(varSelectedItem)
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: ="WARD"
+                  Width: =110
+                  X: =20
+                  Y: =418
+            - lblVSoWa_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Visible: =!IsBlank(varSelectedItem)
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =14
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: =If(varSelectedItem.Status.Value = "Allocated", Coalesce(varSelectedItem.Ward.Value, "-"), Mid(varSelectedList, 6, 2))
+                  Width: =290
+                  X: =134
+                  Y: =418
+            - lblKSoTh_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Visible: =!IsBlank(varSelectedItem)
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: ="THERAPIST"
+                  Width: =110
+                  X: =20
+                  Y: =450
+            - lblVSoTh_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Visible: =!IsBlank(varSelectedItem)
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =14
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: =If(varSelectedItem.Status.Value = "Allocated", Coalesce(varSelectedItem.Physiotherapist, "-"), User().FullName)
+                  Width: =290
+                  X: =134
+                  Y: =450
+            - lblKSoDt_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Visible: =!IsBlank(varSelectedItem)
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: ="DATE"
+                  Width: =110
+                  X: =20
+                  Y: =482
+            - lblVSoDt_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Visible: =!IsBlank(varSelectedItem)
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =14
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Text: =Text(If(varSelectedItem.Status.Value = "Allocated", varSelectedItem.'Date Signed Out', Today()), "dd/mm/yyyy")
+                  Width: =290
+                  X: =134
+                  Y: =482
+            - lblNoSel_PD:
+                Control: Label@2.5.1
+                Properties:
+                  Visible: =IsBlank(varSelectedItem)
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =13
+                  Height: =24
+                  Text: ="Select an item from a list to see its details."
+                  Width: =400
+                  X: =20
+                  Y: =330
+            - conAlloc_PD:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(0, 0, 0, 0)
+                  BorderStyle: =BorderStyle.None
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.Regular
+                  Fill: =RGBA(26, 90, 153, 1)
+                  Height: =48
+                  Width: =200
+                  X: =20
+                  Y: =590
+                  RadiusBottomLeft: =24
+                  RadiusBottomRight: =24
+                  RadiusTopLeft: =24
+                  RadiusTopRight: =24
+                Children:
+                  - btnAlloc_PD:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =24
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(255, 255, 255, 1)
+                        FontSize: =16
+                        FontWeight: =FontWeight.Bold
+                        Height: =48
+                        Layout: ='ButtonCanvas.Layout'.TextOnly
+                        OnSelect: |-
+                          =If(
+                              IsBlank(varSelectedItem) ||
+                              Coalesce(varSelectedItem.Status.Value, "") <> "Available",
+
+                              Notify(
+                                  "Please select an available piece of equipment before allocating.",
+                                  NotificationType.Error
+                              ),
+
+                              With(
+                                  {
+                                      episodeKey: Concatenate(
+                                          "EQ-",
+                                          Text(varSelectedItem.ID),
+                                          "-",
+                                          Text(Now(), "yyyymmddhhmmss"),
+                                          "-",
+                                          Left(Text(GUID()), 8)
+                                      ),
+                                      actionTime: Now(),
+                                      wardChoice: Mid(varSelectedList, 6, 2)     // "4A", "4B", "5A", "6A" = the patient's own ward
+                                  },
+
+                                  Patch(
+                                      Equipment_Inventory_SharePoint,
+                                      varSelectedItem,
+                                      {
+                                          'Patient Name': varSelectedPatient.field_2,
+                                          URN: varSelectedPatient.URN,
+                                          DOB: varSelectedPatient.DOB,
+                                          Physiotherapist: User().FullName,
+                                          'Date Signed Out': Today(),
+                                          Ward: { Value: wardChoice },
+                                          Status: { Value: "Allocated" },
+                                          CurrentEpisodeKey: episodeKey
+                                      }
+                                  );
+
+                                  Patch(
+                                      Equipment_Usage_Log,
+                                      Defaults(Equipment_Usage_Log),
+                                      {
+                                          Title: Concatenate(episodeKey, " - Sign Out"),
+                                          EpisodeKey: episodeKey,
+                                          EventType: { Value: "Sign Out" },
+                                          EpisodeStatus: { Value: "Open" },
+                                          EventDateTime: actionTime,
+
+                                          EquipmentItemID: varSelectedItem.ID,
+                                          EquipmentTitle: varSelectedItem.Title,
+                                          Category: Coalesce(varSelectedItem.Category.Value, ""),
+                                          Brand: Coalesce(varSelectedItem.Brand, ""),
+                                          Model: Coalesce(varSelectedItem.Model, ""),
+                                          Width: Coalesce(varSelectedItem.Width.Value, ""),
+                                          Depth: Coalesce(varSelectedItem.Depth.Value, ""),
+                                          Height: Coalesce(varSelectedItem.Height.Value, ""),
+                                          SWL: Coalesce(varSelectedItem.SWL, ""),
+                                          WheelchairType: Coalesce(varSelectedItem.'Wheelchair Type'.Value, ""),
+                                          LocationAtEvent: Coalesce(varSelectedItem.Location.Value, ""),
+
+                                          Ward: wardChoice,
+                                          PatientName: varSelectedPatient.field_2,
+                                          URN: varSelectedPatient.URN,
+                                          DOB: varSelectedPatient.DOB,
+                                          Physiotherapist: User().FullName,
+
+                                          DateSignedOut: Today(),
+                                          DateReturned: Blank(),
+                                          DaysSignedOutThisEpisode: Blank(),
+                                          TotalDaysSignedOutAfterEvent: Coalesce(varSelectedItem.TotalDaysSignedOut, 0),
+                                          Over100DaysAfterEvent: Coalesce(varSelectedItem.TotalDaysSignedOut, 0) > 100,
+                                          ServiceRequired: Coalesce(varSelectedItem.TotalDaysSignedOut, 0) > 100,
+
+                                          IsHighRiskEquipment: Coalesce(varSelectedItem.IsHighRiskEquipment, false),
+                                          OutOfService: Coalesce(varSelectedItem.OutOfService, false),
+                                          IsActive: Coalesce(varSelectedItem.IsActive, true),
+                                          StatusAfterEvent: "Allocated",
+
+                                          ActionedByName: User().FullName,
+                                          ActionedByEmail: User().Email,
+                                          SourceApp: { Value: "Web" },
+                                          Notes: ""
+                                      }
+                                  );
+
+                                  Notify(
+                                      "Equipment successfully allocated.",
+                                      NotificationType.Success
+                                  );
+
+                                  ClearCollect(
+                                      colGroupedEquipment,
+                                      Filter(
+                                          Equipment_Inventory_SharePoint,
+                                          Status.Value = "Allocated" &&
+                                          DateDiff(DateValue('Date Signed Out'), Today()) = 0 &&
+                                          Physiotherapist = User().FullName
+                                      )
+                                  );
+
+                                  Set(varSelectedItem, Blank());
+                                  Set(varSearchCode_1, "");
+                                  Reset(TextInput_SearchCode_1)
+                              )
+                          )
+                        Text: ="Allocate to patient"
+                        Width: =200
+                        DisplayMode: =If(!IsBlank(varSelectedItem) && varSelectedItem.Status.Value = "Available", DisplayMode.Edit, DisplayMode.Disabled)
+            - conReturn_PD:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(254, 242, 242, 1)
+                  Height: =48
+                  Width: =200
+                  X: =233
+                  Y: =590
+                  RadiusBottomLeft: =24
+                  RadiusBottomRight: =24
+                  RadiusTopLeft: =24
+                  RadiusTopRight: =24
+                Children:
+                  - btnReturn_PD:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =24
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(180, 26, 26, 1)
+                        FontSize: =16
+                        FontWeight: =FontWeight.Bold
+                        Height: =48
+                        Layout: ='ButtonCanvas.Layout'.TextOnly
+                        OnSelect: |-
+                          =If(
+                              IsBlank(varSelectedItem) ||
+                              Coalesce(varSelectedItem.Status.Value, "") <> "Allocated" ||
+                              IsBlank(varSelectedItem.'Date Signed Out'),
+
+                              Notify(
+                                  "Please select an allocated piece of equipment with a valid signed-out date before returning.",
+                                  NotificationType.Error
+                              ),
+
+                              With(
+                                  {
+                                      returnDate: Today(),
+                                      actionTime: Now(),
+                                      episodeKey: Coalesce(
+                                          varSelectedItem.CurrentEpisodeKey,
+                                          Concatenate(
+                                              "LEGACY-RETURN-",
+                                              Text(varSelectedItem.ID),
+                                              "-",
+                                              Text(Now(), "yyyymmddhhmmss"),
+                                              "-",
+                                              Left(Text(GUID()), 8)
+                                          )
+                                      ),
+                                      daysThisEpisode: Max(
+                                          0,
+                                          DateDiff(
+                                              varSelectedItem.'Date Signed Out',
+                                              Today(),
+                                              "Days"
+                                          )
+                                      )
+                                  },
+
+                                  With(
+                                      {
+                                          newTotalDays:
+                                              Coalesce(varSelectedItem.TotalDaysSignedOut, 0) +
+                                              daysThisEpisode
+                                      },
+
+                                      Patch(
+                                          Equipment_Inventory_SharePoint,
+                                          varSelectedItem,
+                                          {
+                                              Status: { Value: "Available" },
+                                              'Patient Name': "",
+                                              URN: "",
+                                              Physiotherapist: "",
+                                              DOB: Blank(),
+                                              'Date Returned': returnDate,
+                                              Ward: Blank(),
+                                              'Signed In By': User().FullName,
+                                              CurrentEpisodeKey: Blank(),
+                                              TotalDaysSignedOut: newTotalDays
+                                          }
+                                      );
+
+                                      Patch(
+                                          Equipment_Usage_Log,
+                                          Defaults(Equipment_Usage_Log),
+                                          {
+                                              Title: Concatenate(episodeKey, " - Sign In"),
+                                              EpisodeKey: episodeKey,
+                                              EventType: { Value: "Sign In" },
+                                              EpisodeStatus: {
+                                                  Value: If(
+                                                      IsBlank(varSelectedItem.CurrentEpisodeKey),
+                                                      "Legacy unmatched",
+                                                      "Closed"
+                                                  )
+                                              },
+                                              EventDateTime: actionTime,
+
+                                              EquipmentItemID: varSelectedItem.ID,
+                                              EquipmentTitle: varSelectedItem.Title,
+                                              Category: Coalesce(varSelectedItem.Category.Value, ""),
+                                              Brand: Coalesce(varSelectedItem.Brand, ""),
+                                              Model: Coalesce(varSelectedItem.Model, ""),
+                                              Width: Coalesce(varSelectedItem.Width.Value, ""),
+                                              Depth: Coalesce(varSelectedItem.Depth.Value, ""),
+                                              Height: Coalesce(varSelectedItem.Height.Value, ""),
+                                              SWL: Coalesce(varSelectedItem.SWL, ""),
+                                              WheelchairType: Coalesce(varSelectedItem.'Wheelchair Type'.Value, ""),
+                                              LocationAtEvent: Coalesce(varSelectedItem.Location.Value, ""),
+
+                                              Ward: Coalesce(varSelectedItem.Ward.Value, ""),
+                                              PatientName: Coalesce(varSelectedItem.'Patient Name', ""),
+                                              URN: Coalesce(varSelectedItem.URN, ""),
+                                              DOB: varSelectedItem.DOB,
+                                              Physiotherapist: Coalesce(varSelectedItem.Physiotherapist, ""),
+
+                                              DateSignedOut: varSelectedItem.'Date Signed Out',
+                                              DateReturned: returnDate,
+                                              DaysSignedOutThisEpisode: daysThisEpisode,
+                                              TotalDaysSignedOutAfterEvent: newTotalDays,
+                                              Over100DaysAfterEvent: newTotalDays > 100,
+                                              ServiceRequired: newTotalDays > 100,
+
+                                              IsHighRiskEquipment: Coalesce(varSelectedItem.IsHighRiskEquipment, false),
+                                              OutOfService: Coalesce(varSelectedItem.OutOfService, false),
+                                              IsActive: Coalesce(varSelectedItem.IsActive, true),
+                                              StatusAfterEvent: "Available",
+
+                                              ActionedByName: User().FullName,
+                                              ActionedByEmail: User().Email,
+                                              SourceApp: { Value: "Web" },
+                                              Notes: If(
+                                                  IsBlank(varSelectedItem.CurrentEpisodeKey),
+                                                  "Return completed without an existing CurrentEpisodeKey. This is likely a pre-log allocation.",
+                                                  ""
+                                              )
+                                          }
+                                      );
+
+                                      With(
+                                          {
+                                              signOutLogRow: LookUp(
+                                                  Equipment_Usage_Log,
+                                                  EpisodeKey = episodeKey &&
+                                                  EventType.Value = "Sign Out"
+                                              )
+                                          },
+
+                                          If(
+                                              !IsBlank(signOutLogRow.ID),
+
+                                              Patch(
+                                                  Equipment_Usage_Log,
+                                                  signOutLogRow,
+                                                  {
+                                                      EpisodeStatus: { Value: "Closed" },
+                                                      DateReturned: returnDate,
+                                                      DaysSignedOutThisEpisode: daysThisEpisode,
+                                                      TotalDaysSignedOutAfterEvent: newTotalDays,
+                                                      Over100DaysAfterEvent: newTotalDays > 100,
+                                                      ServiceRequired: newTotalDays > 100
+                                                  }
+                                              )
+                                          )
+                                      );
+
+                                      Notify(
+                                          "Equipment returned successfully.",
+                                          NotificationType.Success
+                                      );
+
+                                      If(
+                                          newTotalDays > 100,
+                                          Notify(
+                                              "This equipment has been used for >100 days this year and requires a Full Service. Please set equipment aside and contact CA for details.",
+                                              NotificationType.Warning
+                                          )
+                                      );
+
+                                      ClearCollect(
+                                          colGroupedEquipment,
+                                          Filter(
+                                              Equipment_Inventory_SharePoint,
+                                              Status.Value = "Allocated" &&
+                                              DateDiff(DateValue('Date Signed Out'), Today()) = 0 &&
+                                              Physiotherapist = User().FullName
+                                          )
+                                      );
+
+                                      Set(varSelectedItem, Blank());
+                                      Set(varSearchCode_1, "");
+                                      Reset(TextInput_SearchCode_1)
+                                  )
+                              )
+                          )
+                        Text: ="Return equipment"
+                        Width: =200
+                        DisplayMode: =If(!IsBlank(varSelectedItem) && varSelectedItem.Status.Value = "Allocated", DisplayMode.Edit, DisplayMode.Disabled)
