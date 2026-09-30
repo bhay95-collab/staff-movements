@@ -275,3 +275,5 @@ Removed from the ward screen: the hidden discharge clean-up button, the `colWard
 - Even 16px rhythm between every section; flags are one row of four short tiles (Falls, Contact, NDIS, Maint.), matching the F / C / N / M dots on the board.
 - A date that is not set now says "Not set" instead of showing the picker's placeholder date (31/12/2001). Tap the calendar icon to set it.
 - Discharge sits below a divider at the bottom.
+
+- PT acuity is limited to 0-4: the - button stops at 0 and the + button stops at 4 (each greys out at its limit).

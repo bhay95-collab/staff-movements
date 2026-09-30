@@ -2407,7 +2407,7 @@ Screens:
                               BorderStyle: =BorderStyle.Solid
                               BorderThickness: =1
                               DropShadow: =DropShadow.None
-                              Fill: =RGBA(255, 255, 255, 1)
+                              Fill: =If(Coalesce(ThisItem.'Acuity Score', 0) <= 0, RGBA(244, 249, 252, 1), RGBA(255, 255, 255, 1))
                               Height: =38
                               Width: =44
                               X: =20
@@ -2422,6 +2422,7 @@ Screens:
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
                                     BorderRadius: =10
+                                    DisplayMode: =If(Coalesce(ThisItem.'Acuity Score', 0) <= 0, DisplayMode.Disabled, DisplayMode.Edit)
                                     Font: =Font.'Segoe UI'
                                     FontColor: =RGBA(26, 90, 153, 1)
                                     FontSize: =20
@@ -2430,7 +2431,7 @@ Screens:
                                     Width: =44
                                     Text: ="−"
                                     OnSelect: |-
-                                      =Patch(colWard, ThisItem, {'Acuity Score': Max(0, Coalesce(ThisItem.'Acuity Score', 0) - 1), IsDirty: true})
+                                      =Patch(colWard, ThisItem, {'Acuity Score': Min(4, Max(0, Coalesce(ThisItem.'Acuity Score', 0) - 1)), IsDirty: true})
                         - lblAcuVal_WB:
                             Control: Label@2.5.1
                             Properties:
@@ -2453,7 +2454,7 @@ Screens:
                               BorderStyle: =BorderStyle.Solid
                               BorderThickness: =1
                               DropShadow: =DropShadow.None
-                              Fill: =RGBA(255, 255, 255, 1)
+                              Fill: =If(Coalesce(ThisItem.'Acuity Score', 0) >= 4, RGBA(244, 249, 252, 1), RGBA(255, 255, 255, 1))
                               Height: =38
                               Width: =44
                               X: =132
@@ -2468,6 +2469,7 @@ Screens:
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
                                     BorderRadius: =10
+                                    DisplayMode: =If(Coalesce(ThisItem.'Acuity Score', 0) >= 4, DisplayMode.Disabled, DisplayMode.Edit)
                                     Font: =Font.'Segoe UI'
                                     FontColor: =RGBA(26, 90, 153, 1)
                                     FontSize: =20
@@ -2476,7 +2478,7 @@ Screens:
                                     Width: =44
                                     Text: ="+"
                                     OnSelect: |-
-                                      =Patch(colWard, ThisItem, {'Acuity Score': Max(0, Coalesce(ThisItem.'Acuity Score', 0) + 1), IsDirty: true})
+                                      =Patch(colWard, ThisItem, {'Acuity Score': Min(4, Max(0, Coalesce(ThisItem.'Acuity Score', 0) + 1)), IsDirty: true})
                         - lblLosVal_WB:
                             Control: Label@2.5.1
                             Properties:
