@@ -7,7 +7,7 @@ The old mobile app had **19 fixed-size screens**. This rebuild has **8 responsiv
 | Old screen(s) | New screen | File |
 |---|---|---|
 | Home | **Home** | `M1_Home.pa.yaml` |
-| Search_Equipment_Screen, Wheelchair_Type_Screen, Brand_Screen, Model_Screen, Width_Screen, Depth_Screen, Height_Screen, Equipment_List_Screen | **Find** (one screen: barcode search, category tabs, tap-to-filter size chips, live results) | `M2_Find.pa.yaml` |
+| Search_Equipment_Screen, Wheelchair_Type_Screen, Brand_Screen, Model_Screen, Width_Screen, Depth_Screen, Height_Screen, Equipment_List_Screen | **Find** (one screen: barcode search, category tabs, a Filters button that opens a sheet of size chips, live results that fill the screen) | `M2_Find.pa.yaml` |
 | Allocated_Equipment_Detail_Screen, Allocated_Equipment_Detail_Screen_QR, (detail part of) Equipment_Detail_Screen | **Item** (one detail screen for any item; shows Allocate or Return) | `M3_Item.pa.yaml` |
 | Equipment_Patients, Equipment_Detail_Screen, Equipment_Detail_Tree_Screen | **Allocate** (pick patient, confirm in a bottom sheet) | `M4_Allocate.pa.yaml` |
 | My_Equipment_Screen | **MyEquipment** (All / Today / 6+ weeks tabs, email today's list) | `M5_MyEquipment.pa.yaml` |
@@ -81,3 +81,10 @@ Do this in a **copy** of the current mobile app so every SharePoint connection i
 
 ## Layout note (why widths are written as App.Width)
 Inside an auto-layout container Power Apps sizes each child itself, but the child's own **Width** property still returns whatever formula it holds. Controls inside that child that use `Parent.Width` then get the wrong number (text centred off the button, pills in the wrong place). Every auto-layout child therefore has its real width written out from `App.Width` (for example `(App.Width - 48) / 3` for three tabs), so everything inside lines up on any phone.
+
+## Layout check
+Every screen was drawn in a layout simulator at 390x780 and 360x640 (and with its bottom sheet open) and checked for overlaps, clipped text and wrong widths. Fixes from that pass:
+- Find: the six filter rows took over half the screen. They now live in a **Filters** sheet; the top of the screen is just search, category tabs, a Filters button with the count, and a one-line summary of what is selected.
+- My equipment: three-line cards were 8px too short; taller now.
+- All list cards: inset 2px so their borders are no longer clipped by the list edge.
+- Allocate sheet: sized to its content (was a tall empty sheet).
