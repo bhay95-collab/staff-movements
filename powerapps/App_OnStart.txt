@@ -1,0 +1,165 @@
+// =====================================================================
+// APP OnStart  (paste the whole thing into App > OnStart)
+// =====================================================================
+
+
+// ---------------------------------------------------------------------
+// 1) USED BY THE REDESIGNED SCREENS
+// ---------------------------------------------------------------------
+
+// Old equipment warning: equipment signed out for over 6 weeks
+Set(
+    colOldAllocations,
+    Filter(
+        Equipment_Inventory_SharePoint,
+        Status.Value = "Allocated",
+        Physiotherapist = User().FullName,
+        DateDiff('Date Signed Out', Today()) > 42
+    )
+);
+
+If(
+    CountRows(colOldAllocations) > 0,
+    Notify(
+        "You have equipment signed out for over 6 weeks. Please review:" &
+        Concat(colOldAllocations, Char(10) & 'Patient Name' & " - " & Title),
+        NotificationType.Warning
+    )
+);
+
+// Chart colours (Ward screen)
+Set(
+    varChartPalette,
+    [
+        RGBA(166, 199, 130, 1),
+        RGBA(35, 100, 153, 1),
+        RGBA(0, 144, 153, 1),
+        RGBA(0, 200, 210, 1),
+        RGBA(112, 188, 166, 1)
+    ]
+);
+
+// Selected patient (Ward, Equipment, Patient detail, Allocated)
+Set(varSelectedPatient, Blank());
+
+// Typed empty collection for the email popup (Patient detail)
+ClearCollect(colEmailRecipients, { Email: "" });
+Clear(colEmailRecipients);
+
+
+// ---------------------------------------------------------------------
+// 2) DATA DASHBOARD: staffing ratios (FTE per 10 patients)
+//    Blank = "consult" (no fixed ratio)
+// ---------------------------------------------------------------------
+ClearCollect(
+    colStaffRatios,
+    Table(
+        { Impairment: "Amputation",                     OT: 1,   PT: 1.5,  AHA: 0.5, SP: Blank(), ClinPsych: 0.5, NeuroPsych: Blank(), SW: 0.6, Diet: 0.4 },
+        { Impairment: "Stroke / Neurology",             OT: 1.5, PT: 1.5,  AHA: 0.5, SP: 1.5,     ClinPsych: 0.5, NeuroPsych: 0.5,     SW: 1.0, Diet: 0.5 },
+        { Impairment: "Orthopaedic",                    OT: 0.8, PT: 1.25, AHA: 0.5, SP: 0.1,     ClinPsych: 0.2, NeuroPsych: Blank(), SW: 0.5, Diet: 0.4 },
+        { Impairment: "Major Trauma",                   OT: 1.2, PT: 1.5,  AHA: 0.5, SP: 0.2,     ClinPsych: 0.4, NeuroPsych: 0.5,     SW: 1.0, Diet: 0.6 },
+        { Impairment: "Spinal Cord Dysfunction",        OT: 2,   PT: 2,    AHA: 0.5, SP: 0.25,    ClinPsych: 0.5, NeuroPsych: 0.3,     SW: 1.2, Diet: 0.4 },
+        { Impairment: "Traumatic Brain Injury",         OT: 1.5, PT: 1.5,  AHA: 0.5, SP: 1.5,     ClinPsych: 0.8, NeuroPsych: 0.8,     SW: 1.2, Diet: 0.5 },
+        { Impairment: "Reconditioning and Restorative", OT: 1.2, PT: 1.25, AHA: 0.5, SP: 0.2,     ClinPsych: 0.4, NeuroPsych: 0.2,     SW: 1.0, Diet: 0.5 }
+    )
+);
+
+// Diagnosis label (as shown on the ward pie charts) -> impairment above.
+// Every pie label must be here or that diagnosis gets no staffing:
+// Ortho, Recon, TBI, Amp, SCI, Trauma, Stroke, Neuro
+ClearCollect(
+    colDiagnosisMap,
+    Table(
+        { DiagnosisLabel: "Amp", Impairment: "Amputation" },
+        { DiagnosisLabel: "Amputation", Impairment: "Amputation" },
+
+        { DiagnosisLabel: "Stroke", Impairment: "Stroke / Neurology" },
+        { DiagnosisLabel: "Neuro", Impairment: "Stroke / Neurology" },
+        { DiagnosisLabel: "Neurology", Impairment: "Stroke / Neurology" },
+        { DiagnosisLabel: "Stroke / Neurology", Impairment: "Stroke / Neurology" },
+
+        { DiagnosisLabel: "Ortho", Impairment: "Orthopaedic" },
+        { DiagnosisLabel: "Orthopaedic", Impairment: "Orthopaedic" },
+
+        { DiagnosisLabel: "Trauma", Impairment: "Major Trauma" },
+        { DiagnosisLabel: "Major Trauma", Impairment: "Major Trauma" },
+
+        { DiagnosisLabel: "SCI", Impairment: "Spinal Cord Dysfunction" },
+        { DiagnosisLabel: "Spinal", Impairment: "Spinal Cord Dysfunction" },
+        { DiagnosisLabel: "Spinal Cord Dysfunction", Impairment: "Spinal Cord Dysfunction" },
+
+        { DiagnosisLabel: "TBI", Impairment: "Traumatic Brain Injury" },
+        { DiagnosisLabel: "Brain Injury", Impairment: "Traumatic Brain Injury" },
+        { DiagnosisLabel: "Traumatic Brain Injury", Impairment: "Traumatic Brain Injury" },
+
+        { DiagnosisLabel: "Recon", Impairment: "Reconditioning and Restorative" },
+        { DiagnosisLabel: "Reconditioning", Impairment: "Reconditioning and Restorative" },
+        { DiagnosisLabel: "Reconditioning and Restorative", Impairment: "Reconditioning and Restorative" }
+    )
+);
+
+
+// ---------------------------------------------------------------------
+// 3) KEPT FOR SCREENS NOT YET REDONE (CA scheduling / slots)
+//    Nothing in the redesigned screens uses these.
+//    Delete a line only when the screen using it is gone.
+// ---------------------------------------------------------------------
+
+// SlotIndex anchor (SlotIndex 0 = 07:00)
+Set(varDayAnchorMinutes, 420);
+
+// Popup / removal state
+Set(varShowRemovePopup, false);
+Set(varRemoveTarget, "");
+
+// Typed empty collection
+ClearCollect(colSelectedSessionRows, Filter(CA_Delegations, false));
+
+// Selection defaults
+Set(varSelectedWard, "");
+Set(varHasSelected2ATime, false);
+
+// Typed DateTime variables
+Set(varSelected2AStart, DateAdd(Today(), 0, TimeUnit.Minutes));
+Set(varSelected2AEnd,   DateAdd(Today(), 0, TimeUnit.Minutes));
+
+// Slot engine collections
+ClearCollect(colSlots, Table());
+ClearCollect(colSlotsAvail, Table());
+ClearCollect(colSlotsBlockers, Table());
+
+// CA dropdown
+ClearCollect(colCAOptions, Table({ ID: -1, Title: "— Select CA —" }));
+Set(varSelectedCAId, -1);
+Set(varSelectedCATitle, "");
+
+// Time options (30-min grid)
+ClearCollect(
+    colTimeOptions,
+    Table(
+        {Value: "06:00"}, {Value: "06:30"},
+        {Value: "07:00"}, {Value: "07:30"},
+        {Value: "08:00"}, {Value: "08:30"},
+        {Value: "09:00"}, {Value: "09:30"},
+        {Value: "10:00"}, {Value: "10:30"},
+        {Value: "11:00"}, {Value: "11:30"},
+        {Value: "12:00"}, {Value: "12:30"},
+        {Value: "13:00"}, {Value: "13:30"},
+        {Value: "14:00"}, {Value: "14:30"},
+        {Value: "15:00"}, {Value: "15:30"},
+        {Value: "16:00"}, {Value: "16:30"},
+        {Value: "17:00"}, {Value: "17:30"}
+    )
+);
+
+// Logged-in CA identity
+Set(varCAEmail, Lower(User().Email));
+Set(
+    varMyClaims,
+    Lower(
+        LookUp(
+            ClinicianDirectory,
+            Lower(Person.Email) = Lower(User().Email)
+        ).Person.Claims
+    )
+)

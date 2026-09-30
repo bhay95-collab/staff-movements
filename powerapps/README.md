@@ -232,3 +232,11 @@ New / changed:
 - Tap an entry to open it in Outlook (as before).
 - `Exit()` (closes the whole app) removed from the "calendar not found" check. It now shows a message on screen.
 - Calendar lookup is done once when the screen opens, not on every week change.
+
+---
+
+## App OnStart – `App_OnStart.txt`
+
+Full replacement for App > OnStart. Three sections: (1) used by the redesigned screens, (2) Data Dashboard ratios and diagnosis map (now includes Amp, Recon, Neuro), (3) kept for CA scheduling screens not yet redone.
+
+Removed (only the old audit / ward screens used them): `varSelWard`, `varSelOutcome`, `varSelClinicianEmail`, `varFromDate`, `varToDate`, `varHasUnsavedChanges_4A/4B/5A/6A`, `HomeColorsList`, `HomeColorCollection` (Home_Main builds its own).
