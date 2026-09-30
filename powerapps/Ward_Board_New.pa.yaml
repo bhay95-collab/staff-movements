@@ -11,7 +11,6 @@ Screens:
         // Hidden buttons hold the shared code (one copy each):
         //   btnLoadData_Ward         -> reload the ward + clinician lists, then charts
         //   btnRebuildCharts_Ward    -> rebuild the chart collections
-        //   btnCleanupDischarged_Ward-> delete related data for discharged patients (after Save)
         // =======================================================
 
         If(IsBlank(varWard), Set(varWard, "4A"));
@@ -32,65 +31,9 @@ Screens:
         Set(wdSelID, Blank());
         Set(wdFilter, "All");
 
-        // Discharge clean-up queue (matched on Name + URN + DOB when Save succeeds)
-        ClearCollect(
-            colWardPendingDischarge,
-            FirstN(
-                Table({ PatientName: "", PatientURN: "", PatientDOB: Date(1900, 1, 1) }),
-                0
-            )
-        );
-
         Select(btnLoadData_Ward)
       Fill: =RGBA(235, 242, 248, 1)
     Children:
-      - btnCleanupDischarged_Ward:
-          Control: Button@0.0.45
-          Properties:
-            Height: =10
-            Visible: =false
-            Width: =10
-            X: =20
-            Y: =0
-            Text: ="Cleanup"
-            OnSelect: |-
-              =// =======================================================
-              // DELETE RELATED DATA FOR DISCHARGED PATIENTS (runs only after Save succeeds)
-              // A record is matched on Name + URN + DOB, so a different patient with the
-              // same name is never touched.
-              //
-              // !! Check the column names on the RIGHT-hand side of each "=" below match your
-              // !! Patient_Outcome_Measures and Patient_Exercise_Setups lists.
-              // =======================================================
-              ForAll(
-                  colWardPendingDischarge As d,
-                  If(
-                      // skip anyone who is back on the ward (re-admitted before saving)
-                      IsBlank(
-                          LookUp(
-                              colWard,
-                              Patient = d.PatientName && URN = d.PatientURN && DOB = d.PatientDOB
-                          )
-                      ),
-                      RemoveIf(
-                          Patient_Outcome_Measures,
-                          PatientName = d.PatientName && URN = d.PatientURN && DOB = d.PatientDOB
-                      );
-                      RemoveIf(
-                          Patient_Exercise_Setups,
-                          Patient = d.PatientName && URN = d.PatientURN && DOB = d.PatientDOB
-                      )
-                  )
-              );
-              Clear(colWardPendingDischarge);
-
-              If(
-                  !IsEmpty(Errors(Patient_Outcome_Measures)) || !IsEmpty(Errors(Patient_Exercise_Setups)),
-                  Notify(
-                      "Ward saved, but some related patient data could not be deleted. Please tell an admin.",
-                      NotificationType.Warning
-                  )
-              )
       - btnRebuildCharts_Ward:
           Control: Button@0.0.45
           Properties:
@@ -1119,8 +1062,7 @@ Screens:
                                       NotificationType.Error
                                   ),
 
-                                  // ALL rows saved -> delete related data for discharged patients, refresh charts
-                                  Select(btnCleanupDischarged_Ward);
+                                  // ALL rows saved -> refresh charts
                                   Select(btnRebuildCharts_Ward);
 
                                   Set(wdIsSaving, false);
@@ -3273,7 +3215,7 @@ Screens:
                         Color: =RGBA(58, 80, 104, 1)
                         Size: =16
                         Height: =110
-                        Text: ="Their Outcome Measures and Exercise Setups will be permanently deleted when you press Save." & Char(10) & Char(10) & "Not sure? Use Discard on the header bar before saving to undo."
+                        Text: ="The patient is removed from this bed when you press Save." & Char(10) & Char(10) & "Not sure? Use Discard on the header bar before saving to undo."
                         Width: =643
                         X: =50
                         Y: =84
@@ -3319,30 +3261,7 @@ Screens:
                                 =// SAFETY: close popup immediately
                                 Set(wdShowClearWarning, false);
 
-                                // 1) Queue the related-data clean-up. NOTHING is deleted yet –
-                                //    Outcome Measures / Exercise Setups are removed when Save succeeds,
-                                //    matched on Name + URN + DOB.
-                                If(
-                                    !IsBlank(Trim(wdPendingClearItem.Patient)) &&
-                                    IsBlank(
-                                        LookUp(
-                                            colWardPendingDischarge,
-                                            PatientName = wdPendingClearItem.Patient &&
-                                            PatientURN = wdPendingClearItem.URN &&
-                                            PatientDOB = wdPendingClearItem.DOB
-                                        )
-                                    ),
-                                    Collect(
-                                        colWardPendingDischarge,
-                                        {
-                                            PatientName: wdPendingClearItem.Patient,
-                                            PatientURN: wdPendingClearItem.URN,
-                                            PatientDOB: wdPendingClearItem.DOB
-                                        }
-                                    )
-                                );
-
-                                // 2) Clear the slot in colWard (LOCAL ONLY - Save commits to SharePoint)
+                                // 1) Clear the slot in colWard (LOCAL ONLY - Save commits to SharePoint)
                                 Patch(
                                     colWard,
                                     wdPendingClearItem,
@@ -3425,13 +3344,13 @@ Screens:
                                     }
                                 );
 
-                                // 3) Clear pending variable
+                                // 2) Clear pending variable
                                 Set(wdPendingClearItem, Blank());
                                 Set(wdSelID, Blank());
 
                                 // Notify
                                 Notify(
-                                    "Patient removed from the list. Press Save to finalise (related data is deleted on Save) or Discard to undo.",
+                                    "Patient removed from the list. Press Save to finalise or Discard to undo.",
                                     NotificationType.Success
                                 )
                               Text: ="Discharge"
@@ -3587,13 +3506,6 @@ Screens:
                               OnSelect: |-
                                 =Set(wdShowDiscardWarning, false);
                                 Set(wdLoading, true);
-                                ClearCollect(
-                                    colWardPendingDischarge,
-                                    FirstN(
-                                        Table({ PatientName: "", PatientURN: "", PatientDOB: Date(1900, 1, 1) }),
-                                        0
-                                    )
-                                );
                                 If(
                                     varWard = "4A",
                                     Refresh(Ward_4A_Shared),

@@ -247,7 +247,7 @@ Removed (only the old audit / ward screens used them): `varSelWard`, `varSelOutc
 
 New screen name is `Ward_Board_New`. Delete the old `Ward_All` screen, then rename this one to `Ward_All` (Home_Main opens `Ward_All`). The old `Ward_All.pa.yaml` is removed from the repo (git history keeps it).
 
-Only the bed list changed. Load, Save, Discard, discharge clean-up, header buttons, and the add-patient / discharge / discard / patient-list popups are the same code.
+Only the bed list changed. Load, Save, Discard, header buttons, and the add-patient / discharge / discard / patient-list popups are the same code, except discharge no longer touches Outcome Measures / Exercise Setups (those lists are gone from the app).
 
 **Board (left)**: one line per bed, read-only, built to scan.
 - Filter chips with live counts: All beds, Patients, My patients, EDD <= 3 days, No physio.
@@ -267,3 +267,5 @@ Only the bed list changed. Load, Save, Discard, discharge clean-up, header butto
 Why: the old rows put ~12 editable controls in every row. Now the rows are plain text and there is one set of editing controls, so the screen is faster and reads like a ward board.
 
 Removed: OT / SP pickers (they were already hidden), and editing the bed number inline (it now lives in the panel).
+
+Removed from the ward screen: the hidden discharge clean-up button, the `colWardPendingDischarge` queue, and every reference to `Patient_Outcome_Measures` / `Patient_Exercise_Setups`. Discharge now just clears the bed; Save commits it.
