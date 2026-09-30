@@ -356,11 +356,11 @@ Screens:
                       Properties:
                         Font: =Font.'Segoe UI'
                         Color: =If(ThisItem.IsToday, RGBA(26, 90, 153, 1), RGBA(14, 28, 42, 1))
-                        Size: =22
+                        Size: =20
                         FontWeight: =FontWeight.Bold
                         Height: =32
                         Text: =ThisItem.DayName
-                        Width: =Parent.Width - 130
+                        Width: =Parent.Width - 120
                         X: =18
                         Y: =14
                   - lblDayNum_Lv:
@@ -369,20 +369,20 @@ Screens:
                         Font: =Font.'Segoe UI'
                         Color: =RGBA(58, 80, 104, 1)
                         Size: =13
-                        Height: =20
+                        Height: =22
                         Text: =ThisItem.DayNum & If(ThisItem.IsToday, "  ·  Today", "")
-                        Width: =Parent.Width - 130
+                        Width: =Parent.Width - 32
                         X: =18
-                        Y: =46
+                        Y: =48
                   - conAway_Lv:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
                         Fill: =If(ThisItem.Away > 0, RGBA(0, 144, 153, 0.12), RGBA(244, 249, 252, 1))
-                        Height: =28
-                        Width: =96
-                        X: =Parent.Width - 112
-                        Y: =20
+                        Height: =26
+                        Width: =88
+                        X: =Parent.Width - 104
+                        Y: =17
                         RadiusBottomLeft: =14
                         RadiusBottomRight: =14
                         RadiusTopLeft: =14
@@ -408,19 +408,19 @@ Screens:
                         Height: =1
                         Width: =Parent.Width - 32
                         X: =16
-                        Y: =76
+                        Y: =80
                   - Gallery_LvEvents:
                       Control: Gallery@2.15.0
                       Variant: Vertical
                       Properties:
-                        Height: =Parent.Height - 90
+                        Height: =Parent.Height - 96
                         Items: |-
                           =With({d: DateValue(lblDayKey_Lv.Text, "en-US")}, SortByColumns(Filter(colLeaveEvents, StartLocal < DateAdd(d, 1) && EndLocal > d), "IsAllDay", SortOrder.Descending, "StartLocal", SortOrder.Ascending))
                         TemplatePadding: =0
-                        TemplateSize: =72
+                        TemplateSize: =84
                         Width: =Parent.Width
                         X: =0
-                        Y: =84
+                        Y: =88
                       Children:
                         - Lv_EventCard:
                             Control: GroupContainer@1.5.0
@@ -431,7 +431,7 @@ Screens:
                               BorderThickness: =1
                               DropShadow: =DropShadow.None
                               Fill: =RGBA(244, 249, 252, 1)
-                              Height: =64
+                              Height: =76
                               Width: =Parent.TemplateWidth - 20
                               X: =10
                               Y: =4
@@ -460,22 +460,22 @@ Screens:
                                     Color: =RGBA(14, 28, 42, 1)
                                     Size: =13
                                     FontWeight: =FontWeight.Bold
-                                    Height: =38
+                                    Height: =42
                                     Text: =ThisItem.EventTitle
-                                    Width: =Parent.Width - 24
+                                    Width: =Parent.Width - 28
                                     X: =16
-                                    Y: =5
+                                    Y: =6
                               - lblEvSub_Lv:
                                   Control: Label@2.5.1
                                   Properties:
                                     Font: =Font.'Segoe UI'
                                     Color: =RGBA(140, 155, 174, 1)
                                     Size: =11
-                                    Height: =16
+                                    Height: =18
                                     Text: =If(ThisItem.IsAllDay = true, "All day" & If(DateDiff(DateValue(ThisItem.StartLocal), DateValue(ThisItem.EndLocal), TimeUnit.Days) > 1, "  ·  " & Text(DateValue(ThisItem.StartLocal), "d mmm") & " – " & Text(DateAdd(DateValue(ThisItem.EndLocal), -1, TimeUnit.Days), "d mmm"), ""), Text(ThisItem.StartLocal, "h:mm am/pm") & " – " & Text(ThisItem.EndLocal, "h:mm am/pm"))
-                                    Width: =Parent.Width - 24
+                                    Width: =Parent.Width - 28
                                     X: =16
-                                    Y: =43
+                                    Y: =52
                               - btnEv_Lv:
                                   Control: Button@0.0.45
                                   Properties:
