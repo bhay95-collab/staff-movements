@@ -277,3 +277,9 @@ Removed from the ward screen: the hidden discharge clean-up button, the `colWard
 - Discharge sits below a divider at the bottom.
 
 - PT acuity is limited to 0-4: the - button stops at 0 and the + button stops at 4 (each greys out at its limit).
+
+---
+
+## Fix: "[Ward_4A_Shared] The query is not valid" when opening a patient from equipment
+
+`Equipment_Main` and `All_Allocated_New` found the patient with one big server query (name AND URN AND DOB). SharePoint rejected it. They now ask SharePoint only for the name, then match URN and DOB on the screen.

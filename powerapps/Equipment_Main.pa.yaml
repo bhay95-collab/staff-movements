@@ -430,10 +430,10 @@ Screens:
                                           },
                                           With(
                                               {
-                                                  r4A: LookUp(Ward_4A_Shared, Patient = n && (IsBlank(u) || URN = u) && (IsBlank(d) || DOB = d)),
-                                                  r4B: LookUp(Ward_4B_Shared, Patient = n && (IsBlank(u) || URN = u) && (IsBlank(d) || DOB = d)),
-                                                  r5A: LookUp(Ward_5A_Shared, Patient = n && (IsBlank(u) || URN = u) && (IsBlank(d) || DOB = d)),
-                                                  r6A: LookUp(Ward_6A_Shared, Patient = n && (IsBlank(u) || URN = u) && (IsBlank(d) || DOB = d))
+                                                  r4A: LookUp(Filter(Ward_4A_Shared, Patient = n), (IsBlank(u) || Text(URN) = Text(u)) && (IsBlank(d) || Text(DOB, "yyyymmdd") = Text(d, "yyyymmdd"))),
+                                                  r4B: LookUp(Filter(Ward_4B_Shared, Patient = n), (IsBlank(u) || Text(URN) = Text(u)) && (IsBlank(d) || Text(DOB, "yyyymmdd") = Text(d, "yyyymmdd"))),
+                                                  r5A: LookUp(Filter(Ward_5A_Shared, Patient = n), (IsBlank(u) || Text(URN) = Text(u)) && (IsBlank(d) || Text(DOB, "yyyymmdd") = Text(d, "yyyymmdd"))),
+                                                  r6A: LookUp(Filter(Ward_6A_Shared, Patient = n), (IsBlank(u) || Text(URN) = Text(u)) && (IsBlank(d) || Text(DOB, "yyyymmdd") = Text(d, "yyyymmdd")))
                                               },
                                               If(
                                                   IsBlank(Trim(n)),
