@@ -1,0 +1,420 @@
+Screens:
+  Home_Main:
+    Properties:
+      BackgroundImage: ='Standard JPG-Upper limb rehabilitation equipment in the ability centre'
+      ImagePosition: =ImagePosition.Stretch
+      OnVisible: |-
+        =// Latest ward status colours from SharePoint
+        Refresh(Home_Colors_Shared);
+        ClearCollect(HomeColorCollection, Home_Colors_Shared)
+    Children:
+      - Rectangle_HomeVeil:
+          Control: Rectangle@2.3.0
+          Properties:
+            Fill: =RGBA(235, 242, 248, 0.92)
+            Height: =Parent.Height
+            Width: =Parent.Width
+      - Home_Title:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Regular
+            Fill: =RGBA(7, 95, 115, 1)
+            Height: =70
+            Width: =1333
+            X: =18
+            Y: =12
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+          Children:
+            - imgHeaderGradient_Home:
+                Control: Image@2.2.3
+                Properties:
+                  Height: =Parent.Height
+                  Image: ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' width='1333' height='70' viewBox='0 0 1333 70' preserveAspectRatio='none'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001D46'/><stop offset='0.48' stop-color='#075F73'/><stop offset='1' stop-color='#00838A'/></linearGradient><linearGradient id='b' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001B36' stop-opacity='0.46'/><stop offset='0.45' stop-color='#002036' stop-opacity='0.18'/><stop offset='1' stop-color='#002036' stop-opacity='0.06'/></linearGradient></defs><rect width='1333' height='70' rx='18' fill='url(#a)'/><rect width='1333' height='70' rx='18' fill='url(#b)'/></svg>")
+                  ImagePosition: =ImagePosition.Fill
+                  Width: =Parent.Width
+            - lblTitle_HomeHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  Height: =36
+                  Size: =28
+                  Text: ="Physiotherapy Dashboard"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Weight: ='TextCanvas.Weight'.Bold
+                  Width: =700
+                  X: =28
+                  Y: =8
+            - lblSub_HomeHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 0.88)
+                  Height: =20
+                  Size: =12
+                  Text: ="Set each area's status, or open a ward's patient list"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =700
+                  X: =28
+                  Y: =42
+            - lblUser_HomeHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Align: ='TextCanvas.Align'.Right
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 0.88)
+                  Height: =70
+                  Size: =13
+                  Text: =User().FullName
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =400
+                  X: =903
+                  Y: =0
+      - Gallery_Home:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            Height: =560
+            Items: |-
+              =Table(
+                  { Key: "Ward4A", Label: "Ward 4A", Code: "4A", IsWard: true },
+                  { Key: "Ward4B", Label: "Ward 4B", Code: "4B", IsWard: true },
+                  { Key: "Ward5A", Label: "Ward 5A", Code: "5A", IsWard: true },
+                  { Key: "Ward6A", Label: "Ward 6A", Code: "6A", IsWard: true },
+                  { Key: "Proc", Label: "Proc/Surg", Code: "", IsWard: false },
+                  { Key: "DR", Label: "Day Rehab", Code: "", IsWard: false }
+              )
+            TemplatePadding: =0
+            TemplateSize: =280
+            WrapCount: =3
+            Width: =1333
+            X: =18
+            Y: =95
+            ShowScrollbar: =false
+          Children:
+            - Tile_Home:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.Light
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =Parent.TemplateHeight - 20
+                  Width: =Parent.TemplateWidth - 20
+                  X: =10
+                  Y: =10
+                  RadiusBottomLeft: =18
+                  RadiusBottomRight: =18
+                  RadiusTopLeft: =18
+                  RadiusTopRight: =18
+                Children:
+                  - conStrip_Home:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        Fill: =Switch(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")), "#98d046", RGBA(12, 122, 82, 1), "#ffbf00", RGBA(245, 176, 0, 1), "#ff0000", RGBA(180, 26, 26, 1), RGBA(140, 155, 174, 1))
+                        Height: =10
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =18
+                        RadiusTopRight: =18
+                  - lblTitle_Home:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
+                        Size: =30
+                        FontWeight: =FontWeight.Bold
+                        Height: =42
+                        Text: =ThisItem.Label
+                        Width: =Parent.Width - 48
+                        X: =24
+                        Y: =20
+                  - conPill_Home:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        Fill: =Switch(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")), "#98d046", RGBA(12, 122, 82, 1), "#ffbf00", RGBA(245, 176, 0, 1), "#ff0000", RGBA(180, 26, 26, 1), RGBA(140, 155, 174, 1))
+                        Height: =28
+                        Width: =110
+                        X: =24
+                        Y: =68
+                        RadiusBottomLeft: =14
+                        RadiusBottomRight: =14
+                        RadiusTopLeft: =14
+                        RadiusTopRight: =14
+                      Children:
+                        - lblPill_Home:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              Font: =Font.'Segoe UI'
+                              Color: =Switch(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")), "#98d046", RGBA(255, 255, 255, 1), "#ffbf00", RGBA(14, 28, 42, 1), "#ff0000", RGBA(255, 255, 255, 1), RGBA(255, 255, 255, 1))
+                              Size: =12
+                              FontWeight: =FontWeight.Bold
+                              Height: =28
+                              Width: =Parent.Width
+                              Text: =Switch(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")), "#98d046", "Green", "#ffbf00", "Orange", "#ff0000", "Red", "Not set")
+                  - lblSet_Home:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =11
+                        FontWeight: =FontWeight.Bold
+                        Height: =18
+                        Text: ="SET STATUS"
+                        Width: =200
+                        X: =24
+                        Y: =104
+                  - conGreen_Home:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =If(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")) = "#98d046", RGBA(12, 122, 82, 1), RGBA(14, 42, 70, 0.12))
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =If(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")) = "#98d046", RGBA(12, 122, 82, 1), RGBA(255, 255, 255, 1))
+                        Height: =36
+                        Width: =116
+                        X: =24
+                        Y: =124
+                        RadiusBottomLeft: =18
+                        RadiusBottomRight: =18
+                        RadiusTopLeft: =18
+                        RadiusTopRight: =18
+                      Children:
+                        - btnGreen_Home:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =18
+                              Font: =Font.'Segoe UI'
+                              FontColor: =If(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")) = "#98d046", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                              FontSize: =13
+                              FontWeight: =FontWeight.Bold
+                              Height: =36
+                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              OnSelect: |-
+                                =Patch(
+                                    Home_Colors_Shared,
+                                    LookUp(HomeColorCollection, Title = ThisItem.Key),
+                                    { ColorHex: "#98d046" }
+                                );
+                                ClearCollect(HomeColorCollection, Home_Colors_Shared);
+                                If(
+                                    !IsEmpty(Errors(Home_Colors_Shared)),
+                                    Notify("Could not update the status. Please try again.", NotificationType.Error)
+                                )
+                              Text: ="Green"
+                              Width: =116
+                  - conOrange_Home:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =If(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")) = "#ffbf00", RGBA(245, 176, 0, 1), RGBA(14, 42, 70, 0.12))
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =If(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")) = "#ffbf00", RGBA(245, 176, 0, 1), RGBA(255, 255, 255, 1))
+                        Height: =36
+                        Width: =116
+                        X: =148
+                        Y: =124
+                        RadiusBottomLeft: =18
+                        RadiusBottomRight: =18
+                        RadiusTopLeft: =18
+                        RadiusTopRight: =18
+                      Children:
+                        - btnOrange_Home:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =18
+                              Font: =Font.'Segoe UI'
+                              FontColor: =If(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")) = "#ffbf00", RGBA(14, 28, 42, 1), RGBA(58, 80, 104, 1))
+                              FontSize: =13
+                              FontWeight: =FontWeight.Bold
+                              Height: =36
+                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              OnSelect: |-
+                                =Patch(
+                                    Home_Colors_Shared,
+                                    LookUp(HomeColorCollection, Title = ThisItem.Key),
+                                    { ColorHex: "#ffbf00" }
+                                );
+                                ClearCollect(HomeColorCollection, Home_Colors_Shared);
+                                If(
+                                    !IsEmpty(Errors(Home_Colors_Shared)),
+                                    Notify("Could not update the status. Please try again.", NotificationType.Error)
+                                )
+                              Text: ="Orange"
+                              Width: =116
+                  - conRed_Home:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =If(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")) = "#ff0000", RGBA(180, 26, 26, 1), RGBA(14, 42, 70, 0.12))
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =If(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")) = "#ff0000", RGBA(180, 26, 26, 1), RGBA(255, 255, 255, 1))
+                        Height: =36
+                        Width: =116
+                        X: =272
+                        Y: =124
+                        RadiusBottomLeft: =18
+                        RadiusBottomRight: =18
+                        RadiusTopLeft: =18
+                        RadiusTopRight: =18
+                      Children:
+                        - btnRed_Home:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =18
+                              Font: =Font.'Segoe UI'
+                              FontColor: =If(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")) = "#ff0000", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                              FontSize: =13
+                              FontWeight: =FontWeight.Bold
+                              Height: =36
+                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              OnSelect: |-
+                                =Patch(
+                                    Home_Colors_Shared,
+                                    LookUp(HomeColorCollection, Title = ThisItem.Key),
+                                    { ColorHex: "#ff0000" }
+                                );
+                                ClearCollect(HomeColorCollection, Home_Colors_Shared);
+                                If(
+                                    !IsEmpty(Errors(Home_Colors_Shared)),
+                                    Notify("Could not update the status. Please try again.", NotificationType.Error)
+                                )
+                              Text: ="Red"
+                              Width: =116
+                  - conOpen_Home:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.Regular
+                        Fill: =RGBA(26, 90, 153, 1)
+                        Height: =44
+                        Visible: =ThisItem.IsWard
+                        Width: =Parent.Width - 48
+                        X: =24
+                        Y: =178
+                        RadiusBottomLeft: =22
+                        RadiusBottomRight: =22
+                        RadiusTopLeft: =22
+                        RadiusTopRight: =22
+                      Children:
+                        - btnOpen_Home:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =22
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(255, 255, 255, 1)
+                              FontSize: =16
+                              FontWeight: =FontWeight.Bold
+                              Height: =44
+                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              Text: ="Open patient list"
+                              Width: =Parent.Width
+                              OnSelect: =Set(varWard, ThisItem.Code); Navigate(Ward_All, ScreenTransition.Fade)
+      - Home_NavBar:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+            DropShadow: =DropShadow.Light
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =72
+            Width: =1333
+            X: =18
+            Y: =668
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+          Children:
+            - conEquip_Home:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(0, 0, 0, 0)
+                  BorderStyle: =BorderStyle.None
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.Regular
+                  Fill: =RGBA(26, 90, 153, 1)
+                  Height: =46
+                  Width: =290
+                  X: =16
+                  Y: =13
+                  RadiusBottomLeft: =23
+                  RadiusBottomRight: =23
+                  RadiusTopLeft: =23
+                  RadiusTopRight: =23
+                Children:
+                  - btnEquip_Home:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =23
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(255, 255, 255, 1)
+                        FontSize: =16
+                        FontWeight: =FontWeight.Bold
+                        Height: =46
+                        Icon: ="AppsList"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        OnSelect: =Navigate(Equipment_Screen, ScreenTransition.Fade)
+                        Text: ="Equipment Dashboard"
+                        Width: =290
+            - conTeam_Home:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =46
+                  Width: =200
+                  X: =322
+                  Y: =13
+                  RadiusBottomLeft: =23
+                  RadiusBottomRight: =23
+                  RadiusTopLeft: =23
+                  RadiusTopRight: =23
+                Children:
+                  - btnTeam_Home:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =23
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =16
+                        FontWeight: =FontWeight.Bold
+                        Height: =46
+                        Icon: ="Attach"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        OnSelect: =Navigate(Physiotherapy_Screen, ScreenTransition.Fade)
+                        Text: ="Team Info"
+                        Width: =200

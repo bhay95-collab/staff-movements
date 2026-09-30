@@ -73,3 +73,23 @@ Replaces `4AHandover`, `4BHandover`, `5AHandover`, `6AHandover` with one screen.
 - Opening a patient asks you to Save/Discard first if there are unsaved notes.
 - On open, the latest notes are reloaded from SharePoint.
 - Old screens did `ClearCollect(colWard, Ward_4A_Shared)` on every edit. That would wipe the ward screen's data, so it is gone.
+
+---
+
+# Home screen – `Home_Main.pa.yaml`
+
+Replaces `Home_PT` (this supersedes "Home_PT – change 4 buttons" above: the new tiles already open `Ward_All` with the right `varWard`).
+
+- Same header bar, page colour and card style as the other screens. The old background photo is kept but veiled (delete `Rectangle_HomeVeil` to show it fully).
+- 18 copy-pasted buttons are now ONE gallery `Gallery_Home`. Its `Items` list is at the top of the formula: to add or rename an area, edit that table.
+- Status still lives in `Home_Colors_Shared` (`#98d046` / `#ffbf00` / `#ff0000`), so nothing changes in SharePoint.
+- Selected status is highlighted; the tile has a colour strip and a status pill.
+- Failed status updates now show a message.
+- `Equipment Dashboard` and `Team Info` buttons kept.
+
+## Swap it in
+1. Paste `Home_Main.pa.yaml` into Studio (it appears as `Home_Main`).
+2. Search the app for `Home_PT` (Ctrl+F). Every `Navigate(Home_PT ...)` should become `Navigate(Home_Main ...)`.
+3. **App → StartScreen** should be `Home_Main`.
+4. Delete `Home_PT` once nothing points at it.
+5. If `WrapCount` on `Gallery_Home` errors, delete that line (tiles then stack in one column).
