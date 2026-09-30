@@ -1,46 +1,59 @@
-# Ward 4A screen – Power Apps source
+# Power Apps – single Ward screen
 
-`Ward_4A.pa.yaml` = the Ward 4A screen. Restyled to match `index.html` (Staff Movement Tracker).
+`Ward_Screen.pa.yaml` replaces the four screens `Ward 4A`, `Ward 4B`, `Ward 5A`, `Ward 6A`.
+The ward is chosen on Home. Design matches `index.html` (Staff Movement Tracker).
 
-## What changed
+## 1. Home_PT – change 4 buttons
 
-**Look (from `index.html`)**
+Each "Patient List" button (`4A Acuity_1`, `4B Acuity_1`, `5A Acuity_1`, `6A Acuity_1`) → OnSelect:
 
-| Token | Value | Used for |
-|---|---|---|
-| Page background | `RGBA(235,242,248,1)` | Screen fill |
-| Ink / Ink-2 / Muted | `RGBA(14,28,42,1)` / `RGBA(58,80,104,1)` / `RGBA(140,155,174,1)` | Text |
-| Accent | `RGBA(26,90,153,1)` | Buttons, checkboxes, chevrons, focus |
-| Good / Danger | `RGBA(12,122,82,1)` / `RGBA(180,26,26,1)` | Save / Discard, D/C |
-| Line | `RGBA(14,42,70,0.12)` | All borders |
-| Header | teal-navy gradient `#001D46 → #075F73 → #00838A` | Title bar (SVG image, see below) |
-| Font | Segoe UI | Everything (Plus Jakarta Sans is not available in Power Apps) |
+```
+Set(varWard, "4A"); Navigate(Ward_Screen, ScreenTransition.Fade)
+```
+Use `"4B"`, `"5A"`, `"6A"` on the others. Nothing else on Home changes.
 
-- Header bar: gradient + white pill buttons + live patient count subtitle.
-- Cards: white, 18px radius, thin border, light shadow.
-- Ward rows: 14px radius, thin border. Meaning of colours is unchanged: teal tint = falls risk, amber border = contact precautions, dark row = empty slot, amber EDD = due within 3 days, grey EDD = blank.
-- Diagnosis dropdown colours unchanged (they match the pie chart).
-- D/C = soft red pill. Save = green pill. Popups = dimmed backdrop, white 20px card, pill buttons.
-- Patient List/Data panel: stat tiles, section headings, charts re-laid out with no overlaps.
+## 2. Other screens that point at the old ward screens
 
-**Fixes**
+Search the app (Ctrl+F in Studio) for `'Ward 4A'`, `'Ward 4B'`, `'Ward 5A'`, `'Ward 6A'`, `colWard4A`, `colWard4B`, `colWard5A`, `colWard6A`.
+- Handover screens (`4AHandover` ...): a "back to ward" button must become `Navigate(Ward_Screen, ScreenTransition.Fade)`. `varWard` is still set, so the right ward opens.
+- Anything reading `colWard4A` etc. must read `colWard` (holds the ward currently open).
+- Do this BEFORE deleting the old screens.
 
-1. **Chart code was written twice** (OnVisible + Save). Now one copy in hidden button `btnRebuildCharts_4A`. Data load is also one copy in `btnLoadData_4A`. OnVisible, Save and Discard all call them.
-2. **Discharge no longer deletes straight away.** D/C now queues the patient in `colPendingDischarge4A`. Outcome Measures / Exercise Setups are deleted only after Save succeeds. Not saved = nothing deleted.
-3. **New Discard button** (header bar, appears when there are unsaved edits, asks to confirm). It undoes everything since the last save, including a discharge. Before this there was no way to leave the screen with unsaved edits except saving.
-4. **"Unsaved changes" now uses the real dirty rows** (`IsDirty`). Before, editing a date or dropdown did not set `varHasUnsavedChanges_4A`, so Handover could be opened with unsaved edits and the Save pill did not pulse.
-5. Save button greys out while saving (no double-tap).
-6. D/C hidden on empty beds.
+## 3. Name changes
 
-## Not changed (needs your decision)
+| Old | New |
+|---|---|
+| `colWard4A` / `4B` / `5A` / `6A` | `colWard` |
+| `locIsSaving`, `varPulseOn_4A` ... | `wdIsSaving`, `wdPulseOn`, `wdLoading`, `wdBasePatients` ... |
+| `col4A_...` chart collections | `colWard...` (OT and SP chart collections dropped: nothing showed them) |
+| `varHasUnsavedChanges_4A` ... | gone: "unsaved" = any row with `IsDirty` |
 
-- `RemoveIf` on `Patient_Outcome_Measures` / `Patient_Exercise_Setups` matches on **patient name only**. Two patients with the same name (or the same name on another ward) would both be wiped. Add a ward or URN condition if those lists have such a column.
-- `RemoveIf` on SharePoint lists only sees the first 500 rows (Power Apps data row limit). Bigger lists may leave rows behind.
-- Bar chart `ColumnChart1_2` has `Series1` to `Series9` all set to `TotalAcuity`. Looks like 9 identical bars per clinician.
-- Dark rows (`field_2` blank) still show the normal controls on top.
+## 4. Per-ward differences (kept)
+
+6A has no NDIS tick and no AROC EDD. Controlled by `wdShowNDIS` / `wdShowAROC` at the top of the screen's `OnVisible`.
+
+## 5. Discharge clean-up – CHECK THESE NAMES
+
+`btnCleanupDischarged_Ward` deletes Outcome Measures and Exercise Setups for a discharged patient after Save, matching **Name + URN + DOB**. It assumes these column names. Fix any that differ:
+
+| List | Name | URN | DOB |
+|---|---|---|---|
+| `Patient_Outcome_Measures` | `PatientName` | `PatientURN` | `PatientDOB` |
+| `Patient_Exercise_Setups` | `Patient` | `URN` | `DOB` |
+
+If a column is missing or has a different type (e.g. DOB stored as text), only that button shows a red error. Everything else still works.
+
+## 6. What changed vs the old screens
+
+- One copy of load, save, charts, popups. Each ward only differs in `varWard`.
+- Save writes to the right SharePoint list by `varWard`.
+- Empty beds: slim dashed strip with bed number and `+ Add patient`. All the other controls are hidden.
+- Bar chart: was 9 identical series. Now 1.
+- Discharge deletes only when Save succeeds. Discard undoes it.
+- 4B / 5A / 6A messages that said "Ward 4A" now show the real ward.
 
 ## If something does not paste
 
-- `imgHeaderGradient_4A` (gradient image): if Studio complains, delete it. The header falls back to a solid teal.
-- `LayoutJustifyContent` on `Container211`: if it errors, delete that line. Buttons then sit left-aligned.
+- `imgHeaderGradient_Ward` (gradient image): delete it; header falls back to solid teal.
+- `LayoutJustifyContent` on `Container211`: delete that line; buttons sit left.
 - Paste into a **copy** of the app first.

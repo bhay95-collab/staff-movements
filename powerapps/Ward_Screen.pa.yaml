@@ -1,28 +1,95 @@
 Screens:
-  Ward 4A:
+  Ward_Screen:
     Properties:
       ImagePosition: =ImagePosition.Fill
       OnVisible: |-
         =// =======================================================
-        // WARD 4A – SCREEN OnVisible
-        // The heavy lifting lives in two hidden buttons so the SAME code is
-        // shared by OnVisible, Save and Discard (no copy/paste drift):
-        //   btnLoadData_4A       -> reloads colWard4A + clinician option lists,
-        //                           then calls btnRebuildCharts_4A
-        //   btnRebuildCharts_4A  -> rebuilds all chart collections
-        //                           (also called by Save)
+        // WARD SCREEN – shared by 4A / 4B / 5A / 6A
+        // Home sets the ward before navigating:
+        //     Set(varWard, "4A"); Navigate(Ward_Screen, ScreenTransition.Fade)
+        //
+        // Hidden buttons hold the shared code (one copy each):
+        //   btnLoadData_Ward         -> reload the ward + clinician lists, then charts
+        //   btnRebuildCharts_Ward    -> rebuild the chart collections
+        //   btnCleanupDischarged_Ward-> delete related data for discharged patients (after Save)
         // =======================================================
 
-        Set(var4A_Loading, true);
-        Set(varHasUnsavedChanges_4A, false);
+        If(IsBlank(varWard), Set(varWard, "4A"));
 
-        // Discharge clean-up queue (patient names whose related data is deleted on Save)
-        ClearCollect(colPendingDischarge4A, FirstN(Table({ PatientName: "" }), 0));
+        Set(wdLoading, true);
 
-        Select(btnLoadData_4A)
+        // Per-ward layout differences (6A has no NDIS / AROC EDD)
+        Set(wdShowNDIS, varWard <> "6A");
+        Set(wdShowAROC, varWard <> "6A");
+
+        // Reset popups / state left over from the previous ward
+        Set(wdShowIDPopup, false);
+        Set(wdShowClearWarning, false);
+        Set(wdShowDiscardWarning, false);
+        Set(wdShowPatientList, false);
+        Set(wdIsSaving, false);
+        Set(wdPulseOn, false);
+
+        // Discharge clean-up queue (matched on Name + URN + DOB when Save succeeds)
+        ClearCollect(
+            colWardPendingDischarge,
+            FirstN(
+                Table({ PatientName: "", PatientURN: "", PatientDOB: Date(1900, 1, 1) }),
+                0
+            )
+        );
+
+        Select(btnLoadData_Ward)
       Fill: =RGBA(235, 242, 248, 1)
     Children:
-      - btnRebuildCharts_4A:
+      - btnCleanupDischarged_Ward:
+          Control: Button@0.0.45
+          Properties:
+            Height: =10
+            Visible: =false
+            Width: =10
+            X: =20
+            Y: =0
+            Text: ="Cleanup"
+            OnSelect: |-
+              =// =======================================================
+              // DELETE RELATED DATA FOR DISCHARGED PATIENTS (runs only after Save succeeds)
+              // A record is matched on Name + URN + DOB, so a different patient with the
+              // same name is never touched.
+              //
+              // !! Check the column names on the RIGHT-hand side of each "=" below match your
+              // !! Patient_Outcome_Measures and Patient_Exercise_Setups lists.
+              // =======================================================
+              ForAll(
+                  colWardPendingDischarge As d,
+                  If(
+                      // skip anyone who is back on the ward (re-admitted before saving)
+                      IsBlank(
+                          LookUp(
+                              colWard,
+                              Patient = d.PatientName && URN = d.PatientURN && DOB = d.PatientDOB
+                          )
+                      ),
+                      RemoveIf(
+                          Patient_Outcome_Measures,
+                          PatientName = d.PatientName && PatientURN = d.PatientURN && PatientDOB = d.PatientDOB
+                      );
+                      RemoveIf(
+                          Patient_Exercise_Setups,
+                          Patient = d.PatientName && URN = d.PatientURN && DOB = d.PatientDOB
+                      )
+                  )
+              );
+              Clear(colWardPendingDischarge);
+
+              If(
+                  !IsEmpty(Errors(Patient_Outcome_Measures)) || !IsEmpty(Errors(Patient_Exercise_Setups)),
+                  Notify(
+                      "Ward saved, but some related patient data could not be deleted. Please tell an admin.",
+                      NotificationType.Warning
+                  )
+              )
+      - btnRebuildCharts_Ward:
           Control: Button@0.0.45
           Properties:
             Height: =10
@@ -33,8 +100,8 @@ Screens:
             Text: ="Charts"
             OnSelect: |-
               =// =======================================================
-              // REBUILD 4A CHARTS (shared: load + after successful Save)
-              // Source of truth: colWard4A
+              // REBUILD WARD CHARTS (shared: load + after successful Save)
+              // Source of truth: colWard
               // =======================================================
 
               // Typed empty People table (keeps schema so DisplayName/Email are recognised)
@@ -55,14 +122,14 @@ Screens:
                   )
               );
 
-              // Base set of real patients on 4A
-              Set(var4ABasePatients, Filter(colWard4A, !IsBlank(Patient)));
+              // Base set of real patients on this ward
+              Set(wdBasePatients, Filter(colWard, !IsBlank(Patient)));
 
               // ------------------------------
               // 1) Diagnosis Summary (Pie)
               // ------------------------------
-              Set(var4A_DiagTotal, CountRows(var4ABasePatients));
-              Clear(col4A_DiagnosisSummary);
+              Set(wdDiagTotal, CountRows(wdBasePatients));
+              Clear(colWardDiagnosisSummary);
 
               ForAll(
                   Table(
@@ -80,7 +147,7 @@ Screens:
                           thisCount:
                               CountRows(
                                   Filter(
-                                      var4ABasePatients,
+                                      wdBasePatients,
                                       !IsBlank(Diagnosis) && Diagnosis.Value = d.Diag
                                   )
                               )
@@ -89,13 +156,13 @@ Screens:
                           {
                               thisPercent:
                                   If(
-                                      var4A_DiagTotal = 0,
+                                      wdDiagTotal = 0,
                                       0,
-                                      Round(thisCount * 100 / var4A_DiagTotal, 0)
+                                      Round(thisCount * 100 / wdDiagTotal, 0)
                                   )
                           },
                           Collect(
-                              col4A_DiagnosisSummary,
+                              colWardDiagnosisSummary,
                               {
                                   Label: d.Diag,
                                   Count: thisCount,
@@ -107,50 +174,18 @@ Screens:
               );
 
               // ------------------------------
-              // 2) Flatten assignments (PT / OT / SP)
+              // 2) Flatten PT assignments (one row per patient x clinician)
               // ------------------------------
-              Clear(col4A_PT_Assign);
-              Clear(col4A_OT_Assign);
-              Clear(col4A_SP_Assign);
+              Clear(colWardPT_Assign);
 
               ForAll(
-                  var4ABasePatients As p,
-
+                  wdBasePatients As p,
                   ForAll(
-                      If(IsBlank(p.PT_Users) || CountRows(p.PT_Users)=0, varEmptyPeople, p.PT_Users) As u,
-                      If(!IsBlank(u.Claims),
+                      If(IsBlank(p.PT_Users) || CountRows(p.PT_Users) = 0, varEmptyPeople, p.PT_Users) As u,
+                      If(
+                          !IsBlank(u.Claims),
                           Collect(
-                              col4A_PT_Assign,
-                              {
-                                  PatientID: p.ID,
-                                  ClinicianClaims: Lower(Trim(u.Claims)),
-                                  ClinicianName: Coalesce(u.DisplayName, u.Email, "<unknown>"),
-                                  Acuity: Coalesce(p.'Acuity Score', 0)
-                              }
-                          )
-                      )
-                  );
-
-                  ForAll(
-                      If(IsBlank(p.OT_Users) || CountRows(p.OT_Users)=0, varEmptyPeople, p.OT_Users) As u,
-                      If(!IsBlank(u.Claims),
-                          Collect(
-                              col4A_OT_Assign,
-                              {
-                                  PatientID: p.ID,
-                                  ClinicianClaims: Lower(Trim(u.Claims)),
-                                  ClinicianName: Coalesce(u.DisplayName, u.Email, "<unknown>"),
-                                  Acuity: Coalesce(p.'Acuity Score', 0)
-                              }
-                          )
-                      )
-                  );
-
-                  ForAll(
-                      If(IsBlank(p.SP_Users) || CountRows(p.SP_Users)=0, varEmptyPeople, p.SP_Users) As u,
-                      If(!IsBlank(u.Claims),
-                          Collect(
-                              col4A_SP_Assign,
+                              colWardPT_Assign,
                               {
                                   PatientID: p.ID,
                                   ClinicianClaims: Lower(Trim(u.Claims)),
@@ -163,39 +198,13 @@ Screens:
               );
 
               // ------------------------------
-              // 3) Pie charts: Patients per clinician
+              // 3) Patients per PT (distinct by PatientID)
               // ------------------------------
-              Clear(col4A_PatientsPerPT);
+              Clear(colWardPatientsPerPT);
               ForAll(
-                  GroupBy(col4A_PT_Assign, ClinicianName, Rows) As g,
+                  GroupBy(colWardPT_Assign, ClinicianName, Rows) As g,
                   Collect(
-                      col4A_PatientsPerPT,
-                      {
-                          Label: g.ClinicianName,
-                          Count: CountRows(Distinct(g.Rows, PatientID)),
-                          DisplayLabel: g.ClinicianName & " (" & CountRows(Distinct(g.Rows, PatientID)) & ")"
-                      }
-                  )
-              );
-
-              Clear(col4A_PatientsPerOT);
-              ForAll(
-                  GroupBy(col4A_OT_Assign, ClinicianName, Rows) As g,
-                  Collect(
-                      col4A_PatientsPerOT,
-                      {
-                          Label: g.ClinicianName,
-                          Count: CountRows(Distinct(g.Rows, PatientID)),
-                          DisplayLabel: g.ClinicianName & " (" & CountRows(Distinct(g.Rows, PatientID)) & ")"
-                      }
-                  )
-              );
-
-              Clear(col4A_PatientsPerSP);
-              ForAll(
-                  GroupBy(col4A_SP_Assign, ClinicianName, Rows) As g,
-                  Collect(
-                      col4A_PatientsPerSP,
+                      colWardPatientsPerPT,
                       {
                           Label: g.ClinicianName,
                           Count: CountRows(Distinct(g.Rows, PatientID)),
@@ -205,13 +214,13 @@ Screens:
               );
 
               // ------------------------------
-              // 4) Bar charts: Total acuity per clinician (PT + OT)
+              // 4) Total acuity per PT
               // ------------------------------
-              Clear(col4A_AcuityPerPT);
+              Clear(colWardAcuityPerPT);
               ForAll(
-                  GroupBy(col4A_PT_Assign, ClinicianName, Rows) As g,
+                  GroupBy(colWardPT_Assign, ClinicianName, Rows) As g,
                   Collect(
-                      col4A_AcuityPerPT,
+                      colWardAcuityPerPT,
                       {
                           Label: g.ClinicianName,
                           TotalAcuity: Sum(g.Rows, Acuity)
@@ -219,20 +228,8 @@ Screens:
                   )
               );
 
-              Clear(col4A_AcuityPerOT);
-              ForAll(
-                  GroupBy(col4A_OT_Assign, ClinicianName, Rows) As g,
-                  Collect(
-                      col4A_AcuityPerOT,
-                      {
-                          Label: g.ClinicianName,
-                          TotalAcuity: Sum(g.Rows, Acuity)
-                      }
-                  )
-              );
-
-              Set(var4A_Loading, false)
-      - btnLoadData_4A:
+              Set(wdLoading, false)
+      - btnLoadData_Ward:
           Control: Button@0.0.45
           Properties:
             Height: =10
@@ -243,18 +240,42 @@ Screens:
             Text: ="Load"
             OnSelect: |-
               =// =======================================================
-              // LOAD WARD 4A DATA (shared: OnVisible + Discard)
-              // Stable key = Claims
+              // LOAD WARD DATA (shared: OnVisible + Discard)
+              // Ward comes from varWard. Stable key = Claims
               // =======================================================
 
               // --------------------------------------
-              // 0) Rebuild ward cache
-              //    + local typed Key tables used by ComboBox defaults
+              // 1) Raw rows for the selected ward
+              // --------------------------------------
+              If(
+                  varWard = "4A",
+                  ClearCollect(
+                      colWardRaw,
+                      SortByColumns(Ward_4A_Shared, "field_1", SortOrder.Ascending)
+                  ),
+                  varWard = "4B",
+                  ClearCollect(
+                      colWardRaw,
+                      SortByColumns(Ward_4B_Shared, "field_1", SortOrder.Ascending)
+                  ),
+                  varWard = "5A",
+                  ClearCollect(
+                      colWardRaw,
+                      SortByColumns(Ward_5A_Shared, "field_1", SortOrder.Ascending)
+                  ),
+                  ClearCollect(
+                      colWardRaw,
+                      SortByColumns(Ward_6A_Shared, "field_1", SortOrder.Ascending)
+                  )
+              );
+
+              // --------------------------------------
+              // 2) Working copy + typed Key tables used by ComboBox defaults
               // --------------------------------------
               ClearCollect(
-                  colWard4A,
+                  colWard,
                   AddColumns(
-                      SortByColumns(Ward_4A_Shared, "field_1", SortOrder.Ascending),
+                      colWardRaw,
                       IsDirty, false,
 
                       PTKeys,
@@ -279,6 +300,7 @@ Screens:
                       )
                   )
               );
+              Clear(colWardRaw);
 
               // --------------------------------------
               // 0a) Clinician option collections (flat schema)
@@ -327,8 +349,8 @@ Screens:
               );
 
               // Chart collections are rebuilt from the fresh data
-              Select(btnRebuildCharts_4A)
-      - 4A_Title:
+              Select(btnRebuildCharts_Ward)
+      - Ward_Title:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
@@ -343,7 +365,7 @@ Screens:
             X: =18
             Y: =12
           Children:
-            - imgHeaderGradient_4A:
+            - imgHeaderGradient_Ward:
                 Control: Image@2.2.3
                 Properties:
                   Height: =Parent.Height
@@ -357,7 +379,7 @@ Screens:
                   FontColor: =RGBA(255, 255, 255, 1)
                   Height: =36
                   Size: =28
-                  Text: ="Ward 4A"
+                  Text: ="Ward " & varWard
                   VerticalAlign: =VerticalAlign.Middle
                   Weight: ='TextCanvas.Weight'.Bold
                   Width: =240
@@ -370,7 +392,7 @@ Screens:
                   FontColor: =RGBA(255, 255, 255, 0.88)
                   Height: =20
                   Size: =12
-                  Text: =CountRows(var4ABasePatients) & If(CountRows(var4ABasePatients) = 1, " patient", " patients") & " on ward"
+                  Text: =CountRows(wdBasePatients) & If(CountRows(wdBasePatients) = 1, " patient", " patients") & " on ward"
                   VerticalAlign: =VerticalAlign.Middle
                   Width: =240
                   X: =76
@@ -385,7 +407,7 @@ Screens:
                   Icon: ="ChevronLeft"
                   OnSelect: |+
                     =If(
-                        CountRows(Filter(colWard4A, IsDirty)) > 0,
+                        CountRows(Filter(colWard, IsDirty)) > 0,
 
                         // 🚫 Unsaved changes – block navigation
                         Notify(
@@ -460,12 +482,18 @@ Screens:
                               Layout: ='ButtonCanvas.Layout'.TextOnly
                               OnSelect: |-
                                 =If(
-                                    !IsEmpty(Filter(colWard4A, IsDirty)),
+                                    !IsEmpty(Filter(colWard, IsDirty)),
                                     Notify(
-                                        "You have unsaved changes for Ward 4A. Please Save (or Discard) before leaving.",
+                                        "You have unsaved changes for Ward " & varWard & ". Please Save (or Discard) before leaving.",
                                         NotificationType.Error
                                     ),
-                                    Navigate('4AHandover', ScreenTransition.Fade)
+                                    Switch(
+                                        varWard,
+                                        "4A", Navigate('4AHandover', ScreenTransition.Fade),
+                                        "4B", Navigate('4BHandover', ScreenTransition.Fade),
+                                        "5A", Navigate('5AHandover', ScreenTransition.Fade),
+                                        Navigate('6AHandover', ScreenTransition.Fade)
+                                    )
                                 )
                               Text: ="Handover"
                               Width: =Parent.Width
@@ -560,20 +588,52 @@ Screens:
                               Icon: ="Mail"
                               IconStyle: ='ButtonCanvas.IconStyle'.Filled
                               Layout: ='ButtonCanvas.Layout'.IconBefore
-                              OnSelect: |
-                                =// Ward 4A – patients with EDD in next 7 days
-                                ClearCollect(
-                                    colWard4A_EDDPatients,
-                                    Filter(
-                                        Ward_4A_Shared,
-                                        !IsBlank(EDD),
-                                        EDD >= Today(),
-                                        EDD <= DateAdd(Today(), 7)
+                              OnSelect: |-
+                                =// Patients on this ward with an EDD in the next 7 days
+                                If(
+                                    varWard = "4A",
+                                    ClearCollect(
+                                        colWardEDD,
+                                        Filter(
+                                            Ward_4A_Shared,
+                                            !IsBlank(EDD),
+                                            EDD >= Today(),
+                                            EDD <= DateAdd(Today(), 7)
+                                        )
+                                    ),
+                                    varWard = "4B",
+                                    ClearCollect(
+                                        colWardEDD,
+                                        Filter(
+                                            Ward_4B_Shared,
+                                            !IsBlank(EDD),
+                                            EDD >= Today(),
+                                            EDD <= DateAdd(Today(), 7)
+                                        )
+                                    ),
+                                    varWard = "5A",
+                                    ClearCollect(
+                                        colWardEDD,
+                                        Filter(
+                                            Ward_5A_Shared,
+                                            !IsBlank(EDD),
+                                            EDD >= Today(),
+                                            EDD <= DateAdd(Today(), 7)
+                                        )
+                                    ),
+                                    ClearCollect(
+                                        colWardEDD,
+                                        Filter(
+                                            Ward_6A_Shared,
+                                            !IsBlank(EDD),
+                                            EDD >= Today(),
+                                            EDD <= DateAdd(Today(), 7)
+                                        )
                                     )
                                 );
 
                                 If(
-                                    CountRows(colWard4A_EDDPatients) > 0,
+                                    CountRows(colWardEDD) > 0,
 
                                     Set(
                                         varEmailBody,
@@ -594,7 +654,7 @@ Screens:
                                             "</tr>" &
 
                                             Concat(
-                                                SortByColumns(colWard4A_EDDPatients, "EDD", SortOrder.Ascending),
+                                                SortByColumns(colWardEDD, "EDD", SortOrder.Ascending),
 
                                                 With(
                                                     {
@@ -635,7 +695,7 @@ Screens:
 
                                     Office365Outlook.SendEmailV2(
                                         User().Email,
-                                        "Patients with EDD within the next 7 days – Ward 4A",
+                                        "Patients with EDD within the next 7 days – Ward " & varWard,
                                         varEmailBody,
                                         { IsHtml: true }
                                     );
@@ -674,7 +734,7 @@ Screens:
                               FontSize: =14
                               FontWeight: =FontWeight.Bold
                               Height: =Parent.Height
-                              OnSelect: =Set(locShowPatientList_4A,true)
+                              OnSelect: =Set(wdShowPatientList,true)
                               Text: ="Patient List/Data"
                               Width: =Parent.Width
                               FontColor: =RGBA(7, 58, 87, 1)
@@ -683,17 +743,17 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
-                  BorderColor: =If(varPulseOn_4A, RGBA(255, 210, 74, 1), RGBA(255, 255, 255, 0.4))
+                  BorderColor: =If(wdPulseOn, RGBA(255, 210, 74, 1), RGBA(255, 255, 255, 0.4))
                   BorderStyle: =BorderStyle.Solid
-                  BorderThickness: =If(varPulseOn_4A, 3, 1)
+                  BorderThickness: =If(wdPulseOn, 3, 1)
                   DropShadow: =DropShadow.Regular
-                  Fill: =If(varPulseOn_4A, RGBA(18, 150, 100, 1), RGBA(12, 122, 82, 1))
+                  Fill: =If(wdPulseOn, RGBA(18, 150, 100, 1), RGBA(12, 122, 82, 1))
                   Height: =46
                   RadiusBottomLeft: =23
                   RadiusBottomRight: =23
                   RadiusTopLeft: =23
                   RadiusTopRight: =23
-                  Visible: =!IsEmpty(Filter(colWard4A, IsDirty))
+                  Visible: =!IsEmpty(Filter(colWard, IsDirty))
                   Width: =100
                   X: =326
                   Y: =12
@@ -713,110 +773,164 @@ Screens:
                         Layout: ='ButtonCanvas.Layout'.IconBefore
                         OnSelect: |-
                           =// ======================================
-                          // SAVE WARD 4A (handles new + existing rows)
+                          // SAVE WARD (any ward – handles new + existing rows)
                           // ======================================
 
                           If(
-                              CountRows(Filter(colWard4A, IsDirty)) = 0,
+                              IsEmpty(Filter(colWard, IsDirty)),
 
                               Notify(
-                                  "No changes to save for Ward 4A.",
+                                  "No changes to save for Ward " & varWard & ".",
                                   NotificationType.Information
                               ),
 
                               // --------------------------------------
                               // There ARE dirty rows
                               // --------------------------------------
-                              Set(locIsSaving, true);
-                              Clear(colSaveErrors4A);
+                              Set(wdIsSaving, true);
+                              Clear(colWardSaveErrors);
 
-                              // Optional: pulse / spinner on
-                              Set(varPulseOn_4A, true);
-                              Reset(Timer_Pulse_4A);
+                              Set(wdPulseOn, true);
+                              Reset(Timer_Pulse_Ward);
 
-                              // --------------------------------------
-                              // Patch each dirty row
-                              // - If ID blank -> create new SP item
-                              // - If ID present -> update existing SP item
-                              // - On success: write SP ID back + clear IsDirty
-                              // --------------------------------------
+                              // Patch each dirty row into the list for this ward
                               ForAll(
-                                  Filter(colWard4A, IsDirty) As w,
+                                  Filter(colWard, IsDirty) As w,
                                   With(
                                       {
-                                          spRow:
-                                              Patch(
-                                                  Ward_4A_Shared,
-                                                  If(
-                                                      IsBlank(w.ID),
-                                                      Defaults(Ward_4A_Shared),
-                                                      LookUp(Ward_4A_Shared, ID = w.ID)
-                                                  ),
-                                                  {
-                                                      // -------------------------------
-                                                      // Core patient data
-                                                      // -------------------------------
-                                                      Patient: w.Patient,
-                                                      URN: w.URN,
-                                                      DOB: w.DOB,
-                                                      Diagnosis: w.Diagnosis,
-
-                                                      // -------------------------------
-                                                      // PERSON COLUMNS (source of truth)
-                                                      // -------------------------------
-                                                      PT_Users: w.PT_Users,
-                                                      OT_Users: w.OT_Users,
-                                                      SP_Users: w.SP_Users,
-
-                                                      // -------------------------------
-                                                      // Other clinical/admin fields
-                                                      // -------------------------------
-                                                      'Acuity Score': w.'Acuity Score',
-                                                      Bed: w.Bed,
-                                                      NDIS: w.NDIS,
-                                                      Maintenance: w.Maintenance,
-                                                      'Link Worker': w.'Link Worker',
-                                                      'Falls Risk': w.'Falls Risk',
-                                                      Contact: w.Contact,
-                                                      'Admission Date': w.'Admission Date',
-                                                      'AROC EDD': w.'AROC EDD',
-                                                      EDD: w.EDD,
-                                                      WeekStartDate: w.WeekStartDate,
-                                                      'Morning Handover': w.'Morning Handover',
-                                                      'CC Handover': w.'CC Handover',
-                                                      Monday: w.Monday,
-                                                      Tuesday: w.Tuesday,
-                                                      Wednesday: w.Wednesday,
-                                                      Thursday: w.Thursday,
-                                                      Friday: w.Friday
-                                                  }
-                                              )
-                                      },
-                                      // -------------------------------
-                                      // Capture SharePoint errors
-                                      // -------------------------------
-                                      If(
-                                          !IsEmpty(Errors(Ward_4A_Shared, spRow)),
-                                          Collect(
-                                              colSaveErrors4A,
+                                          rec:
                                               {
-                                                  LocalID: w.ID,
-                                                  SavedID: spRow.ID,
                                                   Patient: w.Patient,
-                                                  Message: First(Errors(Ward_4A_Shared, spRow)).Message
+                                                  URN: w.URN,
+                                                  DOB: w.DOB,
+                                                  Diagnosis: w.Diagnosis,
+                                                  PT_Users: w.PT_Users,
+                                                  OT_Users: w.OT_Users,
+                                                  SP_Users: w.SP_Users,
+                                                  'Acuity Score': w.'Acuity Score',
+                                                  Bed: w.Bed,
+                                                  NDIS: w.NDIS,
+                                                  Maintenance: w.Maintenance,
+                                                  'Link Worker': w.'Link Worker',
+                                                  'Falls Risk': w.'Falls Risk',
+                                                  Contact: w.Contact,
+                                                  'Admission Date': w.'Admission Date',
+                                                  'AROC EDD': w.'AROC EDD',
+                                                  EDD: w.EDD,
+                                                  WeekStartDate: w.WeekStartDate,
+                                                  'Morning Handover': w.'Morning Handover',
+                                                  'CC Handover': w.'CC Handover',
+                                                  Monday: w.Monday,
+                                                  Tuesday: w.Tuesday,
+                                                  Wednesday: w.Wednesday,
+                                                  Thursday: w.Thursday,
+                                                  Friday: w.Friday
                                               }
-                                          ),
+                                      },
+                                      Switch(
+                                          varWard,
+                                          "4A",
+                                              With(
+                                                  {
+                                                      spRow:
+                                                          Patch(
+                                                              Ward_4A_Shared,
+                                                              If(IsBlank(w.ID), Defaults(Ward_4A_Shared), LookUp(Ward_4A_Shared, ID = w.ID)),
+                                                              rec
+                                                          )
+                                                  },
+                                                  If(
+                                                      !IsEmpty(Errors(Ward_4A_Shared, spRow)),
+                                                      Collect(
+                                                          colWardSaveErrors,
+                                                          {
+                                                              LocalID: w.ID,
+                                                              SavedID: spRow.ID,
+                                                              Patient: w.Patient,
+                                                              Message: First(Errors(Ward_4A_Shared, spRow)).Message
+                                                          }
+                                                      ),
 
-                                          // ✅ Success → update local row:
-                                          // - store the real SharePoint ID (for brand new items)
-                                          // - clear IsDirty
-                                          Patch(
-                                              colWard4A,
-                                              w,
+                                                      // Success -> store the real SharePoint ID (new rows) and clear IsDirty
+                                                      Patch(colWard, w, { ID: spRow.ID, IsDirty: false })
+                                                  )
+                                              ),
+                                          "4B",
+                                              With(
+                                                  {
+                                                      spRow:
+                                                          Patch(
+                                                              Ward_4B_Shared,
+                                                              If(IsBlank(w.ID), Defaults(Ward_4B_Shared), LookUp(Ward_4B_Shared, ID = w.ID)),
+                                                              rec
+                                                          )
+                                                  },
+                                                  If(
+                                                      !IsEmpty(Errors(Ward_4B_Shared, spRow)),
+                                                      Collect(
+                                                          colWardSaveErrors,
+                                                          {
+                                                              LocalID: w.ID,
+                                                              SavedID: spRow.ID,
+                                                              Patient: w.Patient,
+                                                              Message: First(Errors(Ward_4B_Shared, spRow)).Message
+                                                          }
+                                                      ),
+
+                                                      // Success -> store the real SharePoint ID (new rows) and clear IsDirty
+                                                      Patch(colWard, w, { ID: spRow.ID, IsDirty: false })
+                                                  )
+                                              ),
+                                          "5A",
+                                              With(
+                                                  {
+                                                      spRow:
+                                                          Patch(
+                                                              Ward_5A_Shared,
+                                                              If(IsBlank(w.ID), Defaults(Ward_5A_Shared), LookUp(Ward_5A_Shared, ID = w.ID)),
+                                                              rec
+                                                          )
+                                                  },
+                                                  If(
+                                                      !IsEmpty(Errors(Ward_5A_Shared, spRow)),
+                                                      Collect(
+                                                          colWardSaveErrors,
+                                                          {
+                                                              LocalID: w.ID,
+                                                              SavedID: spRow.ID,
+                                                              Patient: w.Patient,
+                                                              Message: First(Errors(Ward_5A_Shared, spRow)).Message
+                                                          }
+                                                      ),
+
+                                                      // Success -> store the real SharePoint ID (new rows) and clear IsDirty
+                                                      Patch(colWard, w, { ID: spRow.ID, IsDirty: false })
+                                                  )
+                                              ),
+                                          With(
                                               {
-                                                  ID: spRow.ID,
-                                                  IsDirty: false
-                                              }
+                                                  spRow:
+                                                      Patch(
+                                                          Ward_6A_Shared,
+                                                          If(IsBlank(w.ID), Defaults(Ward_6A_Shared), LookUp(Ward_6A_Shared, ID = w.ID)),
+                                                          rec
+                                                      )
+                                              },
+                                              If(
+                                                  !IsEmpty(Errors(Ward_6A_Shared, spRow)),
+                                                  Collect(
+                                                      colWardSaveErrors,
+                                                      {
+                                                          LocalID: w.ID,
+                                                          SavedID: spRow.ID,
+                                                          Patient: w.Patient,
+                                                          Message: First(Errors(Ward_6A_Shared, spRow)).Message
+                                                      }
+                                                  ),
+
+                                                  // Success -> store the real SharePoint ID (new rows) and clear IsDirty
+                                                  Patch(colWard, w, { ID: spRow.ID, IsDirty: false })
+                                              )
                                           )
                                       )
                                   )
@@ -826,78 +940,47 @@ Screens:
                               // Post-save handling
                               // --------------------------------------
                               If(
-                                  CountRows(colSaveErrors4A) > 0,
+                                  CountRows(colWardSaveErrors) > 0,
 
-                                  // ❌ Some rows failed
-                                  Set(locIsSaving, false);
-                                  Set(varPulseOn_4A, false);
-                                  Reset(Timer_Pulse_4A);
-
-                                  // keep this TRUE because there are still dirty rows
-                                  Set(varHasUnsavedChanges_4A, CountRows(Filter(colWard4A, IsDirty)) > 0);
+                                  // Some rows failed
+                                  Set(wdIsSaving, false);
+                                  Set(wdPulseOn, false);
+                                  Reset(Timer_Pulse_Ward);
 
                                   Notify(
                                       "Some rows failed to save (" &
-                                      CountRows(colSaveErrors4A) &
+                                      CountRows(colWardSaveErrors) &
                                       "). Unsaved changes remain.",
                                       NotificationType.Error
                                   ),
 
-                                  // ✅ ALL rows saved successfully
-                                  Set(varHasUnsavedChanges_4A, false);
+                                  // ALL rows saved -> delete related data for discharged patients, refresh charts
+                                  Select(btnCleanupDischarged_Ward);
+                                  Select(btnRebuildCharts_Ward);
 
-                                  // --------------------------------------
-                                  // Delete related records for patients discharged in this session.
-                                  // (Deferred to here so nothing is destroyed until the user saves.)
-                                  // Skips any name that is back on the ward (e.g. re-admitted before saving).
-                                  // --------------------------------------
-                                  ForAll(
-                                      colPendingDischarge4A As d,
-                                      If(
-                                          IsBlank(LookUp(colWard4A, Patient = d.PatientName)),
-                                          RemoveIf(Patient_Outcome_Measures, PatientName = d.PatientName);
-                                          RemoveIf(Patient_Exercise_Setups, Patient = d.PatientName)
-                                      )
-                                  );
-                                  Clear(colPendingDischarge4A);
-
-                                  If(
-                                      !IsEmpty(Errors(Patient_Outcome_Measures)) || !IsEmpty(Errors(Patient_Exercise_Setups)),
-                                      Notify(
-                                          "Ward saved, but some related patient data could not be deleted. Please tell an admin.",
-                                          NotificationType.Warning
-                                      )
-                                  );
-
-                                  // Refresh charts (shared code – see btnRebuildCharts_4A)
-                                  Select(btnRebuildCharts_4A);
-
-                                  // --------------------------------------
-                                  // Wrap up UI state
-                                  // --------------------------------------
-                                  Set(locIsSaving, false);
-                                  Set(varPulseOn_4A, false);
-                                  Reset(Timer_Pulse_4A);
+                                  Set(wdIsSaving, false);
+                                  Set(wdPulseOn, false);
+                                  Reset(Timer_Pulse_Ward);
 
                                   Notify(
-                                      "Ward 4A changes saved.",
+                                      "Ward " & varWard & " changes saved.",
                                       NotificationType.Success
                                   )
                               )
-                          );
+                          )
                         Text: ="Save"
                         Width: =100
                         Font: =Font.'Segoe UI'
                         FontWeight: =FontWeight.Bold
-                        DisplayMode: =If(locIsSaving, DisplayMode.Disabled, DisplayMode.Edit)
-            - conDiscard_4A:
+                        DisplayMode: =If(wdIsSaving, DisplayMode.Disabled, DisplayMode.Edit)
+            - conDiscard_Ward:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
                   DropShadow: =DropShadow.Regular
                   Fill: =RGBA(255, 255, 255, 1)
                   Height: =46
-                  Visible: =!IsEmpty(Filter(colWard4A, IsDirty))
+                  Visible: =!IsEmpty(Filter(colWard, IsDirty))
                   Width: =120
                   X: =436
                   Y: =12
@@ -906,7 +989,7 @@ Screens:
                   RadiusTopLeft: =23
                   RadiusTopRight: =23
                 Children:
-                  - btnDiscard_4A:
+                  - btnDiscard_Ward:
                       Control: Button@0.0.45
                       Properties:
                         Appearance: ='ButtonCanvas.Appearance'.Transparent
@@ -919,10 +1002,10 @@ Screens:
                         Icon: ="DismissCircle"
                         IconStyle: ='ButtonCanvas.IconStyle'.Filled
                         Layout: ='ButtonCanvas.Layout'.IconBefore
-                        OnSelect: =Set(locShowDiscardWarning_4A, true)
+                        OnSelect: =Set(wdShowDiscardWarning, true)
                         Text: ="Discard"
                         Width: =120
-      - 4A_Acuity:
+      - Ward_List:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
@@ -940,14 +1023,14 @@ Screens:
             BorderStyle: =BorderStyle.Solid
             BorderThickness: =1
           Children:
-            - Gallery_Ward4A:
+            - Gallery_Ward:
                 Control: Gallery@2.15.0
                 Variant: Vertical
                 Properties:
                   Height: =658
                   Items: |+
                     =SortByColumns(
-                        Filter(colWard4A, !IsBlank(ID)),
+                        Filter(colWard, !IsBlank(ID)),
                         "field_1",
                         SortOrder.Ascending
                     )
@@ -959,42 +1042,48 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
-                        BorderColor: =If(ThisItem.Contact, RGBA(245, 176, 0, 1), RGBA(14, 42, 70, 0.12))
-                        BorderThickness: =If(ThisItem.Contact, 3, 1)
-                        DropShadow: =DropShadow.Light
+                        BorderColor: |-
+                          =If(
+                              !(!IsBlank(Trim(ThisItem.Patient))),
+                              RGBA(140, 155, 174, 0.55),
+                              If(ThisItem.Contact, RGBA(245, 176, 0, 1), RGBA(14, 42, 70, 0.12))
+                          )
+                        BorderThickness: =If(!IsBlank(Trim(ThisItem.Patient)) && ThisItem.Contact, 3, 1)
+                        DropShadow: =If(!IsBlank(Trim(ThisItem.Patient)), DropShadow.Light, DropShadow.None)
                         Fill: |-
                           =If(
-                              IsBlank(ThisItem.field_2),
-                              RGBA(14, 28, 42, 1),
+                              !(!IsBlank(Trim(ThisItem.Patient))),
+                              RGBA(255, 255, 255, 1),
                               If(
                                   ThisItem.'Falls Risk',
                                   RGBA(204, 234, 230, 1),
                                   RGBA(244, 249, 252, 1)
                               )
                           )
-                        Height: =88
+                        Height: =If(!IsBlank(Trim(ThisItem.Patient)), 88, 52)
                         RadiusBottomLeft: =14
                         RadiusBottomRight: =14
                         RadiusTopLeft: =14
                         RadiusTopRight: =14
                         Width: =1298
                         X: =1
-                        BorderStyle: =BorderStyle.Solid
+                        BorderStyle: =If(!IsBlank(Trim(ThisItem.Patient)), BorderStyle.Solid, BorderStyle.Dashed)
+                        Y: =If(!IsBlank(Trim(ThisItem.Patient)), 0, 15)
                       Children:
                         - TextCanvas14:
                             Control: Text@0.0.51
                             Properties:
                               BorderColor: =RGBA(14, 42, 70, 0.12)
                               BorderRadius: =12
-                              BorderStyle: =BorderStyle.Solid
+                              BorderStyle: =If(!IsBlank(Trim(ThisItem.Patient)), BorderStyle.Solid, BorderStyle.None)
                               BorderThickness: =1
-                              Fill: =RGBA(255, 255, 255, 1)
-                              Height: =75
+                              Fill: =If(!IsBlank(Trim(ThisItem.Patient)), RGBA(255, 255, 255, 1), RGBA(0, 0, 0, 0))
+                              Height: =If(!IsBlank(Trim(ThisItem.Patient)), 75, 36)
                               Text: =
                               Width: =178
                               X: =82
-                              Y: =7
-                        - TextInput_4ABed:
+                              Y: =If(!IsBlank(Trim(ThisItem.Patient)), 7, 8)
+                        - TextInput_Bed:
                             Control: Classic/TextInput@2.3.2
                             Properties:
                               Align: =Align.Center
@@ -1009,10 +1098,10 @@ Screens:
                               Default: =If(IsBlank(ThisItem.Bed), "", Text(ThisItem.Bed))
                               Fill: =RGBA(0, 0, 0, 0)
                               FontWeight: =FontWeight.Bold
-                              Height: =86
+                              Height: =If(!IsBlank(Trim(ThisItem.Patient)), 86, 52)
                               OnChange: |
                                 =Patch(
-                                    colWard4A,
+                                    colWard,
                                     ThisItem,
                                     {
                                         Bed: Value(Self.Text),
@@ -1024,11 +1113,11 @@ Screens:
                               RadiusBottomRight: =12
                               RadiusTopLeft: =12
                               RadiusTopRight: =12
-                              Size: =24
+                              Size: =If(!IsBlank(Trim(ThisItem.Patient)), 24, 20)
                               Width: =82
                               Font: =Font.'Segoe UI'
-                              Color: =RGBA(14, 28, 42, 1)
-                        - TextInput_4APatient:
+                              Color: =If(!IsBlank(Trim(ThisItem.Patient)), RGBA(14, 28, 42, 1), RGBA(140, 155, 174, 1))
+                        - TextInput_Patient:
                             Control: Label@2.5.1
                             Properties:
                               Align: =Align.Center
@@ -1036,35 +1125,23 @@ Screens:
                               BorderStyle: =BorderStyle.None
                               DisabledBorderColor: =RGBA(0, 0, 0, 0)
                               FontWeight: =FontWeight.Bold
-                              Height: =75
-                              OnSelect: |
+                              Height: =If(!IsBlank(Trim(ThisItem.Patient)), 75, 36)
+                              OnSelect: |-
                                 =If(
                                     IsBlank(Trim(ThisItem.Patient)),
 
                                     /* ===============================
-                                       NO PATIENT → ADD PATIENT FLOW
+                                       NO PATIENT -> ADD PATIENT FLOW
                                        =============================== */
-                                    Set(locShowIDPopup4A, true);
-                                    Set(locIDRowID4A, ThisItem.ID),
+                                    Set(wdShowIDPopup, true);
+                                    Set(wdIDRowID, ThisItem.ID),
 
                                     /* ===============================
-                                       PATIENT EXISTS → NAVIGATE
+                                       PATIENT EXISTS -> NAVIGATE
                                        =============================== */
                                     Set(varSelectedPatient, ThisItem);
-                                    Set(varSelectedList, "Ward_4A_Shared");
-
-                                    // Derive simple ward code
-                                    Set(
-                                        varWardCode,
-                                        Switch(
-                                            varSelectedList,
-                                            "Ward_4A_Shared", "4A",
-                                            "Ward_4B_Shared", "4B",
-                                            "Ward_5A_Shared", "5A",
-                                            "Ward_6A_Shared", "6A",
-                                            Blank()
-                                        )
-                                    );
+                                    Set(varSelectedList, "Ward_" & varWard & "_Shared");
+                                    Set(varWardCode, varWard);
 
                                     Navigate(
                                         Patient_Detail_Screen,
@@ -1072,15 +1149,15 @@ Screens:
                                     )
                                 )
                               Size: =17
-                              Text: |
+                              Text: |-
                                 =If(
-                                    IsBlank(Trim(ThisItem.Patient)),
-                                    "Click to add patient",
-                                    ThisItem.Patient
+                                    !IsBlank(Trim(ThisItem.Patient)),
+                                    ThisItem.Patient,
+                                    "+ Add patient"
                                 )
                               Width: =178
                               X: =82
-                              Y: =7
+                              Y: =If(!IsBlank(Trim(ThisItem.Patient)), 7, 8)
                               Font: =Font.'Segoe UI'
                               Color: =If(IsBlank(Trim(ThisItem.Patient)), RGBA(26, 90, 153, 1), RGBA(14, 28, 42, 1))
                         - Label78_3:
@@ -1095,6 +1172,7 @@ Screens:
                               Color: =RGBA(58, 80, 104, 1)
                               Size: =12
                               FontWeight: =FontWeight.Bold
+                              Visible: =wdShowAROC && !IsBlank(Trim(ThisItem.Patient))
                         - Container84:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -1110,8 +1188,9 @@ Screens:
                               Width: =115
                               X: =1003
                               Y: =52
+                              Visible: =wdShowAROC && !IsBlank(Trim(ThisItem.Patient))
                             Children:
-                              - DatePicker_4AAROC:
+                              - DatePicker_AROC:
                                   Control: Classic/DatePicker@2.6.0
                                   Properties:
                                     BorderStyle: =BorderStyle.None
@@ -1127,7 +1206,7 @@ Screens:
                                     Height: =30
                                     OnChange: |
                                       =Patch(
-                                          colWard4A,
+                                          colWard,
                                           ThisItem,
                                           {
                                               'AROC EDD': Self.SelectedDate,
@@ -1137,7 +1216,7 @@ Screens:
                                     OnSelect: =
                                     Width: =150
                                     Font: =Font.'Segoe UI'
-                        - Checkbox_4ANDIS:
+                        - Checkbox_NDIS:
                             Control: Classic/CheckBox@2.1.0
                             Properties:
                               CheckboxBorderColor: =RGBA(26, 90, 153, 1)
@@ -1147,25 +1226,23 @@ Screens:
                               Height: =30
                               OnCheck: |-
                                 =Patch(
-                                    colWard4A,
+                                    colWard,
                                     ThisItem,
                                     {
                                         NDIS: true,
                                         IsDirty: true
                                     }
-                                );
-                                Set(varHasUnsavedChanges_4A, true);
+                                )
                               OnSelect: =
                               OnUncheck: |-
                                 =Patch(
-                                    colWard4A,
+                                    colWard,
                                     ThisItem,
                                     {
                                         NDIS: false,
                                         IsDirty: true
                                     }
-                                );
-                                Set(varHasUnsavedChanges_4A, true);
+                                )
                               Text: ="NDIS"
                               X: =1051
                               Y: =5
@@ -1173,7 +1250,8 @@ Screens:
                               Font: =Font.'Segoe UI'
                               Color: =RGBA(14, 28, 42, 1)
                               Size: =13
-                        - Checkbox_4AMaintenance:
+                              Visible: =wdShowNDIS && !IsBlank(Trim(ThisItem.Patient))
+                        - Checkbox_Maintenance:
                             Control: Classic/CheckBox@2.1.0
                             Properties:
                               CheckboxBorderColor: =RGBA(26, 90, 153, 1)
@@ -1184,7 +1262,7 @@ Screens:
                               Height: =30
                               OnCheck: |
                                 =Patch(
-                                    colWard4A,
+                                    colWard,
                                     ThisItem,
                                     {
                                         'Maintenance': true,
@@ -1194,7 +1272,7 @@ Screens:
                               OnSelect: =
                               OnUncheck: |
                                 =Patch(
-                                    colWard4A,
+                                    colWard,
                                     ThisItem,
                                     {
                                         'Maintenance': false,
@@ -1208,6 +1286,7 @@ Screens:
                               Font: =Font.'Segoe UI'
                               Color: =RGBA(14, 28, 42, 1)
                               Size: =13
+                              Visible: =!IsBlank(Trim(ThisItem.Patient))
                         - Container78:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -1227,7 +1306,7 @@ Screens:
                               BorderThickness: =1
                               Visible: =!IsBlank(Trim(ThisItem.Patient))
                             Children:
-                              - Clear Button_4A:
+                              - Clear Button_Ward:
                                   Control: Button@0.0.45
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
@@ -1239,8 +1318,8 @@ Screens:
                                     FontWeight: =FontWeight.Bold
                                     Height: =30
                                     OnSelect: |
-                                      =Set(locShowClearWarning_4A, true);
-                                      Set(locPendingClearItem_4A, ThisItem)
+                                      =Set(wdShowClearWarning, true);
+                                      Set(wdPendingClearItem, ThisItem)
                                     Text: ="D/C"
                                     Width: =137
                         - Container79:
@@ -1258,8 +1337,9 @@ Screens:
                               Width: =115
                               X: =361
                               Y: =7
+                              Visible: =!IsBlank(Trim(ThisItem.Patient))
                             Children:
-                              - Dropdown_4ADiagnosis:
+                              - Dropdown_Diagnosis:
                                   Control: Classic/DropDown@2.3.1
                                   Properties:
                                     BorderStyle: =BorderStyle.None
@@ -1304,14 +1384,14 @@ Screens:
                                     Items.Value: =Value
                                     OnChange: |
                                       =Patch(
-                                          colWard4A,
+                                          colWard,
                                           ThisItem,
                                           {
                                               Diagnosis:
                                                   If(
-                                                      IsBlank(Dropdown_4ADiagnosis.SelectedText.Value),
+                                                      IsBlank(Dropdown_Diagnosis.SelectedText.Value),
                                                       Blank(),
-                                                      { Value: Dropdown_4ADiagnosis.SelectedText.Value }
+                                                      { Value: Dropdown_Diagnosis.SelectedText.Value }
                                                   ),
                                               IsDirty: true
                                           }
@@ -1337,8 +1417,9 @@ Screens:
                               Width: =115
                               X: =588
                               Y: =52
+                              Visible: =!IsBlank(Trim(ThisItem.Patient))
                             Children:
-                              - DatePicker_4AAdmission:
+                              - DatePicker_Admission:
                                   Control: Classic/DatePicker@2.6.0
                                   Properties:
                                     BorderStyle: =BorderStyle.None
@@ -1346,7 +1427,7 @@ Screens:
                                     Height: =30
                                     OnChange: |
                                       =Patch(
-                                          colWard4A,
+                                          colWard,
                                           ThisItem,
                                           {
                                               'Admission Date': Self.SelectedDate,
@@ -1372,6 +1453,7 @@ Screens:
                               Width: =115
                               X: =772
                               Y: =52
+                              Visible: =!IsBlank(Trim(ThisItem.Patient))
                             Children:
                               - DatePicker1:
                                   Control: Classic/DatePicker@2.6.0
@@ -1389,7 +1471,7 @@ Screens:
                                     Height: =30
                                     OnChange: |
                                       =Patch(
-                                          colWard4A,
+                                          colWard,
                                           ThisItem,
                                           {
                                               EDD: Self.SelectedDate,
@@ -1416,8 +1498,9 @@ Screens:
                               BorderColor: =RGBA(14, 42, 70, 0.12)
                               BorderThickness: =1
                               Fill: =RGBA(255, 255, 255, 1)
+                              Visible: =!IsBlank(Trim(ThisItem.Patient))
                             Children:
-                              - cmb4A_PT:
+                              - cmb_PT:
                                   Control: Classic/ComboBox@2.4.0
                                   Properties:
                                     BorderStyle: =BorderStyle.None
@@ -1445,7 +1528,7 @@ Screens:
                                       )
                                     OnChange: |
                                       =If(
-                                          locIsSaving || var4A_Loading,
+                                          wdIsSaving || wdLoading,
                                           Blank(),
                                           With(
                                               {
@@ -1463,7 +1546,7 @@ Screens:
                                                   Concat(Sort(oldKeys, Key), Key & ";"),
                                                   Blank(),
                                                   Patch(
-                                                      colWard4A,
+                                                      colWard,
                                                       ThisItem,
                                                       {
                                                           PT_Users: ForAll(Self.SelectedItems, PersonRec),
@@ -1498,7 +1581,7 @@ Screens:
                               BorderThickness: =1
                               Fill: =RGBA(255, 255, 255, 1)
                             Children:
-                              - cmb4A_OT:
+                              - cmb_OT:
                                   Control: Classic/ComboBox@2.4.0
                                   Properties:
                                     BorderStyle: =BorderStyle.None
@@ -1525,7 +1608,7 @@ Screens:
                                       )
                                     OnChange: |+
                                       =If(
-                                          locIsSaving || var4A_Loading,
+                                          wdIsSaving || wdLoading,
                                           Blank(),
 
                                           With(
@@ -1544,7 +1627,7 @@ Screens:
                                                   Concat(Sort(oldKeys, Key), Key & ";"),
                                                   Blank(),
                                                   Patch(
-                                                      colWard4A,
+                                                      colWard,
                                                       ThisItem,
                                                       {
                                                           OT_Users: ForAll(Self.SelectedItems, PersonRec),
@@ -1579,7 +1662,7 @@ Screens:
                               BorderThickness: =1
                               Fill: =RGBA(255, 255, 255, 1)
                             Children:
-                              - cmb4A_SP:
+                              - cmb_SP:
                                   Control: Classic/ComboBox@2.4.0
                                   Properties:
                                     BorderStyle: =BorderStyle.None
@@ -1606,7 +1689,7 @@ Screens:
                                       )
                                     OnChange: |+
                                       =If(
-                                          locIsSaving || var4A_Loading,
+                                          wdIsSaving || wdLoading,
                                           Blank(),
 
                                           With(
@@ -1625,7 +1708,7 @@ Screens:
                                                   Concat(Sort(oldKeys, Key), Key & ";"),
                                                   Blank(),
                                                   Patch(
-                                                      colWard4A,
+                                                      colWard,
                                                       ThisItem,
                                                       {
                                                           SP_Users: ForAll(Self.SelectedItems, PersonRec),
@@ -1653,6 +1736,7 @@ Screens:
                               Color: =RGBA(58, 80, 104, 1)
                               Size: =12
                               FontWeight: =FontWeight.Bold
+                              Visible: =!IsBlank(Trim(ThisItem.Patient))
                         - Label78_1:
                             Control: Label@2.5.1
                             Properties:
@@ -1665,6 +1749,7 @@ Screens:
                               Color: =RGBA(58, 80, 104, 1)
                               Size: =12
                               FontWeight: =FontWeight.Bold
+                              Visible: =!IsBlank(Trim(ThisItem.Patient))
                         - Label78_2:
                             Control: Label@2.5.1
                             Properties:
@@ -1677,6 +1762,7 @@ Screens:
                               Color: =RGBA(58, 80, 104, 1)
                               Size: =12
                               FontWeight: =FontWeight.Bold
+                              Visible: =!IsBlank(Trim(ThisItem.Patient))
                         - Label78_4:
                             Control: Label@2.5.1
                             Properties:
@@ -1689,6 +1775,7 @@ Screens:
                               Color: =RGBA(58, 80, 104, 1)
                               Size: =12
                               FontWeight: =FontWeight.Bold
+                              Visible: =!IsBlank(Trim(ThisItem.Patient))
                         - Label78_5:
                             Control: Label@2.5.1
                             Properties:
@@ -1731,8 +1818,9 @@ Screens:
                               BorderStyle: =BorderStyle.Solid
                               BorderColor: =RGBA(14, 42, 70, 0.12)
                               BorderThickness: =1
+                              Visible: =!IsBlank(Trim(ThisItem.Patient))
                             Children:
-                              - TextInput_4AAcuity:
+                              - TextInput_Acuity:
                                   Control: Classic/TextInput@2.3.2
                                   Properties:
                                     Align: =Align.Center
@@ -1741,7 +1829,7 @@ Screens:
                                     Height: =30
                                     OnChange: |
                                       =Patch(
-                                          colWard4A,
+                                          colWard,
                                           ThisItem,
                                           {
                                               'Acuity Score': Value(Self.Text),
@@ -1769,7 +1857,8 @@ Screens:
                               Color: =RGBA(58, 80, 104, 1)
                               Size: =12
                               FontWeight: =FontWeight.Bold
-                        - Checkbox_4AMaintenance_1:
+                              Visible: =!IsBlank(Trim(ThisItem.Patient))
+                        - Checkbox_FallsRisk:
                             Control: Classic/CheckBox@2.1.0
                             Properties:
                               CheckboxBorderColor: =RGBA(26, 90, 153, 1)
@@ -1780,7 +1869,7 @@ Screens:
                               Height: =30
                               OnCheck: |
                                 =Patch(
-                                    colWard4A,
+                                    colWard,
                                     ThisItem,
                                     {
                                         'Falls Risk': true,
@@ -1790,7 +1879,7 @@ Screens:
                               OnSelect: =
                               OnUncheck: |
                                 =Patch(
-                                    colWard4A,
+                                    colWard,
                                     ThisItem,
                                     {
                                         'Falls Risk': false,
@@ -1805,7 +1894,8 @@ Screens:
                               Font: =Font.'Segoe UI'
                               Color: =RGBA(14, 28, 42, 1)
                               Size: =13
-                        - Checkbox_4AMaintenance_2:
+                              Visible: =!IsBlank(Trim(ThisItem.Patient))
+                        - Checkbox_Contact:
                             Control: Classic/CheckBox@2.1.0
                             Properties:
                               CheckboxBorderColor: =RGBA(26, 90, 153, 1)
@@ -1816,7 +1906,7 @@ Screens:
                               Height: =30
                               OnCheck: |
                                 =Patch(
-                                    colWard4A,
+                                    colWard,
                                     ThisItem,
                                     {
                                         'Contact': true,
@@ -1826,7 +1916,7 @@ Screens:
                               OnSelect: =
                               OnUncheck: |
                                 =Patch(
-                                    colWard4A,
+                                    colWard,
                                     ThisItem,
                                     {
                                         'Contact': false,
@@ -1841,12 +1931,13 @@ Screens:
                               Font: =Font.'Segoe UI'
                               Color: =RGBA(14, 28, 42, 1)
                               Size: =13
+                              Visible: =!IsBlank(Trim(ThisItem.Patient))
       - Rectangle3:
           Control: Rectangle@2.3.0
           Properties:
             Fill: =RGBA(14, 28, 42, 0.42)
             Height: =Parent.Height
-            Visible: =locShowIDPopup4A
+            Visible: =wdShowIDPopup
             Width: =Parent.Width
       - Container46:
           Control: GroupContainer@1.5.0
@@ -1859,7 +1950,7 @@ Screens:
             RadiusBottomRight: =20
             RadiusTopLeft: =20
             RadiusTopRight: =20
-            Visible: =locShowIDPopup4A
+            Visible: =wdShowIDPopup
             Width: =824
             X: =271
             Y: =164
@@ -2053,7 +2144,7 @@ Screens:
                         Icon: ="CheckmarkCircle"
                         IconStyle: ='ButtonCanvas.IconStyle'.Filled
                         Layout: ='ButtonCanvas.Layout'.TextOnly
-                        OnSelect: |
+                        OnSelect: |-
                           =// Require all 3 identifiers
                           If(
                               IsBlank(Trim(TextInput_ID_Name.Text)) ||
@@ -2093,8 +2184,8 @@ Screens:
                                           newURN: Trim(TextInput_ID_URN.Text)   // keep leading zeros as text
                                       },
                                       Patch(
-                                          colWard4A,
-                                          LookUp(colWard4A, ID = locIDRowID4A),
+                                          colWard,
+                                          LookUp(colWard, ID = wdIDRowID),
                                           {
                                               Patient: Trim(TextInput_ID_Name.Text),
                                               URN: newURN,      // text URN, leading 0 preserved
@@ -2104,15 +2195,12 @@ Screens:
                                       );
 
                                       // close popup & clear fields
-                                      Set(locShowIDPopup4A, false);
+                                      Set(wdShowIDPopup, false);
                                       Reset(TextInput_ID_Name);
                                       Reset(TextInput_ID_URN);
                                       Reset(TextInput_ID_DOB_Day);
                                       Reset(TextInput_ID_DOB_Month);
-                                      Reset(TextInput_ID_DOB_Year);
-
-                                      // mark ward as having unsaved changes
-                                      Set(varHasUnsavedChanges_4A, true)
+                                      Reset(TextInput_ID_DOB_Year)
                                   )
                               )
                           );
@@ -2149,7 +2237,7 @@ Screens:
                         IconStyle: ='ButtonCanvas.IconStyle'.Filled
                         Layout: ='ButtonCanvas.Layout'.TextOnly
                         OnSelect: |
-                          =Set(locShowIDPopup4A, false);
+                          =Set(wdShowIDPopup, false);
 
                           Reset(TextInput_ID_Name);
                           Reset(TextInput_ID_URN);
@@ -2160,13 +2248,13 @@ Screens:
                         Width: =250
                         Font: =Font.'Segoe UI'
                         BorderRadius: =28
-      - conClearWarning_4A:
+      - conClearWarning_Ward:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
             Fill: =RGBA(14, 28, 42, 0.42)
             Height: =768
-            Visible: =locShowClearWarning_4A
+            Visible: =wdShowClearWarning
             Width: =1366
           Children:
             - Container76:
@@ -2203,7 +2291,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =44
                         Size: =24
-                        Text: ="Discharge " & Coalesce(locPendingClearItem_4A.Patient, "this patient") & "?"
+                        Text: ="Discharge " & Coalesce(wdPendingClearItem.Patient, "this patient") & "?"
                         Width: =643
                         X: =50
                         Y: =28
@@ -2236,20 +2324,35 @@ Screens:
                               Layout: ='ButtonCanvas.Layout'.TextOnly
                               OnSelect: |-
                                 =// SAFETY: close popup immediately
-                                Set(locShowClearWarning_4A, false);
+                                Set(wdShowClearWarning, false);
 
                                 // 1) Queue the related-data clean-up. NOTHING is deleted yet –
-                                //    Outcome Measures / Exercise Setups are removed when Save succeeds.
+                                //    Outcome Measures / Exercise Setups are removed when Save succeeds,
+                                //    matched on Name + URN + DOB.
                                 If(
-                                    !IsBlank(Trim(locPendingClearItem_4A.Patient)) &&
-                                    IsBlank(LookUp(colPendingDischarge4A, PatientName = locPendingClearItem_4A.Patient)),
-                                    Collect(colPendingDischarge4A, { PatientName: locPendingClearItem_4A.Patient })
+                                    !IsBlank(Trim(wdPendingClearItem.Patient)) &&
+                                    IsBlank(
+                                        LookUp(
+                                            colWardPendingDischarge,
+                                            PatientName = wdPendingClearItem.Patient &&
+                                            PatientURN = wdPendingClearItem.URN &&
+                                            PatientDOB = wdPendingClearItem.DOB
+                                        )
+                                    ),
+                                    Collect(
+                                        colWardPendingDischarge,
+                                        {
+                                            PatientName: wdPendingClearItem.Patient,
+                                            PatientURN: wdPendingClearItem.URN,
+                                            PatientDOB: wdPendingClearItem.DOB
+                                        }
+                                    )
                                 );
 
-                                // 2) Clear the slot in colWard4A (LOCAL ONLY - Save commits to SharePoint)
+                                // 2) Clear the slot in colWard (LOCAL ONLY - Save commits to SharePoint)
                                 Patch(
-                                    colWard4A,
-                                    locPendingClearItem_4A,
+                                    colWard,
+                                    wdPendingClearItem,
                                     {
                                         Patient: "",
                                         URN: "",
@@ -2330,8 +2433,7 @@ Screens:
                                 );
 
                                 // 3) Clear pending variable
-                                Set(locPendingClearItem_4A, Blank());
-                                Set(varHasUnsavedChanges_4A, true);
+                                Set(wdPendingClearItem, Blank());
 
                                 // Notify
                                 Notify(
@@ -2372,22 +2474,22 @@ Screens:
                               IconStyle: ='ButtonCanvas.IconStyle'.Filled
                               Layout: ='ButtonCanvas.Layout'.TextOnly
                               OnSelect: |+
-                                =Set(locShowClearWarning_4A, false);
-                                Set(locPendingClearItem_4A, Blank());
+                                =Set(wdShowClearWarning, false);
+                                Set(wdPendingClearItem, Blank());
                               Text: ="Cancel"
                               Width: =190
                               Font: =Font.'Segoe UI'
                               BorderRadius: =26
-      - conDiscardWarning_4A:
+      - conDiscardWarning_Ward:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
             Fill: =RGBA(14, 28, 42, 0.42)
             Height: =768
-            Visible: =locShowDiscardWarning_4A
+            Visible: =wdShowDiscardWarning
             Width: =1366
           Children:
-            - conDiscardCard_4A:
+            - conDiscardCard_Ward:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
@@ -2402,7 +2504,7 @@ Screens:
                   RadiusTopLeft: =20
                   RadiusTopRight: =20
                 Children:
-                  - lblDiscardTitle_4A:
+                  - lblDiscardTitle_Ward:
                       Control: Label@2.5.1
                       Properties:
                         Align: =Align.Center
@@ -2415,7 +2517,7 @@ Screens:
                         Width: =560
                         X: =40
                         Y: =28
-                  - lblDiscardDetail_4A:
+                  - lblDiscardDetail_Ward:
                       Control: Label@2.5.1
                       Properties:
                         Align: =Align.Center
@@ -2427,7 +2529,7 @@ Screens:
                         Width: =560
                         X: =40
                         Y: =84
-                  - conDiscardKeep_4A:
+                  - conDiscardKeep_Ward:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
@@ -2445,7 +2547,7 @@ Screens:
                         RadiusTopLeft: =26
                         RadiusTopRight: =26
                       Children:
-                        - btnDiscardKeep_4A:
+                        - btnDiscardKeep_Ward:
                             Control: Button@0.0.45
                             Properties:
                               Appearance: ='ButtonCanvas.Appearance'.Transparent
@@ -2456,10 +2558,10 @@ Screens:
                               FontWeight: =FontWeight.Bold
                               Height: =52
                               Layout: ='ButtonCanvas.Layout'.TextOnly
-                              OnSelect: =Set(locShowDiscardWarning_4A, false)
+                              OnSelect: =Set(wdShowDiscardWarning, false)
                               Text: ="Keep editing"
                               Width: =200
-                  - conDiscardGo_4A:
+                  - conDiscardGo_Ward:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
@@ -2477,7 +2579,7 @@ Screens:
                         RadiusTopLeft: =26
                         RadiusTopRight: =26
                       Children:
-                        - btnDiscardGo_4A:
+                        - btnDiscardGo_Ward:
                             Control: Button@0.0.45
                             Properties:
                               Appearance: ='ButtonCanvas.Appearance'.Transparent
@@ -2489,30 +2591,43 @@ Screens:
                               Height: =52
                               Layout: ='ButtonCanvas.Layout'.TextOnly
                               OnSelect: |-
-                                =Set(locShowDiscardWarning_4A, false);
-                                Set(var4A_Loading, true);
-                                Set(varHasUnsavedChanges_4A, false);
-                                ClearCollect(colPendingDischarge4A, FirstN(Table({ PatientName: "" }), 0));
-                                Refresh(Ward_4A_Shared);
-                                Select(btnLoadData_4A);
+                                =Set(wdShowDiscardWarning, false);
+                                Set(wdLoading, true);
+                                ClearCollect(
+                                    colWardPendingDischarge,
+                                    FirstN(
+                                        Table({ PatientName: "", PatientURN: "", PatientDOB: Date(1900, 1, 1) }),
+                                        0
+                                    )
+                                );
+                                If(
+                                    varWard = "4A",
+                                    Refresh(Ward_4A_Shared),
+                                    varWard = "4B",
+                                    Refresh(Ward_4B_Shared),
+                                    varWard = "5A",
+                                    Refresh(Ward_5A_Shared),
+                                    Refresh(Ward_6A_Shared)
+                                );
+                                Select(btnLoadData_Ward);
                                 Notify("Unsaved changes discarded.", NotificationType.Information)
                               Text: ="Discard"
                               Width: =200
-      - Timer_Pulse_4A:
+      - Timer_Pulse_Ward:
           Control: Timer@2.1.0
           Properties:
             AutoStart: =true
             Duration: =500
             Height: =15
             OnTimerEnd: |+
-              =Set(varPulseOn_4A, !varPulseOn_4A)
+              =Set(wdPulseOn, !wdPulseOn)
             Repeat: =true
-            Start: =!IsEmpty(Filter(colWard4A, IsDirty))
+            Start: =!IsEmpty(Filter(colWard, IsDirty))
             Visible: =false
             Width: =85
             X: =1281
             Y: =753
-      - conPatientList_4A:
+      - conPatientList_Ward:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
@@ -2522,7 +2637,7 @@ Screens:
             RadiusBottomRight: =0
             RadiusTopLeft: =0
             RadiusTopRight: =0
-            Visible: =locShowPatientList_4A
+            Visible: =wdShowPatientList
             Width: =1366
           Children:
             - Button2:
@@ -2530,7 +2645,7 @@ Screens:
                 Properties:
                   Appearance: =ButtonAppearance.Transparent
                   Height: =768
-                  OnSelect: =Set(locShowPatientList_4A,false)
+                  OnSelect: =Set(wdShowPatientList,false)
                   Width: =1366
             - Container6:
                 Control: GroupContainer@1.5.0
@@ -2595,7 +2710,7 @@ Screens:
                               Height: =640
                               Items: |
                                 =SortByColumns(
-                                    Filter(colWard4A, !IsBlank(ID)),
+                                    Filter(colWard, !IsBlank(ID)),
                                     "field_1",
                                     SortOrder.Ascending
                                 )
@@ -2708,7 +2823,7 @@ Screens:
                         BorderColor: =RGBA(14, 42, 70, 0.12)
                         BorderThickness: =1
                       Children:
-                        - conTilePatients_4A:
+                        - conTilePatients_Ward:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
@@ -2725,7 +2840,7 @@ Screens:
                               RadiusTopLeft: =14
                               RadiusTopRight: =14
                             Children:
-                              - lblTilePatientsKey_4A:
+                              - lblTilePatientsKey_Ward:
                                   Control: Label@2.5.1
                                   Properties:
                                     Font: =Font.'Segoe UI'
@@ -2737,7 +2852,7 @@ Screens:
                                     Width: =Parent.Width - 24
                                     X: =12
                                     Y: =6
-                              - lblTilePatientsVal_4A:
+                              - lblTilePatientsVal_Ward:
                                   Control: Label@2.5.1
                                   Properties:
                                     Font: =Font.'Segoe UI'
@@ -2745,11 +2860,11 @@ Screens:
                                     Size: =26
                                     FontWeight: =FontWeight.Bold
                                     Height: =34
-                                    Text: =CountRows(var4ABasePatients)
+                                    Text: =CountRows(wdBasePatients)
                                     Width: =Parent.Width - 24
                                     X: =12
                                     Y: =26
-                        - conTileAcuity_4A:
+                        - conTileAcuity_Ward:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
@@ -2787,11 +2902,11 @@ Screens:
                                     Size: =26
                                     FontWeight: =FontWeight.Bold
                                     Height: =34
-                                    Text: =Sum(var4ABasePatients, 'Acuity Score')
+                                    Text: =Sum(wdBasePatients, 'Acuity Score')
                                     Width: =Parent.Width - 24
                                     X: =12
                                     Y: =26
-                        - lblSecPTCaseload_4A:
+                        - lblSecPTCaseload_Ward:
                             Control: Label@2.5.1
                             Properties:
                               Font: =Font.'Segoe UI'
@@ -2804,7 +2919,7 @@ Screens:
                               X: =14
                               Y: =90
                               Visible: =Coalesce(varMeDirectory.Discipline.Value, "") = "Physio"
-                        - lblSecPTAcuity_4A:
+                        - lblSecPTAcuity_Ward:
                             Control: Label@2.5.1
                             Properties:
                               Font: =Font.'Segoe UI'
@@ -2817,7 +2932,7 @@ Screens:
                               X: =14
                               Y: =276
                               Visible: =Coalesce(varMeDirectory.Discipline.Value, "") = "Physio"
-                        - lblSecDiag_4A:
+                        - lblSecDiag_Ward:
                             Control: Label@2.5.1
                             Properties:
                               Font: =Font.'Segoe UI'
@@ -2834,7 +2949,7 @@ Screens:
                             Properties:
                               Height: =160
                               ItemColorSet: =varChartPalette
-                              Items: =col4A_PatientsPerPT
+                              Items: =colWardPatientsPerPT
                               Items.Labels: =DisplayLabel
                               Items.Series: =Count
                               Visible: |
@@ -2848,18 +2963,10 @@ Screens:
                             Control: BarChart@2.4.0
                             Properties:
                               Height: =130
-                              ItemColorSet: =varChartPalette
-                              Items: =col4A_AcuityPerPT
+                              ItemColorSet: =[RGBA(26, 90, 153, 1)]
+                              Items: =colWardAcuityPerPT
                               Items.Labels: =Label
                               Items.Series1: =TotalAcuity
-                              Items.Series2: =TotalAcuity
-                              Items.Series3: =TotalAcuity
-                              Items.Series4: =TotalAcuity
-                              Items.Series5: =TotalAcuity
-                              Items.Series6: =TotalAcuity
-                              Items.Series7: =TotalAcuity
-                              Items.Series8: =TotalAcuity
-                              Items.Series9: =TotalAcuity
                               Visible: |
                                 =Coalesce(varMeDirectory.Discipline.Value, "") = "Physio"
                               Width: =485
@@ -2882,7 +2989,7 @@ Screens:
                                     RGBA(255, 204, 153, 1)   // Neuro
                                 ]
                               Items: |
-                                =col4A_DiagnosisSummary
+                                =colWardDiagnosisSummary
                               Items.Labels: =DisplayLabel
                               Items.Series: =Count
                               Size: =11
