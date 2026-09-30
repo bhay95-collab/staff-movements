@@ -38,7 +38,7 @@ Search the app (Ctrl+F in Studio) for `'Ward 4A'`, `'Ward 4B'`, `'Ward 5A'`, `'W
 
 | List | Name | URN | DOB |
 |---|---|---|---|
-| `Patient_Outcome_Measures` | `PatientName` | `PatientURN` | `PatientDOB` |
+| `Patient_Outcome_Measures` | `PatientName` | `URN` | `DOB` |
 | `Patient_Exercise_Setups` | `Patient` | `URN` | `DOB` |
 
 If a column is missing or has a different type (e.g. DOB stored as text), only that button shows a red error. Everything else still works.
@@ -49,6 +49,8 @@ If a column is missing or has a different type (e.g. DOB stored as text), only t
 - Save writes to the right SharePoint list by `varWard`.
 - Empty beds: slim dashed strip with bed number and `+ Add patient`. All the other controls are hidden.
 - Bar chart: was 9 identical series. Now 1.
+- The four ward lists are not identical (one has no Eligible / Recruited / Not Eligible). Each ward is loaded into `colWard` with the same fixed columns so Studio can read it. Opening a patient loads the full SharePoint row, so the Patient Detail screen still sees every column. It asks you to Save first if that bed has unsaved edits.
+- EDD Summary email now lists what is on screen (includes unsaved edits).
 - Discharge deletes only when Save succeeds. Discard undoes it.
 - 4B / 5A / 6A messages that said "Ward 4A" now show the real ward.
 

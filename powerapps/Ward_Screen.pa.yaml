@@ -72,7 +72,7 @@ Screens:
                       ),
                       RemoveIf(
                           Patient_Outcome_Measures,
-                          PatientName = d.PatientName && PatientURN = d.PatientURN && PatientDOB = d.PatientDOB
+                          PatientName = d.PatientName && URN = d.PatientURN && DOB = d.PatientDOB
                       );
                       RemoveIf(
                           Patient_Exercise_Setups,
@@ -250,22 +250,149 @@ Screens:
               If(
                   varWard = "4A",
                   ClearCollect(
-                      colWardRaw,
-                      SortByColumns(Ward_4A_Shared, "field_1", SortOrder.Ascending)
-                  ),
+                      colWardBase,
+                      ForAll(
+                          SortByColumns(Ward_4A_Shared, "field_1", SortOrder.Ascending),
+                          {
+                              ID: ID,
+                              Patient: Patient,
+                              URN: URN,
+                              DOB: DOB,
+                              Diagnosis: If(IsBlank(Diagnosis), Blank(), { Value: Diagnosis.Value }),
+                              PT_Users: PT_Users,
+                              OT_Users: OT_Users,
+                              SP_Users: SP_Users,
+                              'Acuity Score': 'Acuity Score',
+                              Bed: Bed,
+                              NDIS: NDIS,
+                              Maintenance: Maintenance,
+                              'Link Worker': 'Link Worker',
+                              'Falls Risk': 'Falls Risk',
+                              Contact: Contact,
+                              'Admission Date': 'Admission Date',
+                              'AROC EDD': 'AROC EDD',
+                              EDD: EDD,
+                              WeekStartDate: WeekStartDate,
+                              'Morning Handover': 'Morning Handover',
+                              'CC Handover': 'CC Handover',
+                              Monday: Monday,
+                              Tuesday: Tuesday,
+                              Wednesday: Wednesday,
+                              Thursday: Thursday,
+                              Friday: Friday
+                          }
+                      )
+                  )
+              );
+              If(
                   varWard = "4B",
                   ClearCollect(
-                      colWardRaw,
-                      SortByColumns(Ward_4B_Shared, "field_1", SortOrder.Ascending)
-                  ),
+                      colWardBase,
+                      ForAll(
+                          SortByColumns(Ward_4B_Shared, "field_1", SortOrder.Ascending),
+                          {
+                              ID: ID,
+                              Patient: Patient,
+                              URN: URN,
+                              DOB: DOB,
+                              Diagnosis: If(IsBlank(Diagnosis), Blank(), { Value: Diagnosis.Value }),
+                              PT_Users: PT_Users,
+                              OT_Users: OT_Users,
+                              SP_Users: SP_Users,
+                              'Acuity Score': 'Acuity Score',
+                              Bed: Bed,
+                              NDIS: NDIS,
+                              Maintenance: Maintenance,
+                              'Link Worker': 'Link Worker',
+                              'Falls Risk': 'Falls Risk',
+                              Contact: Contact,
+                              'Admission Date': 'Admission Date',
+                              'AROC EDD': 'AROC EDD',
+                              EDD: EDD,
+                              WeekStartDate: WeekStartDate,
+                              'Morning Handover': 'Morning Handover',
+                              'CC Handover': 'CC Handover',
+                              Monday: Monday,
+                              Tuesday: Tuesday,
+                              Wednesday: Wednesday,
+                              Thursday: Thursday,
+                              Friday: Friday
+                          }
+                      )
+                  )
+              );
+              If(
                   varWard = "5A",
                   ClearCollect(
-                      colWardRaw,
-                      SortByColumns(Ward_5A_Shared, "field_1", SortOrder.Ascending)
-                  ),
+                      colWardBase,
+                      ForAll(
+                          SortByColumns(Ward_5A_Shared, "field_1", SortOrder.Ascending),
+                          {
+                              ID: ID,
+                              Patient: Patient,
+                              URN: URN,
+                              DOB: DOB,
+                              Diagnosis: If(IsBlank(Diagnosis), Blank(), { Value: Diagnosis.Value }),
+                              PT_Users: PT_Users,
+                              OT_Users: OT_Users,
+                              SP_Users: SP_Users,
+                              'Acuity Score': 'Acuity Score',
+                              Bed: Bed,
+                              NDIS: NDIS,
+                              Maintenance: Maintenance,
+                              'Link Worker': 'Link Worker',
+                              'Falls Risk': 'Falls Risk',
+                              Contact: Contact,
+                              'Admission Date': 'Admission Date',
+                              'AROC EDD': 'AROC EDD',
+                              EDD: EDD,
+                              WeekStartDate: WeekStartDate,
+                              'Morning Handover': 'Morning Handover',
+                              'CC Handover': 'CC Handover',
+                              Monday: Monday,
+                              Tuesday: Tuesday,
+                              Wednesday: Wednesday,
+                              Thursday: Thursday,
+                              Friday: Friday
+                          }
+                      )
+                  )
+              );
+              If(
+                  varWard = "6A",
                   ClearCollect(
-                      colWardRaw,
-                      SortByColumns(Ward_6A_Shared, "field_1", SortOrder.Ascending)
+                      colWardBase,
+                      ForAll(
+                          SortByColumns(Ward_6A_Shared, "field_1", SortOrder.Ascending),
+                          {
+                              ID: ID,
+                              Patient: Patient,
+                              URN: URN,
+                              DOB: DOB,
+                              Diagnosis: If(IsBlank(Diagnosis), Blank(), { Value: Diagnosis.Value }),
+                              PT_Users: PT_Users,
+                              OT_Users: OT_Users,
+                              SP_Users: SP_Users,
+                              'Acuity Score': 'Acuity Score',
+                              Bed: Bed,
+                              NDIS: NDIS,
+                              Maintenance: Maintenance,
+                              'Link Worker': 'Link Worker',
+                              'Falls Risk': 'Falls Risk',
+                              Contact: Contact,
+                              'Admission Date': 'Admission Date',
+                              'AROC EDD': 'AROC EDD',
+                              EDD: EDD,
+                              WeekStartDate: WeekStartDate,
+                              'Morning Handover': 'Morning Handover',
+                              'CC Handover': 'CC Handover',
+                              Monday: Monday,
+                              Tuesday: Tuesday,
+                              Wednesday: Wednesday,
+                              Thursday: Thursday,
+                              Friday: Friday
+                          }
+                      )
                   )
               );
 
@@ -275,7 +402,7 @@ Screens:
               ClearCollect(
                   colWard,
                   AddColumns(
-                      colWardRaw,
+                      colWardBase,
                       IsDirty, false,
 
                       PTKeys,
@@ -300,7 +427,7 @@ Screens:
                       )
                   )
               );
-              Clear(colWardRaw);
+              Clear(colWardBase);
 
               // --------------------------------------
               // 0a) Clinician option collections (flat schema)
@@ -589,46 +716,15 @@ Screens:
                               IconStyle: ='ButtonCanvas.IconStyle'.Filled
                               Layout: ='ButtonCanvas.Layout'.IconBefore
                               OnSelect: |-
-                                =// Patients on this ward with an EDD in the next 7 days
-                                If(
-                                    varWard = "4A",
-                                    ClearCollect(
-                                        colWardEDD,
-                                        Filter(
-                                            Ward_4A_Shared,
-                                            !IsBlank(EDD),
-                                            EDD >= Today(),
-                                            EDD <= DateAdd(Today(), 7)
-                                        )
-                                    ),
-                                    varWard = "4B",
-                                    ClearCollect(
-                                        colWardEDD,
-                                        Filter(
-                                            Ward_4B_Shared,
-                                            !IsBlank(EDD),
-                                            EDD >= Today(),
-                                            EDD <= DateAdd(Today(), 7)
-                                        )
-                                    ),
-                                    varWard = "5A",
-                                    ClearCollect(
-                                        colWardEDD,
-                                        Filter(
-                                            Ward_5A_Shared,
-                                            !IsBlank(EDD),
-                                            EDD >= Today(),
-                                            EDD <= DateAdd(Today(), 7)
-                                        )
-                                    ),
-                                    ClearCollect(
-                                        colWardEDD,
-                                        Filter(
-                                            Ward_6A_Shared,
-                                            !IsBlank(EDD),
-                                            EDD >= Today(),
-                                            EDD <= DateAdd(Today(), 7)
-                                        )
+                                =// Patients on this ward with an EDD in the next 7 days (as shown on screen)
+                                ClearCollect(
+                                    colWardEDD,
+                                    Filter(
+                                        colWard,
+                                        !IsBlank(Patient),
+                                        !IsBlank(EDD),
+                                        EDD >= Today(),
+                                        EDD <= DateAdd(Today(), 7)
                                     )
                                 );
 
@@ -1028,12 +1124,7 @@ Screens:
                 Variant: Vertical
                 Properties:
                   Height: =658
-                  Items: |+
-                    =SortByColumns(
-                        Filter(colWard, !IsBlank(ID)),
-                        "field_1",
-                        SortOrder.Ascending
-                    )
+                  Items: =Filter(colWard, !IsBlank(ID))
                   TemplatePadding: =10
                   TemplateSize: =82
                   Width: =1333
@@ -1139,13 +1230,25 @@ Screens:
                                     /* ===============================
                                        PATIENT EXISTS -> NAVIGATE
                                        =============================== */
-                                    Set(varSelectedPatient, ThisItem);
-                                    Set(varSelectedList, "Ward_" & varWard & "_Shared");
-                                    Set(varWardCode, varWard);
+                                    If(
+                                        ThisItem.IsDirty,
+                                        Notify(
+                                            "Please Save (or Discard) your changes before opening this patient.",
+                                            NotificationType.Warning
+                                        ),
 
-                                    Navigate(
-                                        Patient_Detail_Screen,
-                                        ScreenTransition.Fade
+                                        // open the full SharePoint row for this patient
+                                        If(varWard = "4A", Set(varSelectedPatient, LookUp(Ward_4A_Shared, ID = ThisItem.ID)));
+                                        If(varWard = "4B", Set(varSelectedPatient, LookUp(Ward_4B_Shared, ID = ThisItem.ID)));
+                                        If(varWard = "5A", Set(varSelectedPatient, LookUp(Ward_5A_Shared, ID = ThisItem.ID)));
+                                        If(varWard = "6A", Set(varSelectedPatient, LookUp(Ward_6A_Shared, ID = ThisItem.ID)));
+                                        Set(varSelectedList, "Ward_" & varWard & "_Shared");
+                                        Set(varWardCode, varWard);
+
+                                        Navigate(
+                                            Patient_Detail_Screen,
+                                            ScreenTransition.Fade
+                                        )
                                     )
                                 )
                               Size: =17
@@ -2708,12 +2811,7 @@ Screens:
                             Variant: Vertical
                             Properties:
                               Height: =640
-                              Items: |
-                                =SortByColumns(
-                                    Filter(colWard, !IsBlank(ID)),
-                                    "field_1",
-                                    SortOrder.Ascending
-                                )
+                              Items: =Filter(colWard, !IsBlank(ID))
                               TemplateSize: =25
                               Width: =652
                             Children:
