@@ -215,3 +215,20 @@ Also:
 - Your own row: access dropdown is locked and there is no Remove button (you could lock yourself out).
 - Access-level pie code was copied twice; now one hidden button (`btnPie_Ad`).
 - Add Staff default access stays "HP3" as before.
+
+---
+
+## Physio Leave – `PT_Leave_New.pa.yaml`
+
+Replaces `PTLeaveCalendar`. Screen name is `PT_Leave_New`: delete the old screen, then rename this one to `PTLeaveCalendar` (Physiotherapy_New's Leave Calendar button opens `PTLeaveCalendar`).
+
+Bug fixed: **multi-day leave only showed on its first day**, and leave that started in an earlier week did not show at all. Every entry now shows on each day it covers.
+
+New / changed:
+- Mon–Fri day columns, one list per day (all-day and part-day together, all-day first). Today's column is highlighted.
+- Each day header says how many are away ("3 away" / "No leave").
+- Multi-day leave shows its full range ("All day · 29 Sep – 3 Oct"). Part-day shows the times.
+- Header: previous / next week, "This week", a date picker to jump to any week, and a reload button. On a weekend the screen opens on next week.
+- Tap an entry to open it in Outlook (as before).
+- `Exit()` (closes the whole app) removed from the "calendar not found" check. It now shows a message on screen.
+- Calendar lookup is done once when the screen opens, not on every week change.
