@@ -129,3 +129,16 @@ Replaces `Patient_Detail_Screen`. Screen name is `Patient_Detail_New` so it cann
 - Equipment layout: allocated-to-this-patient list + find-by-barcode (middle), item details with Allocate / Return (right).
 - The Outcome Measures, Exercise Setups and Therapy Summary buttons are removed (those screens no longer exist).
 - Hidden OT and Speech rows dropped (they were read-only and hidden).
+
+---
+
+# All Allocated Equipment – `All_Allocated_New.pa.yaml`
+
+Replaces `All_Allocated_Equipment`. Screen name is `All_Allocated_New`: delete the old screen, then rename this one to `All_Allocated_Equipment` (every `Navigate(All_Allocated_Equipment ...)` starts working again).
+
+- Filters card (left): Category, Wheelchair type, Width / Depth / Height, Code, Patient, URN, plus **Reset**. Filters combine.
+- The old "touched" flags and white cover-up labels are gone: a dropdown simply shows **All** until you pick something.
+- Results (right): one card per item with a category colour bar, category chip, barcode, patient / ward / physio, signed-out date and **days out**. Tap anywhere on the row to open the patient.
+- **Bug fixed:** the old screen found the patient in `colWard` / `colWard6A` by URN only. It now searches the four ward lists directly (Name + URN + DOB, or Name + URN if the equipment record has no DOB), so it works from any screen.
+- Not found on any ward: "Patient no longer found" popup with **Return equipment** / **Leave allocated**. The return logic is unchanged.
+- Control names end in `_Al` so they cannot clash with the old screen while both exist.
