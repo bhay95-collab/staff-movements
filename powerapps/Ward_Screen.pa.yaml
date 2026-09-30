@@ -892,141 +892,213 @@ Screens:
                               // Patch each dirty row into the list for this ward
                               ForAll(
                                   Filter(colWard, IsDirty) As w,
-                                  With(
-                                      {
-                                          rec:
-                                              {
-                                                  Patient: w.Patient,
-                                                  URN: w.URN,
-                                                  DOB: w.DOB,
-                                                  Diagnosis: w.Diagnosis,
-                                                  PT_Users: w.PT_Users,
-                                                  OT_Users: w.OT_Users,
-                                                  SP_Users: w.SP_Users,
-                                                  'Acuity Score': w.'Acuity Score',
-                                                  Bed: w.Bed,
-                                                  NDIS: w.NDIS,
-                                                  Maintenance: w.Maintenance,
-                                                  'Link Worker': w.'Link Worker',
-                                                  'Falls Risk': w.'Falls Risk',
-                                                  Contact: w.Contact,
-                                                  'Admission Date': w.'Admission Date',
-                                                  'AROC EDD': w.'AROC EDD',
-                                                  EDD: w.EDD,
-                                                  WeekStartDate: w.WeekStartDate,
-                                                  'Morning Handover': w.'Morning Handover',
-                                                  'CC Handover': w.'CC Handover',
-                                                  Monday: w.Monday,
-                                                  Tuesday: w.Tuesday,
-                                                  Wednesday: w.Wednesday,
-                                                  Thursday: w.Thursday,
-                                                  Friday: w.Friday
-                                              }
-                                      },
-                                      Switch(
-                                          varWard,
-                                          "4A",
-                                              With(
-                                                  {
-                                                      spRow:
-                                                          Patch(
-                                                              Ward_4A_Shared,
-                                                              If(IsBlank(w.ID), Defaults(Ward_4A_Shared), LookUp(Ward_4A_Shared, ID = w.ID)),
-                                                              rec
-                                                          )
-                                                  },
-                                                  If(
-                                                      !IsEmpty(Errors(Ward_4A_Shared, spRow)),
-                                                      Collect(
-                                                          colWardSaveErrors,
-                                                          {
-                                                              LocalID: w.ID,
-                                                              SavedID: spRow.ID,
-                                                              Patient: w.Patient,
-                                                              Message: First(Errors(Ward_4A_Shared, spRow)).Message
-                                                          }
-                                                      ),
-
-                                                      // Success -> store the real SharePoint ID (new rows) and clear IsDirty
-                                                      Patch(colWard, w, { ID: spRow.ID, IsDirty: false })
-                                                  )
-                                              ),
-                                          "4B",
-                                              With(
-                                                  {
-                                                      spRow:
-                                                          Patch(
-                                                              Ward_4B_Shared,
-                                                              If(IsBlank(w.ID), Defaults(Ward_4B_Shared), LookUp(Ward_4B_Shared, ID = w.ID)),
-                                                              rec
-                                                          )
-                                                  },
-                                                  If(
-                                                      !IsEmpty(Errors(Ward_4B_Shared, spRow)),
-                                                      Collect(
-                                                          colWardSaveErrors,
-                                                          {
-                                                              LocalID: w.ID,
-                                                              SavedID: spRow.ID,
-                                                              Patient: w.Patient,
-                                                              Message: First(Errors(Ward_4B_Shared, spRow)).Message
-                                                          }
-                                                      ),
-
-                                                      // Success -> store the real SharePoint ID (new rows) and clear IsDirty
-                                                      Patch(colWard, w, { ID: spRow.ID, IsDirty: false })
-                                                  )
-                                              ),
-                                          "5A",
-                                              With(
-                                                  {
-                                                      spRow:
-                                                          Patch(
-                                                              Ward_5A_Shared,
-                                                              If(IsBlank(w.ID), Defaults(Ward_5A_Shared), LookUp(Ward_5A_Shared, ID = w.ID)),
-                                                              rec
-                                                          )
-                                                  },
-                                                  If(
-                                                      !IsEmpty(Errors(Ward_5A_Shared, spRow)),
-                                                      Collect(
-                                                          colWardSaveErrors,
-                                                          {
-                                                              LocalID: w.ID,
-                                                              SavedID: spRow.ID,
-                                                              Patient: w.Patient,
-                                                              Message: First(Errors(Ward_5A_Shared, spRow)).Message
-                                                          }
-                                                      ),
-
-                                                      // Success -> store the real SharePoint ID (new rows) and clear IsDirty
-                                                      Patch(colWard, w, { ID: spRow.ID, IsDirty: false })
-                                                  )
-                                              ),
+                                  Switch(
+                                      varWard,
+                                      "4A",
                                           With(
                                               {
                                                   spRow:
                                                       Patch(
-                                                          Ward_6A_Shared,
-                                                          If(IsBlank(w.ID), Defaults(Ward_6A_Shared), LookUp(Ward_6A_Shared, ID = w.ID)),
-                                                          rec
+                                                          Ward_4A_Shared,
+                                                          If(IsBlank(w.ID), Defaults(Ward_4A_Shared), LookUp(Ward_4A_Shared, ID = w.ID)),
+                                                          {
+                                                              Patient: w.Patient,
+                                                              URN: w.URN,
+                                                              DOB: w.DOB,
+                                                              Diagnosis: w.Diagnosis,
+                                                              PT_Users: w.PT_Users,
+                                                              OT_Users: w.OT_Users,
+                                                              SP_Users: w.SP_Users,
+                                                              'Acuity Score': w.'Acuity Score',
+                                                              Bed: w.Bed,
+                                                              NDIS: w.NDIS,
+                                                              Maintenance: w.Maintenance,
+                                                              'Link Worker': w.'Link Worker',
+                                                              'Falls Risk': w.'Falls Risk',
+                                                              Contact: w.Contact,
+                                                              'Admission Date': w.'Admission Date',
+                                                              'AROC EDD': w.'AROC EDD',
+                                                              EDD: w.EDD,
+                                                              WeekStartDate: w.WeekStartDate,
+                                                              'Morning Handover': w.'Morning Handover',
+                                                              'CC Handover': w.'CC Handover',
+                                                              Monday: w.Monday,
+                                                              Tuesday: w.Tuesday,
+                                                              Wednesday: w.Wednesday,
+                                                              Thursday: w.Thursday,
+                                                              Friday: w.Friday
+                                                          }
                                                       )
                                               },
                                               If(
-                                                  !IsEmpty(Errors(Ward_6A_Shared, spRow)),
+                                                  !IsEmpty(Errors(Ward_4A_Shared, spRow)),
                                                   Collect(
                                                       colWardSaveErrors,
                                                       {
                                                           LocalID: w.ID,
                                                           SavedID: spRow.ID,
                                                           Patient: w.Patient,
-                                                          Message: First(Errors(Ward_6A_Shared, spRow)).Message
+                                                          Message: First(Errors(Ward_4A_Shared, spRow)).Message
                                                       }
                                                   ),
 
                                                   // Success -> store the real SharePoint ID (new rows) and clear IsDirty
                                                   Patch(colWard, w, { ID: spRow.ID, IsDirty: false })
                                               )
+                                          ),
+                                      "4B",
+                                          With(
+                                              {
+                                                  spRow:
+                                                      Patch(
+                                                          Ward_4B_Shared,
+                                                          If(IsBlank(w.ID), Defaults(Ward_4B_Shared), LookUp(Ward_4B_Shared, ID = w.ID)),
+                                                          {
+                                                              Patient: w.Patient,
+                                                              URN: w.URN,
+                                                              DOB: w.DOB,
+                                                              Diagnosis: w.Diagnosis,
+                                                              PT_Users: w.PT_Users,
+                                                              OT_Users: w.OT_Users,
+                                                              SP_Users: w.SP_Users,
+                                                              'Acuity Score': w.'Acuity Score',
+                                                              Bed: w.Bed,
+                                                              NDIS: w.NDIS,
+                                                              Maintenance: w.Maintenance,
+                                                              'Link Worker': w.'Link Worker',
+                                                              'Falls Risk': w.'Falls Risk',
+                                                              Contact: w.Contact,
+                                                              'Admission Date': w.'Admission Date',
+                                                              'AROC EDD': w.'AROC EDD',
+                                                              EDD: w.EDD,
+                                                              WeekStartDate: w.WeekStartDate,
+                                                              'Morning Handover': w.'Morning Handover',
+                                                              'CC Handover': w.'CC Handover',
+                                                              Monday: w.Monday,
+                                                              Tuesday: w.Tuesday,
+                                                              Wednesday: w.Wednesday,
+                                                              Thursday: w.Thursday,
+                                                              Friday: w.Friday
+                                                          }
+                                                      )
+                                              },
+                                              If(
+                                                  !IsEmpty(Errors(Ward_4B_Shared, spRow)),
+                                                  Collect(
+                                                      colWardSaveErrors,
+                                                      {
+                                                          LocalID: w.ID,
+                                                          SavedID: spRow.ID,
+                                                          Patient: w.Patient,
+                                                          Message: First(Errors(Ward_4B_Shared, spRow)).Message
+                                                      }
+                                                  ),
+
+                                                  // Success -> store the real SharePoint ID (new rows) and clear IsDirty
+                                                  Patch(colWard, w, { ID: spRow.ID, IsDirty: false })
+                                              )
+                                          ),
+                                      "5A",
+                                          With(
+                                              {
+                                                  spRow:
+                                                      Patch(
+                                                          Ward_5A_Shared,
+                                                          If(IsBlank(w.ID), Defaults(Ward_5A_Shared), LookUp(Ward_5A_Shared, ID = w.ID)),
+                                                          {
+                                                              Patient: w.Patient,
+                                                              URN: w.URN,
+                                                              DOB: w.DOB,
+                                                              Diagnosis: w.Diagnosis,
+                                                              PT_Users: w.PT_Users,
+                                                              OT_Users: w.OT_Users,
+                                                              SP_Users: w.SP_Users,
+                                                              'Acuity Score': w.'Acuity Score',
+                                                              Bed: w.Bed,
+                                                              NDIS: w.NDIS,
+                                                              Maintenance: w.Maintenance,
+                                                              'Link Worker': w.'Link Worker',
+                                                              'Falls Risk': w.'Falls Risk',
+                                                              Contact: w.Contact,
+                                                              'Admission Date': w.'Admission Date',
+                                                              'AROC EDD': w.'AROC EDD',
+                                                              EDD: w.EDD,
+                                                              WeekStartDate: w.WeekStartDate,
+                                                              'Morning Handover': w.'Morning Handover',
+                                                              'CC Handover': w.'CC Handover',
+                                                              Monday: w.Monday,
+                                                              Tuesday: w.Tuesday,
+                                                              Wednesday: w.Wednesday,
+                                                              Thursday: w.Thursday,
+                                                              Friday: w.Friday
+                                                          }
+                                                      )
+                                              },
+                                              If(
+                                                  !IsEmpty(Errors(Ward_5A_Shared, spRow)),
+                                                  Collect(
+                                                      colWardSaveErrors,
+                                                      {
+                                                          LocalID: w.ID,
+                                                          SavedID: spRow.ID,
+                                                          Patient: w.Patient,
+                                                          Message: First(Errors(Ward_5A_Shared, spRow)).Message
+                                                      }
+                                                  ),
+
+                                                  // Success -> store the real SharePoint ID (new rows) and clear IsDirty
+                                                  Patch(colWard, w, { ID: spRow.ID, IsDirty: false })
+                                              )
+                                          ),
+                                      With(
+                                          {
+                                              spRow:
+                                                  Patch(
+                                                      Ward_6A_Shared,
+                                                      If(IsBlank(w.ID), Defaults(Ward_6A_Shared), LookUp(Ward_6A_Shared, ID = w.ID)),
+                                                      {
+                                                          Patient: w.Patient,
+                                                          URN: w.URN,
+                                                          DOB: w.DOB,
+                                                          Diagnosis: w.Diagnosis,
+                                                          PT_Users: w.PT_Users,
+                                                          OT_Users: w.OT_Users,
+                                                          SP_Users: w.SP_Users,
+                                                          'Acuity Score': w.'Acuity Score',
+                                                          Bed: w.Bed,
+                                                          NDIS: w.NDIS,
+                                                          Maintenance: w.Maintenance,
+                                                          'Link Worker': w.'Link Worker',
+                                                          'Falls Risk': w.'Falls Risk',
+                                                          Contact: w.Contact,
+                                                          'Admission Date': w.'Admission Date',
+                                                          'AROC EDD': w.'AROC EDD',
+                                                          EDD: w.EDD,
+                                                          WeekStartDate: w.WeekStartDate,
+                                                          'Morning Handover': w.'Morning Handover',
+                                                          'CC Handover': w.'CC Handover',
+                                                          Monday: w.Monday,
+                                                          Tuesday: w.Tuesday,
+                                                          Wednesday: w.Wednesday,
+                                                          Thursday: w.Thursday,
+                                                          Friday: w.Friday
+                                                      }
+                                                  )
+                                          },
+                                          If(
+                                              !IsEmpty(Errors(Ward_6A_Shared, spRow)),
+                                              Collect(
+                                                  colWardSaveErrors,
+                                                  {
+                                                      LocalID: w.ID,
+                                                      SavedID: spRow.ID,
+                                                      Patient: w.Patient,
+                                                      Message: First(Errors(Ward_6A_Shared, spRow)).Message
+                                                  }
+                                              ),
+
+                                              // Success -> store the real SharePoint ID (new rows) and clear IsDirty
+                                              Patch(colWard, w, { ID: spRow.ID, IsDirty: false })
                                           )
                                       )
                                   )
@@ -1268,9 +1340,9 @@ Screens:
                             Properties:
                               Height: =30
                               Text: ="AROC EDD:"
-                              Width: =102
-                              X: =906
-                              Y: =52
+                              Width: =74
+                              X: =856
+                              Y: =50
                               Font: =Font.'Segoe UI'
                               Color: =RGBA(58, 80, 104, 1)
                               Size: =12
@@ -1288,9 +1360,9 @@ Screens:
                               RadiusBottomRight: =10
                               RadiusTopLeft: =10
                               RadiusTopRight: =10
-                              Width: =115
-                              X: =1003
-                              Y: =52
+                              Width: =118
+                              X: =934
+                              Y: =50
                               Visible: =wdShowAROC && !IsBlank(Trim(ThisItem.Patient))
                             Children:
                               - DatePicker_AROC:
@@ -1317,8 +1389,9 @@ Screens:
                                           }
                                       );
                                     OnSelect: =
-                                    Width: =150
+                                    Width: =Parent.Width
                                     Font: =Font.'Segoe UI'
+                                    Size: =12
                         - Checkbox_NDIS:
                             Control: Classic/CheckBox@2.1.0
                             Properties:
@@ -1347,13 +1420,14 @@ Screens:
                                     }
                                 )
                               Text: ="NDIS"
-                              X: =1051
-                              Y: =5
+                              X: =1068
+                              Y: =8
                               CheckboxBackgroundFill: =RGBA(255, 255, 255, 1)
                               Font: =Font.'Segoe UI'
                               Color: =RGBA(14, 28, 42, 1)
                               Size: =13
                               Visible: =wdShowNDIS && !IsBlank(Trim(ThisItem.Patient))
+                              Width: =70
                         - Checkbox_Maintenance:
                             Control: Classic/CheckBox@2.1.0
                             Properties:
@@ -1383,13 +1457,14 @@ Screens:
                                     }
                                 );
                               Text: ="Maintenance"
-                              X: =1138
-                              Y: =5
+                              X: =1142
+                              Y: =8
                               CheckboxBackgroundFill: =RGBA(255, 255, 255, 1)
                               Font: =Font.'Segoe UI'
                               Color: =RGBA(14, 28, 42, 1)
                               Size: =13
                               Visible: =!IsBlank(Trim(ThisItem.Patient))
+                              Width: =135
                         - Container78:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -1401,9 +1476,9 @@ Screens:
                               RadiusBottomRight: =15
                               RadiusTopLeft: =15
                               RadiusTopRight: =15
-                              Width: =137
-                              X: =1138
-                              Y: =52
+                              Width: =131
+                              X: =1142
+                              Y: =50
                               BorderStyle: =BorderStyle.Solid
                               BorderColor: =RGBA(180, 26, 26, 0.35)
                               BorderThickness: =1
@@ -1424,7 +1499,7 @@ Screens:
                                       =Set(wdShowClearWarning, true);
                                       Set(wdPendingClearItem, ThisItem)
                                     Text: ="D/C"
-                                    Width: =137
+                                    Width: =Parent.Width
                         - Container79:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -1437,9 +1512,9 @@ Screens:
                               RadiusBottomRight: =10
                               RadiusTopLeft: =10
                               RadiusTopRight: =10
-                              Width: =115
-                              X: =361
-                              Y: =7
+                              Width: =116
+                              X: =344
+                              Y: =8
                               Visible: =!IsBlank(Trim(ThisItem.Patient))
                             Children:
                               - Dropdown_Diagnosis:
@@ -1500,11 +1575,12 @@ Screens:
                                           }
                                       );
                                     OnSelect: =
-                                    Width: =150
+                                    Width: =Parent.Width
                                     Font: =Font.'Segoe UI'
                                     Color: =RGBA(14, 28, 42, 1)
                                     ChevronBackground: =RGBA(26, 90, 153, 1)
                                     ChevronHoverBackground: =RGBA(18, 64, 112, 1)
+                                    Size: =12
                         - Container83:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -1517,9 +1593,9 @@ Screens:
                               RadiusBottomRight: =10
                               RadiusTopLeft: =10
                               RadiusTopRight: =10
-                              Width: =115
-                              X: =588
-                              Y: =52
+                              Width: =118
+                              X: =552
+                              Y: =50
                               Visible: =!IsBlank(Trim(ThisItem.Patient))
                             Children:
                               - DatePicker_Admission:
@@ -1538,9 +1614,10 @@ Screens:
                                           }
                                       );
                                     OnSelect: =
-                                    Width: =150
+                                    Width: =Parent.Width
                                     Font: =Font.'Segoe UI'
                                     Color: =RGBA(14, 28, 42, 1)
+                                    Size: =12
                         - Container97:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -1553,9 +1630,9 @@ Screens:
                               RadiusBottomRight: =10
                               RadiusTopLeft: =10
                               RadiusTopRight: =10
-                              Width: =115
-                              X: =772
-                              Y: =52
+                              Width: =118
+                              X: =722
+                              Y: =50
                               Visible: =!IsBlank(Trim(ThisItem.Patient))
                             Children:
                               - DatePicker1:
@@ -1581,9 +1658,10 @@ Screens:
                                               IsDirty: true
                                           }
                                       );
-                                    Width: =150
+                                    Width: =Parent.Width
                                     Font: =Font.'Segoe UI'
                                     Color: =RGBA(14, 28, 42, 1)
+                                    Size: =12
                         - Container10:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -1594,9 +1672,9 @@ Screens:
                               RadiusBottomRight: =10
                               RadiusTopLeft: =10
                               RadiusTopRight: =10
-                              Width: =200
-                              X: =545
-                              Y: =7
+                              Width: =210
+                              X: =552
+                              Y: =8
                               BorderStyle: =BorderStyle.Solid
                               BorderColor: =RGBA(14, 42, 70, 0.12)
                               BorderThickness: =1
@@ -1662,7 +1740,7 @@ Screens:
                                       );
                                     OnSelect: =
                                     SearchFields: =["DisplayNameFlat"]
-                                    Width: =200
+                                    Width: =Parent.Width
                                     Font: =Font.'Segoe UI'
                                     Color: =RGBA(14, 28, 42, 1)
                         - Container10_1:
@@ -1832,9 +1910,9 @@ Screens:
                             Properties:
                               Height: =30
                               Text: ="Admission:"
-                              Width: =96
-                              X: =497
-                              Y: =52
+                              Width: =66
+                              X: =480
+                              Y: =50
                               Font: =Font.'Segoe UI'
                               Color: =RGBA(58, 80, 104, 1)
                               Size: =12
@@ -1845,9 +1923,9 @@ Screens:
                             Properties:
                               Height: =30
                               Text: ="AFRM:"
-                              Width: =96
-                              X: =270
-                              Y: =7
+                              Width: =68
+                              X: =272
+                              Y: =8
                               Font: =Font.'Segoe UI'
                               Color: =RGBA(58, 80, 104, 1)
                               Size: =12
@@ -1858,9 +1936,9 @@ Screens:
                             Properties:
                               Height: =30
                               Text: ="EDD:"
-                              Width: =56
-                              X: =723
-                              Y: =52
+                              Width: =34
+                              X: =686
+                              Y: =50
                               Font: =Font.'Segoe UI'
                               Color: =RGBA(58, 80, 104, 1)
                               Size: =12
@@ -1871,9 +1949,9 @@ Screens:
                             Properties:
                               Height: =30
                               Text: ="PT:"
-                              Width: =56
-                              X: =497
-                              Y: =7
+                              Width: =66
+                              X: =480
+                              Y: =8
                               Font: =Font.'Segoe UI'
                               Color: =RGBA(58, 80, 104, 1)
                               Size: =12
@@ -1915,9 +1993,9 @@ Screens:
                               RadiusBottomRight: =10
                               RadiusTopLeft: =10
                               RadiusTopRight: =10
-                              Width: =115
-                              X: =361
-                              Y: =52
+                              Width: =116
+                              X: =344
+                              Y: =50
                               BorderStyle: =BorderStyle.Solid
                               BorderColor: =RGBA(14, 42, 70, 0.12)
                               BorderThickness: =1
@@ -1944,7 +2022,7 @@ Screens:
                                     RadiusBottomRight: =10
                                     RadiusTopLeft: =10
                                     RadiusTopRight: =10
-                                    Width: =115
+                                    Width: =Parent.Width
                                     Font: =Font.'Segoe UI'
                                     Color: =RGBA(14, 28, 42, 1)
                                     FontWeight: =FontWeight.Bold
@@ -1953,9 +2031,9 @@ Screens:
                             Properties:
                               Height: =30
                               Text: ="PT Acuity:"
-                              Width: =96
-                              X: =270
-                              Y: =52
+                              Width: =68
+                              X: =272
+                              Y: =50
                               Font: =Font.'Segoe UI'
                               Color: =RGBA(58, 80, 104, 1)
                               Size: =12
@@ -1990,9 +2068,9 @@ Screens:
                                     }
                                 );
                               Text: ="Falls Risk"
-                              Width: =111
-                              X: =749
-                              Y: =5
+                              Width: =115
+                              X: =776
+                              Y: =8
                               CheckboxBackgroundFill: =RGBA(255, 255, 255, 1)
                               Font: =Font.'Segoe UI'
                               Color: =RGBA(14, 28, 42, 1)
@@ -2027,9 +2105,9 @@ Screens:
                                     }
                                 );
                               Text: ="Contact Precautions"
-                              Width: =190
-                              X: =860
-                              Y: =5
+                              Width: =170
+                              X: =895
+                              Y: =8
                               CheckboxBackgroundFill: =RGBA(255, 255, 255, 1)
                               Font: =Font.'Segoe UI'
                               Color: =RGBA(14, 28, 42, 1)
