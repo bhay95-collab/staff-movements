@@ -1,6 +1,6 @@
 # Power Apps – single Ward screen
 
-`Ward_Screen.pa.yaml` replaces the four screens `Ward 4A`, `Ward 4B`, `Ward 5A`, `Ward 6A`.
+`Ward_All.pa.yaml` replaces the four screens `Ward 4A`, `Ward 4B`, `Ward 5A`, `Ward 6A`.
 The ward is chosen on Home. Design matches `index.html` (Staff Movement Tracker).
 
 ## 1. Home_PT – change 4 buttons
@@ -8,14 +8,14 @@ The ward is chosen on Home. Design matches `index.html` (Staff Movement Tracker)
 Each "Patient List" button (`4A Acuity_1`, `4B Acuity_1`, `5A Acuity_1`, `6A Acuity_1`) → OnSelect:
 
 ```
-Set(varWard, "4A"); Navigate(Ward_Screen, ScreenTransition.Fade)
+Set(varWard, "4A"); Navigate(Ward_All, ScreenTransition.Fade)
 ```
 Use `"4B"`, `"5A"`, `"6A"` on the others. Nothing else on Home changes.
 
 ## 2. Other screens that point at the old ward screens
 
 Search the app (Ctrl+F in Studio) for `'Ward 4A'`, `'Ward 4B'`, `'Ward 5A'`, `'Ward 6A'`, `colWard4A`, `colWard4B`, `colWard5A`, `colWard6A`.
-- Handover screens (`4AHandover` ...): a "back to ward" button must become `Navigate(Ward_Screen, ScreenTransition.Fade)`. `varWard` is still set, so the right ward opens.
+- Handover screens (`4AHandover` ...): a "back to ward" button must become `Navigate(Ward_All, ScreenTransition.Fade)`. `varWard` is still set, so the right ward opens.
 - Anything reading `colWard4A` etc. must read `colWard` (holds the ward currently open).
 - Do this BEFORE deleting the old screens.
 
