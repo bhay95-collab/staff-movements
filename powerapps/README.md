@@ -197,3 +197,21 @@ Replaces `Physio_Data_Screen`. Screen name is `Physio_Data_New`: delete the old 
 - Staffing maths now lives in one hidden button (`btnCalc_Dd`). The old file had it twice (once per ward tap, once for AFRM) and the two copies differed: the ward version left out **Clinical Psych** and did not ignore spaces/case when matching diagnoses. The single copy includes Clinical Psych.
 - Card numbers are worked out once when the screen opens (`colDdWardStats`), not on every redraw.
 - Needs (built elsewhere in the app): `colDiagnosisMap`, `colStaffRatios`, `colWardSummaryConfig`, `col4A_PieData` … `col6A_PieData`.
+
+---
+
+## Manage Staff – `Directory_Admin_New.pa.yaml`
+
+Replaces `scrDirectoryAdmin`. Screen name is `Directory_Admin_New`: delete the old screen, then rename this one to `scrDirectoryAdmin` (Physiotherapy_New's Manage Staff button opens `scrDirectoryAdmin`).
+
+Bugs fixed from the old screen:
+- **Changing someone's access never saved.** The old dropdown only changed the app's temporary copy, then said "Access updated". It now writes to `ClinicianDirectory` and shows an error if SharePoint refuses.
+- `Exit()` in the access checks and in Remove closes the whole app. Replaced with `Back()` and proper If / else.
+- Remove was a one-tap hard delete. It now asks first.
+- Add / Remove / access change now check SharePoint saved before saying "success".
+
+Also:
+- Compact rows (old rows were 175 tall, only 3 fitted). Search box on the staff list.
+- Your own row: access dropdown is locked and there is no Remove button (you could lock yourself out).
+- Access-level pie code was copied twice; now one hidden button (`btnPie_Ad`).
+- Add Staff default access stays "HP3" as before.

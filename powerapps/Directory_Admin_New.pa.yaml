@@ -1,0 +1,783 @@
+Screens:
+  Directory_Admin_New:
+    Properties:
+      Fill: =RGBA(235, 242, 248, 1)
+      ImagePosition: =ImagePosition.Fill
+      OnVisible: |-
+        =Set(
+            varMeDirectory,
+            LookUp(ClinicianDirectory, Lower(Person.Email) = Lower(User().Email))
+        );
+
+        If(
+            IsBlank(varMeDirectory),
+            Notify("Access denied: you are not in the Clinician Directory.", NotificationType.Error);
+            Back(),
+
+            !(varMeDirectory.Access.Value = "Director" || varMeDirectory.Access.Value = "Team Leader"),
+            Notify("Access denied: Admin access required.", NotificationType.Error);
+            Back(),
+
+            Set(varAdminDiscipline, varMeDirectory.Discipline.Value);
+            Set(varAdminAccess, varMeDirectory.Access.Value);
+            Set(adShowRemove, false);
+
+            // Cache staff for my discipline only
+            ClearCollect(
+                colDirectory,
+                AddColumns(
+                    Filter(ClinicianDirectory, Discipline.Value = varAdminDiscipline),
+                    PersonName, Coalesce(Person.DisplayName, ""),
+                    PersonEmail, Coalesce(Person.Email, ""),
+                    AccessText, Coalesce(Access.Value, "")
+                )
+            );
+
+            Select(btnPie_Ad)
+        )
+    Children:
+      - btnPie_Ad:
+          Control: Button@0.0.45
+          Properties:
+            Height: =10
+            Width: =10
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =With(
+                  {
+                      totalStaff:
+                          CountRows(Distinct(Filter(colDirectory, !IsBlank(Access.Value)), Person.Email))
+                  },
+
+                  Clear(colAccessSummary);
+
+                  ForAll(
+                      Distinct(Filter(colDirectory, !IsBlank(Access.Value)), Access.Value) As a,
+
+                      With(
+                          {
+                              staffCount:
+                                  CountRows(Distinct(Filter(colDirectory, Access.Value = a.Value), Person.Email))
+                          },
+
+                          Collect(
+                              colAccessSummary,
+                              {
+                                  Label: a.Value,
+                                  Count: staffCount,
+                                  Percentage: If(totalStaff = 0, 0, Round(staffCount * 100 / totalStaff, 0)),
+                                  DisplayLabel:
+                                      a.Value & " (" & staffCount & " | " &
+                                      If(totalStaff = 0, 0, Round(staffCount * 100 / totalStaff, 0)) & "%)"
+                              }
+                          )
+                      )
+                  )
+              )
+      - Ad_Title:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Regular
+            Fill: =RGBA(7, 95, 115, 1)
+            Height: =70
+            Width: =1333
+            X: =18
+            Y: =12
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+          Children:
+            - imgHeaderGradient_Ad:
+                Control: Image@2.2.3
+                Properties:
+                  Height: =Parent.Height
+                  Image: ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' width='1333' height='70' viewBox='0 0 1333 70' preserveAspectRatio='none'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001D46'/><stop offset='0.48' stop-color='#075F73'/><stop offset='1' stop-color='#00838A'/></linearGradient><linearGradient id='b' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001B36' stop-opacity='0.46'/><stop offset='0.45' stop-color='#002036' stop-opacity='0.18'/><stop offset='1' stop-color='#002036' stop-opacity='0.06'/></linearGradient></defs><rect width='1333' height='70' rx='18' fill='url(#a)'/><rect width='1333' height='70' rx='18' fill='url(#b)'/></svg>")
+                  ImagePosition: =ImagePosition.Fill
+                  Width: =Parent.Width
+            - lblTitle_AdHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  Height: =36
+                  Size: =28
+                  Text: ="Manage Staff"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Weight: ='TextCanvas.Weight'.Bold
+                  Width: =500
+                  X: =76
+                  Y: =8
+            - lblSub_AdHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 0.88)
+                  Height: =20
+                  Size: =12
+                  Text: =varAdminDiscipline & " directory  ·  " & CountRows(colDirectory) & " staff"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =600
+                  X: =76
+                  Y: =42
+            - btnBack_Ad:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontSize: =50
+                  Height: =70
+                  Icon: ="ChevronLeft"
+                  Text: =""
+                  X: =1
+                  OnSelect: =Back(ScreenTransition.Fade)
+      - Ad_CardStaff:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+            DropShadow: =DropShadow.Light
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =658
+            Width: =655
+            X: =18
+            Y: =95
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+          Children:
+            - lblStaff_Ad:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =16
+                  FontWeight: =FontWeight.Bold
+                  Height: =28
+                  Text: =varAdminDiscipline & " staff  ·  " & CountRows(colDirectory)
+                  Width: =340
+                  X: =20
+                  Y: =14
+            - boxSearch_Ad:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40
+                  Width: =275
+                  X: =360
+                  Y: =10
+                  RadiusBottomLeft: =10
+                  RadiusBottomRight: =10
+                  RadiusTopLeft: =10
+                  RadiusTopRight: =10
+                Children:
+                  - txtSearch_Ad:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        BorderStyle: =BorderStyle.None
+                        Color: =RGBA(14, 28, 42, 1)
+                        Default: =""
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        HintText: ="Search staff"
+                        Size: =14
+                        Width: =275
+            - Gallery_Staff_Ad:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =590
+                  Items: =SortByColumns(Filter(colDirectory, IsBlank(txtSearch_Ad.Text) || txtSearch_Ad.Text in PersonName), "PersonName", SortOrder.Ascending)
+                  TemplatePadding: =0
+                  TemplateSize: =76
+                  Width: =655
+                  Y: =60
+                Children:
+                  - Ad_StaffRow:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =68
+                        Width: =Parent.TemplateWidth - 20
+                        X: =10
+                        Y: =4
+                        RadiusBottomLeft: =14
+                        RadiusBottomRight: =14
+                        RadiusTopLeft: =14
+                        RadiusTopRight: =14
+                      Children:
+                        - lblStaffName_Ad:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(14, 28, 42, 1)
+                              Size: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =24
+                              Text: =ThisItem.PersonName
+                              Width: =Parent.Width - 330
+                              X: =18
+                              Y: =10
+                        - lblStaffMail_Ad:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(140, 155, 174, 1)
+                              Size: =12
+                              Height: =20
+                              Text: =ThisItem.PersonEmail
+                              Width: =Parent.Width - 330
+                              X: =18
+                              Y: =36
+                        - boxRowAccess_Ad:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              BorderColor: =RGBA(14, 42, 70, 0.22)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              Fill: =RGBA(255, 255, 255, 1)
+                              Height: =40
+                              Width: =170
+                              X: =Parent.Width - 296
+                              Y: =14
+                              RadiusBottomLeft: =10
+                              RadiusBottomRight: =10
+                              RadiusTopLeft: =10
+                              RadiusTopRight: =10
+                            Children:
+                              - ddRowAccess_Ad:
+                                  Control: Classic/DropDown@2.3.1
+                                  Properties:
+                                    BorderStyle: =BorderStyle.None
+                                    ChevronBackground: =RGBA(26, 90, 153, 1)
+                                    ChevronFill: =RGBA(255, 255, 255, 1)
+                                    Color: =RGBA(14, 28, 42, 1)
+                                    Default: =ThisItem.Access.Value
+                                    DisplayMode: =If(Lower(ThisItem.PersonEmail) = Lower(User().Email), DisplayMode.Disabled, DisplayMode.Edit)
+                                    Font: =Font.'Segoe UI'
+                                    Height: =40
+                                    Items: =Choices(ClinicianDirectory.Access).Value
+                                    Items.Value: =Value
+                                    OnChange: |-
+                                      =With(
+                                          { sel: ddRowAccess_Ad.Selected.Value },
+                                          If(
+                                              sel <> ThisItem.AccessText,
+                                              Patch(
+                                                  ClinicianDirectory,
+                                                  LookUp(ClinicianDirectory, ID = ThisItem.ID),
+                                                  { Access: LookUp(Choices(ClinicianDirectory.Access), Value = sel) }
+                                              );
+                                              If(
+                                                  IsEmpty(Errors(ClinicianDirectory)),
+                                                  UpdateIf(
+                                                      colDirectory,
+                                                      ID = ThisItem.ID,
+                                                      {
+                                                          Access: LookUp(Choices(ClinicianDirectory.Access), Value = sel),
+                                                          AccessText: sel
+                                                      }
+                                                  );
+                                                  Select(btnPie_Ad);
+                                                  Notify("Access updated.", NotificationType.Success),
+                                                  Reset(ddRowAccess_Ad);
+                                                  Notify("Could not update access. Please try again.", NotificationType.Error)
+                                              )
+                                          )
+                                      )
+                                    Size: =14
+                                    Width: =170
+                        - lblYou_Ad:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(140, 155, 174, 1)
+                              Size: =12
+                              FontWeight: =FontWeight.Bold
+                              Align: =Align.Center
+                              Height: =36
+                              Text: ="You"
+                              VerticalAlign: =VerticalAlign.Middle
+                              Visible: =Lower(ThisItem.PersonEmail) = Lower(User().Email)
+                              Width: =90
+                              X: =Parent.Width - 106
+                              Y: =16
+                        - conRemove_Ad:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Visible: =!(Lower(ThisItem.PersonEmail) = Lower(User().Email))
+                              BorderColor: =RGBA(180, 26, 26, 1)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              Fill: =RGBA(255, 255, 255, 1)
+                              Height: =36
+                              Width: =90
+                              X: =Parent.Width - 106
+                              Y: =16
+                              RadiusBottomLeft: =18
+                              RadiusBottomRight: =18
+                              RadiusTopLeft: =18
+                              RadiusTopRight: =18
+                            Children:
+                              - btnRemove_Ad:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =18
+                                    Font: =Font.'Segoe UI'
+                                    FontColor: =RGBA(180, 26, 26, 1)
+                                    FontSize: =13
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =36
+                                    OnSelect: |-
+                                      =Set(adRemove, ThisItem);
+                                      Set(adShowRemove, true)
+                                    Text: ="Remove"
+                                    Width: =90
+            - lblStaffEmpty_Ad:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =14
+                  Align: =Align.Center
+                  Height: =30
+                  Text: ="No staff found."
+                  Visible: =IsEmpty(Gallery_Staff_Ad.AllItems)
+                  Width: =655
+                  X: =0
+                  Y: =120
+      - Ad_CardAdd:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+            DropShadow: =DropShadow.Light
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =200
+            Width: =658
+            X: =693
+            Y: =95
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+          Children:
+            - lblAdd_Ad:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =16
+                  FontWeight: =FontWeight.Bold
+                  Height: =28
+                  Text: ="Add staff to " & varAdminDiscipline
+                  Width: =500
+                  X: =20
+                  Y: =14
+            - capUser_Ad:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Text: ="STAFF MEMBER"
+                  Width: =300
+                  X: =20
+                  Y: =50
+            - boxUser_Ad:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40
+                  Width: =618
+                  X: =20
+                  Y: =68
+                  RadiusBottomLeft: =10
+                  RadiusBottomRight: =10
+                  RadiusTopLeft: =10
+                  RadiusTopRight: =10
+                Children:
+                  - cmbAddUser_Ad:
+                      Control: Classic/ComboBox@2.4.0
+                      Properties:
+                        BorderStyle: =BorderStyle.None
+                        ChevronBackground: =RGBA(26, 90, 153, 1)
+                        ChevronHoverBackground: =RGBA(18, 64, 112, 1)
+                        DisplayFields: =["DisplayText"]
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        HoverBorderColor: =RGBA(26, 90, 153, 1)
+                        InputTextPlaceholder: ="Search for staff member"
+                        Items: |-
+                          =AddColumns(
+                              Office365Users.SearchUserV2({ searchTerm: cmbAddUser_Ad.SearchText }).value,
+                              DisplayText,
+                              DisplayName & " • " & Coalesce(JobTitle, "") & " • " & Coalesce(Mail, UserPrincipalName, "")
+                          )
+                        SearchFields: =["DisplayText","DisplayName","Mail","JobTitle"]
+                        SelectMultiple: =false
+                        SelectionFill: =RGBA(26, 90, 153, 1)
+                        Size: =14
+                        Width: =618
+            - capAcc_Ad:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =11
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Text: ="ACCESS LEVEL"
+                  Width: =300
+                  X: =20
+                  Y: =118
+            - boxAcc_Ad:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40
+                  Width: =300
+                  X: =20
+                  Y: =136
+                  RadiusBottomLeft: =10
+                  RadiusBottomRight: =10
+                  RadiusTopLeft: =10
+                  RadiusTopRight: =10
+                Children:
+                  - ddAddAccess_Ad:
+                      Control: Classic/DropDown@2.3.1
+                      Properties:
+                        BorderStyle: =BorderStyle.None
+                        ChevronBackground: =RGBA(26, 90, 153, 1)
+                        ChevronFill: =RGBA(255, 255, 255, 1)
+                        Color: =RGBA(14, 28, 42, 1)
+                        Default: ="HP3"
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        Items: =Choices(ClinicianDirectory.Access).Value
+                        Items.Value: =Value
+                        SelectionFill: =RGBA(26, 90, 153, 1)
+                        Size: =14
+                        Width: =300
+            - conAddSave_Ad:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(26, 90, 153, 1)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  Fill: =RGBA(26, 90, 153, 1)
+                  Height: =40
+                  Width: =298
+                  X: =340
+                  Y: =136
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                Children:
+                  - btnAddSave_Ad:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(255, 255, 255, 1)
+                        FontSize: =13
+                        FontWeight: =FontWeight.Bold
+                        Height: =40
+                        OnSelect: |-
+                          =If(
+                              IsBlank(cmbAddUser_Ad.Selected) || IsBlank(ddAddAccess_Ad.Selected.Value),
+                              Notify("Select a user and access level.", NotificationType.Warning),
+
+                              With(
+                                  {
+                                      newEmail: Lower(Trim(Coalesce(cmbAddUser_Ad.Selected.Mail, cmbAddUser_Ad.Selected.UserPrincipalName, ""))),
+                                      newName: Coalesce(cmbAddUser_Ad.Selected.DisplayName, ""),
+                                      newAccessText: ddAddAccess_Ad.Selected.Value
+                                  },
+
+                                  If(
+                                      IsBlank(newEmail),
+                                      Notify("A valid email address could not be found for this user.", NotificationType.Error),
+
+                                      With(
+                                          {
+                                              already: LookUp(
+                                                  ClinicianDirectory,
+                                                  Lower(Trim(Coalesce(Person.Email, ""))) = newEmail &&
+                                                  Discipline.Value = varAdminDiscipline
+                                              )
+                                          },
+
+                                          If(
+                                              !IsBlank(already),
+                                              Notify(Coalesce(newName, "That user") & " is already listed in " & varAdminDiscipline & ".", NotificationType.Warning),
+
+                                              Set(
+                                                  varNewRow,
+                                                  Patch(
+                                                      ClinicianDirectory,
+                                                      Defaults(ClinicianDirectory),
+                                                      {
+                                                          Person: {
+                                                              '@odata.type': "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                                                              Claims: "i:0#.f|membership|" & newEmail,
+                                                              DisplayName: newName,
+                                                              Email: newEmail,
+                                                              Department: "",
+                                                              JobTitle: "",
+                                                              Picture: ""
+                                                          },
+                                                          Discipline: LookUp(Choices(ClinicianDirectory.Discipline), Value = varAdminDiscipline),
+                                                          Access: LookUp(Choices(ClinicianDirectory.Access), Value = newAccessText)
+                                                      }
+                                                  )
+                                              );
+
+                                              If(
+                                                  IsEmpty(Errors(ClinicianDirectory)),
+                                                  Collect(
+                                                      colDirectory,
+                                                      Patch(
+                                                          varNewRow,
+                                                          {
+                                                              PersonName: Coalesce(varNewRow.Person.DisplayName, newName),
+                                                              PersonEmail: Coalesce(varNewRow.Person.Email, newEmail),
+                                                              AccessText: Coalesce(varNewRow.Access.Value, newAccessText)
+                                                          }
+                                                      )
+                                                  );
+                                                  Select(btnPie_Ad);
+                                                  Reset(cmbAddUser_Ad);
+                                                  Reset(ddAddAccess_Ad);
+                                                  Notify(newName & " added to " & varAdminDiscipline & ".", NotificationType.Success),
+                                                  Notify("Could not add this person. Please try again.", NotificationType.Error)
+                                              )
+                                          )
+                                      )
+                                  )
+                              )
+                          )
+                        Text: ="Add to directory"
+                        Width: =298
+      - Ad_CardPie:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+            DropShadow: =DropShadow.Light
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =446
+            Width: =658
+            X: =693
+            Y: =307
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+          Children:
+            - lblPie_Ad:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =16
+                  FontWeight: =FontWeight.Bold
+                  Height: =28
+                  Text: ="Access levels"
+                  Width: =300
+                  X: =20
+                  Y: =14
+            - lblPieSub_Ad:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =12
+                  Height: =18
+                  Text: ="Share of staff at each access level"
+                  Width: =400
+                  X: =20
+                  Y: =42
+            - pieAccess_Ad:
+                Control: PieChart@2.3.0
+                Properties:
+                  Color: =RGBA(14, 28, 42, 1)
+                  Height: =370
+                  ItemColorSet: |-
+                    =[
+                        RGBA(26, 90, 153, 1),
+                        RGBA(0, 144, 153, 1),
+                        RGBA(166, 199, 130, 1),
+                        RGBA(0, 200, 210, 1),
+                        RGBA(255, 204, 153, 1),
+                        RGBA(180, 198, 231, 1),
+                        RGBA(233, 143, 214, 1),
+                        RGBA(255, 91, 91, 1)
+                    ]
+                  Items: =SortByColumns(colAccessSummary, "Count", SortOrder.Descending)
+                  Items.Labels: =DisplayLabel
+                  Items.Series: =Count
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =70
+      - Ad_Popup:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(14, 28, 42, 0.45)
+            Height: =768
+            Visible: =adShowRemove
+            Width: =1366
+            X: =0
+            Y: =0
+          Children:
+            - btnScrim_Ad:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  BorderStyle: =BorderStyle.None
+                  Height: =768
+                  Text: =""
+                  Width: =1366
+                  OnSelect: =Set(adShowRemove, false)
+            - Ad_PopupCard:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =230
+                  Width: =480
+                  X: =443
+                  Y: =269
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                Children:
+                  - lblRmTitle_Ad:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
+                        Size: =20
+                        FontWeight: =FontWeight.Bold
+                        Height: =30
+                        Text: ="Remove " & adRemove.PersonName & "?"
+                        Width: =432
+                        X: =24
+                        Y: =20
+                  - lblRmBody_Ad:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(58, 80, 104, 1)
+                        Size: =14
+                        Height: =80
+                        Width: =432
+                        X: =24
+                        Y: =62
+                        Text: ="This removes them from the " & varAdminDiscipline & " directory. It cannot be undone. You can add them again later."
+                  - conRmCancel_Ad:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =44
+                        Width: =200
+                        X: =24
+                        Y: =160
+                        RadiusBottomLeft: =22
+                        RadiusBottomRight: =22
+                        RadiusTopLeft: =22
+                        RadiusTopRight: =22
+                      Children:
+                        - btnRmCancel_Ad:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =22
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(58, 80, 104, 1)
+                              FontSize: =13
+                              FontWeight: =FontWeight.Bold
+                              Height: =44
+                              OnSelect: =Set(adShowRemove, false)
+                              Text: ="Cancel"
+                              Width: =200
+                  - conRmOk_Ad:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(180, 26, 26, 1)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        Fill: =RGBA(180, 26, 26, 1)
+                        Height: =44
+                        Width: =200
+                        X: =256
+                        Y: =160
+                        RadiusBottomLeft: =22
+                        RadiusBottomRight: =22
+                        RadiusTopLeft: =22
+                        RadiusTopRight: =22
+                      Children:
+                        - btnRmOk_Ad:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =22
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(255, 255, 255, 1)
+                              FontSize: =13
+                              FontWeight: =FontWeight.Bold
+                              Height: =44
+                              OnSelect: |-
+                                =Remove(ClinicianDirectory, LookUp(ClinicianDirectory, ID = adRemove.ID));
+                                If(
+                                    IsEmpty(Errors(ClinicianDirectory)),
+                                    RemoveIf(colDirectory, ID = adRemove.ID);
+                                    Select(btnPie_Ad);
+                                    Notify("Staff removed.", NotificationType.Success),
+                                    Notify("Could not remove this person. Please try again.", NotificationType.Error)
+                                );
+                                Set(adShowRemove, false)
+                              Text: ="Remove"
+                              Width: =200
