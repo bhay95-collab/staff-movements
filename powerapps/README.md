@@ -183,3 +183,17 @@ Replaces `Physiotherapy_Screen`. Screen name is `Physiotherapy_New`: delete the 
 - Data Dashboard button: same collections built as before (`col4A_PieData` … `col6A_PieData`), 4 copies of the same code cut to one short line each.
 - Edit password box and Unlock unchanged; wrong password now shows a message.
 - OnVisible also sets `varMeDirectory` (same as Home) so the screen works if opened directly.
+
+---
+
+## Data Dashboard – `Physio_Data_New.pa.yaml`
+
+Replaces `Physio_Data_Screen`. Screen name is `Physio_Data_New`: delete the old screen, then rename this one to `Physio_Data_Screen` (Physiotherapy_New's Data Dashboard button already opens `Physio_Data_Screen`).
+
+- Four ward cards: total acuity, this week vs last week (▲ higher = red, ▼ lower = green), diagnosis pie. Tap a card for predicted staffing.
+- "AFRM staffing" pill (header): 4A + 4B + 5A combined.
+- Bottom card: average acuity per week, one line per ward (ward colours match the cards).
+- Staffing popup: FTE per discipline on the left, patients by diagnosis on the right.
+- Staffing maths now lives in one hidden button (`btnCalc_Dd`). The old file had it twice (once per ward tap, once for AFRM) and the two copies differed: the ward version left out **Clinical Psych** and did not ignore spaces/case when matching diagnoses. The single copy includes Clinical Psych.
+- Card numbers are worked out once when the screen opens (`colDdWardStats`), not on every redraw.
+- Needs (built elsewhere in the app): `colDiagnosisMap`, `colStaffRatios`, `colWardSummaryConfig`, `col4A_PieData` … `col6A_PieData`.
