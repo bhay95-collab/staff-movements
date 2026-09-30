@@ -127,5 +127,5 @@ Replaces `Patient_Detail_Screen`. Screen name is `Patient_Detail_New` so it cann
 - **Bug fixed:** allocating equipment took the Ward from a view-only dropdown, so it always used the first ward in the list. It now uses the patient's own ward (`4A` / `4B` / `5A` / `6A`).
 - **Bug fixed:** allocating did not save the patient's DOB on the equipment record. It now does.
 - Equipment layout: allocated-to-this-patient list + find-by-barcode (middle), item details with Allocate / Return (right).
-- Therapy tools (Outcome Measures, Exercise Setups, Therapy Summary) are kept but hidden, exactly like the old screen (`conTools_PD`, Visible = false).
+- The Outcome Measures, Exercise Setups and Therapy Summary buttons are removed (those screens no longer exist).
 - Hidden OT and Speech rows dropped (they were read-only and hidden).
