@@ -1,0 +1,2588 @@
+Screens:
+  Ward 4A:
+    Properties:
+      ImagePosition: =ImagePosition.Fill
+      OnVisible: |+
+        =// =======================================================
+        // WARD 4A – SCREEN OnVisible (PERSON AWARE + combo support + CHARTS)
+        // Stable key = Claims
+        // =======================================================
+
+        Set(var4A_Loading, true);
+
+        // --------------------------------------
+        // Typed empty People table (keeps schema so DisplayName/Email are recognised)
+        // --------------------------------------
+        Set(
+            varEmptyPeople,
+            FirstN(
+                Table(
+                    {
+                        Claims: "",
+                        DisplayName: "",
+                        Email: "",
+                        Department: "",
+                        JobTitle: "",
+                        Picture: ""
+                    }
+                ),
+                0
+            )
+        );
+
+        // --------------------------------------
+        // 0) Rebuild ward cache
+        //    + local typed Key tables used by ComboBox defaults
+        // --------------------------------------
+        ClearCollect(
+            colWard4A,
+            AddColumns(
+                SortByColumns(Ward_4A_Shared, "field_1", SortOrder.Ascending),
+                IsDirty, false,
+
+                PTKeys,
+                If(
+                    IsBlank(PT_Users) || CountRows(PT_Users) = 0,
+                    FirstN(Table({ Key: "" }), 0),
+                    ForAll(PT_Users, { Key: Lower(Trim(Claims)) })
+                ),
+
+                OTKeys,
+                If(
+                    IsBlank(OT_Users) || CountRows(OT_Users) = 0,
+                    FirstN(Table({ Key: "" }), 0),
+                    ForAll(OT_Users, { Key: Lower(Trim(Claims)) })
+                ),
+
+                SPKeys,
+                If(
+                    IsBlank(SP_Users) || CountRows(SP_Users) = 0,
+                    FirstN(Table({ Key: "" }), 0),
+                    ForAll(SP_Users, { Key: Lower(Trim(Claims)) })
+                )
+            )
+        );
+
+        // --------------------------------------
+        // 0a) Clinician option collections (flat schema)
+        //     These MUST use same key: Person.Claims
+        // --------------------------------------
+
+        // Physio options
+        ClearCollect(
+            colClinicians_Physio,
+            AddColumns(
+                Filter(ClinicianDirectory, Discipline.Value = "Physio" && !IsBlank(Person)),
+                DisplayNameFlat, Coalesce(Person.DisplayName, Person.Email, ""),
+                DisplayKey, Lower(Trim(Person.Claims)),
+                PersonRec, Person
+            )
+        );
+
+        // OT options
+        ClearCollect(
+            colClinicians_OT,
+            AddColumns(
+                Filter(ClinicianDirectory, Discipline.Value = "OT" && !IsBlank(Person)),
+                DisplayNameFlat, Coalesce(Person.DisplayName, Person.Email, ""),
+                DisplayKey, Lower(Trim(Person.Claims)),
+                PersonRec, Person
+            )
+        );
+
+        // SP options
+        ClearCollect(
+            colClinicians_SP,
+            AddColumns(
+                Filter(ClinicianDirectory, Discipline.Value = "SP" && !IsBlank(Person)),
+                DisplayNameFlat, Coalesce(Person.DisplayName, Person.Email, ""),
+                DisplayKey, Lower(Trim(Person.Claims)),
+                PersonRec, Person
+            )
+        );
+
+        // --------------------------------------
+        // 0b) Who am I? (optional)
+        // --------------------------------------
+        Set(
+            varMeDirectory,
+            LookUp(ClinicianDirectory, Lower(Person.Email) = Lower(User().Email))
+        );
+
+        // --------------------------------------
+        // Base set of real patients on 4A
+        // --------------------------------------
+        Set(var4ABasePatients, Filter(colWard4A, !IsBlank(Patient)));
+
+        // =======================================================
+        // CHART BUILD (Diagnosis + Patients per clinician + Acuity per clinician)
+        // =======================================================
+        // =======================================================
+        // REBUILD 4A CHARTS (call after load + after successful save)
+        // Source of truth: colWard4A
+        // =======================================================
+
+        // Base set of real patients on 4A
+        Set(var4ABasePatients, Filter(colWard4A, !IsBlank(Patient)));
+
+        // ------------------------------
+        // 1) Diagnosis Summary (Pie)
+        // ------------------------------
+        Set(var4A_DiagTotal, CountRows(var4ABasePatients));
+        Clear(col4A_DiagnosisSummary);
+
+        ForAll(
+            Table(
+                {Diag: "Ortho"},
+                {Diag: "Recon"},
+                {Diag: "TBI"},
+                {Diag: "Amp"},
+                {Diag: "SCI"},
+                {Diag: "Trauma"},
+                {Diag: "Stroke"},
+                {Diag: "Neuro"}
+            ) As d,
+            With(
+                {
+                    thisCount:
+                        CountRows(
+                            Filter(
+                                var4ABasePatients,
+                                !IsBlank(Diagnosis) && Diagnosis.Value = d.Diag
+                            )
+                        )
+                },
+                With(
+                    {
+                        thisPercent:
+                            If(
+                                var4A_DiagTotal = 0,
+                                0,
+                                Round(thisCount * 100 / var4A_DiagTotal, 0)
+                            )
+                    },
+                    Collect(
+                        col4A_DiagnosisSummary,
+                        {
+                            Label: d.Diag,
+                            Count: thisCount,
+                            DisplayLabel: d.Diag & " (" & thisPercent & "%)"
+                        }
+                    )
+                )
+            )
+        );
+
+        // ------------------------------
+        // 2) Flatten assignments (PT / OT / SP)
+        // ------------------------------
+        Clear(col4A_PT_Assign);
+        Clear(col4A_OT_Assign);
+        Clear(col4A_SP_Assign);
+
+        ForAll(
+            var4ABasePatients As p,
+
+            ForAll(
+                If(IsBlank(p.PT_Users) || CountRows(p.PT_Users)=0, varEmptyPeople, p.PT_Users) As u,
+                If(!IsBlank(u.Claims),
+                    Collect(
+                        col4A_PT_Assign,
+                        {
+                            PatientID: p.ID,
+                            ClinicianClaims: Lower(Trim(u.Claims)),
+                            ClinicianName: Coalesce(u.DisplayName, u.Email, "<unknown>"),
+                            Acuity: Coalesce(p.'Acuity Score', 0)
+                        }
+                    )
+                )
+            );
+
+            ForAll(
+                If(IsBlank(p.OT_Users) || CountRows(p.OT_Users)=0, varEmptyPeople, p.OT_Users) As u,
+                If(!IsBlank(u.Claims),
+                    Collect(
+                        col4A_OT_Assign,
+                        {
+                            PatientID: p.ID,
+                            ClinicianClaims: Lower(Trim(u.Claims)),
+                            ClinicianName: Coalesce(u.DisplayName, u.Email, "<unknown>"),
+                            Acuity: Coalesce(p.'Acuity Score', 0)
+                        }
+                    )
+                )
+            );
+
+            ForAll(
+                If(IsBlank(p.SP_Users) || CountRows(p.SP_Users)=0, varEmptyPeople, p.SP_Users) As u,
+                If(!IsBlank(u.Claims),
+                    Collect(
+                        col4A_SP_Assign,
+                        {
+                            PatientID: p.ID,
+                            ClinicianClaims: Lower(Trim(u.Claims)),
+                            ClinicianName: Coalesce(u.DisplayName, u.Email, "<unknown>"),
+                            Acuity: Coalesce(p.'Acuity Score', 0)
+                        }
+                    )
+                )
+            )
+        );
+
+        // ------------------------------
+        // 3) Pie charts: Patients per clinician
+        // (OPTIONAL improvement: count distinct patients per clinician)
+        // ------------------------------
+        Clear(col4A_PatientsPerPT);
+        ForAll(
+            GroupBy(col4A_PT_Assign, ClinicianName, Rows) As g,
+            Collect(
+                col4A_PatientsPerPT,
+                {
+                    Label: g.ClinicianName,
+                    Count: CountRows(Distinct(g.Rows, PatientID)),
+                    DisplayLabel: g.ClinicianName & " (" & CountRows(Distinct(g.Rows, PatientID)) & ")"
+                }
+            )
+        );
+
+        Clear(col4A_PatientsPerOT);
+        ForAll(
+            GroupBy(col4A_OT_Assign, ClinicianName, Rows) As g,
+            Collect(
+                col4A_PatientsPerOT,
+                {
+                    Label: g.ClinicianName,
+                    Count: CountRows(Distinct(g.Rows, PatientID)),
+                    DisplayLabel: g.ClinicianName & " (" & CountRows(Distinct(g.Rows, PatientID)) & ")"
+                }
+            )
+        );
+
+        Clear(col4A_PatientsPerSP);
+        ForAll(
+            GroupBy(col4A_SP_Assign, ClinicianName, Rows) As g,
+            Collect(
+                col4A_PatientsPerSP,
+                {
+                    Label: g.ClinicianName,
+                    Count: CountRows(Distinct(g.Rows, PatientID)),
+                    DisplayLabel: g.ClinicianName & " (" & CountRows(Distinct(g.Rows, PatientID)) & ")"
+                }
+            )
+        );
+
+        // ------------------------------
+        // 4) Bar charts: Total acuity per clinician (PT + OT)
+        // ------------------------------
+        Clear(col4A_AcuityPerPT);
+        ForAll(
+            GroupBy(col4A_PT_Assign, ClinicianName, Rows) As g,
+            Collect(
+                col4A_AcuityPerPT,
+                {
+                    Label: g.ClinicianName,
+                    TotalAcuity: Sum(g.Rows, Acuity)
+                }
+            )
+        );
+
+        Clear(col4A_AcuityPerOT);
+        ForAll(
+            GroupBy(col4A_OT_Assign, ClinicianName, Rows) As g,
+            Collect(
+                col4A_AcuityPerOT,
+                {
+                    Label: g.ClinicianName,
+                    TotalAcuity: Sum(g.Rows, Acuity)
+                }
+            )
+        );
+
+        Set(var4A_Loading, false);
+    Children:
+      - 4A_Title:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Bold
+            Fill: =RGBA(35, 100, 153, 1)
+            Height: =70
+            RadiusBottomLeft: =20
+            RadiusBottomRight: =20
+            RadiusTopLeft: =20
+            RadiusTopRight: =20
+            Width: =1333
+            X: =18
+            Y: =12
+          Children:
+            - TextCanvas7:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.Verdana
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  Height: =70
+                  Size: =40
+                  Text: ="Ward 4A"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Weight: ='TextCanvas.Weight'.Bold
+                  Width: =282
+                  X: =76
+            - ButtonCanvas31_1:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontSize: =50
+                  Height: =70
+                  Icon: ="ChevronLeft"
+                  OnSelect: |+
+                    =If(
+                        CountRows(Filter(colWard4A, IsDirty)) > 0,
+
+                        // 🚫 Unsaved changes – block navigation
+                        Notify(
+                            "You have unsaved changes. Please save or discard before leaving.",
+                            NotificationType.Warning
+                        ),
+
+                        // ✅ Safe to leave
+                        Back()
+                    )
+                  Text: =
+                  X: =1
+            - Container211:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Height: =70
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =10
+                  PaddingBottom: =8
+                  PaddingLeft: =8
+                  PaddingRight: =8
+                  PaddingTop: =8
+                  Width: =940
+                  X: =379
+                Children:
+                  - Container52:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.Center
+                        BorderColor: =RGBA(53, 61, 63, 1)
+                        BorderStyle: =BorderStyle.None
+                        BorderThickness: =2
+                        DropShadow: =DropShadow.Semibold
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =39
+                        LayoutMaxHeight: =40
+                        LayoutMinHeight: =10
+                        LayoutMinWidth: =100
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        Width: =142
+                        X: =629
+                        Y: =15
+                      Children:
+                        - ButtonCanvas20_1:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BasePaletteColor: =RGBA(189, 178, 176, 1)
+                              BorderColor: =RGBA(53, 61, 63, 1)
+                              BorderRadius: =20
+                              BorderRadiusBottomLeft: =20
+                              BorderRadiusBottomRight: =20
+                              BorderRadiusTopLeft: =20
+                              BorderRadiusTopRight: =20
+                              BorderStyle: =BorderStyle.None
+                              BorderThickness: =3
+                              Font: =Font.Verdana
+                              FontColor: =RGBA(79, 90, 94, 1)
+                              FontSize: =18
+                              FontWeight: =FontWeight.Bold
+                              Height: =39
+                              Icon: ="Edit"
+                              IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              OnSelect: |-
+                                =If(
+                                    varHasUnsavedChanges_4A,
+                                    Notify(
+                                        "You have unsaved changes for Ward 4A. Please tap Save before leaving.",
+                                        NotificationType.Error
+                                    ),
+                                    Navigate('4AHandover', ScreenTransition.Fade)
+                                );
+                              Text: ="Handover"
+                              Width: =224
+                  - Container53:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.Center
+                        BorderColor: =RGBA(53, 61, 63, 1)
+                        BorderStyle: =BorderStyle.None
+                        BorderThickness: =2
+                        DropShadow: =DropShadow.Semibold
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =39
+                        LayoutMaxHeight: =40
+                        LayoutMinHeight: =10
+                        LayoutMinWidth: =220
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        Width: =223
+                        X: =397
+                        Y: =15
+                      Children:
+                        - ButtonCanvas20_2:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BasePaletteColor: =RGBA(189, 178, 176, 1)
+                              BorderColor: =RGBA(53, 61, 63, 1)
+                              BorderRadius: =20
+                              BorderRadiusBottomLeft: =20
+                              BorderRadiusBottomRight: =20
+                              BorderRadiusTopLeft: =20
+                              BorderRadiusTopRight: =20
+                              BorderStyle: =BorderStyle.None
+                              BorderThickness: =3
+                              Font: =Font.Verdana
+                              FontColor: =RGBA(79, 90, 94, 1)
+                              FontSize: =18
+                              FontWeight: =FontWeight.Bold
+                              Height: =39
+                              Icon: ="Open"
+                              IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                              OnSelect: |
+                                =Launch(
+                                    "ms-excel:ofe|u|https://healthqld.sharepoint.com/teams/PhysioDreamTeam/Shared%20Documents/General/Acuity%20Tool/AROC%20Calculator.xlsx"
+                                )
+                              Text: ="AROC Calculator"
+                              Width: =220
+                  - Container55:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.Center
+                        BorderColor: =RGBA(53, 61, 63, 1)
+                        BorderStyle: =BorderStyle.None
+                        BorderThickness: =2
+                        DropShadow: =DropShadow.Semibold
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =39
+                        LayoutMaxHeight: =40
+                        LayoutMinHeight: =10
+                        LayoutMinWidth: =220
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        Width: =200
+                        X: =184
+                        Y: =15
+                      Children:
+                        - ButtonCanvas20_8:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BasePaletteColor: =RGBA(189, 178, 176, 1)
+                              BorderColor: =RGBA(53, 61, 63, 1)
+                              BorderRadius: =20
+                              BorderRadiusBottomLeft: =20
+                              BorderRadiusBottomRight: =20
+                              BorderRadiusTopLeft: =20
+                              BorderRadiusTopRight: =20
+                              BorderStyle: =BorderStyle.None
+                              BorderThickness: =3
+                              Font: =Font.Verdana
+                              FontColor: =RGBA(79, 90, 94, 1)
+                              FontSize: =18
+                              FontWeight: =FontWeight.Bold
+                              Height: =39
+                              Icon: ="Mail"
+                              IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                              Layout: ='ButtonCanvas.Layout'.IconBefore
+                              OnSelect: |
+                                =// Ward 4A – patients with EDD in next 7 days
+                                ClearCollect(
+                                    colWard4A_EDDPatients,
+                                    Filter(
+                                        Ward_4A_Shared,
+                                        !IsBlank(EDD),
+                                        EDD >= Today(),
+                                        EDD <= DateAdd(Today(), 7)
+                                    )
+                                );
+
+                                If(
+                                    CountRows(colWard4A_EDDPatients) > 0,
+
+                                    Set(
+                                        varEmailBody,
+                                        "<html><body style='font-family:Segoe UI, Arial, sans-serif; font-size:12pt;'>" &
+                                        "Hi " & User().FullName & ",<br><br>" &
+                                        "The patients with an EDD in the next 7 days are listed below.<br><br>" &
+
+                                        "<table style='border-collapse:collapse; width:100%;' border='1' cellpadding='6'>" &
+
+                                            "<tr style='background-color:#f2f2f2; font-weight:600;'>" &
+                                                "<th align='left'>Name</th>" &
+                                                "<th align='left'>URN</th>" &
+                                                "<th align='left'>DOB</th>" &
+                                                "<th align='left'>EDD</th>" &
+                                                "<th align='left'>Physio</th>" &
+                                                "<th align='left'>OT</th>" &
+                                                "<th align='left'>SP</th>" &
+                                            "</tr>" &
+
+                                            Concat(
+                                                SortByColumns(colWard4A_EDDPatients, "EDD", SortOrder.Ascending),
+
+                                                With(
+                                                    {
+                                                        ptNames: If(
+                                                            IsBlank(PT_Users) || CountRows(PT_Users) = 0,
+                                                            "",
+                                                            Concat(PT_Users, Coalesce(DisplayName, Email) & "; ")
+                                                        ),
+                                                        otNames: If(
+                                                            IsBlank(OT_Users) || CountRows(OT_Users) = 0,
+                                                            "",
+                                                            Concat(OT_Users, Coalesce(DisplayName, Email) & "; ")
+                                                        ),
+                                                        spNames: If(
+                                                            IsBlank(SP_Users) || CountRows(SP_Users) = 0,
+                                                            "",
+                                                            Concat(SP_Users, Coalesce(DisplayName, Email) & "; ")
+                                                        )
+                                                    },
+
+                                                    "<tr>" &
+                                                        "<td>" & Coalesce(Text(Patient), "") & "</td>" &
+                                                        "<td>" & Coalesce(Text(URN), "") & "</td>" &
+                                                        "<td>" & If(IsBlank(DOB), "", Text(DateValue(DOB), "dd/mm/yyyy")) & "</td>" &
+                                                        "<td>" & Text(EDD, "dd/mm/yyyy") & "</td>" &
+                                                        "<td>" & ptNames & "</td>" &
+                                                        "<td>" & otNames & "</td>" &
+                                                        "<td>" & spNames & "</td>" &
+                                                    "</tr>"
+                                                )
+                                            ) &
+
+                                        "</table>" &
+
+                                        "<br><br>Thanks,<br>" & User().FullName &
+                                        "</body></html>"
+                                    );
+
+                                    Office365Outlook.SendEmailV2(
+                                        User().Email,
+                                        "Patients with EDD within the next 7 days – Ward 4A",
+                                        varEmailBody,
+                                        { IsHtml: true }
+                                    );
+
+                                    Notify("Email Sent", NotificationType.Success),
+
+                                    Notify("No patients with EDD in the next 7 days.", NotificationType.Information)
+                                );
+                              Text: ="EDD Summary"
+                              Width: =220
+                  - Container210:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.Center
+                        DropShadow: =DropShadow.Semibold
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =39
+                        LayoutMaxHeight: =40
+                        LayoutMinHeight: =10
+                        LayoutMinWidth: =100
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        Width: =171
+                        X: =530
+                        Y: =15
+                      Children:
+                        - ButtonCanvas15:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              Font: =Font.Verdana
+                              FontSize: =18
+                              FontWeight: =FontWeight.Bold
+                              Height: =39
+                              OnSelect: =Set(locShowPatientList_4A,true)
+                              Text: ="Patient List/Data"
+                              Width: =224
+            - Container62:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: |
+                    =If(
+                        varHasUnsavedChanges_4A && varPulseOn_4A,
+                        RGBA(255, 255, 0, 1),          // bright yellow glow
+                        RGBA(122, 138, 143, 1)         // subtle neutral when off
+                    )
+                  BorderStyle: =BorderStyle.None
+                  BorderThickness: |
+                    =If(
+                        varHasUnsavedChanges_4A && varPulseOn_4A,
+                        3,
+                        1
+                    )
+                  DropShadow: =DropShadow.Bold
+                  Fill: |
+                    =If(
+                        // No unsaved changes → normal green
+                        !varHasUnsavedChanges_4A,
+                        RGBA(152, 208, 70, 1),
+
+                        // Unsaved changes → pulse between two greens
+                        If(
+                            varPulseOn_4A,
+                            RGBA(152, 208, 70, 1),      // base green
+                            RGBA(192, 228, 110, 1)      // lighter green for pulse
+                        )
+                    )
+                  Height: =53
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                  Visible: |+
+                    =CountRows(Filter(colWard4A, IsDirty)) > 0
+                  Width: =64
+                  X: =301
+                  Y: =8
+                Children:
+                  - Icon_Save_4A:
+                      Control: Icon@0.0.7
+                      Properties:
+                        Height: =53
+                        Icon: ="Save"
+                        IconColor: =RGBA(255, 255, 255, 1)
+                        Width: =64
+                  - ButtonCanvas21:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderColor: =RGBA(53, 61, 63, 1)
+                        BorderRadius: =20
+                        BorderStyle: =BorderStyle.None
+                        BorderThickness: =2
+                        FontColor: =RGBA(255, 255, 255, 1)
+                        FontSize: =40
+                        Height: =53
+                        Icon: ="Save"
+                        Layout: ='ButtonCanvas.Layout'.TextOnly
+                        OnSelect: |
+                          =// ======================================
+                          // SAVE WARD 4A (handles new + existing rows)
+                          // ======================================
+
+                          If(
+                              CountRows(Filter(colWard4A, IsDirty)) = 0,
+
+                              Notify(
+                                  "No changes to save for Ward 4A.",
+                                  NotificationType.Information
+                              ),
+
+                              // --------------------------------------
+                              // There ARE dirty rows
+                              // --------------------------------------
+                              Set(locIsSaving, true);
+                              Clear(colSaveErrors4A);
+
+                              // Optional: pulse / spinner on
+                              Set(varPulseOn_4A, true);
+                              Reset(Timer_Pulse_4A);
+
+                              // --------------------------------------
+                              // Patch each dirty row
+                              // - If ID blank -> create new SP item
+                              // - If ID present -> update existing SP item
+                              // - On success: write SP ID back + clear IsDirty
+                              // --------------------------------------
+                              ForAll(
+                                  Filter(colWard4A, IsDirty) As w,
+                                  With(
+                                      {
+                                          spRow:
+                                              Patch(
+                                                  Ward_4A_Shared,
+                                                  If(
+                                                      IsBlank(w.ID),
+                                                      Defaults(Ward_4A_Shared),
+                                                      LookUp(Ward_4A_Shared, ID = w.ID)
+                                                  ),
+                                                  {
+                                                      // -------------------------------
+                                                      // Core patient data
+                                                      // -------------------------------
+                                                      Patient: w.Patient,
+                                                      URN: w.URN,
+                                                      DOB: w.DOB,
+                                                      Diagnosis: w.Diagnosis,
+
+                                                      // -------------------------------
+                                                      // PERSON COLUMNS (source of truth)
+                                                      // -------------------------------
+                                                      PT_Users: w.PT_Users,
+                                                      OT_Users: w.OT_Users,
+                                                      SP_Users: w.SP_Users,
+
+                                                      // -------------------------------
+                                                      // Other clinical/admin fields
+                                                      // -------------------------------
+                                                      'Acuity Score': w.'Acuity Score',
+                                                      Bed: w.Bed,
+                                                      NDIS: w.NDIS,
+                                                      Maintenance: w.Maintenance,
+                                                      'Link Worker': w.'Link Worker',
+                                                      'Falls Risk': w.'Falls Risk',
+                                                      Contact: w.Contact,
+                                                      'Admission Date': w.'Admission Date',
+                                                      'AROC EDD': w.'AROC EDD',
+                                                      EDD: w.EDD,
+                                                      WeekStartDate: w.WeekStartDate,
+                                                      'Morning Handover': w.'Morning Handover',
+                                                      'CC Handover': w.'CC Handover',
+                                                      Monday: w.Monday,
+                                                      Tuesday: w.Tuesday,
+                                                      Wednesday: w.Wednesday,
+                                                      Thursday: w.Thursday,
+                                                      Friday: w.Friday
+                                                  }
+                                              )
+                                      },
+                                      // -------------------------------
+                                      // Capture SharePoint errors
+                                      // -------------------------------
+                                      If(
+                                          !IsEmpty(Errors(Ward_4A_Shared, spRow)),
+                                          Collect(
+                                              colSaveErrors4A,
+                                              {
+                                                  LocalID: w.ID,
+                                                  SavedID: spRow.ID,
+                                                  Patient: w.Patient,
+                                                  Message: First(Errors(Ward_4A_Shared, spRow)).Message
+                                              }
+                                          ),
+
+                                          // ✅ Success → update local row:
+                                          // - store the real SharePoint ID (for brand new items)
+                                          // - clear IsDirty
+                                          Patch(
+                                              colWard4A,
+                                              w,
+                                              {
+                                                  ID: spRow.ID,
+                                                  IsDirty: false
+                                              }
+                                          )
+                                      )
+                                  )
+                              );
+
+                              // --------------------------------------
+                              // Post-save handling
+                              // --------------------------------------
+                              If(
+                                  CountRows(colSaveErrors4A) > 0,
+
+                                  // ❌ Some rows failed
+                                  Set(locIsSaving, false);
+                                  Set(varPulseOn_4A, false);
+                                  Reset(Timer_Pulse_4A);
+
+                                  // keep this TRUE because there are still dirty rows
+                                  Set(varHasUnsavedChanges_4A, CountRows(Filter(colWard4A, IsDirty)) > 0);
+
+                                  Notify(
+                                      "Some rows failed to save (" &
+                                      CountRows(colSaveErrors4A) &
+                                      "). Unsaved changes remain.",
+                                      NotificationType.Error
+                                  ),
+
+                                  // ✅ ALL rows saved successfully
+                                  Set(varHasUnsavedChanges_4A, false);
+
+                                  // =======================================================
+                                  // REBUILD 4A CHARTS (call after load + after successful save)
+                                  // Source of truth: colWard4A
+                                  // =======================================================
+
+                                  // Base set of real patients on 4A
+                                  Set(var4ABasePatients, Filter(colWard4A, !IsBlank(Patient)));
+
+                                  // ------------------------------
+                                  // 1) Diagnosis Summary (Pie)
+                                  // ------------------------------
+                                  Set(var4A_DiagTotal, CountRows(var4ABasePatients));
+                                  Clear(col4A_DiagnosisSummary);
+
+                                  ForAll(
+                                      Table(
+                                          {Diag: "Ortho"},
+                                          {Diag: "Recon"},
+                                          {Diag: "TBI"},
+                                          {Diag: "Amp"},
+                                          {Diag: "SCI"},
+                                          {Diag: "Trauma"},
+                                          {Diag: "Stroke"},
+                                          {Diag: "Neuro"}
+                                      ) As d,
+                                      With(
+                                          {
+                                              thisCount:
+                                                  CountRows(
+                                                      Filter(
+                                                          var4ABasePatients,
+                                                          !IsBlank(Diagnosis) && Diagnosis.Value = d.Diag
+                                                      )
+                                                  )
+                                          },
+                                          With(
+                                              {
+                                                  thisPercent:
+                                                      If(
+                                                          var4A_DiagTotal = 0,
+                                                          0,
+                                                          Round(thisCount * 100 / var4A_DiagTotal, 0)
+                                                      )
+                                              },
+                                              Collect(
+                                                  col4A_DiagnosisSummary,
+                                                  {
+                                                      Label: d.Diag,
+                                                      Count: thisCount,
+                                                      DisplayLabel: d.Diag & " (" & thisPercent & "%)"
+                                                  }
+                                              )
+                                          )
+                                      )
+                                  );
+
+                                  // ------------------------------
+                                  // 2) Flatten assignments (PT / OT / SP)
+                                  // ------------------------------
+                                  Clear(col4A_PT_Assign);
+                                  Clear(col4A_OT_Assign);
+                                  Clear(col4A_SP_Assign);
+
+                                  ForAll(
+                                      var4ABasePatients As p,
+
+                                      ForAll(
+                                          If(IsBlank(p.PT_Users) || CountRows(p.PT_Users)=0, varEmptyPeople, p.PT_Users) As u,
+                                          If(
+                                              !IsBlank(u.Claims),
+                                              Collect(
+                                                  col4A_PT_Assign,
+                                                  {
+                                                      PatientID: p.ID,
+                                                      ClinicianClaims: Lower(Trim(u.Claims)),
+                                                      ClinicianName: Coalesce(u.DisplayName, u.Email, "<unknown>"),
+                                                      Acuity: Coalesce(p.'Acuity Score', 0)
+                                                  }
+                                              )
+                                          )
+                                      );
+
+                                      ForAll(
+                                          If(IsBlank(p.OT_Users) || CountRows(p.OT_Users)=0, varEmptyPeople, p.OT_Users) As u,
+                                          If(
+                                              !IsBlank(u.Claims),
+                                              Collect(
+                                                  col4A_OT_Assign,
+                                                  {
+                                                      PatientID: p.ID,
+                                                      ClinicianClaims: Lower(Trim(u.Claims)),
+                                                      ClinicianName: Coalesce(u.DisplayName, u.Email, "<unknown>"),
+                                                      Acuity: Coalesce(p.'Acuity Score', 0)
+                                                  }
+                                              )
+                                          )
+                                      );
+
+                                      ForAll(
+                                          If(IsBlank(p.SP_Users) || CountRows(p.SP_Users)=0, varEmptyPeople, p.SP_Users) As u,
+                                          If(
+                                              !IsBlank(u.Claims),
+                                              Collect(
+                                                  col4A_SP_Assign,
+                                                  {
+                                                      PatientID: p.ID,
+                                                      ClinicianClaims: Lower(Trim(u.Claims)),
+                                                      ClinicianName: Coalesce(u.DisplayName, u.Email, "<unknown>"),
+                                                      Acuity: Coalesce(p.'Acuity Score', 0)
+                                                  }
+                                              )
+                                          )
+                                      )
+                                  );
+
+                                  // ------------------------------
+                                  // 3) Pie charts: Patients per clinician
+                                  // ------------------------------
+                                  Clear(col4A_PatientsPerPT);
+                                  ForAll(
+                                      GroupBy(col4A_PT_Assign, ClinicianName, Rows) As g,
+                                      Collect(
+                                          col4A_PatientsPerPT,
+                                          {
+                                              Label: g.ClinicianName,
+                                              Count: CountRows(Distinct(g.Rows, PatientID)),
+                                              DisplayLabel: g.ClinicianName & " (" & CountRows(Distinct(g.Rows, PatientID)) & ")"
+                                          }
+                                      )
+                                  );
+
+                                  Clear(col4A_PatientsPerOT);
+                                  ForAll(
+                                      GroupBy(col4A_OT_Assign, ClinicianName, Rows) As g,
+                                      Collect(
+                                          col4A_PatientsPerOT,
+                                          {
+                                              Label: g.ClinicianName,
+                                              Count: CountRows(Distinct(g.Rows, PatientID)),
+                                              DisplayLabel: g.ClinicianName & " (" & CountRows(Distinct(g.Rows, PatientID)) & ")"
+                                          }
+                                      )
+                                  );
+
+                                  Clear(col4A_PatientsPerSP);
+                                  ForAll(
+                                      GroupBy(col4A_SP_Assign, ClinicianName, Rows) As g,
+                                      Collect(
+                                          col4A_PatientsPerSP,
+                                          {
+                                              Label: g.ClinicianName,
+                                              Count: CountRows(Distinct(g.Rows, PatientID)),
+                                              DisplayLabel: g.ClinicianName & " (" & CountRows(Distinct(g.Rows, PatientID)) & ")"
+                                          }
+                                      )
+                                  );
+
+                                  // ------------------------------
+                                  // 4) Bar charts: Total acuity per clinician (PT + OT)
+                                  // ------------------------------
+                                  Clear(col4A_AcuityPerPT);
+                                  ForAll(
+                                      GroupBy(col4A_PT_Assign, ClinicianName, Rows) As g,
+                                      Collect(
+                                          col4A_AcuityPerPT,
+                                          {
+                                              Label: g.ClinicianName,
+                                              TotalAcuity: Sum(g.Rows, Acuity)
+                                          }
+                                      )
+                                  );
+
+                                  Clear(col4A_AcuityPerOT);
+                                  ForAll(
+                                      GroupBy(col4A_OT_Assign, ClinicianName, Rows) As g,
+                                      Collect(
+                                          col4A_AcuityPerOT,
+                                          {
+                                              Label: g.ClinicianName,
+                                              TotalAcuity: Sum(g.Rows, Acuity)
+                                          }
+                                      )
+                                  );
+
+                                  // --------------------------------------
+                                  // Wrap up UI state
+                                  // --------------------------------------
+                                  Set(locIsSaving, false);
+                                  Set(varPulseOn_4A, false);
+                                  Reset(Timer_Pulse_4A);
+
+                                  Notify(
+                                      "Ward 4A changes saved.",
+                                      NotificationType.Success
+                                  )
+                              )
+                          );
+                        Text: =
+                        Width: =64
+      - 4A_Acuity:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Bold
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =658
+            RadiusBottomLeft: =20
+            RadiusBottomRight: =20
+            RadiusTopLeft: =20
+            RadiusTopRight: =20
+            Width: =1333
+            X: =18
+            Y: =95
+          Children:
+            - Gallery_Ward4A:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =658
+                  Items: |+
+                    =SortByColumns(
+                        Filter(colWard4A, !IsBlank(ID)),
+                        "field_1",
+                        SortOrder.Ascending
+                    )
+                  TemplatePadding: =10
+                  TemplateSize: =82
+                  Width: =1333
+                Children:
+                  - Container17:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: |+
+                          =If(
+                              ThisItem.Contact,
+                              RGBA(255, 255, 0, 1),
+                              RGBA(255, 255, 255, 1)
+                          )
+                        BorderThickness: |+
+                          =2
+                        DropShadow: =DropShadow.Regular
+                        Fill: |-
+                          =If(
+                          IsBlank(ThisItem.field_2),
+                          RGBA(0, 0, 0, 1),
+                          If(
+                          ThisItem.'Falls Risk',
+                          RGBA(112, 188, 166, 1),
+                          RGBA(214, 221, 224, 0.4)
+                          )
+                          )
+                        Height: =88
+                        RadiusBottomLeft: =20
+                        RadiusBottomRight: =20
+                        RadiusTopLeft: =20
+                        RadiusTopRight: =20
+                        Width: =1298
+                        X: =1
+                      Children:
+                        - TextCanvas14:
+                            Control: Text@0.0.51
+                            Properties:
+                              BorderColor: =RGBA(53, 61, 63, 1)
+                              BorderRadius: =12
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              Fill: =RGBA(255, 255, 255, 1)
+                              Height: =75
+                              Text: =
+                              Width: =178
+                              X: =82
+                              Y: =7
+                        - TextInput_4ABed:
+                            Control: Classic/TextInput@2.3.2
+                            Properties:
+                              Align: =Align.Center
+                              BorderColor: |
+                                =If(
+                                    ThisItem.Contact,
+                                    RGBA(122, 138, 143, 1),
+                                    RGBA(255, 255, 255, 1)
+                                )
+                              BorderStyle: =BorderStyle.None
+                              BorderThickness: =1
+                              Default: =If(IsBlank(ThisItem.Bed), "", Text(ThisItem.Bed))
+                              Fill: =RGBA(0, 0, 0, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =86
+                              OnChange: |
+                                =Patch(
+                                    colWard4A,
+                                    ThisItem,
+                                    {
+                                        Bed: Value(Self.Text),
+                                        IsDirty: true
+                                    }
+                                );
+                              OnSelect: =
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              Size: =24
+                              Width: =82
+                        - TextInput_4APatient:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              BorderColor: =
+                              BorderStyle: =BorderStyle.None
+                              DisabledBorderColor: =RGBA(0, 0, 0, 0)
+                              FontWeight: =FontWeight.Semibold
+                              Height: =75
+                              OnSelect: |
+                                =If(
+                                    IsBlank(Trim(ThisItem.Patient)),
+
+                                    /* ===============================
+                                       NO PATIENT → ADD PATIENT FLOW
+                                       =============================== */
+                                    Set(locShowIDPopup4A, true);
+                                    Set(locIDRowID4A, ThisItem.ID),
+
+                                    /* ===============================
+                                       PATIENT EXISTS → NAVIGATE
+                                       =============================== */
+                                    Set(varSelectedPatient, ThisItem);
+                                    Set(varSelectedList, "Ward_4A_Shared");
+
+                                    // Derive simple ward code
+                                    Set(
+                                        varWardCode,
+                                        Switch(
+                                            varSelectedList,
+                                            "Ward_4A_Shared", "4A",
+                                            "Ward_4B_Shared", "4B",
+                                            "Ward_5A_Shared", "5A",
+                                            "Ward_6A_Shared", "6A",
+                                            Blank()
+                                        )
+                                    );
+
+                                    Navigate(
+                                        Patient_Detail_Screen,
+                                        ScreenTransition.Fade
+                                    )
+                                )
+                              Size: =18
+                              Text: |
+                                =If(
+                                    IsBlank(Trim(ThisItem.Patient)),
+                                    "Click to add patient",
+                                    ThisItem.Patient
+                                )
+                              Width: =178
+                              X: =82
+                              Y: =7
+                        - Label78_3:
+                            Control: Label@2.5.1
+                            Properties:
+                              Height: =30
+                              Text: ="AROC EDD:"
+                              Width: =102
+                              X: =906
+                              Y: =52
+                        - Container84:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              BorderColor: =RGBA(122, 138, 143, 1)
+                              BorderStyle: =BorderStyle.None
+                              BorderThickness: =1
+                              Height: =30
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              Width: =115
+                              X: =1003
+                              Y: =52
+                            Children:
+                              - DatePicker_4AAROC:
+                                  Control: Classic/DatePicker@2.6.0
+                                  Properties:
+                                    BorderStyle: =BorderStyle.None
+                                    DefaultDate: =ThisItem.'AROC EDD'
+                                    Fill: |
+                                      =If(IsBlank(ThisItem.Maintenance),
+                                          RGBA(122, 138, 143, 1),
+                                          ThisItem.Maintenance = true,
+                                          Color.Black,
+                                          Color.White
+                                      )
+                                    Height: =30
+                                    OnChange: |
+                                      =Patch(
+                                          colWard4A,
+                                          ThisItem,
+                                          {
+                                              'AROC EDD': Self.SelectedDate,
+                                              IsDirty: true
+                                          }
+                                      );
+                                    OnSelect: =
+                                    Width: =150
+                        - Checkbox_4ANDIS:
+                            Control: Classic/CheckBox@2.1.0
+                            Properties:
+                              CheckboxBorderColor: =RGBA(53, 61, 63, 1)
+                              CheckboxSize: =30
+                              CheckmarkFill: =RGBA(53, 61, 63, 1)
+                              Default: =ThisItem.NDIS
+                              Height: =30
+                              OnCheck: |-
+                                =Patch(
+                                    colWard4A,
+                                    ThisItem,
+                                    {
+                                        NDIS: true,
+                                        IsDirty: true
+                                    }
+                                );
+                                Set(varHasUnsavedChanges_4A, true);
+                              OnSelect: =
+                              OnUncheck: |-
+                                =Patch(
+                                    colWard4A,
+                                    ThisItem,
+                                    {
+                                        NDIS: false,
+                                        IsDirty: true
+                                    }
+                                );
+                                Set(varHasUnsavedChanges_4A, true);
+                              Text: ="NDIS"
+                              X: =1051
+                              Y: =5
+                        - Checkbox_4AMaintenance:
+                            Control: Classic/CheckBox@2.1.0
+                            Properties:
+                              CheckboxBorderColor: =RGBA(53, 61, 63, 1)
+                              CheckboxSize: =30
+                              CheckmarkFill: =RGBA(53, 61, 63, 1)
+                              Default: |
+                                =Coalesce(ThisItem.'Maintenance', false)
+                              Height: =30
+                              OnCheck: |
+                                =Patch(
+                                    colWard4A,
+                                    ThisItem,
+                                    {
+                                        'Maintenance': true,
+                                        IsDirty: true
+                                    }
+                                );
+                              OnSelect: =
+                              OnUncheck: |
+                                =Patch(
+                                    colWard4A,
+                                    ThisItem,
+                                    {
+                                        'Maintenance': false,
+                                        IsDirty: true
+                                    }
+                                );
+                              Text: ="Maintenance"
+                              X: =1138
+                              Y: =5
+                        - Container78:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.Regular
+                              Fill: =RGBA(255, 0, 0, 1)
+                              Height: =30
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              Width: =137
+                              X: =1138
+                              Y: =52
+                            Children:
+                              - Clear Button_4A:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BasePaletteColor: =RGBA(189, 178, 176, 1)
+                                    BorderRadius: =15
+                                    Font: =Font.Verdana
+                                    FontColor: =RGBA(255, 255, 255, 1)
+                                    FontSize: =20
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =30
+                                    OnSelect: |
+                                      =Set(locShowClearWarning_4A, true);
+                                      Set(locPendingClearItem_4A, ThisItem)
+                                    Text: ="D/C"
+                                    Width: =137
+                        - Container79:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              BorderColor: =RGBA(122, 138, 143, 1)
+                              BorderStyle: =BorderStyle.None
+                              BorderThickness: =1
+                              Height: =30
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              Width: =115
+                              X: =361
+                              Y: =7
+                            Children:
+                              - Dropdown_4ADiagnosis:
+                                  Control: Classic/DropDown@2.3.1
+                                  Properties:
+                                    BorderStyle: =BorderStyle.None
+                                    Default: |-
+                                      =If(
+                                          IsBlank(ThisItem.Diagnosis.Value),
+                                          "",
+                                          ThisItem.Diagnosis.Value
+                                      )
+                                    Fill: |
+                                      =If(
+                                          IsBlank(ThisItem.Diagnosis.Value),
+                                          RGBA(255, 255, 255, 1),    // white when blank
+
+                                          Switch(
+                                              ThisItem.Diagnosis.Value,
+                                              "Ortho",  RGBA(0, 204, 255, 1),
+                                              "Amp",    RGBA(255, 51, 153, 1),
+                                              "TBI",    RGBA(198, 224, 180, 1),
+                                              "SCI",    RGBA(180, 198, 231, 1),
+                                              "Recon",  RGBA(204, 204, 255, 1),
+                                              "Trauma", RGBA(255, 91, 91, 1),
+                                              "Stroke", RGBA(233, 143, 214, 1),
+                                              "Neuro",  RGBA(255, 204, 153, 1),
+
+                                              RGBA(255, 255, 255, 1)   // default if none match
+                                          )
+                                      )
+                                    Height: =30
+                                    Items: |
+                                      =[
+                                          "",
+                                          "Ortho",
+                                          "Amp",
+                                          "TBI",
+                                          "SCI",
+                                          "Recon",
+                                          "Trauma",
+                                          "Stroke",
+                                          "Neuro"
+                                      ]
+                                    Items.Value: =Value
+                                    OnChange: |
+                                      =Patch(
+                                          colWard4A,
+                                          ThisItem,
+                                          {
+                                              Diagnosis:
+                                                  If(
+                                                      IsBlank(Dropdown_4ADiagnosis.SelectedText.Value),
+                                                      Blank(),
+                                                      { Value: Dropdown_4ADiagnosis.SelectedText.Value }
+                                                  ),
+                                              IsDirty: true
+                                          }
+                                      );
+                                    OnSelect: =
+                                    Width: =150
+                        - Container83:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              BorderColor: =RGBA(122, 138, 143, 1)
+                              BorderStyle: =BorderStyle.None
+                              BorderThickness: =1
+                              Height: =30
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              Width: =115
+                              X: =588
+                              Y: =52
+                            Children:
+                              - DatePicker_4AAdmission:
+                                  Control: Classic/DatePicker@2.6.0
+                                  Properties:
+                                    BorderStyle: =BorderStyle.None
+                                    DefaultDate: =ThisItem.'Admission Date'
+                                    Height: =30
+                                    OnChange: |
+                                      =Patch(
+                                          colWard4A,
+                                          ThisItem,
+                                          {
+                                              'Admission Date': Self.SelectedDate,
+                                              IsDirty: true
+                                          }
+                                      );
+                                    OnSelect: =
+                                    Width: =150
+                        - Container97:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              BorderColor: =RGBA(122, 138, 143, 1)
+                              BorderStyle: =BorderStyle.None
+                              BorderThickness: =1
+                              Height: =30
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              Width: =115
+                              X: =772
+                              Y: =52
+                            Children:
+                              - DatePicker1:
+                                  Control: Classic/DatePicker@2.6.0
+                                  Properties:
+                                    BorderStyle: =BorderStyle.None
+                                    DefaultDate: =ThisItem.EDD
+                                    Fill: |
+                                      =If(
+                                          IsBlank(ThisItem.EDD),
+                                          RGBA(122, 138, 143, 1),
+                                          ThisItem.EDD >= Today() && ThisItem.EDD <= DateAdd(Today(), 3),
+                                          RGBA(255, 191, 0, 1),
+                                          RGBA(255, 255, 255, 1)
+                                      )
+                                    Height: =30
+                                    OnChange: |
+                                      =Patch(
+                                          colWard4A,
+                                          ThisItem,
+                                          {
+                                              EDD: Self.SelectedDate,
+                                              IsDirty: true
+                                          }
+                                      );
+                                    Width: =150
+                        - Container10:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.Regular
+                              Height: =30
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              Width: =200
+                              X: =545
+                              Y: =7
+                            Children:
+                              - cmb4A_PT:
+                                  Control: Classic/ComboBox@2.4.0
+                                  Properties:
+                                    BorderStyle: =BorderStyle.None
+                                    ChevronBackground: =RGBA(35, 100, 153, 1)
+                                    ChevronHoverBackground: =RGBA(35, 100, 153, 1)
+                                    DefaultSelectedItems: |
+                                      =Filter(
+                                          colClinicians_Physio,
+                                          !IsBlank(
+                                              LookUp(
+                                                  ThisItem.PTKeys,
+                                                  Key = DisplayKey
+                                              )
+                                          )
+                                      )
+                                    DisplayFields: =["DisplayNameFlat"]
+                                    Height: =30
+                                    InputTextPlaceholder: |
+                                      ="PT"
+                                    Items: |+
+                                      =SortByColumns(
+                                          colClinicians_Physio,
+                                          "DisplayNameFlat",
+                                          SortOrder.Ascending
+                                      )
+                                    OnChange: |
+                                      =If(
+                                          locIsSaving || var4A_Loading,
+                                          Blank(),
+                                          With(
+                                              {
+                                                  newKeys:
+                                                      If(
+                                                          CountRows(Self.SelectedItems) = 0,
+                                                          FirstN(Table({ Key: "" }), 0),
+                                                          ForAll(Self.SelectedItems, { Key: DisplayKey })
+                                                      ),
+                                                  oldKeys:
+                                                      Coalesce(ThisItem.PTKeys, FirstN(Table({ Key: "" }), 0))
+                                              },
+                                              If(
+                                                  Concat(Sort(newKeys, Key), Key & ";") =
+                                                  Concat(Sort(oldKeys, Key), Key & ";"),
+                                                  Blank(),
+                                                  Patch(
+                                                      colWard4A,
+                                                      ThisItem,
+                                                      {
+                                                          PT_Users: ForAll(Self.SelectedItems, PersonRec),
+                                                          PTKeys: newKeys,
+                                                          IsDirty: true
+                                                      }
+                                                  )
+                                              )
+                                          )
+                                      );
+                                    OnSelect: =
+                                    SearchFields: =["DisplayNameFlat"]
+                                    Width: =200
+                        - Container10_1:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.Regular
+                              Height: =30
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              Visible: =false
+                              Width: =200
+                              X: =820
+                              Y: =7
+                            Children:
+                              - cmb4A_OT:
+                                  Control: Classic/ComboBox@2.4.0
+                                  Properties:
+                                    BorderStyle: =BorderStyle.None
+                                    ChevronBackground: =RGBA(35, 100, 153, 1)
+                                    ChevronHoverBackground: =RGBA(35, 100, 153, 1)
+                                    DefaultSelectedItems: |+
+                                      =Filter(
+                                          colClinicians_OT,
+                                          !IsBlank(
+                                              LookUp(
+                                                  ThisItem.OTKeys,
+                                                  Key = DisplayKey
+                                              )
+                                          )
+                                      )
+                                    DisplayFields: =["DisplayNameFlat"]
+                                    Height: =30
+                                    InputTextPlaceholder: ="OT"
+                                    Items: |+
+                                      =SortByColumns(
+                                          colClinicians_OT,
+                                          "DisplayNameFlat",
+                                          SortOrder.Ascending
+                                      )
+                                    OnChange: |+
+                                      =If(
+                                          locIsSaving || var4A_Loading,
+                                          Blank(),
+
+                                          With(
+                                              {
+                                                  newKeys:
+                                                      If(
+                                                          CountRows(Self.SelectedItems) = 0,
+                                                          FirstN(Table({ Key: "" }), 0),
+                                                          ForAll(Self.SelectedItems, { Key: DisplayKey })
+                                                      ),
+                                                  oldKeys:
+                                                      Coalesce(ThisItem.OTKeys, FirstN(Table({ Key: "" }), 0))
+                                              },
+                                              If(
+                                                  Concat(Sort(newKeys, Key), Key & ";") =
+                                                  Concat(Sort(oldKeys, Key), Key & ";"),
+                                                  Blank(),
+                                                  Patch(
+                                                      colWard4A,
+                                                      ThisItem,
+                                                      {
+                                                          OT_Users: ForAll(Self.SelectedItems, PersonRec),
+                                                          OTKeys: newKeys,
+                                                          IsDirty: true
+                                                      }
+                                                  )
+                                              )
+                                          )
+                                      );
+                                    OnSelect: =
+                                    SearchFields: =["DisplayNameFlat"]
+                                    Width: =200
+                        - Container10_2:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.Regular
+                              Height: =30
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              Visible: =false
+                              Width: =200
+                              X: =1075
+                              Y: =7
+                            Children:
+                              - cmb4A_SP:
+                                  Control: Classic/ComboBox@2.4.0
+                                  Properties:
+                                    BorderStyle: =BorderStyle.None
+                                    ChevronBackground: =RGBA(35, 100, 153, 1)
+                                    ChevronHoverBackground: =RGBA(35, 100, 153, 1)
+                                    DefaultSelectedItems: |+
+                                      =Filter(
+                                          colClinicians_SP,
+                                          !IsBlank(
+                                              LookUp(
+                                                  ThisItem.SPKeys,
+                                                  Key = DisplayKey
+                                              )
+                                          )
+                                      )
+                                    DisplayFields: =["DisplayNameFlat"]
+                                    Height: =30
+                                    InputTextPlaceholder: ="SP"
+                                    Items: |+
+                                      =SortByColumns(
+                                          colClinicians_SP,
+                                          "DisplayNameFlat",
+                                          SortOrder.Ascending
+                                      )
+                                    OnChange: |+
+                                      =If(
+                                          locIsSaving || var4A_Loading,
+                                          Blank(),
+
+                                          With(
+                                              {
+                                                  newKeys:
+                                                      If(
+                                                          CountRows(Self.SelectedItems) = 0,
+                                                          FirstN(Table({ Key: "" }), 0),
+                                                          ForAll(Self.SelectedItems, { Key: DisplayKey })
+                                                      ),
+                                                  oldKeys:
+                                                      Coalesce(ThisItem.SPKeys, FirstN(Table({ Key: "" }), 0))
+                                              },
+                                              If(
+                                                  Concat(Sort(newKeys, Key), Key & ";") =
+                                                  Concat(Sort(oldKeys, Key), Key & ";"),
+                                                  Blank(),
+                                                  Patch(
+                                                      colWard4A,
+                                                      ThisItem,
+                                                      {
+                                                          SP_Users: ForAll(Self.SelectedItems, PersonRec),
+                                                          SPKeys: newKeys,
+                                                          IsDirty: true
+                                                      }
+                                                  )
+                                              )
+                                          )
+                                      );
+                                    OnSelect: =
+                                    SearchFields: =["DisplayNameFlat"]
+                                    Width: =200
+                        - Label78:
+                            Control: Label@2.5.1
+                            Properties:
+                              Height: =30
+                              Text: ="Admission:"
+                              Width: =96
+                              X: =497
+                              Y: =52
+                        - Label78_1:
+                            Control: Label@2.5.1
+                            Properties:
+                              Height: =30
+                              Text: ="AFRM:"
+                              Width: =96
+                              X: =270
+                              Y: =7
+                        - Label78_2:
+                            Control: Label@2.5.1
+                            Properties:
+                              Height: =30
+                              Text: ="EDD:"
+                              Width: =56
+                              X: =723
+                              Y: =52
+                        - Label78_4:
+                            Control: Label@2.5.1
+                            Properties:
+                              Height: =30
+                              Text: ="PT:"
+                              Width: =56
+                              X: =497
+                              Y: =7
+                        - Label78_5:
+                            Control: Label@2.5.1
+                            Properties:
+                              Height: =30
+                              Text: ="OT:"
+                              Visible: =false
+                              Width: =56
+                              X: =785
+                              Y: =7
+                        - Label78_6:
+                            Control: Label@2.5.1
+                            Properties:
+                              Height: =30
+                              Text: ="SP:"
+                              Visible: =false
+                              Width: =56
+                              X: =1039
+                              Y: =7
+                        - Container88:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =RGBA(255, 255, 255, 1)
+                              Height: =30
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              Width: =115
+                              X: =361
+                              Y: =52
+                            Children:
+                              - TextInput_4AAcuity:
+                                  Control: Classic/TextInput@2.3.2
+                                  Properties:
+                                    Align: =Align.Center
+                                    BorderStyle: =BorderStyle.None
+                                    Default: =ThisItem.'Acuity Score'
+                                    Height: =30
+                                    OnChange: |
+                                      =Patch(
+                                          colWard4A,
+                                          ThisItem,
+                                          {
+                                              'Acuity Score': Value(Self.Text),
+                                              IsDirty: true
+                                          }
+                                      );
+                                    OnSelect: =
+                                    RadiusBottomLeft: =10
+                                    RadiusBottomRight: =10
+                                    RadiusTopLeft: =10
+                                    RadiusTopRight: =10
+                                    Width: =115
+                        - Label78_7:
+                            Control: Label@2.5.1
+                            Properties:
+                              Height: =30
+                              Text: ="PT Acuity:"
+                              Width: =96
+                              X: =270
+                              Y: =52
+                        - Checkbox_4AMaintenance_1:
+                            Control: Classic/CheckBox@2.1.0
+                            Properties:
+                              CheckboxBorderColor: =RGBA(53, 61, 63, 1)
+                              CheckboxSize: =30
+                              CheckmarkFill: =RGBA(53, 61, 63, 1)
+                              Default: |
+                                =Coalesce(ThisItem.'Falls Risk', false)
+                              Height: =30
+                              OnCheck: |
+                                =Patch(
+                                    colWard4A,
+                                    ThisItem,
+                                    {
+                                        'Falls Risk': true,
+                                        IsDirty: true
+                                    }
+                                );
+                              OnSelect: =
+                              OnUncheck: |
+                                =Patch(
+                                    colWard4A,
+                                    ThisItem,
+                                    {
+                                        'Falls Risk': false,
+                                        IsDirty: true
+                                    }
+                                );
+                              Text: ="Falls Risk"
+                              Width: =111
+                              X: =749
+                              Y: =5
+                        - Checkbox_4AMaintenance_2:
+                            Control: Classic/CheckBox@2.1.0
+                            Properties:
+                              CheckboxBorderColor: =RGBA(53, 61, 63, 1)
+                              CheckboxSize: =30
+                              CheckmarkFill: =RGBA(53, 61, 63, 1)
+                              Default: |
+                                =Coalesce(ThisItem.'Contact', false)
+                              Height: =30
+                              OnCheck: |
+                                =Patch(
+                                    colWard4A,
+                                    ThisItem,
+                                    {
+                                        'Contact': true,
+                                        IsDirty: true
+                                    }
+                                );
+                              OnSelect: =
+                              OnUncheck: |
+                                =Patch(
+                                    colWard4A,
+                                    ThisItem,
+                                    {
+                                        'Contact': false,
+                                        IsDirty: true
+                                    }
+                                );
+                              Text: ="Contact Precautions"
+                              Width: =190
+                              X: =860
+                              Y: =5
+      - Rectangle3:
+          Control: Rectangle@2.3.0
+          Properties:
+            Fill: =RGBA(0,0,0,0.3)
+            Height: =Parent.Height
+            Visible: =locShowIDPopup4A
+            Width: =Parent.Width
+      - Container46:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Bold
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =490
+            RadiusBottomLeft: =40
+            RadiusBottomRight: =40
+            RadiusTopLeft: =40
+            RadiusTopRight: =40
+            Visible: =locShowIDPopup4A
+            Width: =824
+            X: =276
+            Y: =177
+          Children:
+            - Label13:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  FontWeight: =FontWeight.Bold
+                  Height: =64
+                  Size: =30
+                  Text: ="Add Patient Details"
+                  Width: =824
+                  Y: =30
+            - TextInput_ID_Name:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Align: =Align.Center
+                  BorderColor: =RGBA(122, 138, 143, 1)
+                  Default: =
+                  Height: =60
+                  HintText: ="Patient Name"
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                  Size: =20
+                  Width: =706
+                  X: =54
+                  Y: =109
+            - TextInput_ID_URN:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Align: =Align.Center
+                  BorderColor: =RGBA(122, 138, 143, 1)
+                  Default: =
+                  Height: =60
+                  HintText: ="URN"
+                  MaxLength: =8
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                  Size: =20
+                  Width: =706
+                  X: =54
+                  Y: =178
+            - TextInput_ID_DOB_Day:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Align: =Align.Center
+                  BorderColor: =RGBA(122, 138, 143, 1)
+                  Default: =
+                  Height: =60
+                  HintText: ="DD"
+                  MaxLength: =2
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                  Size: =20
+                  VirtualKeyboardMode: =VirtualKeyboardMode.Numeric
+                  Width: =180
+                  X: =54
+                  Y: =244
+            - TextCanvas12_1:
+                Control: Text@0.0.51
+                Properties:
+                  Align: ='TextCanvas.Align'.Center
+                  Height: =60
+                  Size: =30
+                  Text: ="/"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Weight: ='TextCanvas.Weight'.Bold
+                  Width: =76
+                  X: =502
+                  Y: =244
+            - TextInput_ID_DOB_Month:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Align: =Align.Center
+                  BorderColor: =RGBA(122, 138, 143, 1)
+                  Default: =
+                  Height: =60
+                  HintText: ="MM"
+                  MaxLength: =2
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                  Size: =20
+                  VirtualKeyboardMode: =VirtualKeyboardMode.Numeric
+                  Width: =180
+                  X: =322
+                  Y: =244
+            - TextCanvas12:
+                Control: Text@0.0.51
+                Properties:
+                  Align: ='TextCanvas.Align'.Center
+                  Height: =60
+                  Size: =30
+                  Text: ="/"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Weight: ='TextCanvas.Weight'.Bold
+                  Width: =88
+                  X: =234
+                  Y: =244
+            - TextInput_ID_DOB_Year:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Align: =Align.Center
+                  BorderColor: =RGBA(122, 138, 143, 1)
+                  Default: =
+                  Height: =60
+                  HintText: ="YYYY"
+                  MaxLength: =4
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                  Size: =20
+                  VirtualKeyboardMode: =VirtualKeyboardMode.Numeric
+                  Width: =182
+                  X: =578
+                  Y: =244
+            - Container47:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(35, 100, 153, 1)
+                  Height: =80
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  Width: =280
+                  X: =425
+                  Y: =351
+                Children:
+                  - ButtonCanvas28:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        FontColor: =RGBA(255, 255, 255, 1)
+                        FontSize: =30
+                        FontWeight: =FontWeight.Bold
+                        Height: =80
+                        Icon: ="CheckmarkCircle"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.TextOnly
+                        OnSelect: |
+                          =// Require all 3 identifiers
+                          If(
+                              IsBlank(Trim(TextInput_ID_Name.Text)) ||
+                              IsBlank(Trim(TextInput_ID_URN.Text)) ||
+                              IsBlank(TextInput_ID_DOB_Day.Text) ||
+                              IsBlank(TextInput_ID_DOB_Month.Text) ||
+                              IsBlank(TextInput_ID_DOB_Year.Text),
+
+                              Notify(
+                                  "Please complete Name, URN and DOB.",
+                                  NotificationType.Warning
+                              ),
+
+                              // Basic validation for URN & DOB
+                              If(
+                                  !IsNumeric(TextInput_ID_URN.Text) ||
+                                  Value(TextInput_ID_DOB_Day.Text) < 1 ||
+                                  Value(TextInput_ID_DOB_Day.Text) > 31 ||
+                                  Value(TextInput_ID_DOB_Month.Text) < 1 ||
+                                  Value(TextInput_ID_DOB_Month.Text) > 12 ||
+                                  Value(TextInput_ID_DOB_Year.Text) < 1900 ||
+                                  Value(TextInput_ID_DOB_Year.Text) > Year(Today()),
+
+                                  Notify(
+                                      "Please check URN and DOB values.",
+                                      NotificationType.Warning
+                                  ),
+
+                                  // All good → patch into the local collection
+                                  With(
+                                      {
+                                          newDOB: Date(
+                                              Value(TextInput_ID_DOB_Year.Text),
+                                              Value(TextInput_ID_DOB_Month.Text),
+                                              Value(TextInput_ID_DOB_Day.Text)
+                                          ),
+                                          newURN: Trim(TextInput_ID_URN.Text)   // keep leading zeros as text
+                                      },
+                                      Patch(
+                                          colWard4A,
+                                          LookUp(colWard4A, ID = locIDRowID4A),
+                                          {
+                                              Patient: Trim(TextInput_ID_Name.Text),
+                                              URN: newURN,      // text URN, leading 0 preserved
+                                              DOB: newDOB,
+                                              IsDirty: true
+                                          }
+                                      );
+
+                                      // close popup & clear fields
+                                      Set(locShowIDPopup4A, false);
+                                      Reset(TextInput_ID_Name);
+                                      Reset(TextInput_ID_URN);
+                                      Reset(TextInput_ID_DOB_Day);
+                                      Reset(TextInput_ID_DOB_Month);
+                                      Reset(TextInput_ID_DOB_Year);
+
+                                      // mark ward as having unsaved changes
+                                      Set(varHasUnsavedChanges_4A, true)
+                                  )
+                              )
+                          );
+                        Text: ="Confirm"
+                        Width: =280
+            - Container47_1:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =80
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  Width: =280
+                  X: =109
+                  Y: =351
+                Children:
+                  - ButtonCanvas33:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        FontColor: =RGBA(53, 61, 63, 1)
+                        FontSize: =30
+                        Height: =80
+                        Icon: ="DismissCircle"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.TextOnly
+                        OnSelect: |
+                          =Set(locShowIDPopup4A, false);
+
+                          Reset(TextInput_ID_Name);
+                          Reset(TextInput_ID_URN);
+                          Reset(TextInput_ID_DOB_Day);
+                          Reset(TextInput_ID_DOB_Month);
+                          Reset(TextInput_ID_DOB_Year);
+                        Text: ="Cancel"
+                        Width: =280
+      - conClearWarning_4A:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: |+
+              =RGBA(0,0,0,0.4)
+            Height: =768
+            Visible: =locShowClearWarning_4A
+            Width: =1366
+          Children:
+            - Container76:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =308
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                  Width: =743
+                  X: =285
+                  Y: =180
+                Children:
+                  - Label24:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        FontWeight: =FontWeight.Bold
+                        Height: =205
+                        Size: =22
+                        Text: |+
+                          ="Do you wish to DISCHARGE this Patient from the Ward?" & Char(10) &
+                          "This will permanently delete all associated data (Exercise Setups, Outcome Measures, etc.)"
+                        Width: =666
+                        X: =50
+                        Y: =15
+                  - Container77:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.Bold
+                        Fill: =RGBA(35, 100, 153, 1)
+                        Height: =50
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        Width: =155
+                        X: =383
+                        Y: =210
+                      Children:
+                        - ButtonCanvas38:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              FontColor: =RGBA(255, 255, 255, 1)
+                              FontSize: =20
+                              Height: =50
+                              Icon: ="CheckmarkCircle"
+                              IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              OnSelect: |+
+                                =// SAFETY: close popup immediately
+                                Set(locShowClearWarning_4A, false);
+
+                                // 1) Delete Outcome Measures for this patient
+                                RemoveIf(
+                                    Patient_Outcome_Measures,
+                                    PatientName = locPendingClearItem_4A.Patient
+                                );
+
+                                // 2) Delete Exercise Setups for this patient on Ward 4A
+                                RemoveIf(
+                                    Patient_Exercise_Setups,
+                                    Patient = locPendingClearItem_4A.Patient
+                                );
+
+                                // 3) Clear the slot in colWard4A (LOCAL ONLY - Save commits to SharePoint)
+                                Patch(
+                                    colWard4A,
+                                    locPendingClearItem_4A,
+                                    {
+                                        Patient: "",
+                                        URN: "",
+                                        DOB: Blank(),
+                                        Diagnosis: Blank(),
+
+                                        // ✅ CLEAR PERSON COLUMNS (typed empty table)
+                                        PT_Users:
+                                            FirstN(
+                                                Table(
+                                                    {
+                                                        Claims: "",
+                                                        DisplayName: "",
+                                                        Email: "",
+                                                        Department: "",
+                                                        JobTitle: "",
+                                                        Picture: ""
+                                                    }
+                                                ),
+                                                0
+                                            ),
+                                        OT_Users:
+                                            FirstN(
+                                                Table(
+                                                    {
+                                                        Claims: "",
+                                                        DisplayName: "",
+                                                        Email: "",
+                                                        Department: "",
+                                                        JobTitle: "",
+                                                        Picture: ""
+                                                    }
+                                                ),
+                                                0
+                                            ),
+                                        SP_Users:
+                                            FirstN(
+                                                Table(
+                                                    {
+                                                        Claims: "",
+                                                        DisplayName: "",
+                                                        Email: "",
+                                                        Department: "",
+                                                        JobTitle: "",
+                                                        Picture: ""
+                                                    }
+                                                ),
+                                                0
+                                            ),
+
+                                        // ✅ CLEAR KEYS (typed empty tables)
+                                        PTKeys: FirstN(Table({ Key: "" }), 0),
+                                        OTKeys: FirstN(Table({ Key: "" }), 0),
+                                        SPKeys: FirstN(Table({ Key: "" }), 0),
+
+                                        'Acuity Score': Blank(),
+                                        NDIS: false,
+                                        'Admission Date': Blank(),
+                                        'AROC EDD': Blank(),
+                                        Maintenance: false,
+                                        EDD: Blank(),
+                                        'Link Worker': false,
+
+                                        'Morning Handover': "",
+                                        'CC Handover': "",
+                                        Monday: "",
+                                        Tuesday: "",
+                                        Wednesday: "",
+                                        Thursday: "",
+                                        Friday: "",
+                                        WeekStartDate: Blank(),
+
+                                        'Falls Risk': false,
+                                        Contact: false,
+
+                                        IsDirty: true
+                                    }
+                                );
+
+                                // 4) Clear pending variable
+                                Set(locPendingClearItem_4A, Blank());
+
+                                // Notify
+                                Notify(
+                                    "Patient discharged and related data removed. Please Save to finalise.",
+                                    NotificationType.Success
+                                );
+                              Text: ="Confirm"
+                              Width: =155
+                  - Container77_1:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.Bold
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =50
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        Width: =155
+                        X: =208
+                        Y: =210
+                      Children:
+                        - ButtonCanvas39:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              FontColor: =RGBA(79, 90, 94, 1)
+                              FontSize: =20
+                              Height: =50
+                              Icon: ="DismissCircle"
+                              IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              OnSelect: |+
+                                =Set(locShowClearWarning_4A, false);
+                                Set(locPendingClearItem_4A, Blank());
+                              Text: ="Cancel"
+                              Width: =155
+      - Timer_Pulse_4A:
+          Control: Timer@2.1.0
+          Properties:
+            AutoStart: =true
+            Duration: =500
+            Height: =15
+            OnTimerEnd: |+
+              =Set(varPulseOn_4A, !varPulseOn_4A)
+            Repeat: =true
+            Start: |+
+              =varHasUnsavedChanges_4A
+            Visible: =false
+            Width: =85
+            X: =1281
+            Y: =753
+      - conPatientList_4A:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(0, 0, 0, 0.4)
+            Height: =768
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            Visible: =locShowPatientList_4A
+            Width: =1366
+          Children:
+            - Button2:
+                Control: ModernButton@1.0.0
+                Properties:
+                  Appearance: =ButtonAppearance.Transparent
+                  Height: =768
+                  OnSelect: =Set(locShowPatientList_4A,false)
+                  Width: =1366
+            - Container6:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =710
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                  Width: =1198
+                  X: =81
+                  Y: =27
+                Children:
+                  - Label5:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        FontWeight: =FontWeight.Bold
+                        Height: =54
+                        Size: =18
+                        Text: ="Patient List"
+                        Width: =664
+                  - Label5_1:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        FontWeight: =FontWeight.Bold
+                        Height: =54
+                        Size: =18
+                        Text: ="Ward Data"
+                        Width: =534
+                        X: =664
+                  - Container68:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.Bold
+                        Fill: =RGBA(35, 100, 153, 0.2)
+                        Height: =640
+                        RadiusBottomLeft: =20
+                        RadiusBottomRight: =20
+                        RadiusTopLeft: =20
+                        RadiusTopRight: =20
+                        Width: =652
+                        X: =12
+                        Y: =54
+                      Children:
+                        - Gallery1:
+                            Control: Gallery@2.15.0
+                            Variant: Vertical
+                            Properties:
+                              Height: =640
+                              Items: |
+                                =SortByColumns(
+                                    Filter(colWard4A, !IsBlank(ID)),
+                                    "field_1",
+                                    SortOrder.Ascending
+                                )
+                              TemplateSize: =25
+                              Width: =652
+                            Children:
+                              - Container7:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.Regular
+                                    Fill: =RGBA(255, 255, 255, 1)
+                                    Height: =29
+                                    RadiusBottomLeft: =12
+                                    RadiusBottomRight: =12
+                                    RadiusTopLeft: =12
+                                    RadiusTopRight: =12
+                                    Width: =626
+                                    X: =5
+                                  Children:
+                                    - Label7:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Height: =29
+                                          Text: ="Patient:"
+                                          Width: =74
+                                    - Label8:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =29
+                                          Text: =ThisItem.Patient
+                                          Width: =194
+                                          X: =60
+                                    - Label7_1:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Height: =29
+                                          Text: ="Physio:"
+                                          Width: =74
+                                          X: =246
+                                    - Label8_1:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =29
+                                          Text: |-
+                                            =Concat(
+                                                ThisItem.PT_Users,
+                                                DisplayName,
+                                                ", "
+                                            )
+                                          Width: =194
+                                          X: =306
+                                    - Label7_2:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Height: =28
+                                          Text: ="Acuity:"
+                                          Width: =74
+                                          X: =514
+                                          Y: =1
+                                    - Label8_2:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =29
+                                          Size: =15
+                                          Text: =ThisItem.'Acuity Score'
+                                          Width: =38
+                                          X: =588
+                  - Container69:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.Bold
+                        Height: =640
+                        RadiusBottomLeft: =20
+                        RadiusBottomRight: =20
+                        RadiusTopLeft: =20
+                        RadiusTopRight: =20
+                        Width: =513
+                        X: =672
+                        Y: =54
+                      Children:
+                        - PieChart2_3:
+                            Control: PieChart@2.3.0
+                            Properties:
+                              Height: =229
+                              ItemColorSet: =varChartPalette
+                              Items: =col4A_PatientsPerPT
+                              Items.Labels: =DisplayLabel
+                              Items.Series: =Count
+                              Visible: |
+                                =Coalesce(varMeDirectory.Discipline.Value, "") = "Physio"
+                              Width: =513
+                        - ColumnChart1_2:
+                            Control: BarChart@2.4.0
+                            Properties:
+                              Height: =185
+                              ItemColorSet: =varChartPalette
+                              Items: =col4A_AcuityPerPT
+                              Items.Labels: =Label
+                              Items.Series1: =TotalAcuity
+                              Items.Series2: =TotalAcuity
+                              Items.Series3: =TotalAcuity
+                              Items.Series4: =TotalAcuity
+                              Items.Series5: =TotalAcuity
+                              Items.Series6: =TotalAcuity
+                              Items.Series7: =TotalAcuity
+                              Items.Series8: =TotalAcuity
+                              Items.Series9: =TotalAcuity
+                              Visible: |
+                                =Coalesce(varMeDirectory.Discipline.Value, "") = "Physio"
+                              Width: =513
+                              Y: =172
+                        - PieChart1_1:
+                            Control: PieChart@2.3.0
+                            Properties:
+                              Font: =Font.Verdana
+                              Height: =225
+                              ItemColorSet: |
+                                =[
+                                    RGBA(0, 204, 255, 1),    // Ortho
+                                    RGBA(204, 204, 255, 1),  // Recon
+                                    RGBA(198, 224, 180, 1),  // TBI
+                                    RGBA(255, 51, 153, 1),   // Amp
+                                    RGBA(180, 198, 231, 1),  // SCI
+                                    RGBA(255, 91, 91, 1),    // Trauma
+                                    RGBA(233, 143, 214, 1),  // Stroke
+                                    RGBA(255, 204, 153, 1)   // Neuro
+                                ]
+                              Items: |
+                                =col4A_DiagnosisSummary
+                              Items.Labels: =DisplayLabel
+                              Items.Series: =Count
+                              Size: =11
+                              Width: =513
+                              Y: =343
+                        - Label15_1:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              FontWeight: =FontWeight.Bold
+                              Height: =110
+                              Size: =70
+                              Text: |
+                                =Sum(
+                                    var4ABasePatients,
+                                    'Acuity Score'
+                                )
+                              Visible: |
+                                =Coalesce(varMeDirectory.Discipline.Value, "") in ["Physio", "OT"]
+                              Width: =245
+                              X: =268
+                              Y: =530
+                        - Label17_16:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              FontWeight: =FontWeight.Bold
+                              Height: =33
+                              Text: ="Sum of Ward Acuity"
+                              Visible: |
+                                =Coalesce(varMeDirectory.Discipline.Value, "") in ["Physio", "OT"]
+                              Width: =245
+                              X: =23
+                              Y: =568
