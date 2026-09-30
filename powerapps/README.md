@@ -283,3 +283,19 @@ Removed from the ward screen: the hidden discharge clean-up button, the `colWard
 ## Fix: "[Ward_4A_Shared] The query is not valid" when opening a patient from equipment
 
 `Equipment_Main` and `All_Allocated_New` found the patient with one big server query (name AND URN AND DOB). SharePoint rejected it. They now ask SharePoint only for the name, then match URN and DOB on the screen.
+
+---
+
+## Equipment usage log – `Usage_Log.pa.yaml` (new screen)
+
+New screen, nothing to replace. Paste it, then paste the updated `Home_Main.pa.yaml` (it gains a **Usage Log** button in the bottom bar, shown to Directors, Team Leaders and CA4 only, same rule as the equipment audit).
+
+Reads `Equipment_Usage_Log` (the row written on every sign-out and return). Built for managers and whoever orders equipment:
+- **Filters:** period (30 days / 90 days / 12 months / any From-To), category, ward, free-text search (code, brand, model, physio). Everything on the screen follows them.
+- **Six tiles:** signed out, returned, out right now, average days per loan, service due (over 100 days in use), out of service.
+- **Most used:** one row per item: loans, days out, days this year (red over 100), and whether it is out now. Sort by loans or days.
+- **Demand by size:** one row per category / type / width: stock, out now, free, loans. The bar is the share out now. Stock level flag: **None free** (red) when nothing is free, **Low** (amber) when one or fewer is free and there are more than two in stock. Sorted with the tightest first, so it reads as an ordering list.
+- **Wards and physios:** loans per ward (average days, out now) and the top 12 physios.
+- **Activity log:** newest first. Chips: All / Sign-outs / Returns / Service due / To review (returns with no matching sign-out). Tap a line for the full record.
+- Patient names and URNs are deliberately **not** shown (managers do not need them). They are still in the list.
+- The log is read in 14-day slices so it stays under the row limit; the period presets load a few seconds at most.
