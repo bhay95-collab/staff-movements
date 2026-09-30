@@ -237,6 +237,6 @@ New / changed:
 
 ## App OnStart – `App_OnStart.txt`
 
-Full replacement for App > OnStart. Three sections: (1) used by the redesigned screens, (2) Data Dashboard ratios and diagnosis map (now includes Amp, Recon, Neuro), (3) kept for CA scheduling screens not yet redone.
+Full replacement for App > OnStart. Two sections: (1) used by the redesigned screens, (2) Data Dashboard ratios and diagnosis map (now includes Amp, Recon, Neuro). CA scheduling has been removed from the app, so all its variables and collections are gone.
 
-Removed (only the old audit / ward screens used them): `varSelWard`, `varSelOutcome`, `varSelClinicianEmail`, `varFromDate`, `varToDate`, `varHasUnsavedChanges_4A/4B/5A/6A`, `HomeColorsList`, `HomeColorCollection` (Home_Main builds its own).
+Removed (only the old audit / ward screens used them): `varSelWard`, `varSelOutcome`, `varSelClinicianEmail`, `varFromDate`, `varToDate`, `varHasUnsavedChanges_4A/4B/5A/6A`, `HomeColorsList`, `HomeColorCollection` (Home_Main builds its own), and everything for CA scheduling (slots, time options, CA dropdown, `varCAEmail`, `varMyClaims`, `colSelectedSessionRows`, `varShowRemovePopup`, `varRemoveTarget`, `varDayAnchorMinutes`, `varSelectedWard`, 2A time variables).
