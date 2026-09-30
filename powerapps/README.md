@@ -142,3 +142,14 @@ Replaces `All_Allocated_Equipment`. Screen name is `All_Allocated_New`: delete t
 - **Bug fixed:** the old screen found the patient in `colWard` / `colWard6A` by URN only. It now searches the four ward lists directly (Name + URN + DOB, or Name + URN if the equipment record has no DOB), so it works from any screen.
 - Not found on any ward: "Patient no longer found" popup with **Return equipment** / **Leave allocated**. The return logic is unchanged.
 - Control names end in `_Al` so they cannot clash with the old screen while both exist.
+
+---
+
+## All Available Equipment – `All_Available_New.pa.yaml`
+
+Replaces `All_Available_Equipment`. Screen name is `All_Available_New`: delete the old screen, then rename this one to `All_Available_Equipment`.
+
+Three cards: filters (left), list (middle), item details (right).
+- Filters: Category, Wheelchair type, Width, Depth, Height, Barcode, "Service due only" tick. Reset button clears all.
+- List: tap anywhere on a row to show it in the details card. Days-in-use pill goes red "SERVICE DUE" above 100 days.
+- Removed: Patient / URN filters (available items have no patient) and the old row click that opened a blank patient.
