@@ -6,7 +6,90 @@ Screens:
       OnVisible: |-
         =// Latest ward status colours from SharePoint
         Refresh(Home_Colors_Shared);
-        ClearCollect(HomeColorCollection, Home_Colors_Shared)
+        ClearCollect(HomeColorCollection, Home_Colors_Shared);
+
+        // Who am I? (decides whether the acuity number is shown)
+        Set(
+            varMeDirectory,
+            LookUp(ClinicianDirectory, Lower(Person.Email) = Lower(User().Email))
+        );
+
+        // At-a-glance numbers per ward: beds, patients, total acuity, EDD within 3 days
+        ClearCollect(
+            colHomeStats,
+            With(
+                { rows: Ward_4A_Shared },
+                {
+                    Key: "Ward4A",
+                    Beds: CountRows(rows),
+                    Patients: CountRows(Filter(rows, !IsBlank(Patient))),
+                    Acuity: Sum(Filter(rows, !IsBlank(Patient)), 'Acuity Score'),
+                    EddSoon: CountRows(
+                        Filter(
+                            rows,
+                            !IsBlank(Patient),
+                            !IsBlank(EDD),
+                            EDD >= Today(),
+                            EDD <= DateAdd(Today(), 3)
+                        )
+                    )
+                }
+            ),
+            With(
+                { rows: Ward_4B_Shared },
+                {
+                    Key: "Ward4B",
+                    Beds: CountRows(rows),
+                    Patients: CountRows(Filter(rows, !IsBlank(Patient))),
+                    Acuity: Sum(Filter(rows, !IsBlank(Patient)), 'Acuity Score'),
+                    EddSoon: CountRows(
+                        Filter(
+                            rows,
+                            !IsBlank(Patient),
+                            !IsBlank(EDD),
+                            EDD >= Today(),
+                            EDD <= DateAdd(Today(), 3)
+                        )
+                    )
+                }
+            ),
+            With(
+                { rows: Ward_5A_Shared },
+                {
+                    Key: "Ward5A",
+                    Beds: CountRows(rows),
+                    Patients: CountRows(Filter(rows, !IsBlank(Patient))),
+                    Acuity: Sum(Filter(rows, !IsBlank(Patient)), 'Acuity Score'),
+                    EddSoon: CountRows(
+                        Filter(
+                            rows,
+                            !IsBlank(Patient),
+                            !IsBlank(EDD),
+                            EDD >= Today(),
+                            EDD <= DateAdd(Today(), 3)
+                        )
+                    )
+                }
+            ),
+            With(
+                { rows: Ward_6A_Shared },
+                {
+                    Key: "Ward6A",
+                    Beds: CountRows(rows),
+                    Patients: CountRows(Filter(rows, !IsBlank(Patient))),
+                    Acuity: Sum(Filter(rows, !IsBlank(Patient)), 'Acuity Score'),
+                    EddSoon: CountRows(
+                        Filter(
+                            rows,
+                            !IsBlank(Patient),
+                            !IsBlank(EDD),
+                            EDD >= Today(),
+                            EDD <= DateAdd(Today(), 3)
+                        )
+                    )
+                }
+            )
+        )
     Children:
       - Rectangle_HomeVeil:
           Control: Rectangle@2.3.0
@@ -77,7 +160,7 @@ Screens:
           Control: Gallery@2.15.0
           Variant: Vertical
           Properties:
-            Height: =560
+            Height: =570
             Items: |-
               =Table(
                   { Key: "Ward4A", Label: "Ward 4A", Code: "4A", IsWard: true },
@@ -88,7 +171,7 @@ Screens:
                   { Key: "DR", Label: "Day Rehab", Code: "", IsWard: false }
               )
             TemplatePadding: =0
-            TemplateSize: =280
+            TemplateSize: =285
             WrapCount: =3
             Width: =1333
             X: =18
@@ -135,9 +218,9 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =40
                         Text: =ThisItem.Label
-                        Width: =Parent.Width - 48
+                        Width: =Parent.Width - 190
                         X: =24
-                        Y: =26
+                        Y: =22
                   - conPill_Home:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
@@ -145,8 +228,8 @@ Screens:
                         Fill: =Switch(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")), "#98d046", RGBA(12, 122, 82, 1), "#ffbf00", RGBA(245, 176, 0, 1), "#ff0000", RGBA(180, 26, 26, 1), RGBA(140, 155, 174, 1))
                         Height: =28
                         Width: =110
-                        X: =24
-                        Y: =74
+                        X: =Parent.Width - 134
+                        Y: =30
                         RadiusBottomLeft: =14
                         RadiusBottomRight: =14
                         RadiusTopLeft: =14
@@ -163,6 +246,88 @@ Screens:
                               Height: =28
                               Width: =Parent.Width
                               Text: =Switch(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")), "#98d046", "Green", "#ffbf00", "Orange", "#ff0000", "Red", "Not set")
+                  - lblBeds_Home:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
+                        Size: =24
+                        FontWeight: =FontWeight.Bold
+                        Height: =32
+                        Visible: =ThisItem.IsWard
+                        Width: =120
+                        X: =24
+                        Y: =76
+                        Text: |-
+                          =With({s: LookUp(colHomeStats, Key = ThisItem.Key)}, If(IsBlank(s), "-", s.Patients & "/" & s.Beds))
+                  - lblBedsCap_Home:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =11
+                        FontWeight: =FontWeight.Bold
+                        Height: =18
+                        Visible: =ThisItem.IsWard
+                        Width: =120
+                        X: =24
+                        Y: =108
+                        Text: ="BEDS FILLED"
+                  - lblEdd_Home:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: |-
+                          =With({s: LookUp(colHomeStats, Key = ThisItem.Key)}, If(!IsBlank(s) && s.EddSoon > 0, RGBA(122, 88, 0, 1), RGBA(14, 28, 42, 1)))
+                        Size: =24
+                        FontWeight: =FontWeight.Bold
+                        Height: =32
+                        Visible: =ThisItem.IsWard
+                        Width: =120
+                        X: =148
+                        Y: =76
+                        Text: |-
+                          =With({s: LookUp(colHomeStats, Key = ThisItem.Key)}, If(IsBlank(s), "-", Text(s.EddSoon)))
+                  - lblEddCap_Home:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =11
+                        FontWeight: =FontWeight.Bold
+                        Height: =18
+                        Visible: =ThisItem.IsWard
+                        Width: =120
+                        X: =148
+                        Y: =108
+                        Text: ="EDD IN 3 DAYS"
+                  - lblAcuity_Home:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
+                        Size: =24
+                        FontWeight: =FontWeight.Bold
+                        Height: =32
+                        Width: =120
+                        X: =272
+                        Y: =76
+                        Visible: =ThisItem.IsWard && Coalesce(varMeDirectory.Discipline.Value, "") in ["Physio", "OT"]
+                        Text: |-
+                          =With({s: LookUp(colHomeStats, Key = ThisItem.Key)}, If(IsBlank(s), "-", Text(Coalesce(s.Acuity, 0))))
+                  - lblAcuityCap_Home:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =11
+                        FontWeight: =FontWeight.Bold
+                        Height: =18
+                        Width: =120
+                        X: =272
+                        Y: =108
+                        Visible: =ThisItem.IsWard && Coalesce(varMeDirectory.Discipline.Value, "") in ["Physio", "OT"]
+                        Text: ="TOTAL ACUITY"
                   - lblSet_Home:
                       Control: Label@2.5.1
                       Properties:
@@ -174,7 +339,7 @@ Screens:
                         Text: ="SET STATUS"
                         Width: =200
                         X: =24
-                        Y: =120
+                        Y: =142
                   - conGreen_Home:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
@@ -187,7 +352,7 @@ Screens:
                         Height: =36
                         Width: =116
                         X: =24
-                        Y: =142
+                        Y: =162
                         RadiusBottomLeft: =18
                         RadiusBottomRight: =18
                         RadiusTopLeft: =18
@@ -229,7 +394,7 @@ Screens:
                         Height: =36
                         Width: =116
                         X: =148
-                        Y: =142
+                        Y: =162
                         RadiusBottomLeft: =18
                         RadiusBottomRight: =18
                         RadiusTopLeft: =18
@@ -271,7 +436,7 @@ Screens:
                         Height: =36
                         Width: =116
                         X: =272
-                        Y: =142
+                        Y: =162
                         RadiusBottomLeft: =18
                         RadiusBottomRight: =18
                         RadiusTopLeft: =18
@@ -312,7 +477,7 @@ Screens:
                         Visible: =!ThisItem.IsWard
                         Width: =Parent.Width - 48
                         X: =24
-                        Y: =204
+                        Y: =222
                   - conOpen_Home:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
@@ -323,7 +488,7 @@ Screens:
                         Visible: =ThisItem.IsWard
                         Width: =Parent.Width - 48
                         X: =24
-                        Y: =192
+                        Y: =210
                         RadiusBottomLeft: =22
                         RadiusBottomRight: =22
                         RadiusTopLeft: =22
@@ -352,10 +517,10 @@ Screens:
             BorderThickness: =1
             DropShadow: =DropShadow.Light
             Fill: =RGBA(255, 255, 255, 1)
-            Height: =72
+            Height: =68
             Width: =1333
             X: =18
-            Y: =668
+            Y: =672
             RadiusBottomLeft: =18
             RadiusBottomRight: =18
             RadiusTopLeft: =18
@@ -373,7 +538,7 @@ Screens:
                   Height: =46
                   Width: =290
                   X: =16
-                  Y: =13
+                  Y: =11
                   RadiusBottomLeft: =23
                   RadiusBottomRight: =23
                   RadiusTopLeft: =23
@@ -407,7 +572,7 @@ Screens:
                   Height: =46
                   Width: =200
                   X: =322
-                  Y: =13
+                  Y: =11
                   RadiusBottomLeft: =23
                   RadiusBottomRight: =23
                   RadiusTopLeft: =23

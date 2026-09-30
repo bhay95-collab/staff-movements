@@ -85,6 +85,7 @@ Replaces `Home_PT` (this supersedes "Home_PT – change 4 buttons" above: the ne
 - Status still lives in `Home_Colors_Shared` (`#98d046` / `#ffbf00` / `#ff0000`), so nothing changes in SharePoint.
 - Selected status is highlighted; the tile has a colour strip and a status pill.
 - Failed status updates now show a message.
+- At a glance on each ward card: beds filled (e.g. 28/30), patients with an EDD in the next 3 days (turns amber when above 0), and total acuity (Physio / OT users only). Loaded once when Home opens into `colHomeStats`.
 - `Equipment Dashboard` and `Team Info` buttons kept.
 
 ## Swap it in
