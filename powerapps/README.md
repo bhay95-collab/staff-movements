@@ -170,3 +170,16 @@ How it works (one place for the filter logic instead of 8 copies):
 - New variables and collections all start `au` / `colAu`, so nothing clashes with the old screen.
 - "Untagged" everywhere = `TagResult` is not "OK".
 - Removed: the unwired "Usage Dashboard" button (it had no action).
+
+---
+
+## Physio Team Info – `Physiotherapy_New.pa.yaml`
+
+Replaces `Physiotherapy_Screen`. Screen name is `Physiotherapy_New`: delete the old screen, then rename this one to `Physiotherapy_Screen` (Home_Main already opens `Physiotherapy_Screen`).
+
+- Header pills: Manage Staff (Directors / Team Leaders only), Data Dashboard, Leave Calendar. Same targets as before.
+- Left card: Team Brief documents. Whole row is tappable. Folders open, files launch. New "Up" button goes up one level (old back arrow always jumped to the top). Path shown above the list.
+- Right card: team notes. Old version saved to SharePoint on every keystroke. Now edit, then press **Save notes** (or Discard). Shows who last saved and when.
+- Data Dashboard button: same collections built as before (`col4A_PieData` … `col6A_PieData`), 4 copies of the same code cut to one short line each.
+- Edit password box and Unlock unchanged; wrong password now shows a message.
+- OnVisible also sets `varMeDirectory` (same as Home) so the screen works if opened directly.
