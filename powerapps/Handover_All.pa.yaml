@@ -1,0 +1,750 @@
+Screens:
+  Handover_All:
+    Properties:
+      Fill: =RGBA(235, 242, 248, 1)
+      ImagePosition: =ImagePosition.Fill
+      OnVisible: |-
+        =// =======================================================
+        // WARD HANDOVER – one screen for 4A / 4B / 5A / 6A
+        // Opened from Ward_All (varWard is already set there).
+        // Works on the SAME colWard the ward screen loaded.
+        //   Morning Handover = daily     Case Conference Handover = weekly
+        // =======================================================
+
+        If(IsBlank(varWard), Set(varWard, "4A"));
+
+        Set(hoShowDiscard, false);
+        Set(hoIsSaving, false);
+        Set(hoPulseOn, false);
+
+        // Pull the latest handover notes from SharePoint (other people may have edited)
+        Select(btnReload_Ho)
+    Children:
+      - btnReload_Ho:
+          Control: Button@0.0.45
+          Properties:
+            Height: =10
+            Visible: =false
+            Width: =10
+            X: =0
+            Y: =0
+            Text: ="Reload"
+            OnSelect: |-
+              =// =======================================================
+              // RELOAD HANDOVER NOTES (OnVisible + Discard)
+              // Only the two note columns are refreshed into colWard.
+              // =======================================================
+              If(
+                  varWard = "4A",
+                  Refresh(Ward_4A_Shared);
+                  ForAll(
+                      Ward_4A_Shared As s,
+                      If(
+                          !IsBlank(LookUp(colWard, ID = s.ID)),
+                          Patch(
+                              colWard,
+                              LookUp(colWard, ID = s.ID),
+                              {
+                                  'Morning Handover': s.'Morning Handover',
+                                  'CC Handover': s.'CC Handover',
+                                  IsDirty: false
+                              }
+                          )
+                      )
+                  ),
+                  varWard = "4B",
+                  Refresh(Ward_4B_Shared);
+                  ForAll(
+                      Ward_4B_Shared As s,
+                      If(
+                          !IsBlank(LookUp(colWard, ID = s.ID)),
+                          Patch(
+                              colWard,
+                              LookUp(colWard, ID = s.ID),
+                              {
+                                  'Morning Handover': s.'Morning Handover',
+                                  'CC Handover': s.'CC Handover',
+                                  IsDirty: false
+                              }
+                          )
+                      )
+                  ),
+                  varWard = "5A",
+                  Refresh(Ward_5A_Shared);
+                  ForAll(
+                      Ward_5A_Shared As s,
+                      If(
+                          !IsBlank(LookUp(colWard, ID = s.ID)),
+                          Patch(
+                              colWard,
+                              LookUp(colWard, ID = s.ID),
+                              {
+                                  'Morning Handover': s.'Morning Handover',
+                                  'CC Handover': s.'CC Handover',
+                                  IsDirty: false
+                              }
+                          )
+                      )
+                  ),
+                  Refresh(Ward_6A_Shared);
+                  ForAll(
+                      Ward_6A_Shared As s,
+                      If(
+                          !IsBlank(LookUp(colWard, ID = s.ID)),
+                          Patch(
+                              colWard,
+                              LookUp(colWard, ID = s.ID),
+                              {
+                                  'Morning Handover': s.'Morning Handover',
+                                  'CC Handover': s.'CC Handover',
+                                  IsDirty: false
+                              }
+                          )
+                      )
+                  )
+              )
+      - Ho_Title:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Regular
+            Fill: =RGBA(7, 95, 115, 1)
+            Height: =70
+            Width: =1333
+            X: =18
+            Y: =12
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+          Children:
+            - imgHeaderGradient_Ho:
+                Control: Image@2.2.3
+                Properties:
+                  Height: =Parent.Height
+                  Image: ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' width='1333' height='70' viewBox='0 0 1333 70' preserveAspectRatio='none'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001D46'/><stop offset='0.48' stop-color='#075F73'/><stop offset='1' stop-color='#00838A'/></linearGradient><linearGradient id='b' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001B36' stop-opacity='0.46'/><stop offset='0.45' stop-color='#002036' stop-opacity='0.18'/><stop offset='1' stop-color='#002036' stop-opacity='0.06'/></linearGradient></defs><rect width='1333' height='70' rx='18' fill='url(#a)'/><rect width='1333' height='70' rx='18' fill='url(#b)'/></svg>")
+                  ImagePosition: =ImagePosition.Fill
+                  Width: =Parent.Width
+            - TextCanvas_HoTitle:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  Height: =36
+                  Size: =28
+                  Text: ="Ward " & varWard & " Handover"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Weight: ='TextCanvas.Weight'.Bold
+                  Width: =480
+                  X: =76
+                  Y: =8
+            - TextCanvas_HoSub:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 0.88)
+                  Height: =20
+                  Size: =12
+                  Text: =CountRows(Filter(colWard, !IsBlank(Trim(Patient)))) & " patients  ·  Morning handover daily  ·  Case Conference weekly"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =480
+                  X: =76
+                  Y: =42
+            - btnBack_Ho:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontSize: =50
+                  Height: =70
+                  Icon: ="ChevronLeft"
+                  Text: =""
+                  X: =1
+                  OnSelect: |-
+                    =If(
+                        !IsEmpty(Filter(colWard, IsDirty)),
+                        Notify(
+                            "You have unsaved handover changes. Please Save or Discard before leaving.",
+                            NotificationType.Warning
+                        ),
+                        Back(ScreenTransition.Fade)
+                    )
+            - conSave_Ho:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(hoPulseOn, RGBA(255, 210, 74, 1), RGBA(255, 255, 255, 0.4))
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =If(hoPulseOn, 3, 1)
+                  DropShadow: =DropShadow.Regular
+                  Fill: =If(hoPulseOn, RGBA(18, 150, 100, 1), RGBA(12, 122, 82, 1))
+                  Height: =46
+                  Visible: =!IsEmpty(Filter(colWard, IsDirty))
+                  Width: =100
+                  X: =570
+                  Y: =12
+                  RadiusBottomLeft: =23
+                  RadiusBottomRight: =23
+                  RadiusTopLeft: =23
+                  RadiusTopRight: =23
+                Children:
+                  - btnSave_Ho:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =23
+                        BorderStyle: =BorderStyle.None
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(255, 255, 255, 1)
+                        FontSize: =14
+                        FontWeight: =FontWeight.Bold
+                        Height: =46
+                        Icon: ="Save"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        DisplayMode: =If(hoIsSaving, DisplayMode.Disabled, DisplayMode.Edit)
+                        OnSelect: |-
+                          =// ======================================
+                          // SAVE HANDOVER NOTES (any ward)
+                          // Only Morning Handover + CC Handover are written.
+                          // ======================================
+
+                          If(
+                              IsEmpty(Filter(colWard, IsDirty)),
+
+                              Notify("No handover changes to save.", NotificationType.Information),
+
+                              Set(hoIsSaving, true);
+                              Clear(colWardSaveErrors);
+                              Set(hoPulseOn, true);
+                              Reset(Timer_Pulse_Ho);
+
+                              ForAll(
+                                  Filter(colWard, IsDirty) As w,
+                                  Switch(
+                                      varWard,
+                                      "4A",
+                                          With(
+                                              {
+                                                  spRow:
+                                                      Patch(
+                                                          Ward_4A_Shared,
+                                                          LookUp(Ward_4A_Shared, ID = w.ID),
+                                                          {
+                                                              'Morning Handover': w.'Morning Handover',
+                                                              'CC Handover': w.'CC Handover'
+                                                          }
+                                                      )
+                                              },
+                                              If(
+                                                  !IsEmpty(Errors(Ward_4A_Shared, spRow)),
+                                                  Collect(
+                                                      colWardSaveErrors,
+                                                      {
+                                                          LocalID: w.ID,
+                                                          SavedID: spRow.ID,
+                                                          Patient: w.Patient,
+                                                          Message: First(Errors(Ward_4A_Shared, spRow)).Message
+                                                      }
+                                                  ),
+                                                  Patch(colWard, w, { IsDirty: false })
+                                              )
+                                          ),
+                                      "4B",
+                                          With(
+                                              {
+                                                  spRow:
+                                                      Patch(
+                                                          Ward_4B_Shared,
+                                                          LookUp(Ward_4B_Shared, ID = w.ID),
+                                                          {
+                                                              'Morning Handover': w.'Morning Handover',
+                                                              'CC Handover': w.'CC Handover'
+                                                          }
+                                                      )
+                                              },
+                                              If(
+                                                  !IsEmpty(Errors(Ward_4B_Shared, spRow)),
+                                                  Collect(
+                                                      colWardSaveErrors,
+                                                      {
+                                                          LocalID: w.ID,
+                                                          SavedID: spRow.ID,
+                                                          Patient: w.Patient,
+                                                          Message: First(Errors(Ward_4B_Shared, spRow)).Message
+                                                      }
+                                                  ),
+                                                  Patch(colWard, w, { IsDirty: false })
+                                              )
+                                          ),
+                                      "5A",
+                                          With(
+                                              {
+                                                  spRow:
+                                                      Patch(
+                                                          Ward_5A_Shared,
+                                                          LookUp(Ward_5A_Shared, ID = w.ID),
+                                                          {
+                                                              'Morning Handover': w.'Morning Handover',
+                                                              'CC Handover': w.'CC Handover'
+                                                          }
+                                                      )
+                                              },
+                                              If(
+                                                  !IsEmpty(Errors(Ward_5A_Shared, spRow)),
+                                                  Collect(
+                                                      colWardSaveErrors,
+                                                      {
+                                                          LocalID: w.ID,
+                                                          SavedID: spRow.ID,
+                                                          Patient: w.Patient,
+                                                          Message: First(Errors(Ward_5A_Shared, spRow)).Message
+                                                      }
+                                                  ),
+                                                  Patch(colWard, w, { IsDirty: false })
+                                              )
+                                          ),
+                                      With(
+                                          {
+                                              spRow:
+                                                  Patch(
+                                                      Ward_6A_Shared,
+                                                      LookUp(Ward_6A_Shared, ID = w.ID),
+                                                      {
+                                                          'Morning Handover': w.'Morning Handover',
+                                                          'CC Handover': w.'CC Handover'
+                                                      }
+                                                  )
+                                          },
+                                          If(
+                                              !IsEmpty(Errors(Ward_6A_Shared, spRow)),
+                                              Collect(
+                                                  colWardSaveErrors,
+                                                  {
+                                                      LocalID: w.ID,
+                                                      SavedID: spRow.ID,
+                                                      Patient: w.Patient,
+                                                      Message: First(Errors(Ward_6A_Shared, spRow)).Message
+                                                  }
+                                              ),
+                                              Patch(colWard, w, { IsDirty: false })
+                                          )
+                                      )
+                                  )
+                              );
+
+                              If(
+                                  CountRows(colWardSaveErrors) > 0,
+
+                                  Set(hoIsSaving, false);
+                                  Set(hoPulseOn, false);
+                                  Reset(Timer_Pulse_Ho);
+                                  Notify(
+                                      "Some notes failed to save (" & CountRows(colWardSaveErrors) & "). Unsaved changes remain.",
+                                      NotificationType.Error
+                                  ),
+
+                                  Set(hoIsSaving, false);
+                                  Set(hoPulseOn, false);
+                                  Reset(Timer_Pulse_Ho);
+                                  Notify("Handover saved.", NotificationType.Success)
+                              )
+                          )
+                        Text: ="Save"
+                        Width: =100
+            - conDiscard_Ho:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Regular
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =46
+                  Visible: =!IsEmpty(Filter(colWard, IsDirty))
+                  Width: =120
+                  X: =680
+                  Y: =12
+                  RadiusBottomLeft: =23
+                  RadiusBottomRight: =23
+                  RadiusTopLeft: =23
+                  RadiusTopRight: =23
+                Children:
+                  - btnDiscard_Ho:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =23
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(180, 26, 26, 1)
+                        FontSize: =14
+                        FontWeight: =FontWeight.Bold
+                        Height: =46
+                        Icon: ="DismissCircle"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        OnSelect: =Set(hoShowDiscard, true)
+                        Text: ="Discard"
+                        Width: =120
+      - Ho_Card:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+            DropShadow: =DropShadow.Light
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =658
+            Width: =1333
+            X: =18
+            Y: =95
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+          Children:
+            - conColHeads_Ho:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  Fill: =RGBA(244, 249, 252, 1)
+                  Height: =40
+                  Width: =1333
+                  X: =0
+                  Y: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =18
+                  RadiusTopRight: =18
+                Children:
+                  - lblHeadBed_Ho:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(58, 80, 104, 1)
+                        Size: =11
+                        FontWeight: =FontWeight.Bold
+                        Height: =40
+                        Text: ="BED"
+                        Width: =64
+                        X: =16
+                        Y: =0
+                  - lblHeadPatient_Ho:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(58, 80, 104, 1)
+                        Size: =11
+                        FontWeight: =FontWeight.Bold
+                        Height: =40
+                        Text: ="PATIENT"
+                        Width: =236
+                        X: =92
+                        Y: =0
+                  - lblHeadAM_Ho:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(58, 80, 104, 1)
+                        Size: =11
+                        FontWeight: =FontWeight.Bold
+                        Height: =40
+                        Text: ="MORNING HANDOVER  ·  daily"
+                        Width: =490
+                        X: =338
+                        Y: =0
+                  - lblHeadCC_Ho:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(58, 80, 104, 1)
+                        Size: =11
+                        FontWeight: =FontWeight.Bold
+                        Height: =40
+                        Text: ="CASE CONFERENCE  ·  weekly"
+                        Width: =470
+                        X: =844
+                        Y: =0
+            - Gallery_Handover:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =606
+                  Items: =Filter(colWard, !IsBlank(Trim(Patient)))
+                  TemplatePadding: =0
+                  TemplateSize: =96
+                  Width: =1333
+                  Y: =44
+                Children:
+                  - Ho_Row:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =If(ThisItem.IsDirty, RGBA(245, 176, 0, 1), RGBA(14, 42, 70, 0.12))
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =If(ThisItem.IsDirty, 2, 1)
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =88
+                        Width: =Parent.TemplateWidth - 16
+                        X: =8
+                        Y: =4
+                        RadiusBottomLeft: =14
+                        RadiusBottomRight: =14
+                        RadiusTopLeft: =14
+                        RadiusTopRight: =14
+                      Children:
+                        - lblBed_Ho:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(14, 28, 42, 1)
+                              Size: =26
+                              FontWeight: =FontWeight.Bold
+                              Height: =88
+                              Text: =ThisItem.Bed
+                              Width: =64
+                              X: =8
+                              Y: =0
+                        - lblPatient_Ho:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(18, 64, 112, 1)
+                              Size: =16
+                              FontWeight: =FontWeight.Bold
+                              Height: =28
+                              Text: =ThisItem.Patient
+                              Width: =236
+                              X: =84
+                              Y: =8
+                              OnSelect: |-
+                                =If(
+                                    ThisItem.IsDirty || !IsEmpty(Filter(colWard, IsDirty)),
+                                    Notify(
+                                        "Please Save (or Discard) your handover changes before opening a patient.",
+                                        NotificationType.Warning
+                                    ),
+
+                                    // open the full SharePoint row for this patient
+                                    If(varWard = "4A", Set(varSelectedPatient, LookUp(Ward_4A_Shared, ID = ThisItem.ID)));
+                                    If(varWard = "4B", Set(varSelectedPatient, LookUp(Ward_4B_Shared, ID = ThisItem.ID)));
+                                    If(varWard = "5A", Set(varSelectedPatient, LookUp(Ward_5A_Shared, ID = ThisItem.ID)));
+                                    If(varWard = "6A", Set(varSelectedPatient, LookUp(Ward_6A_Shared, ID = ThisItem.ID)));
+                                    Set(varSelectedList, "Ward_" & varWard & "_Shared");
+                                    Set(varWardCode, varWard);
+                                    Navigate(Patient_Detail_Screen, ScreenTransition.Fade)
+                                )
+                        - lblURN_Ho:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(58, 80, 104, 1)
+                              Size: =12
+                              Height: =20
+                              Text: ="URN " & Coalesce(ThisItem.URN, "-")
+                              Width: =236
+                              X: =84
+                              Y: =38
+                        - lblDOB_Ho:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(58, 80, 104, 1)
+                              Size: =12
+                              Height: =20
+                              Text: ="DOB " & If(IsBlank(ThisItem.DOB), "-", Text(ThisItem.DOB, "dd/mm/yyyy"))
+                              Width: =236
+                              X: =84
+                              Y: =58
+                        - txtMorning_Ho:
+                            Control: Classic/TextInput@2.3.2
+                            Properties:
+                              BorderColor: =RGBA(14, 42, 70, 0.22)
+                              BorderThickness: =1
+                              Color: =RGBA(14, 28, 42, 1)
+                              Default: =ThisItem.'Morning Handover'
+                              Fill: =RGBA(255, 255, 255, 1)
+                              FocusedBorderColor: =RGBA(26, 90, 153, 1)
+                              FocusedBorderThickness: =2
+                              Font: =Font.'Segoe UI'
+                              Height: =72
+                              HintText: ="Morning handover"
+                              Mode: =TextMode.MultiLine
+                              Size: =13
+                              Width: =490
+                              X: =330
+                              Y: =8
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              OnChange: |-
+                                =Patch(
+                                    colWard,
+                                    ThisItem,
+                                    {
+                                        'Morning Handover': Self.Text,
+                                        IsDirty: true
+                                    }
+                                )
+                        - txtCC_Ho:
+                            Control: Classic/TextInput@2.3.2
+                            Properties:
+                              BorderColor: =RGBA(14, 42, 70, 0.22)
+                              BorderThickness: =1
+                              Color: =RGBA(14, 28, 42, 1)
+                              Default: =ThisItem.'CC Handover'
+                              Fill: =RGBA(255, 255, 255, 1)
+                              FocusedBorderColor: =RGBA(26, 90, 153, 1)
+                              FocusedBorderThickness: =2
+                              Font: =Font.'Segoe UI'
+                              Height: =72
+                              HintText: ="Case Conference handover"
+                              Mode: =TextMode.MultiLine
+                              Size: =13
+                              Width: =470
+                              X: =836
+                              Y: =8
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              OnChange: |-
+                                =Patch(
+                                    colWard,
+                                    ThisItem,
+                                    {
+                                        'CC Handover': Self.Text,
+                                        IsDirty: true
+                                    }
+                                )
+      - conDiscardWarning_Ho:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(14, 28, 42, 0.42)
+            Height: =768
+            Visible: =hoShowDiscard
+            Width: =1366
+          Children:
+            - conDiscardCard_Ho:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =270
+                  Width: =640
+                  X: =363
+                  Y: =249
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                Children:
+                  - lblDiscardTitle_Ho:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
+                        Size: =24
+                        FontWeight: =FontWeight.Bold
+                        Height: =44
+                        Text: ="Discard unsaved handover changes?"
+                        Width: =560
+                        X: =40
+                        Y: =28
+                  - lblDiscardDetail_Ho:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(58, 80, 104, 1)
+                        Size: =16
+                        Height: =80
+                        Text: ="Every note you typed since the last save will be lost and the latest notes will reload from SharePoint."
+                        Width: =560
+                        X: =40
+                        Y: =84
+                  - conDiscardKeep_Ho:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =52
+                        Width: =200
+                        X: =114
+                        Y: =190
+                        RadiusBottomLeft: =26
+                        RadiusBottomRight: =26
+                        RadiusTopLeft: =26
+                        RadiusTopRight: =26
+                      Children:
+                        - btnDiscardKeep_Ho:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =26
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(58, 80, 104, 1)
+                              FontSize: =18
+                              FontWeight: =FontWeight.Bold
+                              Height: =52
+                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              OnSelect: =Set(hoShowDiscard, false)
+                              Text: ="Keep editing"
+                              Width: =200
+                  - conDiscardGo_Ho:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(0, 0, 0, 0)
+                        BorderStyle: =BorderStyle.None
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.Regular
+                        Fill: =RGBA(180, 26, 26, 1)
+                        Height: =52
+                        Width: =200
+                        X: =326
+                        Y: =190
+                        RadiusBottomLeft: =26
+                        RadiusBottomRight: =26
+                        RadiusTopLeft: =26
+                        RadiusTopRight: =26
+                      Children:
+                        - btnDiscardGo_Ho:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =26
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(255, 255, 255, 1)
+                              FontSize: =18
+                              FontWeight: =FontWeight.Bold
+                              Height: =52
+                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              OnSelect: |-
+                                =Set(hoShowDiscard, false);
+                                Select(btnReload_Ho);
+                                Notify("Unsaved changes discarded.", NotificationType.Information)
+                              Text: ="Discard"
+                              Width: =200
+      - Timer_Pulse_Ho:
+          Control: Timer@2.1.0
+          Properties:
+            AutoStart: =true
+            Duration: =500
+            Height: =15
+            OnTimerEnd: =Set(hoPulseOn, !hoPulseOn)
+            Repeat: =true
+            Start: =!IsEmpty(Filter(colWard, IsDirty))
+            Visible: =false
+            Width: =85
+            X: =1281
+            Y: =753

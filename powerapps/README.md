@@ -59,3 +59,17 @@ If a column is missing or has a different type (e.g. DOB stored as text), only t
 - `imgHeaderGradient_Ward` (gradient image): delete it; header falls back to solid teal.
 - `LayoutJustifyContent` on `Container211`: delete that line; buttons sit left.
 - Paste into a **copy** of the app first.
+
+---
+
+# Handover screen – `Handover_All.pa.yaml`
+
+Replaces `4AHandover`, `4BHandover`, `5AHandover`, `6AHandover` with one screen. Opened from the **Handover** button on `Ward_All` (that button is updated in `Ward_All.pa.yaml`: paste that version too, or just change the button to `Navigate(Handover_All, ScreenTransition.Fade)`).
+
+- Uses the same `colWard` and `varWard` as `Ward_All`.
+- Edits stay on screen until you press **Save**. **Discard** undoes them. Rows you changed get an amber border.
+- Save writes only `Morning Handover` and `CC Handover` to the ward's SharePoint list.
+- Empty beds are hidden.
+- Opening a patient asks you to Save/Discard first if there are unsaved notes.
+- On open, the latest notes are reloaded from SharePoint.
+- Old screens did `ClearCollect(colWard, Ward_4A_Shared)` on every edit. That would wipe the ward screen's data, so it is gone.
