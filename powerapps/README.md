@@ -269,3 +269,9 @@ Removed from the ward screen: the hidden discharge clean-up button, the `colWard
 - Pick a bed and confirm: the two beds trade numbers. An empty bed just takes the old number; an occupied bed swaps the two patients' beds. Both rows are marked as changed, so **Save** writes both and **Discard** undoes it.
 - Bed numbers can no longer be typed in (typing "415" would have swapped through 4, 41, 415).
 - Spacing fixes: bed number, length of stay, column headings and the AROC "Maint." tag no longer wrap; the flag key moved to the bottom of the board.
+
+### Bed panel spacing pass
+- Name and URN / DOB no longer overlap (URN on one line, DOB and age on the next).
+- Even 16px rhythm between every section; flags are one row of four short tiles (Falls, Contact, NDIS, Maint.), matching the F / C / N / M dots on the board.
+- A date that is not set now says "Not set" instead of showing the picker's placeholder date (31/12/2001). Tap the calendar icon to set it.
+- Discharge sits below a divider at the bottom.
