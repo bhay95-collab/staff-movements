@@ -14,6 +14,7 @@ The old mobile app had **19 fixed-size screens**. This rebuild has **8 responsiv
 | Allocated_Equipment_Screen | **Allocated** (search + ward filter) | `M6_Allocated.pa.yaml` |
 | Dashboard_Wheelchair_Type, Dashboard_Screen | **Availability** (Wheelchairs / Cushions / Backrests tabs, wheelchair type tabs, bar per width, tap a width to see the items) | `M7_Availability.pa.yaml` |
 | scrAudit | **Audit** (numbered steps, one scroll, fixed Submit bar) | `M8_Audit.pa.yaml` |
+| Servicing | **Servicing** (managers only: scan, send for service, take back) | `M9_Servicing.pa.yaml` |
 | App OnStart | **App Formulas** (colours, font, header art, who am I) | `App_Formulas.txt` |
 
 ## Bugs fixed on the way
@@ -45,6 +46,7 @@ Do this in a **copy** of the current mobile app so every SharePoint connection i
    - `Equipment_Audits`
    - `ClinicianDirectory`
    - `Ward_4A_Shared`, `Ward_4B_Shared`, `Ward_5A_Shared`, `Ward_6A_Shared`
+   - `Service_Log` (new list, see `../SharePoint_Changes.md`; do that first)
    - `Office365Outlook`
 
    If `Office365Outlook` is missing: **Add data → Office 365 Outlook**.
@@ -54,12 +56,12 @@ Do this in a **copy** of the current mobile app so every SharePoint connection i
 5. **Clear the old screens.**
    - Right-click the old **Home** screen → **Rename** → `OLD_Home`.
    - Delete every other old screen (right-click → **Delete**). Power Apps needs one screen to remain, so keep `OLD_Home` for now.
-6. **Paste the 8 new screens, in order** M1 → M8 (same method as the desktop screens):
+6. **Paste the 9 new screens, in order** M1 → M9 (same method as the desktop screens):
    - open the file link, **Copy raw file**,
    - in Studio click a screen in the Tree view, press **Ctrl+V**.
-   - The screen arrives with its name: `Home`, `Find`, `Item`, `Allocate`, `MyEquipment`, `Allocated`, `Availability`, `Audit`.
+   - The screen arrives with its name: `Home`, `Find`, `Item`, `Allocate`, `MyEquipment`, `Allocated`, `Availability`, `Audit`, `Servicing`.
 
-   Red errors that name a screen that isn't pasted yet (for example `Item`) clear once all 8 are in.
+   Red errors that name a screen that isn't pasted yet (for example `Servicing`) clear once all 9 are in.
 7. **Finish.**
    - Drag **Home** to the top of the Tree view (the first screen is the start screen).
    - Delete `OLD_Home`.
@@ -78,6 +80,13 @@ Do this in a **copy** of the current mobile app so every SharePoint connection i
 - Availability: Wheelchairs / Cushions / Backrests tabs; wheelchair type tabs (wheelchairs only); bars; tap a width → Find opens pre-filtered for that category and width.
 - Audit: scan or type a code; pick the patient; match banner; toggles; tag result; comment rule; Submit (try one PASS and one FAIL on test data – the FAIL emails the treating physio).
 - Rotate / try a small and a large phone: nothing should be cut off; long pages scroll.
+
+## Servicing (new)
+- **Who:** Director, Team Leader and CA4 see the **Servicing** tile on Home. Others never see it. A **Record a service** button also appears on an Available item's screen for the same people.
+- **Send for service:** scan or type the barcode → pick the type of service → **Send**. Item status becomes `In Service`, so it disappears from Find and Availability.
+- **Take back:** the **At service now** list shows what is out. Tap one → pick the outcome and where it is going → **Return to stock**. A **Full service** resets the item's days-in-use to 0. **Condemned** takes the item out of use for good.
+- **Due for service:** available items with more than 100 days signed out are listed under the scanner.
+- **Return location:** returning equipment on the Item screen now asks where it is going back to, and records it (item Location and the usage log).
 
 ## Layout note (why widths are written as App.Width)
 Inside an auto-layout container Power Apps sizes each child itself, but the child's own **Width** property still returns whatever formula it holds. Controls inside that child that use `Parent.Width` then get the wrong number (text centred off the button, pills in the wrong place). Every auto-layout child therefore has its real width written out from `App.Width` (for example `(App.Width - 48) / 3` for three tabs), so everything inside lines up on any phone.

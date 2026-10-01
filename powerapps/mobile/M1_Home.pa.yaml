@@ -758,3 +758,96 @@ Screens:
                               Y: =0
                               Text: =""
                               OnSelect: =Navigate(Audit, ScreenTransition.Cover)
+                  - conTileSvc_Hm:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =72
+                        FillPortions: =0
+                        Fill: =C_White
+                        Height: =72
+                        Width: =App.Width - 32
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =16
+                        RadiusBottomRight: =16
+                        RadiusTopLeft: =16
+                        RadiusTopRight: =16
+                        BorderColor: =C_Line
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.Light
+                        Visible: =Coalesce(MeDirectory.Access.Value, "") in ["Director", "Team Leader", "CA4"]
+                      Children:
+                        - conTileIcSvc_Hm:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_AccentSoft
+                              Height: =44
+                              Width: =44
+                              X: =14
+                              Y: =14
+                              RadiusBottomLeft: =22
+                              RadiusBottomRight: =22
+                              RadiusTopLeft: =22
+                              RadiusTopRight: =22
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - icoTileSvc_Hm:
+                                  Control: ModernIcon@1.1.1
+                                  Properties:
+                                    Height: =24
+                                    Icon: ="Settings"
+                                    IconColor: =C_Accent
+                                    Width: =24
+                                    X: =10
+                                    Y: =10
+                        - lblTileTSvc_Hm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =16
+                              FontWeight: =FontWeight.Bold
+                              Height: =24
+                              Text: ="Servicing"
+                              Width: =Parent.Width - 110
+                              X: =72
+                              Y: =14
+                              Wrap: =false
+                        - lblTileSSvc_Hm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =12
+                              Height: =20
+                              Text: ="Scan an item to send it for service or take it back"
+                              Width: =Parent.Width - 110
+                              X: =72
+                              Y: =38
+                              Wrap: =false
+                        - icoTileGoSvc_Hm:
+                            Control: ModernIcon@1.1.1
+                            Properties:
+                              Height: =24
+                              Icon: ="ChevronRight"
+                              IconColor: =C_Muted
+                              Width: =24
+                              X: =Parent.Width - 36
+                              Y: =24
+                        - btnTileSvc_Hm:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderStyle: =BorderStyle.None
+                              Height: =Parent.Height
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Text: =""
+                              OnSelect: |-
+                                =Set(varServiceItemID, Blank());
+                                Navigate(Servicing, ScreenTransition.Cover)
