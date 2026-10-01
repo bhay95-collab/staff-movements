@@ -154,13 +154,13 @@ Screens:
                   colUlWard,
                   SortByColumns(
                       AddColumns(
-                          GroupBy(Filter(colUlF, EventType.Value = "Sign Out" && !IsBlank(Ward)), Ward, Rows),
+                          GroupBy(AddColumns(Filter(colUlF, EventType.Value = "Sign Out" && !IsBlank(Ward)), WardKey, Ward), WardKey, Rows),
                           Loans, CountRows(Rows),
                           AvgDays, With(
                               { r: Filter(Rows, !IsBlank(DaysSignedOutThisEpisode)) },
                               If(CountRows(r) = 0, 0, Round(Average(r, DaysSignedOutThisEpisode), 1))
                           ),
-                          OutNow, CountRows(Filter(colUlOpen, Ward = First(Rows).Ward))
+                          OutNow, CountRows(Filter(colUlOpen, Ward = WardKey))
                       ),
                       "Loans", SortOrder.Descending
                   )
@@ -330,7 +330,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =40
                         Width: =92
-                        Text: =Last 30 days
+                        Text: ="Last 30 days"
                         OnSelect: |-
                           =Set(ulPreset, "30");
                           Set(ulFrom, DateAdd(Today(), -29));
@@ -367,7 +367,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =40
                         Width: =92
-                        Text: =Last 90 days
+                        Text: ="Last 90 days"
                         OnSelect: |-
                           =Set(ulPreset, "90");
                           Set(ulFrom, DateAdd(Today(), -89));
@@ -404,7 +404,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =40
                         Width: =92
-                        Text: =Last 12 months
+                        Text: ="Last 12 months"
                         OnSelect: |-
                           =Set(ulPreset, "365");
                           Set(ulFrom, DateAdd(Today(), -364));
@@ -676,7 +676,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =40
                         Width: =99
-                        Text: =Reset
+                        Text: ="Reset"
                         OnSelect: |-
                           =Set(ulPreset, "90");
                           Set(ulFrom, DateAdd(Today(), -89));
@@ -1056,7 +1056,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =34
                         Width: =130
-                        Text: =Most used
+                        Text: ="Most used"
                         OnSelect: =Set(ulTab, "Used")
             - conTabSize:
                 Control: GroupContainer@1.5.0
@@ -1087,7 +1087,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =34
                         Width: =150
-                        Text: =Demand by size
+                        Text: ="Demand by size"
                         OnSelect: =Set(ulTab, "Size")
             - conTabWards:
                 Control: GroupContainer@1.5.0
@@ -1118,7 +1118,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =34
                         Width: =170
-                        Text: =Wards and physios
+                        Text: ="Wards and physios"
                         OnSelect: =Set(ulTab, "Wards")
             - conSortLoans:
                 Control: GroupContainer@1.5.0
@@ -1150,7 +1150,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =30
                         Width: =74
-                        Text: =By loans
+                        Text: ="By loans"
                         OnSelect: |-
                           =Set(ulSort, "Loans");
                           Select(btnBuild_Ul)
@@ -1184,7 +1184,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =30
                         Width: =70
-                        Text: =By days
+                        Text: ="By days"
                         OnSelect: |-
                           =Set(ulSort, "Days");
                           Select(btnBuild_Ul)
@@ -1735,7 +1735,7 @@ Screens:
                             Variant: ManualLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              Fill: =Switch(ThisItem.Ward, "4A", RGBA(166, 199, 130, 1), "4B", RGBA(35, 100, 153, 1), "5A", RGBA(0, 144, 153, 1), "6A", RGBA(0, 200, 210, 1), RGBA(210, 218, 227, 1))
+                              Fill: =Switch(ThisItem.WardKey, "4A", RGBA(166, 199, 130, 1), "4B", RGBA(35, 100, 153, 1), "5A", RGBA(0, 144, 153, 1), "6A", RGBA(0, 200, 210, 1), RGBA(210, 218, 227, 1))
                               Height: =32
                               Width: =44
                               X: =8
@@ -1753,7 +1753,7 @@ Screens:
                                     Size: =13
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
-                                    Text: =ThisItem.Ward
+                                    Text: =ThisItem.WardKey
                                     Width: =Parent.Width
                                     X: =0
                                     Y: =0
