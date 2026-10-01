@@ -117,12 +117,12 @@ Screens:
                   dpKpi,
                   {
                       Over: CountRows(Filter(colDpShow, !IsBlank(EDD) && EDD < Today())),
-                      Next2: CountRows(Filter(colDpShow, !IsBlank(EDD) && EDD >= Today() && EDD <= Index(colDpDays, 2).To)),
-                      Week: CountRows(Filter(colDpShow, !IsBlank(EDD) && EDD >= Today() && EDD <= Index(colDpDays, 5).To)),
-                      Equip: Sum(Filter(colDpShow, !IsBlank(EDD) && EDD <= Index(colDpDays, 5).To), EquipN),
+                      Next2: CountRows(Filter(colDpShow, !IsBlank(EDD) && EDD >= Today() && EDD <= LookUp(colDpDays, Idx = 2).To)),
+                      Week: CountRows(Filter(colDpShow, !IsBlank(EDD) && EDD >= Today() && EDD <= LookUp(colDpDays, Idx = 5).To)),
+                      Equip: Sum(Filter(colDpShow, !IsBlank(EDD) && EDD <= LookUp(colDpDays, Idx = 5).To), EquipN),
                       NoEDD: CountRows(Filter(colDpShow, IsBlank(EDD))),
                       Aroc: CountRows(Filter(colDpShow, Variance > 0)),
-                      Later: CountRows(Filter(colDpShow, !IsBlank(EDD) && EDD > Index(colDpDays, 5).To))
+                      Later: CountRows(Filter(colDpShow, !IsBlank(EDD) && EDD > LookUp(colDpDays, Idx = 5).To))
                   }
               )
             Text: =""
@@ -169,7 +169,7 @@ Screens:
                   FontColor: =RGBA(255, 255, 255, 0.88)
                   Height: =20 * SY
                   Size: =Round(12 * SF, 0)
-                  Text: =If(dpLoading, "Loading the wards...", CountRows(colDpShow) & " patients  ·  " & dpKpi.Later & " leave later than " & Text(Index(colDpDays, 5).Day, "ddd d mmm"))
+                  Text: =If(dpLoading, "Loading the wards...", CountRows(colDpShow) & " patients  ·  " & dpKpi.Later & " leave later than " & Text(LookUp(colDpDays, Idx = 5).Day, "ddd d mmm"))
                   VerticalAlign: =VerticalAlign.Middle
                   Width: =800 * SX
                   X: =76 * SX
@@ -1211,7 +1211,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =20 * SY
                         Size: =Round(14 * SF, 0)
-                        Text: =If(Index(colDpDays, 1).Day = Today(), "Today", Text(Index(colDpDays, 1).Day, "dddd"))
+                        Text: =If(LookUp(colDpDays, Idx = 1).Day = Today(), "Today", Text(LookUp(colDpDays, Idx = 1).Day, "dddd"))
                         Width: =120 * SX
                         Wrap: =false
                         X: =12 * SX
@@ -1223,7 +1223,7 @@ Screens:
                         Font: =Font.'Segoe UI'
                         Height: =16 * SY
                         Size: =Round(11 * SF, 0)
-                        Text: =Text(Index(colDpDays, 1).Day, "d mmm") & If(Weekday(Index(colDpDays, 1).Day, StartOfWeek.Monday) = 5, " + weekend", "")
+                        Text: =Text(LookUp(colDpDays, Idx = 1).Day, "d mmm") & If(Weekday(LookUp(colDpDays, Idx = 1).Day, StartOfWeek.Monday) = 5, " + weekend", "")
                         Width: =120 * SX
                         Wrap: =false
                         X: =12 * SX
@@ -1237,7 +1237,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =54 * SY
                         Size: =Round(20 * SF, 0)
-                        Text: =Text(CountRows(Filter(colDpShow, !IsBlank(EDD) && EDD >= Index(colDpDays, 1).From && EDD <= Index(colDpDays, 1).To)))
+                        Text: =Text(CountRows(Filter(colDpShow, !IsBlank(EDD) && EDD >= LookUp(colDpDays, Idx = 1).From && EDD <= LookUp(colDpDays, Idx = 1).To)))
                         Width: =52 * SX
                         Wrap: =false
                         X: =120 * SX
@@ -1246,7 +1246,7 @@ Screens:
                 Variant: Vertical
                 Properties:
                   Height: =396 * SY
-                  Items: =Filter(colDpShow, !IsBlank(EDD) && EDD >= Index(colDpDays, 1).From && EDD <= Index(colDpDays, 1).To)
+                  Items: =Filter(colDpShow, !IsBlank(EDD) && EDD >= LookUp(colDpDays, Idx = 1).From && EDD <= LookUp(colDpDays, Idx = 1).To)
                   TemplatePadding: =0
                   TemplateSize: =100 * SY
                   Width: =184 * SX
@@ -1478,7 +1478,7 @@ Screens:
                   Height: =20 * SY
                   Size: =Round(12 * SF, 0)
                   Text: ="Nobody"
-                  Visible: =IsEmpty(Filter(colDpShow, !IsBlank(EDD) && EDD >= Index(colDpDays, 1).From && EDD <= Index(colDpDays, 1).To))
+                  Visible: =IsEmpty(Filter(colDpShow, !IsBlank(EDD) && EDD >= LookUp(colDpDays, Idx = 1).From && EDD <= LookUp(colDpDays, Idx = 1).To))
                   Width: =184 * SX
                   Y: =190 * SY
       - Dp_Col_D2:
@@ -1518,7 +1518,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =20 * SY
                         Size: =Round(14 * SF, 0)
-                        Text: =If(Index(colDpDays, 2).Day = Today(), "Today", Text(Index(colDpDays, 2).Day, "dddd"))
+                        Text: =If(LookUp(colDpDays, Idx = 2).Day = Today(), "Today", Text(LookUp(colDpDays, Idx = 2).Day, "dddd"))
                         Width: =120 * SX
                         Wrap: =false
                         X: =12 * SX
@@ -1530,7 +1530,7 @@ Screens:
                         Font: =Font.'Segoe UI'
                         Height: =16 * SY
                         Size: =Round(11 * SF, 0)
-                        Text: =Text(Index(colDpDays, 2).Day, "d mmm") & If(Weekday(Index(colDpDays, 2).Day, StartOfWeek.Monday) = 5, " + weekend", "")
+                        Text: =Text(LookUp(colDpDays, Idx = 2).Day, "d mmm") & If(Weekday(LookUp(colDpDays, Idx = 2).Day, StartOfWeek.Monday) = 5, " + weekend", "")
                         Width: =120 * SX
                         Wrap: =false
                         X: =12 * SX
@@ -1544,7 +1544,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =54 * SY
                         Size: =Round(20 * SF, 0)
-                        Text: =Text(CountRows(Filter(colDpShow, !IsBlank(EDD) && EDD >= Index(colDpDays, 2).From && EDD <= Index(colDpDays, 2).To)))
+                        Text: =Text(CountRows(Filter(colDpShow, !IsBlank(EDD) && EDD >= LookUp(colDpDays, Idx = 2).From && EDD <= LookUp(colDpDays, Idx = 2).To)))
                         Width: =52 * SX
                         Wrap: =false
                         X: =120 * SX
@@ -1553,7 +1553,7 @@ Screens:
                 Variant: Vertical
                 Properties:
                   Height: =396 * SY
-                  Items: =Filter(colDpShow, !IsBlank(EDD) && EDD >= Index(colDpDays, 2).From && EDD <= Index(colDpDays, 2).To)
+                  Items: =Filter(colDpShow, !IsBlank(EDD) && EDD >= LookUp(colDpDays, Idx = 2).From && EDD <= LookUp(colDpDays, Idx = 2).To)
                   TemplatePadding: =0
                   TemplateSize: =100 * SY
                   Width: =184 * SX
@@ -1785,7 +1785,7 @@ Screens:
                   Height: =20 * SY
                   Size: =Round(12 * SF, 0)
                   Text: ="Nobody"
-                  Visible: =IsEmpty(Filter(colDpShow, !IsBlank(EDD) && EDD >= Index(colDpDays, 2).From && EDD <= Index(colDpDays, 2).To))
+                  Visible: =IsEmpty(Filter(colDpShow, !IsBlank(EDD) && EDD >= LookUp(colDpDays, Idx = 2).From && EDD <= LookUp(colDpDays, Idx = 2).To))
                   Width: =184 * SX
                   Y: =190 * SY
       - Dp_Col_D3:
@@ -1825,7 +1825,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =20 * SY
                         Size: =Round(14 * SF, 0)
-                        Text: =If(Index(colDpDays, 3).Day = Today(), "Today", Text(Index(colDpDays, 3).Day, "dddd"))
+                        Text: =If(LookUp(colDpDays, Idx = 3).Day = Today(), "Today", Text(LookUp(colDpDays, Idx = 3).Day, "dddd"))
                         Width: =120 * SX
                         Wrap: =false
                         X: =12 * SX
@@ -1837,7 +1837,7 @@ Screens:
                         Font: =Font.'Segoe UI'
                         Height: =16 * SY
                         Size: =Round(11 * SF, 0)
-                        Text: =Text(Index(colDpDays, 3).Day, "d mmm") & If(Weekday(Index(colDpDays, 3).Day, StartOfWeek.Monday) = 5, " + weekend", "")
+                        Text: =Text(LookUp(colDpDays, Idx = 3).Day, "d mmm") & If(Weekday(LookUp(colDpDays, Idx = 3).Day, StartOfWeek.Monday) = 5, " + weekend", "")
                         Width: =120 * SX
                         Wrap: =false
                         X: =12 * SX
@@ -1851,7 +1851,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =54 * SY
                         Size: =Round(20 * SF, 0)
-                        Text: =Text(CountRows(Filter(colDpShow, !IsBlank(EDD) && EDD >= Index(colDpDays, 3).From && EDD <= Index(colDpDays, 3).To)))
+                        Text: =Text(CountRows(Filter(colDpShow, !IsBlank(EDD) && EDD >= LookUp(colDpDays, Idx = 3).From && EDD <= LookUp(colDpDays, Idx = 3).To)))
                         Width: =52 * SX
                         Wrap: =false
                         X: =120 * SX
@@ -1860,7 +1860,7 @@ Screens:
                 Variant: Vertical
                 Properties:
                   Height: =396 * SY
-                  Items: =Filter(colDpShow, !IsBlank(EDD) && EDD >= Index(colDpDays, 3).From && EDD <= Index(colDpDays, 3).To)
+                  Items: =Filter(colDpShow, !IsBlank(EDD) && EDD >= LookUp(colDpDays, Idx = 3).From && EDD <= LookUp(colDpDays, Idx = 3).To)
                   TemplatePadding: =0
                   TemplateSize: =100 * SY
                   Width: =184 * SX
@@ -2092,7 +2092,7 @@ Screens:
                   Height: =20 * SY
                   Size: =Round(12 * SF, 0)
                   Text: ="Nobody"
-                  Visible: =IsEmpty(Filter(colDpShow, !IsBlank(EDD) && EDD >= Index(colDpDays, 3).From && EDD <= Index(colDpDays, 3).To))
+                  Visible: =IsEmpty(Filter(colDpShow, !IsBlank(EDD) && EDD >= LookUp(colDpDays, Idx = 3).From && EDD <= LookUp(colDpDays, Idx = 3).To))
                   Width: =184 * SX
                   Y: =190 * SY
       - Dp_Col_D4:
@@ -2132,7 +2132,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =20 * SY
                         Size: =Round(14 * SF, 0)
-                        Text: =If(Index(colDpDays, 4).Day = Today(), "Today", Text(Index(colDpDays, 4).Day, "dddd"))
+                        Text: =If(LookUp(colDpDays, Idx = 4).Day = Today(), "Today", Text(LookUp(colDpDays, Idx = 4).Day, "dddd"))
                         Width: =120 * SX
                         Wrap: =false
                         X: =12 * SX
@@ -2144,7 +2144,7 @@ Screens:
                         Font: =Font.'Segoe UI'
                         Height: =16 * SY
                         Size: =Round(11 * SF, 0)
-                        Text: =Text(Index(colDpDays, 4).Day, "d mmm") & If(Weekday(Index(colDpDays, 4).Day, StartOfWeek.Monday) = 5, " + weekend", "")
+                        Text: =Text(LookUp(colDpDays, Idx = 4).Day, "d mmm") & If(Weekday(LookUp(colDpDays, Idx = 4).Day, StartOfWeek.Monday) = 5, " + weekend", "")
                         Width: =120 * SX
                         Wrap: =false
                         X: =12 * SX
@@ -2158,7 +2158,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =54 * SY
                         Size: =Round(20 * SF, 0)
-                        Text: =Text(CountRows(Filter(colDpShow, !IsBlank(EDD) && EDD >= Index(colDpDays, 4).From && EDD <= Index(colDpDays, 4).To)))
+                        Text: =Text(CountRows(Filter(colDpShow, !IsBlank(EDD) && EDD >= LookUp(colDpDays, Idx = 4).From && EDD <= LookUp(colDpDays, Idx = 4).To)))
                         Width: =52 * SX
                         Wrap: =false
                         X: =120 * SX
@@ -2167,7 +2167,7 @@ Screens:
                 Variant: Vertical
                 Properties:
                   Height: =396 * SY
-                  Items: =Filter(colDpShow, !IsBlank(EDD) && EDD >= Index(colDpDays, 4).From && EDD <= Index(colDpDays, 4).To)
+                  Items: =Filter(colDpShow, !IsBlank(EDD) && EDD >= LookUp(colDpDays, Idx = 4).From && EDD <= LookUp(colDpDays, Idx = 4).To)
                   TemplatePadding: =0
                   TemplateSize: =100 * SY
                   Width: =184 * SX
@@ -2399,7 +2399,7 @@ Screens:
                   Height: =20 * SY
                   Size: =Round(12 * SF, 0)
                   Text: ="Nobody"
-                  Visible: =IsEmpty(Filter(colDpShow, !IsBlank(EDD) && EDD >= Index(colDpDays, 4).From && EDD <= Index(colDpDays, 4).To))
+                  Visible: =IsEmpty(Filter(colDpShow, !IsBlank(EDD) && EDD >= LookUp(colDpDays, Idx = 4).From && EDD <= LookUp(colDpDays, Idx = 4).To))
                   Width: =184 * SX
                   Y: =190 * SY
       - Dp_Col_D5:
@@ -2439,7 +2439,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =20 * SY
                         Size: =Round(14 * SF, 0)
-                        Text: =If(Index(colDpDays, 5).Day = Today(), "Today", Text(Index(colDpDays, 5).Day, "dddd"))
+                        Text: =If(LookUp(colDpDays, Idx = 5).Day = Today(), "Today", Text(LookUp(colDpDays, Idx = 5).Day, "dddd"))
                         Width: =120 * SX
                         Wrap: =false
                         X: =12 * SX
@@ -2451,7 +2451,7 @@ Screens:
                         Font: =Font.'Segoe UI'
                         Height: =16 * SY
                         Size: =Round(11 * SF, 0)
-                        Text: =Text(Index(colDpDays, 5).Day, "d mmm") & If(Weekday(Index(colDpDays, 5).Day, StartOfWeek.Monday) = 5, " + weekend", "")
+                        Text: =Text(LookUp(colDpDays, Idx = 5).Day, "d mmm") & If(Weekday(LookUp(colDpDays, Idx = 5).Day, StartOfWeek.Monday) = 5, " + weekend", "")
                         Width: =120 * SX
                         Wrap: =false
                         X: =12 * SX
@@ -2465,7 +2465,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =54 * SY
                         Size: =Round(20 * SF, 0)
-                        Text: =Text(CountRows(Filter(colDpShow, !IsBlank(EDD) && EDD >= Index(colDpDays, 5).From && EDD <= Index(colDpDays, 5).To)))
+                        Text: =Text(CountRows(Filter(colDpShow, !IsBlank(EDD) && EDD >= LookUp(colDpDays, Idx = 5).From && EDD <= LookUp(colDpDays, Idx = 5).To)))
                         Width: =52 * SX
                         Wrap: =false
                         X: =120 * SX
@@ -2474,7 +2474,7 @@ Screens:
                 Variant: Vertical
                 Properties:
                   Height: =396 * SY
-                  Items: =Filter(colDpShow, !IsBlank(EDD) && EDD >= Index(colDpDays, 5).From && EDD <= Index(colDpDays, 5).To)
+                  Items: =Filter(colDpShow, !IsBlank(EDD) && EDD >= LookUp(colDpDays, Idx = 5).From && EDD <= LookUp(colDpDays, Idx = 5).To)
                   TemplatePadding: =0
                   TemplateSize: =100 * SY
                   Width: =184 * SX
@@ -2708,7 +2708,7 @@ Screens:
                   Height: =20 * SY
                   Size: =Round(12 * SF, 0)
                   Text: ="Nobody"
-                  Visible: =IsEmpty(Filter(colDpShow, !IsBlank(EDD) && EDD >= Index(colDpDays, 5).From && EDD <= Index(colDpDays, 5).To))
+                  Visible: =IsEmpty(Filter(colDpShow, !IsBlank(EDD) && EDD >= LookUp(colDpDays, Idx = 5).From && EDD <= LookUp(colDpDays, Idx = 5).To))
                   Width: =184 * SX
                   Y: =190 * SY
       - Dp_Col_None:
