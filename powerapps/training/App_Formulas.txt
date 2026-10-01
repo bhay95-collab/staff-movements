@@ -1,0 +1,46 @@
+// =====================================================================
+// App > Formulas   (Physiotherapy Training Register)   paste the whole thing
+// =====================================================================
+
+// ---- colours (same as the other STARS apps)
+C_Ink = RGBA(14, 28, 42, 1);
+C_Ink2 = RGBA(58, 80, 104, 1);
+C_Muted = RGBA(140, 155, 174, 1);
+C_Bg = RGBA(235, 242, 248, 1);
+C_Bg2 = RGBA(244, 249, 252, 1);
+C_Line = RGBA(14, 42, 70, 0.12);
+C_White = RGBA(255, 255, 255, 1);
+C_Accent = RGBA(26, 90, 153, 1);
+C_AccentDark = RGBA(18, 64, 112, 1);
+C_AccentSoft = RGBA(26, 90, 153, 0.10);
+C_Good = RGBA(12, 122, 82, 1);
+C_GoodBg = RGBA(232, 246, 240, 1);
+C_Danger = RGBA(180, 26, 26, 1);
+C_DangerBg = RGBA(254, 242, 242, 1);
+C_Amber = RGBA(178, 105, 0, 1);
+C_AmberBg = RGBA(255, 246, 229, 1);
+C_Teal = RGBA(0, 144, 153, 1);
+
+// ---- font and header art
+AppFont = Font.'Segoe UI';
+HeaderImage = "data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' width='400' height='80' viewBox='0 0 400 80' preserveAspectRatio='none'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001D46'/><stop offset='0.48' stop-color='#075F73'/><stop offset='1' stop-color='#00838A'/></linearGradient></defs><rect width='400' height='80' fill='url(#a)'/></svg>");
+
+// ---- who is using the app
+MeEmail = Lower(User().Email);
+MeName = User().FullName;
+
+// ---- screen size: phone, tablet or desktop, portrait or landscape
+// Wide = two columns (dates on the left, the chosen date on the right). Narrow = one column.
+Wide = App.Width >= 820;
+// UI scales text, buttons and gaps on phones and tablets (0.9 to 1.25). On wide screens it stays at 1.
+UI = If(App.Width >= 820, 1, Max(0.9, Min(1.25, Min(App.Width, App.Height * 0.55) / 390)));
+// the content column stops growing at 1100 and is centred; Gutter is the empty space either side
+PageW = Min(App.Width, 1100);
+Gutter = (App.Width - PageW) / 2;
+GapPx = Round(20 * UI, 0);
+// the dates list and the date detail
+ListW = If(Wide, Min(Round(525 * UI, 0), (PageW - 3 * GapPx) * 0.4), PageW - 2 * GapPx);
+DetailX = If(Wide, Gutter + 2 * GapPx + ListW, Gutter + GapPx);
+DetailW = If(Wide, PageW - 3 * GapPx - ListW, PageW - 2 * GapPx);
+// pop-up sheets
+SheetW = Min(App.Width, 600);

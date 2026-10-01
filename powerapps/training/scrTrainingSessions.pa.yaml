@@ -1,0 +1,2274 @@
+Screens:
+  scrTrainingSessions:
+    Properties:
+      Fill: =C_Bg
+      OnVisible: |-
+        =Set(tsShowAdd, false);
+        Set(tsShowWait, false);
+        Set(tsShowEmail, false);
+        Set(tsShowConfirm, false);
+        If(IsBlank(varSelectedTrainingType), Set(varSelectedTrainingType, "Basic Life Support"));
+        Select(btnLoad_Ts)
+    Children:
+      - btnLoad_Ts:
+          Control: Button@0.0.45
+          Properties:
+            Height: =1
+            Width: =1
+            X: =0
+            Y: =0
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =// everything on this screen is read once here, then worked out on the device
+              Set(tsLoading, true);
+              Refresh(TrainingSessions);
+              Refresh(TrainingBookings);
+              Refresh(TrainingWaitlist);
+              ClearCollect(
+                  colTsBookings,
+                  Filter(
+                      TrainingBookings,
+                      BookingStatus.Value = "Booked" && TrainingType = varSelectedTrainingType && SessionDate >= Today()
+                  )
+              );
+              ClearCollect(colTsWait, Filter(TrainingWaitlist, WaitlistStatus.Value = "Waiting"));
+              ClearCollect(
+                  colTsSessions,
+                  AddColumns(
+                      AddColumns(
+                          AddColumns(
+                              SortByColumns(
+                                  Filter(
+                                      TrainingSessions,
+                                      IsActive = true && TrainingType.Value = varSelectedTrainingType && SessionDate >= Today()
+                                  ),
+                                  "SessionDate",
+                                  SortOrder.Ascending
+                              ),
+                              SesKey, Text(ID),
+                              Cap, Coalesce(Capacity, If(varSelectedTrainingType = "Manual Handling", 8, 6))
+                          ),
+                          Booked, CountRows(Filter(colTsBookings, SessionID = SesKey)),
+                          MyBookingID, LookUp(colTsBookings, SessionID = SesKey && Lower(BookedUserEmail) = MeEmail).ID,
+                          MyWaitID, LookUp(colTsWait, SessionID = SesKey && Lower(WaitlistUserEmail) = MeEmail).ID,
+                          MyWaitOn, LookUp(colTsWait, SessionID = SesKey && Lower(WaitlistUserEmail) = MeEmail).AddedOn,
+                          WaitCount, CountRows(Filter(colTsWait, SessionID = SesKey))
+                      ),
+                      Free, Cap - Booked,
+                      MyWaitPos, If(IsBlank(MyWaitOn), 0, CountRows(Filter(colTsWait, SessionID = SesKey && AddedOn <= MyWaitOn)))
+                  )
+              );
+
+              // keep the chosen date selected (with fresh numbers), or open the one asked for from Home
+              If(
+                  !IsBlank(varOpenSessionID),
+                  Set(varSelectedSession, LookUp(colTsSessions, ID = varOpenSessionID));
+                  Set(varOpenSessionID, Blank()),
+
+                  !IsBlank(varSelectedSession),
+                  Set(varSelectedSession, LookUp(colTsSessions, ID = varSelectedSession.ID))
+              );
+              // on wide screens the right-hand side is never empty
+              If(Wide && IsBlank(varSelectedSession), Set(varSelectedSession, First(colTsSessions)));
+              Set(tsLoading, false);
+              Select(btnSlots_Ts)
+      - btnSlots_Ts:
+          Control: Button@0.0.45
+          Properties:
+            Height: =1
+            Width: =1
+            X: =0
+            Y: =0
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =ClearCollect(
+                  colTsSlots,
+                  ForAll(
+                      Sequence(Coalesce(varSelectedSession.Cap, 0)) As n,
+                      {
+                          SlotNo: n.Value,
+                          Booking: LookUp(
+                              colTsBookings,
+                              SessionID = Coalesce(varSelectedSession.SesKey, "") && SlotNumber = n.Value
+                          )
+                      }
+                  )
+              )
+      - btnDoBook_Ts:
+          Control: Button@0.0.45
+          Properties:
+            Height: =1
+            Width: =1
+            X: =0
+            Y: =0
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =With(
+                  { s: varSelectedSession },
+                  Refresh(TrainingBookings);
+                  With(
+                      { bookedNow: Filter(TrainingBookings, SessionID = s.SesKey && BookingStatus.Value = "Booked") },
+                      If(
+                          !IsBlank(LookUp(bookedNow, Lower(BookedUserEmail) = MeEmail)),
+                          Notify("You are already booked into this session.", NotificationType.Warning);
+                          Select(btnLoad_Ts),
+
+                          CountRows(bookedNow) >= s.Cap,
+                          Notify("Sorry, that session has just filled up.", NotificationType.Warning);
+                          Select(btnLoad_Ts),
+
+                          With(
+                              {
+                                  slot: First(
+                                      Filter(
+                                          ForAll(Sequence(s.Cap) As n, { SlotNo: n.Value }),
+                                          IsBlank(LookUp(bookedNow, SlotNumber = SlotNo))
+                                      )
+                                  ).SlotNo
+                              },
+                              With(
+                                  {
+                                      rec: Patch(
+                                          TrainingBookings,
+                                          Defaults(TrainingBookings),
+                                          {
+                                              Title: varSelectedTrainingType & " - " & MeName,
+                                              SessionID: s.SesKey,
+                                              TrainingType: varSelectedTrainingType,
+                                              SessionDate: s.SessionDate,
+                                              SlotNumber: slot,
+                                              BookedUserName: MeName,
+                                              BookedUserEmail: MeEmail,
+                                              BookingStatus: { Value: "Booked" },
+                                              BookedOn: Now()
+                                          }
+                                      )
+                                  },
+                                  If(
+                                      !IsEmpty(Errors(TrainingBookings)),
+                                      Notify("Could not book. Please try again.", NotificationType.Error),
+
+                                      // two people can take the same slot at the same moment: the earlier booking keeps it
+                                      Refresh(TrainingBookings);
+                                      If(
+                                          rec.ID > Min(
+                                              Filter(TrainingBookings, SessionID = s.SesKey && SlotNumber = slot && BookingStatus.Value = "Booked"),
+                                              ID
+                                          ),
+                                          Patch(TrainingBookings, LookUp(TrainingBookings, ID = rec.ID), { BookingStatus: { Value: "Cancelled" } });
+                                          Notify("Someone else just took that place. Please try again.", NotificationType.Warning),
+
+                                          If(
+                                              !IsBlank(s.MyWaitID),
+                                              Patch(TrainingWaitlist, LookUp(TrainingWaitlist, ID = s.MyWaitID), { WaitlistStatus: { Value: "Removed" } })
+                                          );
+                                          IfError(
+                                              TrainingBookingConfirmationEmail.Run("Booked", MeName, MeEmail, s.SesKey, varSelectedTrainingType, ""),
+                                              Notify("You are booked, but the confirmation email could not be sent.", NotificationType.Warning)
+                                          );
+                                          Notify("You are booked into this session.", NotificationType.Success)
+                                      );
+                                      Select(btnLoad_Ts)
+                                  )
+                              )
+                          )
+                      )
+                  )
+              )
+      - btnDoCancel_Ts:
+          Control: Button@0.0.45
+          Properties:
+            Height: =1
+            Width: =1
+            X: =0
+            Y: =0
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =With(
+                  { s: varSelectedSession },
+                  With(
+                      { b: LookUp(TrainingBookings, ID = s.MyBookingID) },
+                      If(
+                          IsBlank(b),
+                          Notify("That booking could not be found.", NotificationType.Warning);
+                          Set(tsShowConfirm, false);
+                          Select(btnLoad_Ts),
+
+                          Patch(TrainingBookings, b, { BookingStatus: { Value: "Cancelled" } });
+                          If(
+                              !IsEmpty(Errors(TrainingBookings)),
+                              Notify("Could not remove the booking. Please try again.", NotificationType.Error),
+
+                              IfError(
+                                  TrainingBookingConfirmationEmail.Run("Cancelled", b.BookedUserName, b.BookedUserEmail, s.SesKey, varSelectedTrainingType, Text(b.ID)),
+                                  Notify("The booking was removed, but the email could not be sent.", NotificationType.Warning)
+                              );
+                              IfError(TrainingWaitlistNotification.Run(s.SesKey, varSelectedTrainingType), Blank());
+                              Set(tsShowConfirm, false);
+                              Notify("Your booking has been removed.", NotificationType.Success);
+                              Select(btnLoad_Ts)
+                          )
+                      )
+                  )
+              )
+      - btnDoRemove_Ts:
+          Control: Button@0.0.45
+          Properties:
+            Height: =1
+            Width: =1
+            X: =0
+            Y: =0
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =With(
+                  { s: varSelectedSession },
+                  With(
+                      { b: LookUp(TrainingBookings, ID = varSlotBooking.ID) },
+                      If(
+                          IsBlank(b),
+                          Notify("That booking could not be found.", NotificationType.Warning);
+                          Set(tsShowConfirm, false);
+                          Select(btnLoad_Ts),
+
+                          Patch(TrainingBookings, b, { BookingStatus: { Value: "Cancelled" } });
+                          If(
+                              !IsEmpty(Errors(TrainingBookings)),
+                              Notify("Could not remove the booking. Please try again.", NotificationType.Error),
+
+                              IfError(
+                                  TrainingBookingConfirmationEmail.Run("Cancelled", b.BookedUserName, b.BookedUserEmail, s.SesKey, varSelectedTrainingType, Text(b.ID)),
+                                  Notify("The booking was removed, but the email could not be sent.", NotificationType.Warning)
+                              );
+                              IfError(TrainingWaitlistNotification.Run(s.SesKey, varSelectedTrainingType), Blank());
+                              Set(tsShowConfirm, false);
+                              Notify("The booking has been removed.", NotificationType.Success);
+                              Select(btnLoad_Ts)
+                          )
+                      )
+                  )
+              )
+      - btnDoDelete_Ts:
+          Control: Button@0.0.45
+          Properties:
+            Height: =1
+            Width: =1
+            X: =0
+            Y: =0
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =With(
+                  { s: varSelectedSession },
+                  Refresh(TrainingBookings);
+                  Refresh(TrainingWaitlist);
+                  If(
+                      CountRows(Filter(TrainingBookings, SessionID = s.SesKey && BookingStatus.Value = "Booked")) > 0 ||
+                      CountRows(Filter(TrainingWaitlist, SessionID = s.SesKey && WaitlistStatus.Value = "Waiting")) > 0,
+                      Notify("This date cannot be deleted while people are booked or waiting. Remove them first.", NotificationType.Warning);
+                      Set(tsShowConfirm, false),
+
+                      // the date is hidden, not erased, so the history is kept
+                      Patch(TrainingSessions, LookUp(TrainingSessions, ID = s.ID), { IsActive: false });
+                      If(
+                          !IsEmpty(Errors(TrainingSessions)),
+                          Notify("Could not delete the date. Please try again.", NotificationType.Error),
+                          Set(tsShowConfirm, false);
+                          Set(varSelectedSession, Blank());
+                          Notify("Training date deleted.", NotificationType.Success);
+                          Select(btnLoad_Ts)
+                      )
+                  )
+              )
+      - btnDoJoin_Ts:
+          Control: Button@0.0.45
+          Properties:
+            Height: =1
+            Width: =1
+            X: =0
+            Y: =0
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =With(
+                  { s: varSelectedSession },
+                  If(
+                      !IsBlank(s.MyWaitID) || !IsBlank(s.MyBookingID),
+                      Blank(),
+                      Patch(
+                          TrainingWaitlist,
+                          Defaults(TrainingWaitlist),
+                          {
+                              Title: varSelectedTrainingType & " - " & MeName,
+                              SessionID: s.SesKey,
+                              WaitlistUserName: MeName,
+                              WaitlistUserEmail: MeEmail,
+                              WaitlistStatus: { Value: "Waiting" },
+                              AddedOn: Now()
+                          }
+                      );
+                      If(
+                          !IsEmpty(Errors(TrainingWaitlist)),
+                          Notify("Could not join the waitlist. Please try again.", NotificationType.Error),
+                          Notify("You are on the waitlist. You will get an email if a place opens.", NotificationType.Success);
+                          Select(btnLoad_Ts)
+                      )
+                  )
+              )
+      - btnDoLeave_Ts:
+          Control: Button@0.0.45
+          Properties:
+            Height: =1
+            Width: =1
+            X: =0
+            Y: =0
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =With(
+                  { s: varSelectedSession },
+                  Patch(TrainingWaitlist, LookUp(TrainingWaitlist, ID = s.MyWaitID), { WaitlistStatus: { Value: "Removed" } });
+                  If(
+                      !IsEmpty(Errors(TrainingWaitlist)),
+                      Notify("Could not leave the waitlist. Please try again.", NotificationType.Error),
+                      IfError(
+                          TrainingBookingConfirmationEmail.Run("WaitlistRemoved", MeName, MeEmail, s.SesKey, varSelectedTrainingType, ""),
+                          Blank()
+                      );
+                      Notify("You have been removed from the waitlist.", NotificationType.Success);
+                      Select(btnLoad_Ts)
+                  )
+              )
+      - btnDoAdd_Ts:
+          Control: Button@0.0.45
+          Properties:
+            Height: =1
+            Width: =1
+            X: =0
+            Y: =0
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =With(
+                  {
+                      t: ddType_Ts.Selected.Value,
+                      d: dpDate_Ts.SelectedDate,
+                      loc: Trim(txtLoc_Ts.Text)
+                  },
+                  With(
+                      { when: d + Time(Value(ddHour_Ts.Selected.Value), Value(ddMin_Ts.Selected.Value), 0) },
+                      If(
+                          IsBlank(t),
+                          Notify("Please select a training type.", NotificationType.Warning),
+
+                          IsBlank(d),
+                          Notify("Please select a date.", NotificationType.Warning),
+
+                          IsBlank(loc),
+                          Notify("Please enter a location.", NotificationType.Warning),
+
+                          when < Now(),
+                          Notify("That date and time has already passed.", NotificationType.Warning),
+
+                          !IsBlank(LookUp(TrainingSessions, TrainingType.Value = t && SessionDate = when && IsActive = true)),
+                          Notify("A session already exists for that date and time.", NotificationType.Warning),
+
+                          Patch(
+                              TrainingSessions,
+                              Defaults(TrainingSessions),
+                              {
+                                  Title: t & " - " & Text(when, "dd/mm/yyyy hh:mm"),
+                                  TrainingType: { Value: t },
+                                  SessionDate: when,
+                                  Location: loc,
+                                  Capacity: If(t = "Manual Handling", 8, 6),
+                                  IsActive: true
+                              }
+                          );
+                          If(
+                              !IsEmpty(Errors(TrainingSessions)),
+                              Notify("Could not save the date. Please try again.", NotificationType.Error),
+                              Set(tsShowAdd, false);
+                              Set(varSelectedTrainingType, t);
+                              Set(varSelectedSession, Blank());
+                              Notify("Training date added.", NotificationType.Success);
+                              Select(btnLoad_Ts)
+                          )
+                      )
+                  )
+              )
+      - btnDoSend_Ts:
+          Control: Button@0.0.45
+          Properties:
+            Height: =1
+            Width: =1
+            X: =0
+            Y: =0
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =With(
+                  { to: Concat(Filter(colTsBookings, SessionID = varSelectedSession.SesKey), BookedUserEmail, ";") },
+                  If(
+                      IsBlank(to),
+                      Notify("Nobody is booked into this date yet.", NotificationType.Warning),
+                      IfError(
+                          Office365Outlook.SendEmailV2(
+                              to,
+                              Trim(txtEmailSubject_Ts.Text),
+                              Substitute(Substitute(txtEmailBody_Ts.Text, Char(13), ""), Char(10), "<br>"),
+                              { IsHtml: true }
+                          );
+                          Set(tsShowEmail, false);
+                          Notify("Email sent to the booked attendees.", NotificationType.Success),
+                          Notify("The email could not be sent. Please try again.", NotificationType.Error)
+                      )
+                  )
+              )
+      - btnDoSendWait_Ts:
+          Control: Button@0.0.45
+          Properties:
+            Height: =1
+            Width: =1
+            X: =0
+            Y: =0
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =With(
+                  { to: Concat(Filter(colTsWait, SessionID = varSelectedSession.SesKey), WaitlistUserEmail, ";") },
+                  If(
+                      IsBlank(to),
+                      Notify("There are no waitlist users to email.", NotificationType.Warning),
+                      IfError(
+                          Office365Outlook.SendEmailV2(
+                              to,
+                              varSelectedTrainingType & " training: a place may be available (" & Text(varSelectedSession.SessionDate, "dd/mm/yyyy h:mm AM/PM") & ")",
+                              "Hi all,<br><br>You are on the waitlist for " & varSelectedTrainingType & " training on " &
+                              Text(varSelectedSession.SessionDate, "dddd d mmmm") & " at " & Text(varSelectedSession.SessionDate, "h:mm AM/PM") & ".<br>" &
+                              "A place may be available. If you would like it, please open the Training Register app and book a place.<br><br>" &
+                              "Thanks,<br>" & MeName,
+                              { IsHtml: true }
+                          );
+                          Notify("Email sent to the waitlist.", NotificationType.Success),
+                          Notify("The email could not be sent. Please try again.", NotificationType.Error)
+                      )
+                  )
+              )
+      - conHdr_Ts:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(7, 95, 115, 1)
+            Height: =Round(95 * UI, 0)
+            Width: =Parent.Width
+            X: =0
+            Y: =0
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            DropShadow: =DropShadow.None
+          Children:
+            - imgHdr_Ts:
+                Control: Image@2.2.3
+                Properties:
+                  Height: =Parent.Height
+                  Image: =HeaderImage
+                  ImagePosition: =ImagePosition.Fill
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+            - btnBack_Ts:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  FontColor: =C_White
+                  FontSize: =Round(32 * UI, 0)
+                  Height: =Round(60 * UI, 0)
+                  Icon: ="ChevronLeft"
+                  Text: =""
+                  Width: =Round(60 * UI, 0)
+                  X: =Gutter + Round(5 * UI, 0)
+                  Y: =Round(18 * UI, 0)
+                  OnSelect: =If(!Wide && !IsBlank(varSelectedSession), Set(varSelectedSession, Blank()), Back())
+            - lblHdrT_Ts:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =AppFont
+                  Color: =C_White
+                  Size: =Round(24 * UI, 0)
+                  FontWeight: =FontWeight.Bold
+                  Height: =Round(35 * UI, 0)
+                  Text: =varSelectedTrainingType & " training"
+                  Width: =PageW - Round(253 * UI, 0)
+                  X: =Gutter + Round(65 * UI, 0)
+                  Y: =Round(18 * UI, 0)
+                  Wrap: =false
+            - lblHdrS_Ts:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =AppFont
+                  Color: =RGBA(255, 255, 255, 0.85)
+                  Size: =Round(15 * UI, 0)
+                  Height: =Round(25 * UI, 0)
+                  Text: =If(Wide || IsBlank(varSelectedSession), CountRows(colTsSessions) & If(CountRows(colTsSessions) = 1, " upcoming date", " upcoming dates"), Text(varSelectedSession.SessionDate, "dddd d mmmm"))
+                  Width: =PageW - Round(253 * UI, 0)
+                  X: =Gutter + Round(65 * UI, 0)
+                  Y: =Round(53 * UI, 0)
+                  Wrap: =false
+            - conAdd_Ts:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  Fill: =C_White
+                  Height: =Round(50 * UI, 0)
+                  Width: =Round(138 * UI, 0)
+                  X: =Gutter + PageW - Round(158 * UI, 0)
+                  Y: =Round(23 * UI, 0)
+                  RadiusBottomLeft: =Round(25 * UI, 0)
+                  RadiusBottomRight: =Round(25 * UI, 0)
+                  RadiusTopLeft: =Round(25 * UI, 0)
+                  RadiusTopRight: =Round(25 * UI, 0)
+                  BorderColor: =C_White
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Visible: =Coalesce(varCanManageTraining, false) && (Wide || IsBlank(varSelectedSession))
+                Children:
+                  - btnAdd_Ts:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =Round(25 * UI, 0)
+                        Font: =Font.'Segoe UI'
+                        FontColor: =C_Accent
+                        FontSize: =Round(16 * UI, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =Parent.Height
+                        Width: =Parent.Width
+                        Text: ="+ Add date"
+                        OnSelect: |-
+                          =Set(tsShowAdd, true);
+                          Reset(ddType_Ts);
+                          Reset(dpDate_Ts);
+                          Reset(ddHour_Ts);
+                          Reset(ddMin_Ts);
+                          Reset(txtLoc_Ts)
+      - conBody_Ts:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =C_Bg
+            Height: =Parent.Height - Round(95 * UI, 0) - If(!IsBlank(varSelectedSession), Round(100 * UI, 0), 0)
+            Width: =Parent.Width
+            X: =0
+            Y: =Round(95 * UI, 0)
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            DropShadow: =DropShadow.None
+          Children:
+            - conList_Ts:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  Fill: =C_White
+                  Height: =Parent.Height - GapPx - GapPx
+                  Width: =ListW
+                  X: =Gutter + GapPx
+                  Y: =GapPx
+                  RadiusBottomLeft: =Round(23 * UI, 0)
+                  RadiusBottomRight: =Round(23 * UI, 0)
+                  RadiusTopLeft: =Round(23 * UI, 0)
+                  RadiusTopRight: =Round(23 * UI, 0)
+                  BorderColor: =C_Line
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.Light
+                  Visible: =Wide || IsBlank(varSelectedSession)
+                Children:
+                  - lblListCap_Ts:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =AppFont
+                        Color: =C_Muted
+                        Size: =Round(14 * UI, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =Round(23 * UI, 0)
+                        Text: ="UPCOMING DATES"
+                        Width: =Parent.Width - Round(100 * UI, 0)
+                        X: =Round(20 * UI, 0)
+                        Y: =Round(20 * UI, 0)
+                        Wrap: =false
+                  - btnRefresh_Ts:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        FontColor: =C_Ink2
+                        FontSize: =Round(21 * UI, 0)
+                        Height: =Round(45 * UI, 0)
+                        Icon: ="ArrowClockwise"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconOnly
+                        OnSelect: =Select(btnLoad_Ts)
+                        Text: =""
+                        Width: =Round(50 * UI, 0)
+                        X: =Parent.Width - Round(65 * UI, 0)
+                        Y: =Round(10 * UI, 0)
+                  - galDates_Ts:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        Height: =Parent.Height - Round(65 * UI, 0)
+                        Items: =colTsSessions
+                        TemplatePadding: =0
+                        TemplateSize: =Round(105 * UI, 0)
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =Round(65 * UI, 0)
+                        ShowScrollbar: =false
+                      Children:
+                        - conDate_Ts:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =If((!IsBlank(varSelectedSession) && ThisItem.ID = varSelectedSession.ID), C_AccentSoft, C_White)
+                              Height: =Round(95 * UI, 0)
+                              Width: =Parent.TemplateWidth - Round(5 * UI, 0)
+                              X: =Round(3 * UI, 0)
+                              Y: =Round(5 * UI, 0)
+                              RadiusBottomLeft: =Round(18 * UI, 0)
+                              RadiusBottomRight: =Round(18 * UI, 0)
+                              RadiusTopLeft: =Round(18 * UI, 0)
+                              RadiusTopRight: =Round(18 * UI, 0)
+                              BorderColor: =If((!IsBlank(varSelectedSession) && ThisItem.ID = varSelectedSession.ID), C_Accent, C_Line)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - conDateBox_Ts:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =If((!IsBlank(varSelectedSession) && ThisItem.ID = varSelectedSession.ID), C_Accent, C_AccentSoft)
+                                    Height: =Round(70 * UI, 0)
+                                    Width: =Round(65 * UI, 0)
+                                    X: =Round(15 * UI, 0)
+                                    Y: =Round(13 * UI, 0)
+                                    RadiusBottomLeft: =Round(15 * UI, 0)
+                                    RadiusBottomRight: =Round(15 * UI, 0)
+                                    RadiusTopLeft: =Round(15 * UI, 0)
+                                    RadiusTopRight: =Round(15 * UI, 0)
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - lblDow_Ts:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Font: =AppFont
+                                          Color: =If((!IsBlank(varSelectedSession) && ThisItem.ID = varSelectedSession.ID), C_White, C_Muted)
+                                          Size: =Round(14 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Round(20 * UI, 0)
+                                          Text: =Upper(Text(ThisItem.SessionDate, "ddd"))
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =Round(8 * UI, 0)
+                                          Align: =Align.Center
+                                          Wrap: =false
+                                    - lblDay_Ts:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Font: =AppFont
+                                          Color: =If((!IsBlank(varSelectedSession) && ThisItem.ID = varSelectedSession.ID), C_White, C_Accent)
+                                          Size: =Round(24 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Round(38 * UI, 0)
+                                          Text: =Text(ThisItem.SessionDate, "d")
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =Round(25 * UI, 0)
+                                          Align: =Align.Center
+                                          Wrap: =false
+                              - lblDateT_Ts:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =AppFont
+                                    Color: =C_Ink
+                                    Size: =Round(18 * UI, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Round(30 * UI, 0)
+                                    Text: =Text(ThisItem.SessionDate, "dddd d mmmm")
+                                    Width: =Parent.Width - Round(210 * UI, 0)
+                                    X: =Round(95 * UI, 0)
+                                    Y: =Round(10 * UI, 0)
+                                    Wrap: =false
+                              - lblDateS_Ts:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =AppFont
+                                    Color: =C_Muted
+                                    Size: =Round(15 * UI, 0)
+                                    Height: =Round(25 * UI, 0)
+                                    Text: =Text(ThisItem.SessionDate, "h:mm AM/PM") & "  ·  " & Coalesce(ThisItem.Location, "Location to be confirmed")
+                                    Width: =Parent.Width - Round(210 * UI, 0)
+                                    X: =Round(95 * UI, 0)
+                                    Y: =Round(43 * UI, 0)
+                                    Wrap: =false
+                              - conChip_Ts:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =If(!IsBlank(ThisItem.MyBookingID), C_GoodBg, ThisItem.Free <= 0, C_AmberBg, C_AccentSoft)
+                                    Height: =Round(38 * UI, 0)
+                                    Width: =Round(95 * UI, 0)
+                                    X: =Parent.Width - Round(110 * UI, 0)
+                                    Y: =Round(28 * UI, 0)
+                                    RadiusBottomLeft: =Round(19 * UI, 0)
+                                    RadiusBottomRight: =Round(19 * UI, 0)
+                                    RadiusTopLeft: =Round(19 * UI, 0)
+                                    RadiusTopRight: =Round(19 * UI, 0)
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - lblChip_Ts:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Font: =AppFont
+                                          Color: =If(!IsBlank(ThisItem.MyBookingID), C_Good, ThisItem.Free <= 0, C_Amber, C_Accent)
+                                          Size: =Round(15 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Text: =If(!IsBlank(ThisItem.MyBookingID), "Booked", ThisItem.Free <= 0, If(!IsBlank(ThisItem.MyWaitID), "Waitlisted", "Full"), ThisItem.Free & " left")
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =0
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Wrap: =false
+                              - btnDate_Ts:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderStyle: =BorderStyle.None
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =0
+                                    Text: =""
+                                    OnSelect: |-
+                                      =Set(varSelectedSession, ThisItem);
+                                      Select(btnSlots_Ts)
+                  - lblDatesEmpty_Ts:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =AppFont
+                        Color: =C_Muted
+                        Size: =Round(17 * UI, 0)
+                        Height: =Round(75 * UI, 0)
+                        Text: =If(tsLoading, "Loading dates...", "No upcoming dates. " & If(Coalesce(varCanManageTraining, false), "Tap + Add date to schedule one.", "Please check back soon."))
+                        Width: =Parent.Width - Round(50 * UI, 0)
+                        X: =Round(25 * UI, 0)
+                        Y: =Round(88 * UI, 0)
+                        Align: =Align.Center
+                        Visible: =IsEmpty(colTsSessions)
+            - conDetail_Ts:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  Fill: =C_White
+                  Height: =Parent.Height - GapPx - GapPx
+                  Width: =DetailW
+                  X: =DetailX
+                  Y: =GapPx
+                  RadiusBottomLeft: =Round(23 * UI, 0)
+                  RadiusBottomRight: =Round(23 * UI, 0)
+                  RadiusTopLeft: =Round(23 * UI, 0)
+                  RadiusTopRight: =Round(23 * UI, 0)
+                  BorderColor: =C_Line
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.Light
+                  Visible: =Wide || !IsBlank(varSelectedSession)
+                Children:
+                  - lblPick_Ts:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =AppFont
+                        Color: =C_Muted
+                        Size: =Round(18 * UI, 0)
+                        Height: =Round(75 * UI, 0)
+                        Text: ="Choose a date on the left to see who is booked in."
+                        Width: =Parent.Width - Round(60 * UI, 0)
+                        X: =Round(30 * UI, 0)
+                        Y: =Round(75 * UI, 0)
+                        Align: =Align.Center
+                        Visible: =IsBlank(varSelectedSession)
+                  - conDetailBody_Ts:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =Parent.Height
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
+                        Visible: =!IsBlank(varSelectedSession)
+                      Children:
+                        - lblDetT_Ts:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =Round(24 * UI, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =Round(35 * UI, 0)
+                              Text: =Text(varSelectedSession.SessionDate, "dddd d mmmm yyyy")
+                              Width: =Parent.Width - Round(50 * UI, 0)
+                              X: =Round(25 * UI, 0)
+                              Y: =Round(20 * UI, 0)
+                              Wrap: =false
+                        - lblDetS_Ts:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink2
+                              Size: =Round(16 * UI, 0)
+                              Height: =Round(28 * UI, 0)
+                              Text: =Text(varSelectedSession.SessionDate, "h:mm AM/PM") & "  ·  " & Coalesce(varSelectedSession.Location, "Location to be confirmed")
+                              Width: =Parent.Width - Round(50 * UI, 0)
+                              X: =Round(25 * UI, 0)
+                              Y: =Round(58 * UI, 0)
+                              Wrap: =false
+                        - conBanner_Ts:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =If(!IsBlank(varSelectedSession.MyBookingID), C_GoodBg, varSelectedSession.Free <= 0 || !IsBlank(varSelectedSession.MyWaitID), C_AmberBg, C_AccentSoft)
+                              Height: =Round(65 * UI, 0)
+                              Width: =Parent.Width - Round(50 * UI, 0)
+                              X: =Round(25 * UI, 0)
+                              Y: =Round(98 * UI, 0)
+                              RadiusBottomLeft: =Round(18 * UI, 0)
+                              RadiusBottomRight: =Round(18 * UI, 0)
+                              RadiusTopLeft: =Round(18 * UI, 0)
+                              RadiusTopRight: =Round(18 * UI, 0)
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - lblBanner_Ts:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =AppFont
+                                    Color: =If(!IsBlank(varSelectedSession.MyBookingID), C_Good, varSelectedSession.Free <= 0 || !IsBlank(varSelectedSession.MyWaitID), C_Amber, C_Accent)
+                                    Size: =Round(16 * UI, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Text: =If(!IsBlank(varSelectedSession.MyBookingID), "You are booked in (slot " & LookUp(colTsSlots, Lower(Coalesce(Booking.BookedUserEmail, "")) = MeEmail).SlotNo & ")", varSelectedSession.Free > 0 && !IsBlank(varSelectedSession.MyWaitID), "A place is free. Book now before it goes.", !IsBlank(varSelectedSession.MyWaitID), "You are on the waitlist (" & varSelectedSession.MyWaitPos & " of " & varSelectedSession.WaitCount & ")", varSelectedSession.Free <= 0, "This session is full. Join the waitlist and you will be emailed if a place opens.", varSelectedSession.Free & If(varSelectedSession.Free = 1, " place left", " places left") & " of " & varSelectedSession.Cap)
+                                    Width: =Parent.Width - Round(35 * UI, 0)
+                                    X: =Round(18 * UI, 0)
+                                    Y: =0
+                                    VerticalAlign: =VerticalAlign.Middle
+                        - lblSlotsCap_Ts:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =Round(14 * UI, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =Round(23 * UI, 0)
+                              Text: ="ATTENDEES  ·  " & varSelectedSession.Booked & " OF " & varSelectedSession.Cap
+                              Width: =Parent.Width - Round(50 * UI, 0)
+                              X: =Round(25 * UI, 0)
+                              Y: =Round(178 * UI, 0)
+                              Wrap: =false
+                        - galSlots_Ts:
+                            Control: Gallery@2.15.0
+                            Variant: Vertical
+                            Properties:
+                              Height: =Parent.Height - Round(215 * UI, 0) - If(Coalesce(varCanManageTraining, false), Round(80 * UI, 0), 0)
+                              Items: =colTsSlots
+                              TemplatePadding: =0
+                              TemplateSize: =Round(85 * UI, 0)
+                              WrapCount: =2
+                              Width: =Parent.Width - Round(30 * UI, 0)
+                              X: =Round(15 * UI, 0)
+                              Y: =Round(208 * UI, 0)
+                              ShowScrollbar: =false
+                            Children:
+                              - conSlot_Ts:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =If(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail, C_Accent, !IsBlank(ThisItem.Booking), C_AccentSoft, C_White)
+                                    Height: =Round(75 * UI, 0)
+                                    Width: =Parent.TemplateWidth - Round(15 * UI, 0)
+                                    X: =Round(8 * UI, 0)
+                                    Y: =Round(5 * UI, 0)
+                                    RadiusBottomLeft: =Round(18 * UI, 0)
+                                    RadiusBottomRight: =Round(18 * UI, 0)
+                                    RadiusTopLeft: =Round(18 * UI, 0)
+                                    RadiusTopRight: =Round(18 * UI, 0)
+                                    BorderColor: =If(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail, C_Accent, !IsBlank(ThisItem.Booking), C_AccentSoft, C_Line)
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - lblSlotNo_Ts:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Font: =AppFont
+                                          Color: =If(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail, RGBA(255, 255, 255, 0.8), C_Muted)
+                                          Size: =Round(12 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Round(20 * UI, 0)
+                                          Text: ="SLOT " & ThisItem.SlotNo
+                                          Width: =Parent.Width - Round(35 * UI, 0)
+                                          X: =Round(18 * UI, 0)
+                                          Y: =Round(10 * UI, 0)
+                                          Wrap: =false
+                                    - lblSlotName_Ts:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Font: =AppFont
+                                          Color: =If(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail, C_White, IsBlank(ThisItem.Booking), C_Good, C_Ink)
+                                          Size: =Round(17 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Round(30 * UI, 0)
+                                          Text: =If(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail, "You", IsBlank(ThisItem.Booking), "Available", ThisItem.Booking.BookedUserName)
+                                          Width: =Parent.Width - Round(35 * UI, 0)
+                                          X: =Round(18 * UI, 0)
+                                          Y: =Round(33 * UI, 0)
+                                          Wrap: =false
+                                    - btnSlot_Ts:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                          BorderStyle: =BorderStyle.None
+                                          Height: =Parent.Height
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =0
+                                          Text: =""
+                                          OnSelect: |-
+                                            =Set(varSlotBooking, ThisItem.Booking);
+                                            Set(cfAction, "RemoveAttendee");
+                                            Set(cfTitle, "Remove this person?");
+                                            Set(cfBody, ThisItem.Booking.BookedUserName & " will be removed from slot " & ThisItem.SlotNo & " and emailed.");
+                                            Set(cfBtn, "Remove");
+                                            Set(tsShowConfirm, true)
+                                          Visible: =Coalesce(varCanManageTraining, false) && !IsBlank(ThisItem.Booking) && !(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail)
+                        - conMgrRow_Ts:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =RGBA(0, 0, 0, 0)
+                              Height: =Round(75 * UI, 0)
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =Parent.Height - Round(75 * UI, 0)
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
+                              DropShadow: =DropShadow.None
+                              Visible: =Coalesce(varCanManageTraining, false)
+                            Children:
+                              - conMgr1_Ts:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_White
+                                    Height: =Round(55 * UI, 0)
+                                    Width: =(Parent.Width - Round(60 * UI, 0)) / 3
+                                    X: =Round(20 * UI, 0)
+                                    Y: =0
+                                    RadiusBottomLeft: =Round(28 * UI, 0)
+                                    RadiusBottomRight: =Round(28 * UI, 0)
+                                    RadiusTopLeft: =Round(28 * UI, 0)
+                                    RadiusTopRight: =Round(28 * UI, 0)
+                                    BorderColor: =C_Line
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - btnMgr1_Ts:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                          BorderRadius: =Round(28 * UI, 0)
+                                          Font: =Font.'Segoe UI'
+                                          FontColor: =C_Ink2
+                                          FontSize: =Round(16 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Width: =Parent.Width
+                                          Text: ="Waitlist (" & varSelectedSession.WaitCount & ")"
+                                          OnSelect: =Set(tsShowWait, true)
+                              - conMgr2_Ts:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_White
+                                    Height: =Round(55 * UI, 0)
+                                    Width: =(Parent.Width - Round(60 * UI, 0)) / 3
+                                    X: =Round(20 * UI, 0) + (Parent.Width - Round(60 * UI, 0)) / 3 + Round(10 * UI, 0)
+                                    Y: =0
+                                    RadiusBottomLeft: =Round(28 * UI, 0)
+                                    RadiusBottomRight: =Round(28 * UI, 0)
+                                    RadiusTopLeft: =Round(28 * UI, 0)
+                                    RadiusTopRight: =Round(28 * UI, 0)
+                                    BorderColor: =C_Line
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - btnMgr2_Ts:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                          BorderRadius: =Round(28 * UI, 0)
+                                          Font: =Font.'Segoe UI'
+                                          FontColor: =C_Ink2
+                                          FontSize: =Round(16 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Width: =Parent.Width
+                                          Text: ="Email attendees"
+                                          OnSelect: |-
+                                            =Set(tsShowEmail, true);
+                                            Reset(txtEmailSubject_Ts);
+                                            Reset(txtEmailBody_Ts)
+                              - conMgr3_Ts:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_White
+                                    Height: =Round(55 * UI, 0)
+                                    Width: =(Parent.Width - Round(60 * UI, 0)) / 3
+                                    X: =Round(20 * UI, 0) + Round(3 * UI, 0) * ((Parent.Width - Round(60 * UI, 0)) / 3 + Round(10 * UI, 0))
+                                    Y: =0
+                                    RadiusBottomLeft: =Round(28 * UI, 0)
+                                    RadiusBottomRight: =Round(28 * UI, 0)
+                                    RadiusTopLeft: =Round(28 * UI, 0)
+                                    RadiusTopRight: =Round(28 * UI, 0)
+                                    BorderColor: =C_Line
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - btnMgr3_Ts:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                          BorderRadius: =Round(28 * UI, 0)
+                                          Font: =Font.'Segoe UI'
+                                          FontColor: =C_Danger
+                                          FontSize: =Round(16 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Width: =Parent.Width
+                                          Text: ="Delete date"
+                                          OnSelect: |-
+                                            =Set(cfAction, "DeleteDate");
+                                            Set(cfTitle, "Delete this date?");
+                                            Set(cfBody, "The date will be removed from the list. This can only be done when nobody is booked or waiting.");
+                                            Set(cfBtn, "Delete date");
+                                            Set(tsShowConfirm, true)
+      - conBar_Ts:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =C_White
+            Height: =Round(100 * UI, 0)
+            Width: =Parent.Width
+            X: =0
+            Y: =Parent.Height - Round(100 * UI, 0)
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            BorderColor: =C_Line
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+            DropShadow: =DropShadow.None
+            Visible: =!IsBlank(varSelectedSession)
+          Children:
+            - conPrimary_Ts:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  Fill: =If(!IsBlank(varSelectedSession.MyBookingID), C_White, varSelectedSession.Free > 0, C_Accent, !IsBlank(varSelectedSession.MyWaitID), C_White, C_Accent)
+                  Height: =Round(65 * UI, 0)
+                  Width: =DetailW
+                  X: =DetailX
+                  Y: =Round(18 * UI, 0)
+                  RadiusBottomLeft: =Round(33 * UI, 0)
+                  RadiusBottomRight: =Round(33 * UI, 0)
+                  RadiusTopLeft: =Round(33 * UI, 0)
+                  RadiusTopRight: =Round(33 * UI, 0)
+                  BorderColor: =If(!IsBlank(varSelectedSession.MyBookingID), C_Danger, varSelectedSession.Free > 0, C_Accent, !IsBlank(varSelectedSession.MyWaitID), C_Amber, C_Accent)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                Children:
+                  - btnPrimary_Ts:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =Round(33 * UI, 0)
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(!IsBlank(varSelectedSession.MyBookingID), C_Danger, varSelectedSession.Free > 0, C_White, !IsBlank(varSelectedSession.MyWaitID), C_Amber, C_White)
+                        FontSize: =Round(19 * UI, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =Parent.Height
+                        Width: =Parent.Width
+                        Text: =If(!IsBlank(varSelectedSession.MyBookingID), "Remove my booking", varSelectedSession.Free > 0, "Book a place", !IsBlank(varSelectedSession.MyWaitID), "Leave the waitlist", "Join the waitlist")
+                        OnSelect: |-
+                          =With(
+                              { s: varSelectedSession },
+                              If(
+                                  !IsBlank(s.MyBookingID),
+                                  Set(cfAction, "CancelMine");
+                                  Set(cfTitle, "Remove your booking?");
+                                  Set(cfBody, "You will give up your place on " & Text(s.SessionDate, "dddd d mmmm") & " at " & Text(s.SessionDate, "h:mm AM/PM") & ". Anyone on the waitlist will be told.");
+                                  Set(cfBtn, "Remove my booking");
+                                  Set(tsShowConfirm, true),
+
+                                  s.Free > 0,
+                                  Select(btnDoBook_Ts),
+
+                                  !IsBlank(s.MyWaitID),
+                                  Select(btnDoLeave_Ts),
+
+                                  Select(btnDoJoin_Ts)
+                              )
+                          )
+      - conOverlay_Ad:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(14, 28, 42, 0.45)
+            Height: =Parent.Height
+            Width: =Parent.Width
+            X: =0
+            Y: =0
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            DropShadow: =DropShadow.None
+            Visible: =tsShowAdd
+          Children:
+            - btnScrim_Ad:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  BorderStyle: =BorderStyle.None
+                  Height: =Parent.Height
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+                  Text: =""
+                  OnSelect: =Set(tsShowAdd, false)
+            - conSheet_Ad:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  Fill: =C_White
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutJustifyContent: =LayoutJustifyContent.Start
+                  LayoutGap: =Round(13 * UI, 0)
+                  PaddingTop: =Round(25 * UI, 0)
+                  PaddingRight: =Round(25 * UI, 0)
+                  PaddingBottom: =Round(30 * UI, 0)
+                  PaddingLeft: =Round(25 * UI, 0)
+                  DropShadow: =DropShadow.None
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =Round(28 * UI, 0)
+                  RadiusTopRight: =Round(28 * UI, 0)
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  X: =(Parent.Width - SheetW) / 2
+                  Width: =SheetW
+                  Height: =Min(Parent.Height - Round(50 * UI, 0), Round(800 * UI, 0))
+                  Y: =Parent.Height - Min(Parent.Height - Round(50 * UI, 0), Round(800 * UI, 0))
+                Children:
+                  - lblSheetT_Ad:
+                      Control: Label@2.5.1
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(40 * UI, 0)
+                        FillPortions: =0
+                        Font: =AppFont
+                        Color: =C_Ink
+                        Size: =Round(22 * UI, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =Round(40 * UI, 0)
+                        Text: ="Add a training date"
+                        Width: =SheetW - Round(50 * UI, 0)
+                        X: =0
+                        Y: =0
+                        Wrap: =false
+                  - fldType_Ad:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(80 * UI, 0)
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =Round(80 * UI, 0)
+                        Width: =SheetW - Round(50 * UI, 0)
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - capType_Ad:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =Round(14 * UI, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =Round(23 * UI, 0)
+                              Text: ="TRAINING"
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Wrap: =false
+                        - boxType_Ad:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_White
+                              Height: =Round(55 * UI, 0)
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =Round(25 * UI, 0)
+                              RadiusBottomLeft: =Round(13 * UI, 0)
+                              RadiusBottomRight: =Round(13 * UI, 0)
+                              RadiusTopLeft: =Round(13 * UI, 0)
+                              RadiusTopRight: =Round(13 * UI, 0)
+                              BorderColor: =RGBA(14, 42, 70, 0.22)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - ddType_Ts:
+                                  Control: Classic/DropDown@2.3.1
+                                  Properties:
+                                    BorderStyle: =BorderStyle.None
+                                    ChevronBackground: =C_Accent
+                                    ChevronFill: =C_White
+                                    Color: =C_Ink
+                                    Default: =varSelectedTrainingType
+                                    Font: =AppFont
+                                    Height: =Parent.Height
+                                    Items: =["Basic Life Support", "Manual Handling"]
+                                    Items.Value: =Value
+                                    Size: =Round(18 * UI, 0)
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =0
+                  - fldDate_Ad:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(80 * UI, 0)
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =Round(80 * UI, 0)
+                        Width: =SheetW - Round(50 * UI, 0)
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - capDate_Ad:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =Round(14 * UI, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =Round(23 * UI, 0)
+                              Text: ="DATE"
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Wrap: =false
+                        - boxDate_Ad:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_White
+                              Height: =Round(55 * UI, 0)
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =Round(25 * UI, 0)
+                              RadiusBottomLeft: =Round(13 * UI, 0)
+                              RadiusBottomRight: =Round(13 * UI, 0)
+                              RadiusTopLeft: =Round(13 * UI, 0)
+                              RadiusTopRight: =Round(13 * UI, 0)
+                              BorderColor: =RGBA(14, 42, 70, 0.22)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - dpDate_Ts:
+                                  Control: Classic/DatePicker@2.6.0
+                                  Properties:
+                                    BorderStyle: =BorderStyle.None
+                                    Color: =C_Ink
+                                    DefaultDate: =Today()
+                                    Font: =AppFont
+                                    Height: =Parent.Height
+                                    Size: =Round(18 * UI, 0)
+                                    Width: =Parent.Width
+                  - rowTime_Ts:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(80 * UI, 0)
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =Round(80 * UI, 0)
+                        Width: =SheetW - Round(50 * UI, 0)
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - fldHour_Ts:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =RGBA(0, 0, 0, 0)
+                              Height: =Round(80 * UI, 0)
+                              Width: =(SheetW - Round(65 * UI, 0)) / 2
+                              X: =0
+                              Y: =0
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - capHour_Ts:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =AppFont
+                                    Color: =C_Muted
+                                    Size: =Round(14 * UI, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Round(23 * UI, 0)
+                                    Text: ="HOUR"
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =0
+                                    Wrap: =false
+                              - boxHour_Ts:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_White
+                                    Height: =Round(55 * UI, 0)
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =Round(25 * UI, 0)
+                                    RadiusBottomLeft: =Round(13 * UI, 0)
+                                    RadiusBottomRight: =Round(13 * UI, 0)
+                                    RadiusTopLeft: =Round(13 * UI, 0)
+                                    RadiusTopRight: =Round(13 * UI, 0)
+                                    BorderColor: =RGBA(14, 42, 70, 0.22)
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - ddHour_Ts:
+                                        Control: Classic/DropDown@2.3.1
+                                        Properties:
+                                          BorderStyle: =BorderStyle.None
+                                          ChevronBackground: =C_Accent
+                                          ChevronFill: =C_White
+                                          Color: =C_Ink
+                                          Default: ="09"
+                                          Font: =AppFont
+                                          Height: =Parent.Height
+                                          Items: =["07","08","09","10","11","12","13","14","15","16","17","18"]
+                                          Items.Value: =Value
+                                          Size: =Round(18 * UI, 0)
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =0
+                        - fldMin_Ts:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =RGBA(0, 0, 0, 0)
+                              Height: =Round(80 * UI, 0)
+                              Width: =(SheetW - Round(65 * UI, 0)) / 2
+                              X: =(SheetW - Round(65 * UI, 0)) / 2 + Round(15 * UI, 0)
+                              Y: =0
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - capMin_Ts:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =AppFont
+                                    Color: =C_Muted
+                                    Size: =Round(14 * UI, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Round(23 * UI, 0)
+                                    Text: ="MINUTE"
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =0
+                                    Wrap: =false
+                              - boxMin_Ts:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_White
+                                    Height: =Round(55 * UI, 0)
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =Round(25 * UI, 0)
+                                    RadiusBottomLeft: =Round(13 * UI, 0)
+                                    RadiusBottomRight: =Round(13 * UI, 0)
+                                    RadiusTopLeft: =Round(13 * UI, 0)
+                                    RadiusTopRight: =Round(13 * UI, 0)
+                                    BorderColor: =RGBA(14, 42, 70, 0.22)
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - ddMin_Ts:
+                                        Control: Classic/DropDown@2.3.1
+                                        Properties:
+                                          BorderStyle: =BorderStyle.None
+                                          ChevronBackground: =C_Accent
+                                          ChevronFill: =C_White
+                                          Color: =C_Ink
+                                          Default: ="00"
+                                          Font: =AppFont
+                                          Height: =Parent.Height
+                                          Items: =["00", "15", "30", "45"]
+                                          Items.Value: =Value
+                                          Size: =Round(18 * UI, 0)
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =0
+                  - fldLoc_Ad:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(80 * UI, 0)
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =Round(80 * UI, 0)
+                        Width: =SheetW - Round(50 * UI, 0)
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - capLoc_Ad:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =Round(14 * UI, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =Round(23 * UI, 0)
+                              Text: ="LOCATION"
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Wrap: =false
+                        - boxLoc_Ad:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_White
+                              Height: =Round(55 * UI, 0)
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =Round(25 * UI, 0)
+                              RadiusBottomLeft: =Round(13 * UI, 0)
+                              RadiusBottomRight: =Round(13 * UI, 0)
+                              RadiusTopLeft: =Round(13 * UI, 0)
+                              RadiusTopRight: =Round(13 * UI, 0)
+                              BorderColor: =RGBA(14, 42, 70, 0.22)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - txtLoc_Ts:
+                                  Control: Classic/TextInput@2.3.2
+                                  Properties:
+                                    BorderStyle: =BorderStyle.None
+                                    Color: =C_Ink
+                                    Default: =""
+                                    Fill: =RGBA(0, 0, 0, 0)
+                                    Font: =AppFont
+                                    Height: =Parent.Height
+                                    HintText: ="Room or building"
+                                    Size: =Round(18 * UI, 0)
+                                    Width: =Parent.Width - Round(10 * UI, 0)
+                                    X: =Round(5 * UI, 0)
+                                    Y: =0
+                  - conBtnsAd_Ts:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(60 * UI, 0)
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =Round(60 * UI, 0)
+                        Width: =SheetW - Round(50 * UI, 0)
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - conLAd_Ts:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_White
+                              Height: =Round(60 * UI, 0)
+                              Width: =(SheetW - Round(65 * UI, 0)) / 2
+                              X: =0
+                              Y: =0
+                              RadiusBottomLeft: =Round(30 * UI, 0)
+                              RadiusBottomRight: =Round(30 * UI, 0)
+                              RadiusTopLeft: =Round(30 * UI, 0)
+                              RadiusTopRight: =Round(30 * UI, 0)
+                              BorderColor: =C_Line
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnLAd_Ts:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =Round(30 * UI, 0)
+                                    Font: =Font.'Segoe UI'
+                                    FontColor: =C_Ink2
+                                    FontSize: =Round(18 * UI, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="Cancel"
+                                    OnSelect: =Set(tsShowAdd, false)
+                        - conRAd_Ts:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_Accent
+                              Height: =Round(60 * UI, 0)
+                              Width: =(SheetW - Round(65 * UI, 0)) / 2
+                              X: =(SheetW - Round(65 * UI, 0)) / 2 + Round(15 * UI, 0)
+                              Y: =0
+                              RadiusBottomLeft: =Round(30 * UI, 0)
+                              RadiusBottomRight: =Round(30 * UI, 0)
+                              RadiusTopLeft: =Round(30 * UI, 0)
+                              RadiusTopRight: =Round(30 * UI, 0)
+                              BorderColor: =C_Accent
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnRAd_Ts:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =Round(30 * UI, 0)
+                                    Font: =Font.'Segoe UI'
+                                    FontColor: =C_White
+                                    FontSize: =Round(18 * UI, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="Save date"
+                                    OnSelect: =Select(btnDoAdd_Ts)
+      - conOverlay_Cf:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(14, 28, 42, 0.45)
+            Height: =Parent.Height
+            Width: =Parent.Width
+            X: =0
+            Y: =0
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            DropShadow: =DropShadow.None
+            Visible: =tsShowConfirm
+          Children:
+            - btnScrim_Cf:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  BorderStyle: =BorderStyle.None
+                  Height: =Parent.Height
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+                  Text: =""
+                  OnSelect: =Set(tsShowConfirm, false)
+            - conSheet_Cf:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  Fill: =C_White
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutJustifyContent: =LayoutJustifyContent.Start
+                  LayoutGap: =Round(13 * UI, 0)
+                  PaddingTop: =Round(25 * UI, 0)
+                  PaddingRight: =Round(25 * UI, 0)
+                  PaddingBottom: =Round(30 * UI, 0)
+                  PaddingLeft: =Round(25 * UI, 0)
+                  DropShadow: =DropShadow.None
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =Round(28 * UI, 0)
+                  RadiusTopRight: =Round(28 * UI, 0)
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  X: =(Parent.Width - SheetW) / 2
+                  Width: =SheetW
+                  Height: =Min(Parent.Height - Round(50 * UI, 0), Round(375 * UI, 0))
+                  Y: =Parent.Height - Min(Parent.Height - Round(50 * UI, 0), Round(375 * UI, 0))
+                Children:
+                  - lblSheetT_Cf:
+                      Control: Label@2.5.1
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(40 * UI, 0)
+                        FillPortions: =0
+                        Font: =AppFont
+                        Color: =C_Ink
+                        Size: =Round(22 * UI, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =Round(40 * UI, 0)
+                        Text: =cfTitle
+                        Width: =SheetW - Round(50 * UI, 0)
+                        X: =0
+                        Y: =0
+                        Wrap: =false
+                  - lblCfBody_Ts:
+                      Control: Label@2.5.1
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(100 * UI, 0)
+                        FillPortions: =0
+                        Font: =AppFont
+                        Color: =C_Ink2
+                        Size: =Round(17 * UI, 0)
+                        Height: =Round(100 * UI, 0)
+                        Text: =cfBody
+                        Width: =SheetW - Round(50 * UI, 0)
+                        X: =0
+                        Y: =0
+                  - conBtnsCf_Ts:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(60 * UI, 0)
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =Round(60 * UI, 0)
+                        Width: =SheetW - Round(50 * UI, 0)
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - conLCf_Ts:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_White
+                              Height: =Round(60 * UI, 0)
+                              Width: =(SheetW - Round(65 * UI, 0)) / 2
+                              X: =0
+                              Y: =0
+                              RadiusBottomLeft: =Round(30 * UI, 0)
+                              RadiusBottomRight: =Round(30 * UI, 0)
+                              RadiusTopLeft: =Round(30 * UI, 0)
+                              RadiusTopRight: =Round(30 * UI, 0)
+                              BorderColor: =C_Line
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnLCf_Ts:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =Round(30 * UI, 0)
+                                    Font: =Font.'Segoe UI'
+                                    FontColor: =C_Ink2
+                                    FontSize: =Round(18 * UI, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="Keep it"
+                                    OnSelect: =Set(tsShowConfirm, false)
+                        - conRCf_Ts:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_Danger
+                              Height: =Round(60 * UI, 0)
+                              Width: =(SheetW - Round(65 * UI, 0)) / 2
+                              X: =(SheetW - Round(65 * UI, 0)) / 2 + Round(15 * UI, 0)
+                              Y: =0
+                              RadiusBottomLeft: =Round(30 * UI, 0)
+                              RadiusBottomRight: =Round(30 * UI, 0)
+                              RadiusTopLeft: =Round(30 * UI, 0)
+                              RadiusTopRight: =Round(30 * UI, 0)
+                              BorderColor: =C_Danger
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnRCf_Ts:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =Round(30 * UI, 0)
+                                    Font: =Font.'Segoe UI'
+                                    FontColor: =C_White
+                                    FontSize: =Round(18 * UI, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: =cfBtn
+                                    OnSelect: |-
+                                      =Switch(
+                                          cfAction,
+                                          "CancelMine", Select(btnDoCancel_Ts),
+                                          "RemoveAttendee", Select(btnDoRemove_Ts),
+                                          "DeleteDate", Select(btnDoDelete_Ts)
+                                      )
+      - conOverlay_Wl:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(14, 28, 42, 0.45)
+            Height: =Parent.Height
+            Width: =Parent.Width
+            X: =0
+            Y: =0
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            DropShadow: =DropShadow.None
+            Visible: =tsShowWait
+          Children:
+            - btnScrim_Wl:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  BorderStyle: =BorderStyle.None
+                  Height: =Parent.Height
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+                  Text: =""
+                  OnSelect: =Set(tsShowWait, false)
+            - conSheet_Wl:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  Fill: =C_White
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutJustifyContent: =LayoutJustifyContent.Start
+                  LayoutGap: =Round(13 * UI, 0)
+                  PaddingTop: =Round(25 * UI, 0)
+                  PaddingRight: =Round(25 * UI, 0)
+                  PaddingBottom: =Round(30 * UI, 0)
+                  PaddingLeft: =Round(25 * UI, 0)
+                  DropShadow: =DropShadow.None
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =Round(28 * UI, 0)
+                  RadiusTopRight: =Round(28 * UI, 0)
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  X: =(Parent.Width - SheetW) / 2
+                  Width: =SheetW
+                  Height: =Min(Parent.Height - Round(50 * UI, 0), Round(600 * UI, 0))
+                  Y: =Parent.Height - Min(Parent.Height - Round(50 * UI, 0), Round(600 * UI, 0))
+                Children:
+                  - lblSheetT_Wl:
+                      Control: Label@2.5.1
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(40 * UI, 0)
+                        FillPortions: =0
+                        Font: =AppFont
+                        Color: =C_Ink
+                        Size: =Round(22 * UI, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =Round(40 * UI, 0)
+                        Text: ="Waitlist (" & varSelectedSession.WaitCount & ")"
+                        Width: =SheetW - Round(50 * UI, 0)
+                        X: =0
+                        Y: =0
+                        Wrap: =false
+                  - galWait_Ts:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(300 * UI, 0)
+                        Height: =Round(300 * UI, 0)
+                        FillPortions: =0
+                        Items: =SortByColumns(Filter(colTsWait, SessionID = varSelectedSession.SesKey), "AddedOn", SortOrder.Ascending)
+                        TemplatePadding: =0
+                        TemplateSize: =Round(75 * UI, 0)
+                        Width: =SheetW - Round(50 * UI, 0)
+                      Children:
+                        - conWl_Ts:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_Bg2
+                              Height: =Round(65 * UI, 0)
+                              Width: =Parent.TemplateWidth - Round(5 * UI, 0)
+                              X: =Round(3 * UI, 0)
+                              Y: =Round(5 * UI, 0)
+                              RadiusBottomLeft: =Round(18 * UI, 0)
+                              RadiusBottomRight: =Round(18 * UI, 0)
+                              RadiusTopLeft: =Round(18 * UI, 0)
+                              RadiusTopRight: =Round(18 * UI, 0)
+                              BorderColor: =C_Line
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - lblWlName_Ts:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =AppFont
+                                    Color: =C_Ink
+                                    Size: =Round(17 * UI, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Round(28 * UI, 0)
+                                    Text: =ThisItem.WaitlistUserName
+                                    Width: =Parent.Width - Round(35 * UI, 0)
+                                    X: =Round(18 * UI, 0)
+                                    Y: =Round(8 * UI, 0)
+                                    Wrap: =false
+                              - lblWlSub_Ts:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =AppFont
+                                    Color: =C_Muted
+                                    Size: =Round(15 * UI, 0)
+                                    Height: =Round(23 * UI, 0)
+                                    Text: =ThisItem.WaitlistUserEmail & "  ·  " & Text(ThisItem.AddedOn, "d mmm h:mm AM/PM")
+                                    Width: =Parent.Width - Round(35 * UI, 0)
+                                    X: =Round(18 * UI, 0)
+                                    Y: =Round(35 * UI, 0)
+                                    Wrap: =false
+                  - conBtnsWl_Ts:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(60 * UI, 0)
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =Round(60 * UI, 0)
+                        Width: =SheetW - Round(50 * UI, 0)
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - conLWl_Ts:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_White
+                              Height: =Round(60 * UI, 0)
+                              Width: =(SheetW - Round(65 * UI, 0)) / 2
+                              X: =0
+                              Y: =0
+                              RadiusBottomLeft: =Round(30 * UI, 0)
+                              RadiusBottomRight: =Round(30 * UI, 0)
+                              RadiusTopLeft: =Round(30 * UI, 0)
+                              RadiusTopRight: =Round(30 * UI, 0)
+                              BorderColor: =C_Line
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnLWl_Ts:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =Round(30 * UI, 0)
+                                    Font: =Font.'Segoe UI'
+                                    FontColor: =C_Ink2
+                                    FontSize: =Round(18 * UI, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="Close"
+                                    OnSelect: =Set(tsShowWait, false)
+                        - conRWl_Ts:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_Accent
+                              Height: =Round(60 * UI, 0)
+                              Width: =(SheetW - Round(65 * UI, 0)) / 2
+                              X: =(SheetW - Round(65 * UI, 0)) / 2 + Round(15 * UI, 0)
+                              Y: =0
+                              RadiusBottomLeft: =Round(30 * UI, 0)
+                              RadiusBottomRight: =Round(30 * UI, 0)
+                              RadiusTopLeft: =Round(30 * UI, 0)
+                              RadiusTopRight: =Round(30 * UI, 0)
+                              BorderColor: =C_Accent
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnRWl_Ts:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =Round(30 * UI, 0)
+                                    Font: =Font.'Segoe UI'
+                                    FontColor: =C_White
+                                    FontSize: =Round(18 * UI, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="Email waitlist"
+                                    OnSelect: =Select(btnDoSendWait_Ts)
+      - conOverlay_Em:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(14, 28, 42, 0.45)
+            Height: =Parent.Height
+            Width: =Parent.Width
+            X: =0
+            Y: =0
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            DropShadow: =DropShadow.None
+            Visible: =tsShowEmail
+          Children:
+            - btnScrim_Em:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  BorderStyle: =BorderStyle.None
+                  Height: =Parent.Height
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+                  Text: =""
+                  OnSelect: =Set(tsShowEmail, false)
+            - conSheet_Em:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  Fill: =C_White
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutJustifyContent: =LayoutJustifyContent.Start
+                  LayoutGap: =Round(13 * UI, 0)
+                  PaddingTop: =Round(25 * UI, 0)
+                  PaddingRight: =Round(25 * UI, 0)
+                  PaddingBottom: =Round(30 * UI, 0)
+                  PaddingLeft: =Round(25 * UI, 0)
+                  DropShadow: =DropShadow.None
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =Round(28 * UI, 0)
+                  RadiusTopRight: =Round(28 * UI, 0)
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  X: =(Parent.Width - SheetW) / 2
+                  Width: =SheetW
+                  Height: =Min(Parent.Height - Round(50 * UI, 0), Round(750 * UI, 0))
+                  Y: =Parent.Height - Min(Parent.Height - Round(50 * UI, 0), Round(750 * UI, 0))
+                Children:
+                  - lblSheetT_Em:
+                      Control: Label@2.5.1
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(40 * UI, 0)
+                        FillPortions: =0
+                        Font: =AppFont
+                        Color: =C_Ink
+                        Size: =Round(22 * UI, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =Round(40 * UI, 0)
+                        Text: ="Email attendees"
+                        Width: =SheetW - Round(50 * UI, 0)
+                        X: =0
+                        Y: =0
+                        Wrap: =false
+                  - fldSub_Em:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(80 * UI, 0)
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =Round(80 * UI, 0)
+                        Width: =SheetW - Round(50 * UI, 0)
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - capSub_Em:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =Round(14 * UI, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =Round(23 * UI, 0)
+                              Text: ="SUBJECT"
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Wrap: =false
+                        - boxSub_Em:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_White
+                              Height: =Round(55 * UI, 0)
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =Round(25 * UI, 0)
+                              RadiusBottomLeft: =Round(13 * UI, 0)
+                              RadiusBottomRight: =Round(13 * UI, 0)
+                              RadiusTopLeft: =Round(13 * UI, 0)
+                              RadiusTopRight: =Round(13 * UI, 0)
+                              BorderColor: =RGBA(14, 42, 70, 0.22)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - txtEmailSubject_Ts:
+                                  Control: Classic/TextInput@2.3.2
+                                  Properties:
+                                    BorderStyle: =BorderStyle.None
+                                    Color: =C_Ink
+                                    Default: =varSelectedTrainingType & " training - " & Text(varSelectedSession.SessionDate, "dd/mm/yyyy h:mm AM/PM")
+                                    Fill: =RGBA(0, 0, 0, 0)
+                                    Font: =AppFont
+                                    Height: =Parent.Height
+                                    HintText: ="Subject"
+                                    Size: =Round(18 * UI, 0)
+                                    Width: =Parent.Width - Round(10 * UI, 0)
+                                    X: =Round(5 * UI, 0)
+                                    Y: =0
+                  - fldBody_Ts:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(275 * UI, 0)
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =Round(275 * UI, 0)
+                        Width: =SheetW - Round(50 * UI, 0)
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - capBody_Ts:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =Round(14 * UI, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =Round(23 * UI, 0)
+                              Text: ="MESSAGE TO EVERYONE BOOKED"
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Wrap: =false
+                        - boxBody_Ts:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_White
+                              Height: =Round(245 * UI, 0)
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =Round(25 * UI, 0)
+                              RadiusBottomLeft: =Round(13 * UI, 0)
+                              RadiusBottomRight: =Round(13 * UI, 0)
+                              RadiusTopLeft: =Round(13 * UI, 0)
+                              RadiusTopRight: =Round(13 * UI, 0)
+                              BorderColor: =RGBA(14, 42, 70, 0.22)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - txtEmailBody_Ts:
+                                  Control: Classic/TextInput@2.3.2
+                                  Properties:
+                                    BorderStyle: =BorderStyle.None
+                                    Color: =C_Ink
+                                    Default: ="Hi all," & Char(10) & Char(10) & "You are booked into " & varSelectedTrainingType & " training on " & Text(varSelectedSession.SessionDate, "dddd d mmmm") & " at " & Text(varSelectedSession.SessionDate, "h:mm AM/PM") & "." & Char(10) & "The session will be at " & Coalesce(varSelectedSession.Location, "the usual location") & "." & Char(10) & Char(10) & "If you have any questions please reach out." & Char(10) & Char(10) & "Regards," & Char(10) & MeName
+                                    Fill: =RGBA(0, 0, 0, 0)
+                                    Font: =AppFont
+                                    Height: =Parent.Height
+                                    HintText: ="Message"
+                                    Size: =Round(18 * UI, 0)
+                                    Width: =Parent.Width - Round(10 * UI, 0)
+                                    X: =Round(5 * UI, 0)
+                                    Y: =0
+                                    Mode: =TextMode.MultiLine
+                  - conBtnsEm_Ts:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(60 * UI, 0)
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =Round(60 * UI, 0)
+                        Width: =SheetW - Round(50 * UI, 0)
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
+                      Children:
+                        - conLEm_Ts:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_White
+                              Height: =Round(60 * UI, 0)
+                              Width: =(SheetW - Round(65 * UI, 0)) / 2
+                              X: =0
+                              Y: =0
+                              RadiusBottomLeft: =Round(30 * UI, 0)
+                              RadiusBottomRight: =Round(30 * UI, 0)
+                              RadiusTopLeft: =Round(30 * UI, 0)
+                              RadiusTopRight: =Round(30 * UI, 0)
+                              BorderColor: =C_Line
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnLEm_Ts:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =Round(30 * UI, 0)
+                                    Font: =Font.'Segoe UI'
+                                    FontColor: =C_Ink2
+                                    FontSize: =Round(18 * UI, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="Cancel"
+                                    OnSelect: =Set(tsShowEmail, false)
+                        - conREm_Ts:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_Accent
+                              Height: =Round(60 * UI, 0)
+                              Width: =(SheetW - Round(65 * UI, 0)) / 2
+                              X: =(SheetW - Round(65 * UI, 0)) / 2 + Round(15 * UI, 0)
+                              Y: =0
+                              RadiusBottomLeft: =Round(30 * UI, 0)
+                              RadiusBottomRight: =Round(30 * UI, 0)
+                              RadiusTopLeft: =Round(30 * UI, 0)
+                              RadiusTopRight: =Round(30 * UI, 0)
+                              BorderColor: =C_Accent
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - btnREm_Ts:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderRadius: =Round(30 * UI, 0)
+                                    Font: =Font.'Segoe UI'
+                                    FontColor: =C_White
+                                    FontSize: =Round(18 * UI, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    Text: ="Send email"
+                                    OnSelect: =Select(btnDoSend_Ts)
