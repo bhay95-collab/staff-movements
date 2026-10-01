@@ -564,7 +564,7 @@ Screens:
           Variant: ManualLayout
           Properties:
             Fill: =C_Bg
-            Height: =Parent.Height - Round(95 * UI, 0) - If(!IsBlank(varSelectedSession), Round(100 * UI, 0), 0)
+            Height: =Parent.Height - Round(95 * UI, 0) - If(!IsBlank(varSelectedSession), Round(95 * UI, 0), 0)
             Width: =Parent.Width
             X: =0
             Y: =Round(95 * UI, 0)
@@ -603,7 +603,7 @@ Screens:
                         Height: =Round(23 * UI, 0)
                         Text: ="UPCOMING DATES"
                         Width: =Parent.Width - Round(100 * UI, 0)
-                        X: =Round(20 * UI, 0)
+                        X: =Round(25 * UI, 0)
                         Y: =Round(20 * UI, 0)
                         Wrap: =false
                   - btnRefresh_Ts:
@@ -629,8 +629,8 @@ Screens:
                         Items: =colTsSessions
                         TemplatePadding: =0
                         TemplateSize: =Round(105 * UI, 0)
-                        Width: =Parent.Width
-                        X: =0
+                        Width: =Parent.Width - Round(20 * UI, 0)
+                        X: =Round(10 * UI, 0)
                         Y: =Round(65 * UI, 0)
                         ShowScrollbar: =false
                       Children:
@@ -703,10 +703,10 @@ Screens:
                                     Size: =Round(18 * UI, 0)
                                     FontWeight: =FontWeight.Bold
                                     Height: =Round(30 * UI, 0)
-                                    Text: =Text(ThisItem.SessionDate, "dddd d mmmm")
+                                    Text: =Text(ThisItem.SessionDate, "ddd d mmm yyyy")
                                     Width: =Parent.Width - Round(210 * UI, 0)
                                     X: =Round(95 * UI, 0)
-                                    Y: =Round(10 * UI, 0)
+                                    Y: =Round(13 * UI, 0)
                                     Wrap: =false
                               - lblDateS_Ts:
                                   Control: Label@2.5.1
@@ -718,7 +718,7 @@ Screens:
                                     Text: =Text(ThisItem.SessionDate, "h:mm AM/PM") & "  ·  " & Coalesce(ThisItem.Location, "Location to be confirmed")
                                     Width: =Parent.Width - Round(210 * UI, 0)
                                     X: =Round(95 * UI, 0)
-                                    Y: =Round(43 * UI, 0)
+                                    Y: =Round(45 * UI, 0)
                                     Wrap: =false
                               - conChip_Ts:
                                   Control: GroupContainer@1.5.0
@@ -831,11 +831,11 @@ Screens:
                               Color: =C_Ink
                               Size: =Round(24 * UI, 0)
                               FontWeight: =FontWeight.Bold
-                              Height: =Round(35 * UI, 0)
+                              Height: =Round(38 * UI, 0)
                               Text: =Text(varSelectedSession.SessionDate, "dddd d mmmm yyyy")
-                              Width: =Parent.Width - Round(50 * UI, 0)
-                              X: =Round(25 * UI, 0)
-                              Y: =Round(20 * UI, 0)
+                              Width: =Parent.Width - Round(60 * UI, 0)
+                              X: =Round(30 * UI, 0)
+                              Y: =Round(23 * UI, 0)
                               Wrap: =false
                         - lblDetS_Ts:
                             Control: Label@2.5.1
@@ -845,23 +845,23 @@ Screens:
                               Size: =Round(16 * UI, 0)
                               Height: =Round(28 * UI, 0)
                               Text: =Text(varSelectedSession.SessionDate, "h:mm AM/PM") & "  ·  " & Coalesce(varSelectedSession.Location, "Location to be confirmed")
-                              Width: =Parent.Width - Round(50 * UI, 0)
-                              X: =Round(25 * UI, 0)
-                              Y: =Round(58 * UI, 0)
+                              Width: =Parent.Width - Round(60 * UI, 0)
+                              X: =Round(30 * UI, 0)
+                              Y: =Round(63 * UI, 0)
                               Wrap: =false
                         - conBanner_Ts:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
                               Fill: =If(!IsBlank(varSelectedSession.MyBookingID), C_GoodBg, varSelectedSession.Free <= 0 || !IsBlank(varSelectedSession.MyWaitID), C_AmberBg, C_AccentSoft)
-                              Height: =Round(65 * UI, 0)
-                              Width: =Parent.Width - Round(50 * UI, 0)
-                              X: =Round(25 * UI, 0)
-                              Y: =Round(98 * UI, 0)
-                              RadiusBottomLeft: =Round(18 * UI, 0)
-                              RadiusBottomRight: =Round(18 * UI, 0)
-                              RadiusTopLeft: =Round(18 * UI, 0)
-                              RadiusTopRight: =Round(18 * UI, 0)
+                              Height: =Round(50 * UI, 0)
+                              Width: =Parent.Width - Round(60 * UI, 0)
+                              X: =Round(30 * UI, 0)
+                              Y: =Round(100 * UI, 0)
+                              RadiusBottomLeft: =Round(15 * UI, 0)
+                              RadiusBottomRight: =Round(15 * UI, 0)
+                              RadiusTopLeft: =Round(15 * UI, 0)
+                              RadiusTopRight: =Round(15 * UI, 0)
                               DropShadow: =DropShadow.None
                             Children:
                               - lblBanner_Ts:
@@ -877,6 +877,124 @@ Screens:
                                     X: =Round(18 * UI, 0)
                                     Y: =0
                                     VerticalAlign: =VerticalAlign.Middle
+                                    Wrap: =false
+                        - conMgrRow_Ts:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =RGBA(0, 0, 0, 0)
+                              Height: =Round(50 * UI, 0)
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =Round(163 * UI, 0)
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
+                              DropShadow: =DropShadow.None
+                              Visible: =Coalesce(varCanManageTraining, false)
+                            Children:
+                              - conMgr1_Ts:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_White
+                                    Height: =Round(50 * UI, 0)
+                                    Width: =(Parent.Width - Round(60 * UI, 0) - Round(20 * UI, 0)) / 3
+                                    X: =Round(30 * UI, 0)
+                                    Y: =0
+                                    RadiusBottomLeft: =Round(25 * UI, 0)
+                                    RadiusBottomRight: =Round(25 * UI, 0)
+                                    RadiusTopLeft: =Round(25 * UI, 0)
+                                    RadiusTopRight: =Round(25 * UI, 0)
+                                    BorderColor: =C_Line
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - btnMgr1_Ts:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                          BorderRadius: =Round(25 * UI, 0)
+                                          Font: =Font.'Segoe UI'
+                                          FontColor: =C_Ink2
+                                          FontSize: =Round(16 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Width: =Parent.Width
+                                          Text: ="Waitlist (" & varSelectedSession.WaitCount & ")"
+                                          OnSelect: =Set(tsShowWait, true)
+                              - conMgr2_Ts:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_White
+                                    Height: =Round(50 * UI, 0)
+                                    Width: =(Parent.Width - Round(60 * UI, 0) - Round(20 * UI, 0)) / 3
+                                    X: =Round(30 * UI, 0) + ((Parent.Width - Round(60 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0))
+                                    Y: =0
+                                    RadiusBottomLeft: =Round(25 * UI, 0)
+                                    RadiusBottomRight: =Round(25 * UI, 0)
+                                    RadiusTopLeft: =Round(25 * UI, 0)
+                                    RadiusTopRight: =Round(25 * UI, 0)
+                                    BorderColor: =C_Line
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - btnMgr2_Ts:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                          BorderRadius: =Round(25 * UI, 0)
+                                          Font: =Font.'Segoe UI'
+                                          FontColor: =C_Ink2
+                                          FontSize: =Round(16 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Width: =Parent.Width
+                                          Text: ="Email attendees"
+                                          OnSelect: |-
+                                            =Set(tsShowEmail, true);
+                                            Reset(txtEmailSubject_Ts);
+                                            Reset(txtEmailBody_Ts)
+                              - conMgr3_Ts:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_White
+                                    Height: =Round(50 * UI, 0)
+                                    Width: =(Parent.Width - Round(60 * UI, 0) - Round(20 * UI, 0)) / 3
+                                    X: =Round(30 * UI, 0) + ((Parent.Width - Round(60 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0)) * 2
+                                    Y: =0
+                                    RadiusBottomLeft: =Round(25 * UI, 0)
+                                    RadiusBottomRight: =Round(25 * UI, 0)
+                                    RadiusTopLeft: =Round(25 * UI, 0)
+                                    RadiusTopRight: =Round(25 * UI, 0)
+                                    BorderColor: =C_Line
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - btnMgr3_Ts:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                          BorderRadius: =Round(25 * UI, 0)
+                                          Font: =Font.'Segoe UI'
+                                          FontColor: =C_Danger
+                                          FontSize: =Round(16 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Width: =Parent.Width
+                                          Text: ="Delete date"
+                                          OnSelect: |-
+                                            =Set(cfAction, "DeleteDate");
+                                            Set(cfTitle, "Delete this date?");
+                                            Set(cfBody, "The date will be removed from the list. This can only be done when nobody is booked or waiting.");
+                                            Set(cfBtn, "Delete date");
+                                            Set(tsShowConfirm, true)
                         - lblSlotsCap_Ts:
                             Control: Label@2.5.1
                             Properties:
@@ -886,67 +1004,85 @@ Screens:
                               FontWeight: =FontWeight.Bold
                               Height: =Round(23 * UI, 0)
                               Text: ="ATTENDEES  ·  " & varSelectedSession.Booked & " OF " & varSelectedSession.Cap
-                              Width: =Parent.Width - Round(50 * UI, 0)
-                              X: =Round(25 * UI, 0)
-                              Y: =Round(178 * UI, 0)
+                              Width: =Parent.Width - Round(60 * UI, 0)
+                              X: =Round(30 * UI, 0)
+                              Y: =Round(163 * UI, 0) + If(Coalesce(varCanManageTraining, false), Round(65 * UI, 0), 0)
                               Wrap: =false
                         - galSlots_Ts:
                             Control: Gallery@2.15.0
                             Variant: Vertical
                             Properties:
-                              Height: =Parent.Height - Round(215 * UI, 0) - If(Coalesce(varCanManageTraining, false), Round(80 * UI, 0), 0)
+                              Height: =Parent.Height - (Round(163 * UI, 0) + If(Coalesce(varCanManageTraining, false), Round(65 * UI, 0), 0) + Round(35 * UI, 0)) - Round(15 * UI, 0)
                               Items: =colTsSlots
                               TemplatePadding: =0
-                              TemplateSize: =Round(85 * UI, 0)
-                              WrapCount: =2
-                              Width: =Parent.Width - Round(30 * UI, 0)
-                              X: =Round(15 * UI, 0)
-                              Y: =Round(208 * UI, 0)
+                              TemplateSize: =Round(75 * UI, 0)
+                              WrapCount: =If(Wide, 3, 2)
+                              Width: =Parent.Width - Round(50 * UI, 0)
+                              X: =Round(25 * UI, 0)
+                              Y: =Round(163 * UI, 0) + If(Coalesce(varCanManageTraining, false), Round(65 * UI, 0), 0) + Round(35 * UI, 0)
                               ShowScrollbar: =false
                             Children:
                               - conSlot_Ts:
                                   Control: GroupContainer@1.5.0
                                   Variant: ManualLayout
                                   Properties:
-                                    Fill: =If(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail, C_Accent, !IsBlank(ThisItem.Booking), C_AccentSoft, C_White)
-                                    Height: =Round(75 * UI, 0)
-                                    Width: =Parent.TemplateWidth - Round(15 * UI, 0)
-                                    X: =Round(8 * UI, 0)
+                                    Fill: =If(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail, C_Accent, !IsBlank(ThisItem.Booking), C_White, C_Bg2)
+                                    Height: =Round(65 * UI, 0)
+                                    Width: =Parent.TemplateWidth - Round(10 * UI, 0)
+                                    X: =Round(5 * UI, 0)
                                     Y: =Round(5 * UI, 0)
                                     RadiusBottomLeft: =Round(18 * UI, 0)
                                     RadiusBottomRight: =Round(18 * UI, 0)
                                     RadiusTopLeft: =Round(18 * UI, 0)
                                     RadiusTopRight: =Round(18 * UI, 0)
-                                    BorderColor: =If(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail, C_Accent, !IsBlank(ThisItem.Booking), C_AccentSoft, C_Line)
+                                    BorderColor: =If(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail, C_Accent, !IsBlank(ThisItem.Booking), C_Accent, C_Line)
                                     BorderStyle: =BorderStyle.Solid
                                     BorderThickness: =1
                                     DropShadow: =DropShadow.None
                                   Children:
-                                    - lblSlotNo_Ts:
-                                        Control: Label@2.5.1
+                                    - conSlotNo_Ts:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: ManualLayout
                                         Properties:
-                                          Font: =AppFont
-                                          Color: =If(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail, RGBA(255, 255, 255, 0.8), C_Muted)
-                                          Size: =Round(12 * UI, 0)
-                                          FontWeight: =FontWeight.Bold
-                                          Height: =Round(20 * UI, 0)
-                                          Text: ="SLOT " & ThisItem.SlotNo
-                                          Width: =Parent.Width - Round(35 * UI, 0)
-                                          X: =Round(18 * UI, 0)
-                                          Y: =Round(10 * UI, 0)
-                                          Wrap: =false
+                                          Fill: =If(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail, RGBA(255, 255, 255, 0.22), !IsBlank(ThisItem.Booking), C_AccentSoft, C_White)
+                                          Height: =Round(35 * UI, 0)
+                                          Width: =Round(35 * UI, 0)
+                                          X: =Round(13 * UI, 0)
+                                          Y: =Round(15 * UI, 0)
+                                          RadiusBottomLeft: =Round(18 * UI, 0)
+                                          RadiusBottomRight: =Round(18 * UI, 0)
+                                          RadiusTopLeft: =Round(18 * UI, 0)
+                                          RadiusTopRight: =Round(18 * UI, 0)
+                                          DropShadow: =DropShadow.None
+                                        Children:
+                                          - lblSlotNo_Ts:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                Font: =AppFont
+                                                Color: =If(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail, C_White, !IsBlank(ThisItem.Booking), C_Accent, C_Muted)
+                                                Size: =Round(15 * UI, 0)
+                                                FontWeight: =FontWeight.Bold
+                                                Height: =Parent.Height
+                                                Text: =Text(ThisItem.SlotNo)
+                                                Width: =Parent.Width
+                                                X: =0
+                                                Y: =0
+                                                Align: =Align.Center
+                                                VerticalAlign: =VerticalAlign.Middle
+                                                Wrap: =false
                                     - lblSlotName_Ts:
                                         Control: Label@2.5.1
                                         Properties:
                                           Font: =AppFont
-                                          Color: =If(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail, C_White, IsBlank(ThisItem.Booking), C_Good, C_Ink)
+                                          Color: =If(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail, C_White, IsBlank(ThisItem.Booking), C_Muted, C_Ink)
                                           Size: =Round(17 * UI, 0)
                                           FontWeight: =FontWeight.Bold
-                                          Height: =Round(30 * UI, 0)
+                                          Height: =Parent.Height
                                           Text: =If(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail, "You", IsBlank(ThisItem.Booking), "Available", ThisItem.Booking.BookedUserName)
-                                          Width: =Parent.Width - Round(35 * UI, 0)
-                                          X: =Round(18 * UI, 0)
-                                          Y: =Round(33 * UI, 0)
+                                          Width: =Parent.Width - Round(73 * UI, 0)
+                                          X: =Round(60 * UI, 0)
+                                          Y: =0
+                                          VerticalAlign: =VerticalAlign.Middle
                                           Wrap: =false
                                     - btnSlot_Ts:
                                         Control: Button@0.0.45
@@ -966,132 +1102,15 @@ Screens:
                                             Set(cfBtn, "Remove");
                                             Set(tsShowConfirm, true)
                                           Visible: =Coalesce(varCanManageTraining, false) && !IsBlank(ThisItem.Booking) && !(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail)
-                        - conMgrRow_Ts:
-                            Control: GroupContainer@1.5.0
-                            Variant: ManualLayout
-                            Properties:
-                              Fill: =RGBA(0, 0, 0, 0)
-                              Height: =Round(75 * UI, 0)
-                              Width: =Parent.Width
-                              X: =0
-                              Y: =Parent.Height - Round(75 * UI, 0)
-                              RadiusBottomLeft: =0
-                              RadiusBottomRight: =0
-                              RadiusTopLeft: =0
-                              RadiusTopRight: =0
-                              DropShadow: =DropShadow.None
-                              Visible: =Coalesce(varCanManageTraining, false)
-                            Children:
-                              - conMgr1_Ts:
-                                  Control: GroupContainer@1.5.0
-                                  Variant: ManualLayout
-                                  Properties:
-                                    Fill: =C_White
-                                    Height: =Round(55 * UI, 0)
-                                    Width: =(Parent.Width - Round(60 * UI, 0)) / 3
-                                    X: =Round(20 * UI, 0)
-                                    Y: =0
-                                    RadiusBottomLeft: =Round(28 * UI, 0)
-                                    RadiusBottomRight: =Round(28 * UI, 0)
-                                    RadiusTopLeft: =Round(28 * UI, 0)
-                                    RadiusTopRight: =Round(28 * UI, 0)
-                                    BorderColor: =C_Line
-                                    BorderStyle: =BorderStyle.Solid
-                                    BorderThickness: =1
-                                    DropShadow: =DropShadow.None
-                                  Children:
-                                    - btnMgr1_Ts:
-                                        Control: Button@0.0.45
-                                        Properties:
-                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                          BorderRadius: =Round(28 * UI, 0)
-                                          Font: =Font.'Segoe UI'
-                                          FontColor: =C_Ink2
-                                          FontSize: =Round(16 * UI, 0)
-                                          FontWeight: =FontWeight.Bold
-                                          Height: =Parent.Height
-                                          Width: =Parent.Width
-                                          Text: ="Waitlist (" & varSelectedSession.WaitCount & ")"
-                                          OnSelect: =Set(tsShowWait, true)
-                              - conMgr2_Ts:
-                                  Control: GroupContainer@1.5.0
-                                  Variant: ManualLayout
-                                  Properties:
-                                    Fill: =C_White
-                                    Height: =Round(55 * UI, 0)
-                                    Width: =(Parent.Width - Round(60 * UI, 0)) / 3
-                                    X: =Round(20 * UI, 0) + (Parent.Width - Round(60 * UI, 0)) / 3 + Round(10 * UI, 0)
-                                    Y: =0
-                                    RadiusBottomLeft: =Round(28 * UI, 0)
-                                    RadiusBottomRight: =Round(28 * UI, 0)
-                                    RadiusTopLeft: =Round(28 * UI, 0)
-                                    RadiusTopRight: =Round(28 * UI, 0)
-                                    BorderColor: =C_Line
-                                    BorderStyle: =BorderStyle.Solid
-                                    BorderThickness: =1
-                                    DropShadow: =DropShadow.None
-                                  Children:
-                                    - btnMgr2_Ts:
-                                        Control: Button@0.0.45
-                                        Properties:
-                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                          BorderRadius: =Round(28 * UI, 0)
-                                          Font: =Font.'Segoe UI'
-                                          FontColor: =C_Ink2
-                                          FontSize: =Round(16 * UI, 0)
-                                          FontWeight: =FontWeight.Bold
-                                          Height: =Parent.Height
-                                          Width: =Parent.Width
-                                          Text: ="Email attendees"
-                                          OnSelect: |-
-                                            =Set(tsShowEmail, true);
-                                            Reset(txtEmailSubject_Ts);
-                                            Reset(txtEmailBody_Ts)
-                              - conMgr3_Ts:
-                                  Control: GroupContainer@1.5.0
-                                  Variant: ManualLayout
-                                  Properties:
-                                    Fill: =C_White
-                                    Height: =Round(55 * UI, 0)
-                                    Width: =(Parent.Width - Round(60 * UI, 0)) / 3
-                                    X: =Round(20 * UI, 0) + Round(3 * UI, 0) * ((Parent.Width - Round(60 * UI, 0)) / 3 + Round(10 * UI, 0))
-                                    Y: =0
-                                    RadiusBottomLeft: =Round(28 * UI, 0)
-                                    RadiusBottomRight: =Round(28 * UI, 0)
-                                    RadiusTopLeft: =Round(28 * UI, 0)
-                                    RadiusTopRight: =Round(28 * UI, 0)
-                                    BorderColor: =C_Line
-                                    BorderStyle: =BorderStyle.Solid
-                                    BorderThickness: =1
-                                    DropShadow: =DropShadow.None
-                                  Children:
-                                    - btnMgr3_Ts:
-                                        Control: Button@0.0.45
-                                        Properties:
-                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                          BorderRadius: =Round(28 * UI, 0)
-                                          Font: =Font.'Segoe UI'
-                                          FontColor: =C_Danger
-                                          FontSize: =Round(16 * UI, 0)
-                                          FontWeight: =FontWeight.Bold
-                                          Height: =Parent.Height
-                                          Width: =Parent.Width
-                                          Text: ="Delete date"
-                                          OnSelect: |-
-                                            =Set(cfAction, "DeleteDate");
-                                            Set(cfTitle, "Delete this date?");
-                                            Set(cfBody, "The date will be removed from the list. This can only be done when nobody is booked or waiting.");
-                                            Set(cfBtn, "Delete date");
-                                            Set(tsShowConfirm, true)
       - conBar_Ts:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
             Fill: =C_White
-            Height: =Round(100 * UI, 0)
+            Height: =Round(95 * UI, 0)
             Width: =Parent.Width
             X: =0
-            Y: =Parent.Height - Round(100 * UI, 0)
+            Y: =Parent.Height - Round(95 * UI, 0)
             RadiusBottomLeft: =0
             RadiusBottomRight: =0
             RadiusTopLeft: =0
@@ -1102,19 +1121,46 @@ Screens:
             DropShadow: =DropShadow.None
             Visible: =!IsBlank(varSelectedSession)
           Children:
+            - lblBarT_Ts:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =AppFont
+                  Color: =C_Ink
+                  Size: =Round(18 * UI, 0)
+                  FontWeight: =FontWeight.Bold
+                  Height: =Round(28 * UI, 0)
+                  Text: =Text(varSelectedSession.SessionDate, "ddd d mmm  ·  h:mm AM/PM")
+                  Width: =ListW - Round(10 * UI, 0)
+                  X: =Gutter + GapPx + Round(5 * UI, 0)
+                  Y: =Round(18 * UI, 0)
+                  Wrap: =false
+                  Visible: =Wide
+            - lblBarS_Ts:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =AppFont
+                  Color: =C_Muted
+                  Size: =Round(16 * UI, 0)
+                  Height: =Round(25 * UI, 0)
+                  Text: =varSelectedSession.Booked & " of " & varSelectedSession.Cap & " booked" & If(varSelectedSession.WaitCount > 0, "  ·  " & varSelectedSession.WaitCount & " waiting", "")
+                  Width: =ListW - Round(10 * UI, 0)
+                  X: =Gutter + GapPx + Round(5 * UI, 0)
+                  Y: =Round(48 * UI, 0)
+                  Wrap: =false
+                  Visible: =Wide
             - conPrimary_Ts:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
                   Fill: =If(!IsBlank(varSelectedSession.MyBookingID), C_White, varSelectedSession.Free > 0, C_Accent, !IsBlank(varSelectedSession.MyWaitID), C_White, C_Accent)
-                  Height: =Round(65 * UI, 0)
+                  Height: =Round(60 * UI, 0)
                   Width: =DetailW
                   X: =DetailX
                   Y: =Round(18 * UI, 0)
-                  RadiusBottomLeft: =Round(33 * UI, 0)
-                  RadiusBottomRight: =Round(33 * UI, 0)
-                  RadiusTopLeft: =Round(33 * UI, 0)
-                  RadiusTopRight: =Round(33 * UI, 0)
+                  RadiusBottomLeft: =Round(30 * UI, 0)
+                  RadiusBottomRight: =Round(30 * UI, 0)
+                  RadiusTopLeft: =Round(30 * UI, 0)
+                  RadiusTopRight: =Round(30 * UI, 0)
                   BorderColor: =If(!IsBlank(varSelectedSession.MyBookingID), C_Danger, varSelectedSession.Free > 0, C_Accent, !IsBlank(varSelectedSession.MyWaitID), C_Amber, C_Accent)
                   BorderStyle: =BorderStyle.Solid
                   BorderThickness: =1
@@ -1124,7 +1170,7 @@ Screens:
                       Control: Button@0.0.45
                       Properties:
                         Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =Round(33 * UI, 0)
+                        BorderRadius: =Round(30 * UI, 0)
                         Font: =Font.'Segoe UI'
                         FontColor: =If(!IsBlank(varSelectedSession.MyBookingID), C_Danger, varSelectedSession.Free > 0, C_White, !IsBlank(varSelectedSession.MyWaitID), C_Amber, C_White)
                         FontSize: =Round(19 * UI, 0)

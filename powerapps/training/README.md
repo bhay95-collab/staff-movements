@@ -12,7 +12,7 @@ Screens: `Home` and `scrTrainingSessions` (same names as before, so nothing else
 ## Layout
 - **Wide (screen 820 or wider: desktop, tablet landscape):** dates on the left, the chosen date on the right (attendee slots), action bar along the bottom under the right side. The first date is selected automatically.
 - **Narrow (phone, tablet portrait):** one column. The list of dates first; tap a date to see it; the back arrow returns to the list, then to Home.
-- Text, buttons and gaps scale with the screen (`UI`); the content column stops at 1100 wide and is centred.
+- Text, buttons and gaps scale with the screen (`UI`); the content column stops at 1280 wide and is centred.
 - Same look as the other STARS apps: teal/navy header, cards, pill buttons.
 
 ## Bugs fixed
