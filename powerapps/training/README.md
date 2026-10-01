@@ -10,7 +10,7 @@ Screens: `Home` and `scrTrainingSessions` (same names as before, so nothing else
 5. `varCanManageTraining` is still read exactly as before (the screens use `Coalesce(varCanManageTraining, false)`). It must be set somewhere, e.g. in App OnStart. It was not in the code you sent, so if you never set it nobody sees the manager buttons.
 
 ## Layout
-- **Wide (screen 820 or wider: desktop, tablet landscape):** dates on the left, the chosen date on the right (attendee slots), action bar along the bottom under the right side. The first date is selected automatically.
+- **Wide (screen 820 or wider: desktop, tablet landscape):** dates on the left, the chosen date on the right (date, status, the main button, attendee slots, quiet manager links along the bottom of the card). The first date is selected automatically. There is no bottom bar: the Book / Join / Leave / Remove button sits inside the date card, right under the status line.
 - **Narrow (phone, tablet portrait):** one column. The list of dates first; tap a date to see it; the back arrow returns to the list, then to Home.
 - Text, buttons and gaps scale with the screen (`UI`); the content column stops at 1280 wide and is centred.
 - Same look as the other STARS apps: teal/navy header, cards, pill buttons.
