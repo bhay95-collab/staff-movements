@@ -4,7 +4,9 @@ Screens:
       BackgroundImage: ='Standard JPG-Upper limb rehabilitation equipment in the ability centre'
       ImagePosition: =ImagePosition.Stretch
       OnVisible: |-
-        =// Latest ward status colours from SharePoint
+        =Set(varHomeMenu, false);
+
+        // Latest ward status colours from SharePoint
         Refresh(Home_Colors_Shared);
         ClearCollect(HomeColorCollection, Home_Colors_Shared);
 
@@ -536,7 +538,7 @@ Screens:
                   DropShadow: =DropShadow.Regular
                   Fill: =RGBA(26, 90, 153, 1)
                   Height: =46
-                  Width: =290
+                  Width: =250
                   X: =16
                   Y: =11
                   RadiusBottomLeft: =23
@@ -558,8 +560,76 @@ Screens:
                         IconStyle: ='ButtonCanvas.IconStyle'.Filled
                         Layout: ='ButtonCanvas.Layout'.IconBefore
                         OnSelect: =Navigate(Equipment_Main, ScreenTransition.Fade)
-                        Text: ="Equipment Dashboard"
-                        Width: =290
+                        Text: ="Equipment"
+                        Width: =250
+            - conMyDay_Home:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =46
+                  Width: =150
+                  X: =278
+                  Y: =11
+                  RadiusBottomLeft: =23
+                  RadiusBottomRight: =23
+                  RadiusTopLeft: =23
+                  RadiusTopRight: =23
+                Children:
+                  - btnMyDay_Home:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =23
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =16
+                        FontWeight: =FontWeight.Bold
+                        Height: =46
+                        Icon: ="Calendar"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        OnSelect: =Navigate(My_Day, ScreenTransition.Fade)
+                        Text: ="My Day"
+                        Width: =150
+            - conDischarge_Home:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =46
+                  Width: =210
+                  X: =440
+                  Y: =11
+                  RadiusBottomLeft: =23
+                  RadiusBottomRight: =23
+                  RadiusTopLeft: =23
+                  RadiusTopRight: =23
+                Children:
+                  - btnDischarge_Home:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =23
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =16
+                        FontWeight: =FontWeight.Bold
+                        Height: =46
+                        Icon: ="ArrowRight"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        OnSelect: =Navigate(Discharge_Planner, ScreenTransition.Fade)
+                        Text: ="Discharge Planner"
+                        Width: =210
             - conTeam_Home:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
@@ -570,8 +640,8 @@ Screens:
                   DropShadow: =DropShadow.None
                   Fill: =RGBA(255, 255, 255, 1)
                   Height: =46
-                  Width: =200
-                  X: =322
+                  Width: =150
+                  X: =662
                   Y: =11
                   RadiusBottomLeft: =23
                   RadiusBottomRight: =23
@@ -593,8 +663,8 @@ Screens:
                         Layout: ='ButtonCanvas.Layout'.IconBefore
                         OnSelect: =Navigate(Physiotherapy_Screen, ScreenTransition.Fade)
                         Text: ="Team Info"
-                        Width: =200
-            - conUsage_Home:
+                        Width: =150
+            - conManager_Home:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
@@ -604,8 +674,8 @@ Screens:
                   DropShadow: =DropShadow.None
                   Fill: =RGBA(255, 255, 255, 1)
                   Height: =46
-                  Width: =190
-                  X: =538
+                  Width: =200
+                  X: =1117
                   Y: =11
                   Visible: =Coalesce(varMeDirectory.Access.Value, "") in ["Director", "Team Leader", "CA4"]
                   RadiusBottomLeft: =23
@@ -613,7 +683,7 @@ Screens:
                   RadiusTopLeft: =23
                   RadiusTopRight: =23
                 Children:
-                  - btnUsage_Home:
+                  - btnManager_Home:
                       Control: Button@0.0.45
                       Properties:
                         Appearance: ='ButtonCanvas.Appearance'.Transparent
@@ -623,9 +693,183 @@ Screens:
                         FontSize: =16
                         FontWeight: =FontWeight.Bold
                         Height: =46
-                        Icon: ="Database"
+                        Icon: ="Settings"
                         IconStyle: ='ButtonCanvas.IconStyle'.Filled
                         Layout: ='ButtonCanvas.Layout'.IconBefore
-                        OnSelect: =Navigate(Usage_Log, ScreenTransition.Fade)
-                        Text: ="Usage Log"
-                        Width: =190
+                        OnSelect: =Set(varHomeMenu, !varHomeMenu)
+                        Text: ="Manager tools"
+                        Width: =200
+      - conMenu_Home:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(0, 0, 0, 0)
+            Height: =768
+            Visible: =varHomeMenu
+            Width: =1366
+            X: =0
+            Y: =0
+          Children:
+            - btnMenuScrim_Home:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  BorderStyle: =BorderStyle.None
+                  Height: =Parent.Height
+                  Width: =Parent.Width
+                  Text: =""
+                  OnSelect: =Set(varHomeMenu, false)
+            - conMenuCard_Home:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =244
+                  Width: =248
+                  X: =1087
+                  Y: =420
+                  RadiusBottomLeft: =18
+                  RadiusBottomRight: =18
+                  RadiusTopLeft: =18
+                  RadiusTopRight: =18
+                Children:
+                  - conMnUsage_Home:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =44
+                        Width: =224
+                        X: =12
+                        Y: =12
+                        RadiusBottomLeft: =22
+                        RadiusBottomRight: =22
+                        RadiusTopLeft: =22
+                        RadiusTopRight: =22
+                      Children:
+                        - btnMnUsage_Home:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =22
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(58, 80, 104, 1)
+                              FontSize: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =44
+                              Icon: ="Database"
+                              IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                              Layout: ='ButtonCanvas.Layout'.IconBefore
+                              OnSelect: =Set(varHomeMenu, false); Navigate(Usage_Log, ScreenTransition.Fade)
+                              Text: ="Usage Log"
+                              Width: =224
+                  - conMnService_Home:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =44
+                        Width: =224
+                        X: =12
+                        Y: =64
+                        RadiusBottomLeft: =22
+                        RadiusBottomRight: =22
+                        RadiusTopLeft: =22
+                        RadiusTopRight: =22
+                      Children:
+                        - btnMnService_Home:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =22
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(58, 80, 104, 1)
+                              FontSize: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =44
+                              Icon: ="Edit"
+                              IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                              Layout: ='ButtonCanvas.Layout'.IconBefore
+                              OnSelect: =Set(varHomeMenu, false); Navigate(Service_Dash, ScreenTransition.Fade)
+                              Text: ="Servicing"
+                              Width: =224
+                  - conMnAudit_Home:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =44
+                        Width: =224
+                        X: =12
+                        Y: =116
+                        RadiusBottomLeft: =22
+                        RadiusBottomRight: =22
+                        RadiusTopLeft: =22
+                        RadiusTopRight: =22
+                      Children:
+                        - btnMnAudit_Home:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =22
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(58, 80, 104, 1)
+                              FontSize: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =44
+                              Icon: ="Checkmark"
+                              IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                              Layout: ='ButtonCanvas.Layout'.IconBefore
+                              OnSelect: =Set(varHomeMenu, false); Navigate(Audit_Coverage, ScreenTransition.Fade)
+                              Text: ="Audit Coverage"
+                              Width: =224
+                  - conMnHealth_Home:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =44
+                        Width: =224
+                        X: =12
+                        Y: =168
+                        RadiusBottomLeft: =22
+                        RadiusBottomRight: =22
+                        RadiusTopLeft: =22
+                        RadiusTopRight: =22
+                      Children:
+                        - btnMnHealth_Home:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =22
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(58, 80, 104, 1)
+                              FontSize: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =44
+                              Icon: ="Heart"
+                              IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                              Layout: ='ButtonCanvas.Layout'.IconBefore
+                              OnSelect: =Set(varHomeMenu, false); Navigate(Data_Health, ScreenTransition.Fade)
+                              Text: ="Data Health"
+                              Width: =224

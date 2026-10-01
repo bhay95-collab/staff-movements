@@ -5,7 +5,8 @@ Screens:
       ImagePosition: =ImagePosition.Fill
       OnHidden: =Set(varSelectedItem, Blank())
       OnVisible: |-
-        =Set(varSearchCode_1, "");
+        =Set(pdShowRet, false);
+        Set(varSearchCode_1, "");
         Set(varSelectedItem, Blank());
         Reset(TextInput_SearchCode_1);
 
@@ -1570,6 +1571,27 @@ Screens:
                               IsBlank(varSelectedItem) ||
                               Coalesce(varSelectedItem.Status.Value, "") <> "Allocated" ||
                               IsBlank(varSelectedItem.'Date Signed Out'),
+                              Notify(
+                                  "Please select an allocated piece of equipment with a valid signed-out date before returning.",
+                                  NotificationType.Error
+                              ),
+                              Set(pdShowRet, true)
+                          )
+                        Text: ="Return equipment"
+                        Width: =200
+                        DisplayMode: =If(!IsBlank(varSelectedItem) && varSelectedItem.Status.Value = "Allocated", DisplayMode.Edit, DisplayMode.Disabled)
+                  - btnReturnGo_PD:
+                      Control: Button@0.0.45
+                      Properties:
+                        Height: =10
+                        Width: =10
+                        Visible: =false
+                        Text: =""
+                        OnSelect: |-
+                          =If(
+                              IsBlank(varSelectedItem) ||
+                              Coalesce(varSelectedItem.Status.Value, "") <> "Allocated" ||
+                              IsBlank(varSelectedItem.'Date Signed Out'),
 
                               Notify(
                                   "Please select an allocated piece of equipment with a valid signed-out date before returning.",
@@ -1618,6 +1640,7 @@ Screens:
                                               Physiotherapist: "",
                                               DOB: Blank(),
                                               'Date Returned': returnDate,
+                                              Location: If(IsBlank(ddRetLoc_PD.Selected.Value), varSelectedItem.Location, { Value: ddRetLoc_PD.Selected.Value }),
                                               Ward: Blank(),
                                               'Signed In By': User().FullName,
                                               CurrentEpisodeKey: Blank(),
@@ -1651,7 +1674,7 @@ Screens:
                                               Height: Coalesce(varSelectedItem.Height.Value, ""),
                                               SWL: Coalesce(varSelectedItem.SWL, ""),
                                               WheelchairType: Coalesce(varSelectedItem.'Wheelchair Type'.Value, ""),
-                                              LocationAtEvent: Coalesce(varSelectedItem.Location.Value, ""),
+                                              LocationAtEvent: Coalesce(ddRetLoc_PD.Selected.Value, varSelectedItem.Location.Value, ""),
 
                                               Ward: Coalesce(varSelectedItem.Ward.Value, ""),
                                               PatientName: Coalesce(varSelectedItem.'Patient Name', ""),
@@ -1738,6 +1761,164 @@ Screens:
                                   )
                               )
                           )
-                        Text: ="Return equipment"
-                        Width: =200
-                        DisplayMode: =If(!IsBlank(varSelectedItem) && varSelectedItem.Status.Value = "Allocated", DisplayMode.Edit, DisplayMode.Disabled)
+      - conRetPopup_PD:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(14, 28, 42, 0.42)
+            Height: =768
+            Visible: =pdShowRet
+            Width: =1366
+            X: =0
+            Y: =0
+          Children:
+            - conRetCard_PD:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =290
+                  Width: =640
+                  X: =363
+                  Y: =239
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                Children:
+                  - lblRetTitle_PD:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
+                        Size: =22
+                        FontWeight: =FontWeight.Bold
+                        Height: =40
+                        Text: ="Return " & varSelectedItem.Title
+                        Width: =560
+                        X: =40
+                        Y: =26
+                  - lblRetBody_PD:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(58, 80, 104, 1)
+                        Size: =15
+                        Height: =60
+                        Text: ="Confirm the equipment has been cleaned, then choose where it is going back to."
+                        Width: =560
+                        X: =40
+                        Y: =76
+                  - lblRetLocCap_PD:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(58, 80, 104, 1)
+                        FontWeight: =FontWeight.Bold
+                        Size: =14
+                        Height: =42
+                        Align: =Align.Right
+                        Text: ="Where is it going back to?"
+                        Width: =240
+                        X: =50
+                        Y: =146
+                        VerticalAlign: =VerticalAlign.Middle
+                  - boxRetLoc_PD:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.22)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =42
+                        Width: =300
+                        X: =300
+                        Y: =146
+                        RadiusBottomLeft: =10
+                        RadiusBottomRight: =10
+                        RadiusTopLeft: =10
+                        RadiusTopRight: =10
+                      Children:
+                        - ddRetLoc_PD:
+                            Control: Classic/DropDown@2.3.1
+                            Properties:
+                              BorderStyle: =BorderStyle.None
+                              ChevronBackground: =RGBA(26, 90, 153, 1)
+                              ChevronFill: =RGBA(255, 255, 255, 1)
+                              Color: =RGBA(14, 28, 42, 1)
+                              Default: =Coalesce(varSelectedItem.Location.Value, "")
+                              Font: =Font.'Segoe UI'
+                              Height: =Parent.Height
+                              Items: =Choices(Equipment_Inventory_SharePoint.Location)
+                              Items.Value: =Value
+                              Size: =14
+                              Width: =Parent.Width
+                  - conRetCancel_PD:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =52
+                        Width: =220
+                        X: =90
+                        Y: =206
+                        RadiusBottomLeft: =26
+                        RadiusBottomRight: =26
+                        RadiusTopLeft: =26
+                        RadiusTopRight: =26
+                      Children:
+                        - btnRetCancel_PD:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =26
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(58, 80, 104, 1)
+                              FontSize: =17
+                              FontWeight: =FontWeight.Bold
+                              Height: =52
+                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              OnSelect: =Set(pdShowRet, false)
+                              Text: ="Cancel"
+                              Width: =220
+                  - conRetGo_PD:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(0, 0, 0, 0)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(26, 90, 153, 1)
+                        Height: =52
+                        Width: =220
+                        X: =330
+                        Y: =206
+                        RadiusBottomLeft: =26
+                        RadiusBottomRight: =26
+                        RadiusTopLeft: =26
+                        RadiusTopRight: =26
+                      Children:
+                        - btnRetGo_PD:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =26
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(255, 255, 255, 1)
+                              FontSize: =17
+                              FontWeight: =FontWeight.Bold
+                              Height: =52
+                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              OnSelect: =Set(pdShowRet, false); Select(btnReturnGo_PD)
+                              Text: ="Return to stock"
+                              Width: =220

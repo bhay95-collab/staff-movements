@@ -73,6 +73,23 @@ Screens:
             )
         );
 
+        // allocated items nobody has audited in the last 60 days, longest out first
+        ClearCollect(
+            colAuRecent,
+            ShowColumns(Filter(Equipment_Audits, AuditDateTime >= DateAdd(Today(), -60, TimeUnit.Days)), "Barcode")
+        );
+        ClearCollect(
+            colAuNext,
+            FirstN(
+                Sort(
+                    Filter(Equipment_Inventory_SharePoint, Status.Value = "Allocated" && IsBlank(LookUp(colAuRecent, Barcode = Title))),
+                    'Date Signed Out',
+                    SortOrder.Ascending
+                ),
+                5
+            )
+        );
+
         Set(auItem, Blank());
         Select(btnResetChecks_Au)
     Children:
@@ -403,6 +420,106 @@ Screens:
                                     OnSelect: |-
                                       =Set(auItem, ThisItem);
                                       Select(btnResetChecks_Au)
+                  - conNextBlk_Au:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =290
+                        FillPortions: =0
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =290
+                        Width: =App.Width - 32
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
+                        Visible: =IsBlank(auItem) && IsBlank(Trim(txtEquip_Au.Text)) && !IsEmpty(colAuNext)
+                      Children:
+                        - capNext_Au:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Text: ="NEXT TO AUDIT  (ALLOCATED, NOT CHECKED IN 60 DAYS)"
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Wrap: =false
+                        - galNext_Au:
+                            Control: Gallery@2.15.0
+                            Variant: Vertical
+                            Properties:
+                              Items: =colAuNext
+                              TemplatePadding: =0
+                              TemplateSize: =52
+                              Width: =Parent.Width
+                              Height: =Parent.Height - 24
+                              X: =0
+                              Y: =24
+                            Children:
+                              - conNext_Au:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_Bg2
+                                    Height: =46
+                                    Width: =Parent.TemplateWidth - 4
+                                    X: =2
+                                    Y: =4
+                                    RadiusBottomLeft: =14
+                                    RadiusBottomRight: =14
+                                    RadiusTopLeft: =14
+                                    RadiusTopRight: =14
+                                    BorderColor: =C_Line
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - lblNextT_Au:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Font: =AppFont
+                                          Color: =C_Ink
+                                          Size: =14
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =22
+                                          Text: =ThisItem.Title & "  ·  " & Coalesce(Trim(ThisItem.Brand & " " & ThisItem.Model), "")
+                                          Width: =Parent.Width - 28
+                                          X: =14
+                                          Y: =4
+                                          Wrap: =false
+                                    - lblNextS_Au:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Font: =AppFont
+                                          Color: =C_Muted
+                                          Size: =12
+                                          Height: =18
+                                          Text: =If(IsBlank(ThisItem.Ward.Value), "", "Ward " & ThisItem.Ward.Value & "  ·  ") & Coalesce(ThisItem.Physiotherapist, "no physio") & "  ·  out " & If(IsBlank(ThisItem.'Date Signed Out'), "?", DateDiff(ThisItem.'Date Signed Out', Today(), TimeUnit.Days)) & " d"
+                                          Width: =Parent.Width - 28
+                                          X: =14
+                                          Y: =24
+                                          Wrap: =false
+                                    - btnNext_Au:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                          BorderStyle: =BorderStyle.None
+                                          Height: =Parent.Height
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =0
+                                          Text: =""
+                                          OnSelect: |-
+                                            =Set(auItem, ThisItem);
+                                            Select(btnResetChecks_Au)
                   - conEq_Au:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout

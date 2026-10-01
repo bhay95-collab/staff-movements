@@ -299,3 +299,54 @@ Reads `Equipment_Usage_Log` (the row written on every sign-out and return). Buil
 - **Activity log:** newest first. Chips: All / Sign-outs / Returns / Service due / To review (returns with no matching sign-out). Tap a line for the full record.
 - Patient names and URNs are deliberately **not** shown (managers do not need them). They are still in the list.
 - The log is read in 14-day slices so it stays under the row limit; the period presets load a few seconds at most.
+
+---
+
+# Six new builds (Service, Audit coverage, Data health, Discharge planner, My day, return location)
+
+## Do these first (SharePoint)
+Open `SharePoint_Changes.md` and do it **before** pasting anything: the new `Service_Log` list, two new Status choices and one new column on the stock list. Then in **both** apps: **Data** (cylinder) → **Add data** → **SharePoint** → tick `Service_Log`.
+
+## Paste order
+1. `Equipment_Main.pa.yaml`, `All_Allocated_New.pa.yaml`, `Patient_Detail_New.pa.yaml` (replace the existing screens; they gain the return location).
+2. New screens: `Service_Dash.pa.yaml`, `Audit_Coverage.pa.yaml`, `Data_Health.pa.yaml`, `Discharge_Planner.pa.yaml`, `My_Day.pa.yaml`. Same method as before: Copy raw file → click a screen in the Tree view → Ctrl+V.
+3. Last: `Home_Main.pa.yaml` (its buttons point at the screens above, so paste it after them).
+
+The screen names are `Service_Dash`, `Audit_Coverage`, `Data_Health`, `Discharge_Planner`, `My_Day` (the Home buttons use these names).
+
+## Home bottom bar (new)
+**Equipment · My Day · Discharge Planner · Team Info** for everyone. Directors, Team Leaders and CA4 also see **Manager tools** (right side). It opens a small menu: **Usage Log · Servicing · Audit Coverage · Data Health**.
+
+## Return location (Equipment_Main, All_Allocated_New, Patient_Detail_New)
+When equipment is returned the screen now asks **Where is it going back to?** (the list of locations). It defaults to the item's current location. The chosen location is saved on the item and in the usage log. Patient detail: **Return equipment** now opens a confirm box with the location (this is where you confirm it has been cleaned). There is no prompt at discharge; equipment is returned once it is clean, as before.
+
+## Servicing dashboard – `Service_Dash.pa.yaml`
+Reads `Service_Log` and the stock list. Items are sent for service and taken back in the mobile app (Servicing screen); this screen is the manager view.
+- Tiles: due for service (over 100 days in use), due but still out, at service now, average days at service, serviced (period), condemned (period).
+- **Due for service** tab: items over 100 days, most days first, with last serviced date and location. **At service now**: what is away, how long (amber after 7 days, red after 14). **History**: finished services. Tap a row for the full record.
+- Filters: 90 days / 12 months / all time, category, search.
+
+## Audit coverage – `Audit_Coverage.pa.yaml`
+Reads 12 months of `Equipment_Audits`.
+- **Audit again after** 30 / 60 / 90 / 180 days (starts at 60). Which items: allocated only (default) or everything in stock.
+- Tiles: items in scope, % audited in time, never audited, overdue, pass rate, failed audits not escalated.
+- Tabs: **To audit** (never audited first, then longest since the last audit), **Pass rates** by category and ward (90 days or 12 months), **Failed, not escalated** (the physio was never told).
+- Mobile Audit screen now lists **Next to audit**: five allocated items nobody has audited in the last 60 days. Tap one to start its audit.
+
+## Data health – `Data_Health.pa.yaml`
+One list of things to fix. Left: what is wrong, with counts (tap one to list only those). Right: each problem, worst first. A ward problem has **Open ward ›**.
+- Patients: no URN, no date of birth, no diagnosis, no admission date, admission in the future, no physio, EDD passed, EDD before admission, no EDD, same URN twice, same bed twice.
+- Equipment: out over 6 weeks, allocated with no sign-out date / no URN / no physio, marked out of service but still in use, In Service with no service record, no category / width / wheelchair type / brand or model, available with no location.
+- Audits and returns (last 90 days): failed audits not escalated, returns that matched no loan.
+- Equipment held for a discharged patient is **not** flagged (it is waiting to be cleaned and signed back in).
+
+## Discharge planner – `Discharge_Planner.pa.yaml`
+A board of every patient by EDD: **Overdue**, the next five working days (a weekend EDD sits in Friday's column), and **No EDD**.
+- Each card: name, ward and bed, physio, how many items of equipment they have out (matched by URN), flags (F falls, N NDIS, L link worker, M maintenance), and the AROC date (amber with +Nd if it is later than the EDD).
+- Tap a card to open the patient. Filters: ward, my patients only, with equipment out, search.
+- Tiles: EDD passed, leaving in 2 and 5 working days, equipment to come back, no EDD, AROC later than EDD.
+
+## My day – `My_Day.pa.yaml`
+- **My patients** (any ward where you are the physio, OT or SP), soonest EDD first, with equipment out and flags. Tap to open.
+- **Equipment I have out** (signed out in your name), longest first (amber after 4 weeks, red after 6).
+- **Who is away** today and tomorrow, from the STARSPhysioLeave calendar.

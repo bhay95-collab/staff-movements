@@ -1240,10 +1240,10 @@ Screens:
                 Properties:
                   DropShadow: =DropShadow.Bold
                   Fill: =RGBA(255, 255, 255, 1)
-                  Height: =290
+                  Height: =360
                   Width: =640
                   X: =363
-                  Y: =239
+                  Y: =204
                   RadiusBottomLeft: =20
                   RadiusBottomRight: =20
                   RadiusTopLeft: =20
@@ -1270,10 +1270,56 @@ Screens:
                         Color: =RGBA(58, 80, 104, 1)
                         Size: =15
                         Height: =96
-                        Text: =varDischargedEquipment.'Patient Name' & " could not be found on any current ward list. They may have been discharged." & Char(10) & Char(10) & "Return this equipment, or leave it allocated?"
+                        Text: =varDischargedEquipment.'Patient Name' & " could not be found on any current ward list. They may have been discharged." & Char(10) & Char(10) & "Is the equipment cleaned and ready to return, or should it stay allocated?"
                         Width: =560
                         X: =40
                         Y: =76
+                  - lblNfLocCap_Eq:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(58, 80, 104, 1)
+                        FontWeight: =FontWeight.Bold
+                        Size: =14
+                        Height: =42
+                        Align: =Align.Right
+                        Text: ="Where is it going back to?"
+                        Width: =240
+                        X: =50
+                        Y: =176
+                        VerticalAlign: =VerticalAlign.Middle
+                  - boxNfLoc_Eq:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.22)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =42
+                        Width: =300
+                        X: =300
+                        Y: =176
+                        RadiusBottomLeft: =10
+                        RadiusBottomRight: =10
+                        RadiusTopLeft: =10
+                        RadiusTopRight: =10
+                      Children:
+                        - ddNfLoc_Eq:
+                            Control: Classic/DropDown@2.3.1
+                            Properties:
+                              BorderStyle: =BorderStyle.None
+                              ChevronBackground: =RGBA(26, 90, 153, 1)
+                              ChevronFill: =RGBA(255, 255, 255, 1)
+                              Color: =RGBA(14, 28, 42, 1)
+                              Default: =Coalesce(varDischargedEquipment.Location.Value, "")
+                              Font: =Font.'Segoe UI'
+                              Height: =Parent.Height
+                              Items: =Choices(Equipment_Inventory_SharePoint.Location)
+                              Items.Value: =Value
+                              Size: =14
+                              Width: =Parent.Width
                   - conNfLeave_Eq:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
@@ -1286,7 +1332,7 @@ Screens:
                         Height: =52
                         Width: =220
                         X: =90
-                        Y: =196
+                        Y: =266
                         RadiusBottomLeft: =26
                         RadiusBottomRight: =26
                         RadiusTopLeft: =26
@@ -1320,7 +1366,7 @@ Screens:
                         Height: =52
                         Width: =220
                         X: =330
-                        Y: =196
+                        Y: =266
                         RadiusBottomLeft: =26
                         RadiusBottomRight: =26
                         RadiusTopLeft: =26
@@ -1404,6 +1450,9 @@ Screens:
                                                     DOB: Blank(),
 
                                                     'Date Returned': returnDate,
+
+
+                                                    Location: If(IsBlank(ddNfLoc_Eq.Selected.Value), varDischargedEquipment.Location, { Value: ddNfLoc_Eq.Selected.Value }),
 
                                                     Ward: Blank(),
 
@@ -1502,11 +1551,7 @@ Screens:
                                                             ""
                                                         ),
 
-                                                    LocationAtEvent:
-                                                        Coalesce(
-                                                            varDischargedEquipment.Location.Value,
-                                                            ""
-                                                        ),
+                                                    LocationAtEvent: Coalesce(ddNfLoc_Eq.Selected.Value, varDischargedEquipment.Location.Value, ""),
 
                                                     Ward:
                                                         Coalesce(
