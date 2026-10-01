@@ -36,10 +36,10 @@ Screens:
                 Variant: ManualLayout
                 Properties:
                   AlignInContainer: =AlignInContainer.SetByContainer
-                  LayoutMinHeight: =76
+                  LayoutMinHeight: =95
                   FillPortions: =0
                   Fill: =RGBA(7, 95, 115, 1)
-                  Height: =76
+                  Height: =95
                   Width: =App.Width
                   X: =0
                   Y: =0
@@ -63,56 +63,56 @@ Screens:
                       Properties:
                         Appearance: ='ButtonCanvas.Appearance'.Transparent
                         FontColor: =C_White
-                        FontSize: =28
-                        Height: =48
+                        FontSize: =32
+                        Height: =60
                         Icon: ="ChevronLeft"
                         Text: =""
-                        Width: =48
-                        X: =4
-                        Y: =14
+                        Width: =60
+                        X: =5
+                        Y: =18
                         OnSelect: =Back(ScreenTransition.UnCoverRight)
                   - lblHdrT_It:
                       Control: Label@2.5.1
                       Properties:
                         Font: =AppFont
                         Color: =C_White
-                        Size: =20
+                        Size: =24
                         FontWeight: =FontWeight.Bold
-                        Height: =28
+                        Height: =35
                         Text: =Coalesce(itItem.Title, "Equipment")
-                        Width: =Parent.Width - 68
-                        X: =52
-                        Y: =16
+                        Width: =Parent.Width - 85
+                        X: =65
+                        Y: =20
                         Wrap: =false
                   - lblHdrS_It:
                       Control: Label@2.5.1
                       Properties:
                         Font: =AppFont
                         Color: =RGBA(255, 255, 255, 0.85)
-                        Size: =12
-                        Height: =20
+                        Size: =15
+                        Height: =25
                         Text: =Coalesce(itItem.Category.Value, "") & "  ·  " & Coalesce(itItem.Status.Value, "")
-                        Width: =Parent.Width - 68
-                        X: =52
-                        Y: =42
+                        Width: =Parent.Width - 85
+                        X: =65
+                        Y: =53
                         Wrap: =false
             - conBody_It:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
                   AlignInContainer: =AlignInContainer.SetByContainer
-                  LayoutMinHeight: =120
+                  LayoutMinHeight: =150
                   FillPortions: =1
                   Width: =App.Width
                   Fill: =RGBA(0, 0, 0, 0)
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutAlignItems: =LayoutAlignItems.Stretch
                   LayoutJustifyContent: =LayoutJustifyContent.Start
-                  LayoutGap: =12
-                  PaddingTop: =16
-                  PaddingRight: =16
-                  PaddingBottom: =16
-                  PaddingLeft: =16
+                  LayoutGap: =15
+                  PaddingTop: =20
+                  PaddingRight: =20
+                  PaddingBottom: =20
+                  PaddingLeft: =20
                   DropShadow: =DropShadow.None
                   RadiusBottomLeft: =0
                   RadiusBottomRight: =0
@@ -125,17 +125,17 @@ Screens:
                       Variant: ManualLayout
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =262
+                        LayoutMinHeight: =328
                         FillPortions: =0
                         Fill: =C_White
-                        Height: =262
-                        Width: =App.Width - 32
+                        Height: =328
+                        Width: =App.Width - 40
                         X: =0
                         Y: =0
-                        RadiusBottomLeft: =18
-                        RadiusBottomRight: =18
-                        RadiusTopLeft: =18
-                        RadiusTopRight: =18
+                        RadiusBottomLeft: =23
+                        RadiusBottomRight: =23
+                        RadiusTopLeft: =23
+                        RadiusTopRight: =23
                         BorderColor: =C_Line
                         BorderStyle: =BorderStyle.Solid
                         BorderThickness: =1
@@ -146,27 +146,27 @@ Screens:
                             Properties:
                               Font: =AppFont
                               Color: =C_Ink
-                              Size: =20
+                              Size: =24
                               FontWeight: =FontWeight.Bold
-                              Height: =28
+                              Height: =35
                               Text: =Coalesce(Trim(itItem.Brand & " " & itItem.Model), itItem.Title)
-                              Width: =Parent.Width - 32
-                              X: =16
-                              Y: =14
+                              Width: =Parent.Width - 40
+                              X: =20
+                              Y: =18
                               Wrap: =false
                         - conCat_It:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
                               Fill: =Switch(itItem.Category.Value, "Wheelchair", RGBA(166, 199, 130, 1), "Cushion", RGBA(0, 144, 153, 1), "Backrest", RGBA(0, 200, 210, 1), RGBA(210, 218, 227, 1))
-                              Height: =26
-                              Width: =110
-                              X: =16
-                              Y: =48
-                              RadiusBottomLeft: =13
-                              RadiusBottomRight: =13
-                              RadiusTopLeft: =13
-                              RadiusTopRight: =13
+                              Height: =33
+                              Width: =138
+                              X: =20
+                              Y: =60
+                              RadiusBottomLeft: =16
+                              RadiusBottomRight: =16
+                              RadiusTopLeft: =16
+                              RadiusTopRight: =16
                               DropShadow: =DropShadow.None
                             Children:
                               - lblCat_It:
@@ -174,7 +174,7 @@ Screens:
                                   Properties:
                                     Font: =AppFont
                                     Color: =C_Ink
-                                    Size: =12
+                                    Size: =15
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
                                     Text: =Coalesce(itItem.Category.Value, "—")
@@ -189,14 +189,14 @@ Screens:
                             Variant: ManualLayout
                             Properties:
                               Fill: =Switch(Coalesce(itItem.Status.Value, ""), "Available", C_GoodBg, "Allocated", C_AccentSoft, C_DangerBg)
-                              Height: =26
-                              Width: =116
-                              X: =134
-                              Y: =48
-                              RadiusBottomLeft: =13
-                              RadiusBottomRight: =13
-                              RadiusTopLeft: =13
-                              RadiusTopRight: =13
+                              Height: =33
+                              Width: =145
+                              X: =168
+                              Y: =60
+                              RadiusBottomLeft: =16
+                              RadiusBottomRight: =16
+                              RadiusTopLeft: =16
+                              RadiusTopRight: =16
                               DropShadow: =DropShadow.None
                             Children:
                               - lblStatus_It:
@@ -204,7 +204,7 @@ Screens:
                                   Properties:
                                     Font: =AppFont
                                     Color: =Switch(Coalesce(itItem.Status.Value, ""), "Available", C_Good, "Allocated", C_Accent, C_Danger)
-                                    Size: =12
+                                    Size: =15
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
                                     Text: =Coalesce(itItem.Status.Value, "Unknown")
@@ -219,185 +219,185 @@ Screens:
                             Properties:
                               Font: =AppFont
                               Color: =C_Muted
-                              Size: =11
+                              Size: =14
                               FontWeight: =FontWeight.Bold
-                              Height: =18
+                              Height: =23
                               Text: ="TYPE"
-                              Width: =Parent.Width / 2 - 20
-                              X: =16
-                              Y: =88
+                              Width: =Parent.Width / 2 - 25
+                              X: =20
+                              Y: =110
                               Wrap: =false
                         - lblVType_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Ink
-                              Size: =15
+                              Size: =18
                               FontWeight: =FontWeight.Bold
-                              Height: =22
+                              Height: =28
                               Text: =Coalesce(itItem.'Wheelchair Type'.Value, "—")
-                              Width: =Parent.Width / 2 - 20
-                              X: =16
-                              Y: =104
+                              Width: =Parent.Width / 2 - 25
+                              X: =20
+                              Y: =130
                               Wrap: =false
                         - capKWidth_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Muted
-                              Size: =11
+                              Size: =14
                               FontWeight: =FontWeight.Bold
-                              Height: =18
+                              Height: =23
                               Text: ="WIDTH"
-                              Width: =Parent.Width / 2 - 20
-                              X: =Parent.Width / 2 + 4
-                              Y: =88
+                              Width: =Parent.Width / 2 - 25
+                              X: =Parent.Width / 2 + 5
+                              Y: =110
                               Wrap: =false
                         - lblVWidth_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Ink
-                              Size: =15
+                              Size: =18
                               FontWeight: =FontWeight.Bold
-                              Height: =22
+                              Height: =28
                               Text: =Coalesce(itItem.Width.Value, "—")
-                              Width: =Parent.Width / 2 - 20
-                              X: =Parent.Width / 2 + 4
-                              Y: =104
+                              Width: =Parent.Width / 2 - 25
+                              X: =Parent.Width / 2 + 5
+                              Y: =130
                               Wrap: =false
                         - capKDepth_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Muted
-                              Size: =11
+                              Size: =14
                               FontWeight: =FontWeight.Bold
-                              Height: =18
+                              Height: =23
                               Text: ="DEPTH"
-                              Width: =Parent.Width / 2 - 20
-                              X: =16
-                              Y: =136
+                              Width: =Parent.Width / 2 - 25
+                              X: =20
+                              Y: =170
                               Wrap: =false
                         - lblVDepth_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Ink
-                              Size: =15
+                              Size: =18
                               FontWeight: =FontWeight.Bold
-                              Height: =22
+                              Height: =28
                               Text: =Coalesce(itItem.Depth.Value, "—")
-                              Width: =Parent.Width / 2 - 20
-                              X: =16
-                              Y: =152
+                              Width: =Parent.Width / 2 - 25
+                              X: =20
+                              Y: =190
                               Wrap: =false
                         - capKHeight_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Muted
-                              Size: =11
+                              Size: =14
                               FontWeight: =FontWeight.Bold
-                              Height: =18
+                              Height: =23
                               Text: ="HEIGHT"
-                              Width: =Parent.Width / 2 - 20
-                              X: =Parent.Width / 2 + 4
-                              Y: =136
+                              Width: =Parent.Width / 2 - 25
+                              X: =Parent.Width / 2 + 5
+                              Y: =170
                               Wrap: =false
                         - lblVHeight_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Ink
-                              Size: =15
+                              Size: =18
                               FontWeight: =FontWeight.Bold
-                              Height: =22
+                              Height: =28
                               Text: =Coalesce(itItem.Height.Value, "—")
-                              Width: =Parent.Width / 2 - 20
-                              X: =Parent.Width / 2 + 4
-                              Y: =152
+                              Width: =Parent.Width / 2 - 25
+                              X: =Parent.Width / 2 + 5
+                              Y: =190
                               Wrap: =false
                         - capKLoc_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Muted
-                              Size: =11
+                              Size: =14
                               FontWeight: =FontWeight.Bold
-                              Height: =18
+                              Height: =23
                               Text: ="LOCATION"
-                              Width: =Parent.Width / 2 - 20
-                              X: =16
-                              Y: =184
+                              Width: =Parent.Width / 2 - 25
+                              X: =20
+                              Y: =230
                               Wrap: =false
                         - lblVLoc_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Ink
-                              Size: =15
+                              Size: =18
                               FontWeight: =FontWeight.Bold
-                              Height: =22
+                              Height: =28
                               Text: =Coalesce(itItem.Location.Value, "—")
-                              Width: =Parent.Width / 2 - 20
-                              X: =16
-                              Y: =200
+                              Width: =Parent.Width / 2 - 25
+                              X: =20
+                              Y: =250
                               Wrap: =false
                         - capKSwl_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Muted
-                              Size: =11
+                              Size: =14
                               FontWeight: =FontWeight.Bold
-                              Height: =18
+                              Height: =23
                               Text: ="SWL"
-                              Width: =Parent.Width / 2 - 20
-                              X: =Parent.Width / 2 + 4
-                              Y: =184
+                              Width: =Parent.Width / 2 - 25
+                              X: =Parent.Width / 2 + 5
+                              Y: =230
                               Wrap: =false
                         - lblVSwl_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Ink
-                              Size: =15
+                              Size: =18
                               FontWeight: =FontWeight.Bold
-                              Height: =22
+                              Height: =28
                               Text: =Coalesce(Text(itItem.SWL), "—")
-                              Width: =Parent.Width / 2 - 20
-                              X: =Parent.Width / 2 + 4
-                              Y: =200
+                              Width: =Parent.Width / 2 - 25
+                              X: =Parent.Width / 2 + 5
+                              Y: =250
                               Wrap: =false
                         - lblDays_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Muted
-                              Size: =12
-                              Height: =20
+                              Size: =15
+                              Height: =25
                               Text: ="In use " & Coalesce(itItem.TotalDaysSignedOut, 0) & " days this year"
-                              Width: =Parent.Width - 32
-                              X: =16
-                              Y: =230
+                              Width: =Parent.Width - 40
+                              X: =20
+                              Y: =288
                               Wrap: =false
                   - conService_It:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =64
+                        LayoutMinHeight: =80
                         FillPortions: =0
                         Fill: =C_DangerBg
-                        Height: =64
-                        Width: =App.Width - 32
+                        Height: =80
+                        Width: =App.Width - 40
                         X: =0
                         Y: =0
-                        RadiusBottomLeft: =14
-                        RadiusBottomRight: =14
-                        RadiusTopLeft: =14
-                        RadiusTopRight: =14
+                        RadiusBottomLeft: =18
+                        RadiusBottomRight: =18
+                        RadiusTopLeft: =18
+                        RadiusTopRight: =18
                         BorderColor: =RGBA(180, 26, 26, 0.35)
                         BorderStyle: =BorderStyle.Solid
                         BorderThickness: =1
@@ -409,30 +409,30 @@ Screens:
                             Properties:
                               Font: =AppFont
                               Color: =C_Danger
-                              Size: =13
+                              Size: =16
                               FontWeight: =FontWeight.Bold
-                              Height: =48
+                              Height: =60
                               Text: |-
                                 ="Over 100 days in use this year. Needs a Full Service: set it aside and contact CA."
-                              Width: =Parent.Width - 28
-                              X: =14
-                              Y: =8
+                              Width: =Parent.Width - 35
+                              X: =18
+                              Y: =10
                   - conSvcGo_It:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =48
+                        LayoutMinHeight: =60
                         FillPortions: =0
                         Fill: =C_White
-                        Height: =48
-                        Width: =App.Width - 32
+                        Height: =60
+                        Width: =App.Width - 40
                         X: =0
                         Y: =0
-                        RadiusBottomLeft: =24
-                        RadiusBottomRight: =24
-                        RadiusTopLeft: =24
-                        RadiusTopRight: =24
+                        RadiusBottomLeft: =30
+                        RadiusBottomRight: =30
+                        RadiusTopLeft: =30
+                        RadiusTopRight: =30
                         BorderColor: =C_Danger
                         BorderStyle: =BorderStyle.Solid
                         BorderThickness: =1
@@ -443,10 +443,10 @@ Screens:
                             Control: Button@0.0.45
                             Properties:
                               Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =24
+                              BorderRadius: =30
                               Font: =Font.'Segoe UI'
                               FontColor: =C_Danger
-                              FontSize: =15
+                              FontSize: =18
                               FontWeight: =FontWeight.Bold
                               Height: =Parent.Height
                               Width: =Parent.Width
@@ -459,17 +459,17 @@ Screens:
                       Variant: ManualLayout
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =196
+                        LayoutMinHeight: =245
                         FillPortions: =0
                         Fill: =C_White
-                        Height: =196
-                        Width: =App.Width - 32
+                        Height: =245
+                        Width: =App.Width - 40
                         X: =0
                         Y: =0
-                        RadiusBottomLeft: =18
-                        RadiusBottomRight: =18
-                        RadiusTopLeft: =18
-                        RadiusTopRight: =18
+                        RadiusBottomLeft: =23
+                        RadiusBottomRight: =23
+                        RadiusTopLeft: =23
+                        RadiusTopRight: =23
                         BorderColor: =C_Line
                         BorderStyle: =BorderStyle.Solid
                         BorderThickness: =1
@@ -481,152 +481,152 @@ Screens:
                             Properties:
                               Font: =AppFont
                               Color: =C_Muted
-                              Size: =11
+                              Size: =14
                               FontWeight: =FontWeight.Bold
-                              Height: =18
+                              Height: =23
                               Text: ="SIGNED OUT TO"
                               Width: =Parent.Width
-                              X: =16
-                              Y: =14
+                              X: =20
+                              Y: =18
                               Wrap: =false
                         - lblPt_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Ink
-                              Size: =20
+                              Size: =24
                               FontWeight: =FontWeight.Bold
-                              Height: =28
+                              Height: =35
                               Text: =Coalesce(itItem.'Patient Name', "—")
-                              Width: =Parent.Width - 32
-                              X: =16
-                              Y: =32
+                              Width: =Parent.Width - 40
+                              X: =20
+                              Y: =40
                               Wrap: =false
                         - lblPtSub_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Muted
-                              Size: =12
-                              Height: =20
+                              Size: =15
+                              Height: =25
                               Text: ="URN " & Coalesce(itItem.URN, "—") & If(IsBlank(itItem.DOB), "", "  ·  DOB " & Text(itItem.DOB, "dd/mm/yyyy"))
-                              Width: =Parent.Width - 32
-                              X: =16
-                              Y: =60
+                              Width: =Parent.Width - 40
+                              X: =20
+                              Y: =75
                               Wrap: =false
                         - capKWard_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Muted
-                              Size: =11
+                              Size: =14
                               FontWeight: =FontWeight.Bold
-                              Height: =18
+                              Height: =23
                               Text: ="WARD"
-                              Width: =Parent.Width / 2 - 20
-                              X: =16
-                              Y: =90
+                              Width: =Parent.Width / 2 - 25
+                              X: =20
+                              Y: =113
                               Wrap: =false
                         - lblVWard_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Ink
-                              Size: =15
+                              Size: =18
                               FontWeight: =FontWeight.Bold
-                              Height: =22
+                              Height: =28
                               Text: =Coalesce(itItem.Ward.Value, "—")
-                              Width: =Parent.Width / 2 - 20
-                              X: =16
-                              Y: =106
+                              Width: =Parent.Width / 2 - 25
+                              X: =20
+                              Y: =133
                               Wrap: =false
                         - capKPhysio_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Muted
-                              Size: =11
+                              Size: =14
                               FontWeight: =FontWeight.Bold
-                              Height: =18
+                              Height: =23
                               Text: ="PHYSIO"
-                              Width: =Parent.Width / 2 - 20
-                              X: =Parent.Width / 2 + 4
-                              Y: =90
+                              Width: =Parent.Width / 2 - 25
+                              X: =Parent.Width / 2 + 5
+                              Y: =113
                               Wrap: =false
                         - lblVPhysio_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Ink
-                              Size: =15
+                              Size: =18
                               FontWeight: =FontWeight.Bold
-                              Height: =22
+                              Height: =28
                               Text: =Coalesce(itItem.Physiotherapist, "—")
-                              Width: =Parent.Width / 2 - 20
-                              X: =Parent.Width / 2 + 4
-                              Y: =106
+                              Width: =Parent.Width / 2 - 25
+                              X: =Parent.Width / 2 + 5
+                              Y: =133
                               Wrap: =false
                         - capKOut_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Muted
-                              Size: =11
+                              Size: =14
                               FontWeight: =FontWeight.Bold
-                              Height: =18
+                              Height: =23
                               Text: ="SIGNED OUT"
-                              Width: =Parent.Width / 2 - 20
-                              X: =16
-                              Y: =140
+                              Width: =Parent.Width / 2 - 25
+                              X: =20
+                              Y: =175
                               Wrap: =false
                         - lblVOut_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Ink
-                              Size: =15
+                              Size: =18
                               FontWeight: =FontWeight.Bold
-                              Height: =22
+                              Height: =28
                               Text: =Coalesce(Text(itItem.'Date Signed Out', "d mmm yyyy"), "—")
-                              Width: =Parent.Width / 2 - 20
-                              X: =16
-                              Y: =156
+                              Width: =Parent.Width / 2 - 25
+                              X: =20
+                              Y: =195
                               Wrap: =false
                         - capKDays_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Muted
-                              Size: =11
+                              Size: =14
                               FontWeight: =FontWeight.Bold
-                              Height: =18
+                              Height: =23
                               Text: ="DAYS OUT"
-                              Width: =Parent.Width / 2 - 20
-                              X: =Parent.Width / 2 + 4
-                              Y: =140
+                              Width: =Parent.Width / 2 - 25
+                              X: =Parent.Width / 2 + 5
+                              Y: =175
                               Wrap: =false
                         - lblVDays_It:
                             Control: Label@2.5.1
                             Properties:
                               Font: =AppFont
                               Color: =C_Ink
-                              Size: =15
+                              Size: =18
                               FontWeight: =FontWeight.Bold
-                              Height: =22
+                              Height: =28
                               Text: =Coalesce(If(IsBlank(itItem.'Date Signed Out'), Blank(), DateDiff(itItem.'Date Signed Out', Today(), TimeUnit.Days) & If(DateDiff(itItem.'Date Signed Out', Today(), TimeUnit.Days) = 1, " day", " days")), "—")
-                              Width: =Parent.Width / 2 - 20
-                              X: =Parent.Width / 2 + 4
-                              Y: =156
+                              Width: =Parent.Width / 2 - 25
+                              X: =Parent.Width / 2 + 5
+                              Y: =195
                               Wrap: =false
             - conFoot_It:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
                   AlignInContainer: =AlignInContainer.SetByContainer
-                  LayoutMinHeight: =80
+                  LayoutMinHeight: =100
                   FillPortions: =0
                   Fill: =C_White
-                  Height: =80
+                  Height: =100
                   Width: =App.Width
                   X: =0
                   Y: =0
@@ -644,14 +644,14 @@ Screens:
                       Variant: ManualLayout
                       Properties:
                         Fill: =If(Coalesce(itItem.Status.Value, "") = "Available" || Coalesce(itItem.Status.Value, "") = "Allocated", C_Accent, C_Muted)
-                        Height: =48
-                        Width: =Parent.Width - 32
-                        X: =16
-                        Y: =16
-                        RadiusBottomLeft: =24
-                        RadiusBottomRight: =24
-                        RadiusTopLeft: =24
-                        RadiusTopRight: =24
+                        Height: =60
+                        Width: =Parent.Width - 40
+                        X: =20
+                        Y: =20
+                        RadiusBottomLeft: =30
+                        RadiusBottomRight: =30
+                        RadiusTopLeft: =30
+                        RadiusTopRight: =30
                         BorderColor: =If(Coalesce(itItem.Status.Value, "") = "Available" || Coalesce(itItem.Status.Value, "") = "Allocated", C_Accent, C_Muted)
                         BorderStyle: =BorderStyle.Solid
                         BorderThickness: =1
@@ -661,10 +661,10 @@ Screens:
                             Control: Button@0.0.45
                             Properties:
                               Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =24
+                              BorderRadius: =30
                               Font: =Font.'Segoe UI'
                               FontColor: =C_White
-                              FontSize: =16
+                              FontSize: =19
                               FontWeight: =FontWeight.Bold
                               Height: =Parent.Height
                               Width: =Parent.Width
@@ -706,35 +706,35 @@ Screens:
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutAlignItems: =LayoutAlignItems.Stretch
                   LayoutJustifyContent: =LayoutJustifyContent.Start
-                  LayoutGap: =10
-                  PaddingTop: =20
-                  PaddingRight: =20
-                  PaddingBottom: =24
-                  PaddingLeft: =20
+                  LayoutGap: =13
+                  PaddingTop: =25
+                  PaddingRight: =25
+                  PaddingBottom: =30
+                  PaddingLeft: =25
                   DropShadow: =DropShadow.None
                   RadiusBottomLeft: =0
                   RadiusBottomRight: =0
-                  RadiusTopLeft: =22
-                  RadiusTopRight: =22
+                  RadiusTopLeft: =28
+                  RadiusTopRight: =28
                   LayoutOverflowY: =LayoutOverflow.Scroll
                   X: =0
                   Width: =Parent.Width
-                  Height: =Min(Parent.Height - 40, 340)
-                  Y: =Parent.Height - Min(Parent.Height - 40, 340)
+                  Height: =Min(Parent.Height - 50, 425)
+                  Y: =Parent.Height - Min(Parent.Height - 50, 425)
                 Children:
                   - lblSheetT_It:
                       Control: Label@2.5.1
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =32
+                        LayoutMinHeight: =40
                         FillPortions: =0
                         Font: =AppFont
                         Color: =C_Ink
-                        Size: =19
+                        Size: =22
                         FontWeight: =FontWeight.Bold
-                        Height: =32
+                        Height: =40
                         Text: ="Return " & itItem.Title & "?"
-                        Width: =App.Width - 40
+                        Width: =App.Width - 50
                         X: =0
                         Y: =0
                         Wrap: =false
@@ -743,11 +743,11 @@ Screens:
                       Variant: ManualLayout
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =64
+                        LayoutMinHeight: =80
                         FillPortions: =0
                         Fill: =RGBA(0, 0, 0, 0)
-                        Height: =64
-                        Width: =App.Width - 40
+                        Height: =80
+                        Width: =App.Width - 50
                         X: =0
                         Y: =0
                         RadiusBottomLeft: =0
@@ -761,9 +761,9 @@ Screens:
                             Properties:
                               Font: =AppFont
                               Color: =C_Muted
-                              Size: =11
+                              Size: =14
                               FontWeight: =FontWeight.Bold
-                              Height: =18
+                              Height: =23
                               Text: ="WHERE IS IT GOING BACK TO?"
                               Width: =Parent.Width
                               X: =0
@@ -774,14 +774,14 @@ Screens:
                             Variant: ManualLayout
                             Properties:
                               Fill: =C_White
-                              Height: =44
+                              Height: =55
                               Width: =Parent.Width
                               X: =0
-                              Y: =20
-                              RadiusBottomLeft: =10
-                              RadiusBottomRight: =10
-                              RadiusTopLeft: =10
-                              RadiusTopRight: =10
+                              Y: =25
+                              RadiusBottomLeft: =13
+                              RadiusBottomRight: =13
+                              RadiusTopLeft: =13
+                              RadiusTopRight: =13
                               BorderColor: =RGBA(14, 42, 70, 0.22)
                               BorderStyle: =BorderStyle.Solid
                               BorderThickness: =1
@@ -799,7 +799,7 @@ Screens:
                                     Height: =Parent.Height
                                     Items: =Choices(Equipment_Inventory_SharePoint.Location)
                                     Items.Value: =Value
-                                    Size: =15
+                                    Size: =18
                                     Width: =Parent.Width
                                     X: =0
                                     Y: =0
@@ -807,14 +807,14 @@ Screens:
                       Control: Label@2.5.1
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =60
+                        LayoutMinHeight: =75
                         FillPortions: =0
                         Font: =AppFont
                         Color: =C_Ink2
-                        Size: =14
-                        Height: =60
+                        Size: =17
+                        Height: =75
                         Text: ="It will be marked Available and signed in by you." & Char(10) & "Out for " & DateDiff(itItem.'Date Signed Out', Today(), TimeUnit.Days) & " days with " & Coalesce(itItem.'Patient Name', "the patient") & ". Confirm it has been cleaned."
-                        Width: =App.Width - 40
+                        Width: =App.Width - 50
                         X: =0
                         Y: =0
                   - conRetBtns_It:
@@ -822,11 +822,11 @@ Screens:
                       Variant: ManualLayout
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =48
+                        LayoutMinHeight: =60
                         FillPortions: =0
                         Fill: =RGBA(0, 0, 0, 0)
-                        Height: =48
-                        Width: =App.Width - 40
+                        Height: =60
+                        Width: =App.Width - 50
                         X: =0
                         Y: =0
                         RadiusBottomLeft: =0
@@ -840,14 +840,14 @@ Screens:
                             Variant: ManualLayout
                             Properties:
                               Fill: =C_White
-                              Height: =48
-                              Width: =(App.Width - 52) / 2
+                              Height: =60
+                              Width: =(App.Width - 65) / 2
                               X: =0
                               Y: =0
-                              RadiusBottomLeft: =24
-                              RadiusBottomRight: =24
-                              RadiusTopLeft: =24
-                              RadiusTopRight: =24
+                              RadiusBottomLeft: =30
+                              RadiusBottomRight: =30
+                              RadiusTopLeft: =30
+                              RadiusTopRight: =30
                               BorderColor: =C_Line
                               BorderStyle: =BorderStyle.Solid
                               BorderThickness: =1
@@ -857,10 +857,10 @@ Screens:
                                   Control: Button@0.0.45
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =24
+                                    BorderRadius: =30
                                     Font: =Font.'Segoe UI'
                                     FontColor: =C_Ink2
-                                    FontSize: =15
+                                    FontSize: =18
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
                                     Width: =Parent.Width
@@ -871,14 +871,14 @@ Screens:
                             Variant: ManualLayout
                             Properties:
                               Fill: =C_Accent
-                              Height: =48
-                              Width: =(App.Width - 52) / 2
-                              X: =(App.Width - 52) / 2 + 12
+                              Height: =60
+                              Width: =(App.Width - 65) / 2
+                              X: =(App.Width - 65) / 2 + 15
                               Y: =0
-                              RadiusBottomLeft: =24
-                              RadiusBottomRight: =24
-                              RadiusTopLeft: =24
-                              RadiusTopRight: =24
+                              RadiusBottomLeft: =30
+                              RadiusBottomRight: =30
+                              RadiusTopLeft: =30
+                              RadiusTopRight: =30
                               BorderColor: =C_Accent
                               BorderStyle: =BorderStyle.Solid
                               BorderThickness: =1
@@ -888,10 +888,10 @@ Screens:
                                   Control: Button@0.0.45
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =24
+                                    BorderRadius: =30
                                     Font: =Font.'Segoe UI'
                                     FontColor: =C_White
-                                    FontSize: =15
+                                    FontSize: =18
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
                                     Width: =Parent.Width
