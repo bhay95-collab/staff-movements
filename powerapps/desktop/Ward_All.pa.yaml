@@ -28,6 +28,7 @@ Screens:
         Set(wdSelID, Blank());
         Set(wdFilter, "All");
         Set(wdShowMove, false);
+        Set(wdShowPTPick, false);
         Set(wdMoveFromID, Blank());
         Set(wdMoveTargetID, Blank());
         Select(btnLoadData_Ward)
@@ -2198,52 +2199,41 @@ Screens:
                               X: =20 * SX
                               Y: =256 * SY
                             Children:
-                              - cmb_PT:
-                                  Control: Classic/ComboBox@2.4.0
+                              - lblPTNames_WB:
+                                  Control: Label@2.5.1
                                   Properties:
-                                    BorderStyle: =BorderStyle.None
-                                    ChevronBackground: =RGBA(26, 90, 153, 1)
-                                    ChevronHoverBackground: =RGBA(18, 64, 112, 1)
-                                    Color: =RGBA(14, 28, 42, 1)
-                                    DefaultSelectedItems: =Filter(colClinicians_Physio, !IsBlank(LookUp(ThisItem.PTKeys, Key = DisplayKey)))
-                                    DisplayFields: =["DisplayNameFlat"]
+                                    Color: =If(IsEmpty(ThisItem.PTKeys), RGBA(140, 155, 174, 1), RGBA(14, 28, 42, 1))
                                     Font: =Font.'Segoe UI'
                                     Height: =38 * SY
-                                    InputTextPlaceholder: ="Add physio"
-                                    Items: =SortByColumns(colClinicians_Physio, "DisplayNameFlat", SortOrder.Ascending)
-                                    OnChange: |-
-                                      =If(
-                                          wdIsSaving || wdLoading,
-                                          Blank(),
-                                          With(
-                                              {
-                                                  newKeys:
-                                                      If(
-                                                          CountRows(Self.SelectedItems) = 0,
-                                                          FirstN(Table({ Key: "" }), 0),
-                                                          ForAll(Self.SelectedItems, { Key: DisplayKey })
-                                                      ),
-                                                  oldKeys:
-                                                      Coalesce(ThisItem.PTKeys, FirstN(Table({ Key: "" }), 0))
-                                              },
-                                              If(
-                                                  Concat(Sort(newKeys, Key), Key & ";") =
-                                                  Concat(Sort(oldKeys, Key), Key & ";"),
-                                                  Blank(),
-                                                  Patch(
-                                                      colWard,
-                                                      ThisItem,
-                                                      {
-                                                          PT_Users: ForAll(Self.SelectedItems, PersonRec),
-                                                          PTKeys: newKeys,
-                                                          IsDirty: true
-                                                      }
-                                                  )
-                                              )
-                                          )
-                                      )
-                                    SearchFields: =["DisplayNameFlat"]
-                                    Width: =360 * SX
+                                    Size: =Round(14 * SF, 0)
+                                    Text: =Coalesce(Concat(Filter(colClinicians_Physio, !IsBlank(LookUp(ThisItem.PTKeys, Key = DisplayKey))), DisplayNameFlat, ", "), "Add physio")
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =316 * SX
+                                    Wrap: =false
+                                    X: =10 * SX
+                                    Y: =0
+                              - icoPTChev_WB:
+                                  Control: ModernIcon@1.1.1
+                                  Properties:
+                                    Height: =20 * SY
+                                    Icon: ="ChevronDown"
+                                    IconColor: =RGBA(26, 90, 153, 1)
+                                    Width: =20 * SX
+                                    X: =332 * SX
+                                    Y: =9 * SY
+                              - btnPTOpen_WB:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderStyle: =BorderStyle.None
+                                    Height: =Parent.Height
+                                    OnSelect: |-
+                                      =Set(wdShowPTPick, true);
+                                      Reset(txtPTSearch_Ward)
+                                    Text: =""
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =0
                         - capAcu_WB:
                             Control: Label@2.5.1
                             Properties:
@@ -4077,3 +4067,221 @@ Screens:
                                 )
                               Text: =If(IsBlank(LookUp(colWard, ID = wdMoveTargetID).Patient), "Move here", "Swap beds")
                               Width: =230 * SX
+      - conPhysioPick_Ward:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(14, 28, 42, 0.45)
+            Height: =768 * SY
+            Visible: =wdShowPTPick
+            Width: =1366 * SX
+            X: =0
+            Y: =0
+          Children:
+            - btnPTScrim_Ward:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  BorderStyle: =BorderStyle.None
+                  Height: =Parent.Height
+                  OnSelect: =Set(wdShowPTPick, false)
+                  Text: =""
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+            - conPTCard_Ward:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =560 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =460 * SX
+                  X: =453 * SX
+                  Y: =104 * SY
+                Children:
+                - lblPTTitle_Ward:
+                    Control: Label@2.5.1
+                    Properties:
+                      Color: =RGBA(14, 28, 42, 1)
+                      Font: =Font.'Segoe UI'
+                      Height: =30 * SY
+                      Size: =Round(20 * SF, 0)
+                      Text: ="Physio"
+                      VerticalAlign: =VerticalAlign.Middle
+                      Width: =412 * SX
+                      X: =24 * SX
+                      Y: =18 * SY
+                      FontWeight: =FontWeight.Bold
+                - lblPTSub_Ward:
+                    Control: Label@2.5.1
+                    Properties:
+                      Color: =RGBA(58, 80, 104, 1)
+                      Font: =Font.'Segoe UI'
+                      Height: =22 * SY
+                      Size: =Round(13 * SF, 0)
+                      Text: =LookUp(colWard, ID = wdSelID).Patient & "  ·  tap a name to add or remove"
+                      VerticalAlign: =VerticalAlign.Middle
+                      Width: =412 * SX
+                      X: =24 * SX
+                      Y: =50 * SY
+                - boxPTSearch_Ward:
+                    Control: GroupContainer@1.5.0
+                    Variant: ManualLayout
+                    Properties:
+                      BorderColor: =RGBA(14, 42, 70, 0.22)
+                      BorderStyle: =BorderStyle.Solid
+                      BorderThickness: =1
+                      DropShadow: =DropShadow.None
+                      Fill: =RGBA(255, 255, 255, 1)
+                      Height: =40 * SY
+                      RadiusBottomLeft: =10 * SR
+                      RadiusBottomRight: =10 * SR
+                      RadiusTopLeft: =10 * SR
+                      RadiusTopRight: =10 * SR
+                      Width: =412 * SX
+                      X: =24 * SX
+                      Y: =88 * SY
+                    Children:
+                        - txtPTSearch_Ward:
+                            Control: Classic/TextInput@2.3.2
+                            Properties:
+                              BorderStyle: =BorderStyle.None
+                              Color: =RGBA(14, 28, 42, 1)
+                              Default: =""
+                              DelayOutput: =true
+                              Font: =Font.'Segoe UI'
+                              Height: =40 * SY
+                              HintText: ="Search physios"
+                              Size: =Round(14 * SF, 0)
+                              Width: =412 * SX
+                - galPTPick_Ward:
+                    Control: Gallery@2.15.0
+                    Variant: Vertical
+                    Properties:
+                      Height: =336 * SY
+                      Items: =SortByColumns(Filter(colClinicians_Physio, Lower(Trim(txtPTSearch_Ward.Text)) in Lower(DisplayNameFlat)), "DisplayNameFlat", SortOrder.Ascending)
+                      TemplatePadding: =0
+                      TemplateSize: =48 * SY
+                      Width: =460 * SX
+                      X: =0
+                      Y: =140 * SY
+                    Children:
+                    - conPTRow_Ward:
+                        Control: GroupContainer@1.5.0
+                        Variant: ManualLayout
+                        Properties:
+                          BorderColor: =RGBA(14, 42, 70, 0.12)
+                          BorderStyle: =BorderStyle.Solid
+                          BorderThickness: =1
+                          DropShadow: =DropShadow.None
+                          Fill: =If(!IsBlank(LookUp(LookUp(colWard, ID = wdSelID).PTKeys, Key = ThisItem.DisplayKey)), RGBA(205, 226, 247, 1), RGBA(244, 249, 252, 1))
+                          Height: =42 * SY
+                          RadiusBottomLeft: =10 * SR
+                          RadiusBottomRight: =10 * SR
+                          RadiusTopLeft: =10 * SR
+                          RadiusTopRight: =10 * SR
+                          Width: =Parent.TemplateWidth - 32 * SX
+                          X: =16 * SX
+                          Y: =3 * SY
+                        Children:
+                        - lblPTName_Ward:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(14, 28, 42, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =42 * SY
+                              Size: =Round(14 * SF, 0)
+                              Text: =ThisItem.DisplayNameFlat
+                              VerticalAlign: =VerticalAlign.Middle
+                              Width: =340 * SX
+                              X: =14 * SX
+                              Y: =0
+                              FontWeight: =FontWeight.Bold
+                              Wrap: =false
+                        - lblPTTick_Ward:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(26, 90, 153, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =42 * SY
+                              Size: =Round(18 * SF, 0)
+                              Text: ="✓"
+                              VerticalAlign: =VerticalAlign.Middle
+                              Width: =28 * SX
+                              X: =Parent.Width - 40 * SX
+                              Y: =0
+                              FontWeight: =FontWeight.Bold
+                              Align: =Align.Center
+                              Visible: =!IsBlank(LookUp(LookUp(colWard, ID = wdSelID).PTKeys, Key = ThisItem.DisplayKey))
+                        - btnPTRow_Ward:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderStyle: =BorderStyle.None
+                              Height: =Parent.Height
+                              OnSelect: |-
+                                =With(
+                                    { p: LookUp(colWard, ID = wdSelID), me: ThisItem.DisplayKey },
+                                    If(
+                                        IsBlank(p) || wdIsSaving || wdLoading,
+                                        Blank(),
+                                        With(
+                                            {
+                                                sel: Filter(
+                                                    colClinicians_Physio,
+                                                    If(
+                                                        DisplayKey = me,
+                                                        IsBlank(LookUp(p.PTKeys, Key = DisplayKey)),
+                                                        !IsBlank(LookUp(p.PTKeys, Key = DisplayKey))
+                                                    )
+                                                )
+                                            },
+                                            Patch(
+                                                colWard,
+                                                p,
+                                                {
+                                                    PT_Users: ForAll(sel, PersonRec),
+                                                    PTKeys: ForAll(sel, { Key: DisplayKey }),
+                                                    IsDirty: true
+                                                }
+                                            )
+                                        )
+                                    )
+                                )
+                              Text: =""
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                - conPTDone_Ward:
+                    Control: GroupContainer@1.5.0
+                    Variant: ManualLayout
+                    Properties:
+                      DropShadow: =DropShadow.None
+                      Fill: =RGBA(26, 90, 153, 1)
+                      Height: =44 * SY
+                      RadiusBottomLeft: =22 * SR
+                      RadiusBottomRight: =22 * SR
+                      RadiusTopLeft: =22 * SR
+                      RadiusTopRight: =22 * SR
+                      Width: =240 * SX
+                      X: =110 * SX
+                      Y: =492 * SY
+                    Children:
+                        - btnPTDone_Ward:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =22 * SR
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(255, 255, 255, 1)
+                              FontSize: =Round(15 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =44 * SY
+                              OnSelect: =Set(wdShowPTPick, false)
+                              Text: ="Done"
+                              Width: =240 * SX
