@@ -373,3 +373,6 @@ Screens: Home_Main, My_Day, Ward_All, Handover_All, Patient_Detail_Screen, Disch
 
 ## Ward_All: new physio picker
 The Classic combo box for **Physio** in the bed panel would not list names (blank list; names only showed after typing a letter). It is replaced by a plain box that shows the assigned physios (or "Add physio"). Tap it to open a pop-up with a search box and the full physio list: tap a name to add or remove them (ticked = assigned), then **Done**. It uses the same data and the same save rules as before (`PT_Users`, `PTKeys`, `IsDirty`, then Save). `tools/patch_ward_physio.py` makes the change; `tools/make_responsive.py` then scales it.
+
+## Fix: containers not filling (My Day and others)
+Studio leaves any property that still has its default value out of the code it gives you (for example a container whose Width is 500, a label whose Height is 40 or text size is 13). The conversion could not scale what was not written, so a few boxes stayed fixed-size while their contents stretched. `tools/make_responsive.py` now writes those defaults back in before scaling. To rebuild everything from your code run `sh tools/build_desktop.sh`.

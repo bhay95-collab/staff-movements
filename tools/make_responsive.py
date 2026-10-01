@@ -40,7 +40,65 @@ def scale_expr(val, f):
     return '=' + out
 
 
+# Studio leaves out any property that still has its default value when it exports a screen.
+# Those omitted values would never be scaled, so they are written back in first.
+DEFAULTS = {
+    'Label': {'Width': 150, 'Height': 40, 'Size': 13},
+    'Button': {'Width': 96, 'Height': 32, 'FontSize': 14},
+    'GroupContainer': {'Width': 500, 'Height': 200},
+    'Classic/DropDown': {'Height': 40, 'Size': 13},
+    'Classic/TextInput': {'Width': 320, 'Height': 40, 'Size': 13},
+    'Classic/DatePicker': {'Height': 40, 'Size': 14},
+    'Classic/ComboBox': {'Height': 40, 'Size': 13},
+    'Text': {'Y': 8},
+}
+
+
+def add_defaults(text):
+    lines = text.split('\n')
+    out = []
+    stack = []            # [indent, control, variant]
+    i = 0
+    added = 0
+    while i < len(lines):
+        l = lines[i]
+        ind = len(l) - len(l.lstrip(' '))
+        m = re.match(r'^(\s*)- \w+:\s*$', l)
+        if m:
+            while stack and stack[-1][0] >= ind:
+                stack.pop()
+            stack.append([ind, None, None])
+        elif stack:
+            mc = re.match(r'^\s*Control: (\S+)\s*$', l)
+            if mc:
+                stack[-1][1] = mc.group(1).split('@')[0]
+            mv = re.match(r'^\s*Variant: (\w+)\s*$', l)
+            if mv:
+                stack[-1][2] = mv.group(1)
+        out.append(l)
+        if stack and re.match(r'^\s*Properties:\s*$', l) and len(stack) >= 1:
+            ctrl, variant = stack[-1][1], stack[-1][2]
+            parent_variant = stack[-2][2] if len(stack) >= 2 else 'Screen'
+            pind = ind + 2
+            # keys already written for this control
+            j = i + 1
+            keys = set()
+            while j < len(lines) and (lines[j].strip() == '' or len(lines[j]) - len(lines[j].lstrip(' ')) >= pind):
+                mk = re.match(r'^ {%d}([A-Za-z][A-Za-z.]*):' % pind, lines[j])
+                if mk:
+                    keys.add(mk.group(1))
+                j += 1
+            if ctrl in DEFAULTS and parent_variant != 'AutoLayout' and not (ctrl == 'GroupContainer' and variant == 'AutoLayout'):
+                for k, v in DEFAULTS[ctrl].items():
+                    if k not in keys:
+                        out.append(' ' * pind + f'{k}: ={v}')
+                        added += 1
+        i += 1
+    return '\n'.join(out), added
+
+
 def convert(text):
+    text, _added = add_defaults(text)
     lines = text.split('\n')
     out = []
     variant = None
