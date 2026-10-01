@@ -8,7 +8,6 @@ Screens:
         // 0) Cache + normalize raw data
         // -------------------------------
         Set(locShowStaffing, false);
-
         ClearCollect(
             colAcuityRaw,
             AddColumns(
@@ -17,7 +16,6 @@ Screens:
                 WeekStartKey, DateValue(WeekStart)
             )
         );
-
         // -------------------------------
         // 1) "This week" + "last week" from existing data
         //    (previous available week, not assumed -7)
@@ -33,7 +31,6 @@ Screens:
             Set(locThisWeekStart, If(CountRows(weeks) >= 1, First(weeks).Value, Blank()));
             Set(locLastWeekStart, If(CountRows(weeks) >= 2, Last(FirstN(weeks, 2)).Value, Blank()))
         );
-
         // -------------------------------
         // 2) Weekly aggregated dataset (1 row per ward + week)
         // -------------------------------
@@ -50,7 +47,6 @@ Screens:
                 If(CountRows(WeekRows) = 0, Blank(), Average(WeekRows, AcuityScore))
             )
         );
-
         // -------------------------------
         // 3) Pivot: 1 row per week, 1 column per ward (for the line chart)
         // -------------------------------
@@ -68,7 +64,6 @@ Screens:
                 Value
             )
         );
-
         // -------------------------------
         // 4) One row per ward for the cards: total acuity + this week vs last week
         // -------------------------------
@@ -103,9 +98,6 @@ Screens:
           Control: Button@0.0.45
           Properties:
             Height: =10
-            Width: =10
-            Text: =""
-            Visible: =false
             OnSelect: |-
               =// 1) Normalize to Impairment + PatientCount (colStaffPie is filled by the ward card / AFRM button)
               ClearCollect(
@@ -129,7 +121,6 @@ Screens:
                           Sum(Rows, Patients)
                   )
               );
-
               // 2) Recommended staffing = sum across impairments
               ClearCollect(
                   colWardStaffingRecommended,
@@ -152,7 +143,6 @@ Screens:
                                           NeuroPsych: factor * Coalesce(r.NeuroPsych, 0),
                                           SW: factor * Coalesce(r.SW, 0),
                                           Diet: factor * Coalesce(r.Diet, 0),
-
                                           SP_IsConsult: !IsBlank(r.Impairment) && IsBlank(r.SP) && d.PatientCount > 0,
                                           NeuroPsych_IsConsult: !IsBlank(r.Impairment) && IsBlank(r.NeuroPsych) && d.PatientCount > 0
                                       }
@@ -162,7 +152,6 @@ Screens:
                       Table(
                           {
                               Ward: locSelectedWard,
-
                               OT: Sum(totals, OT),
                               PT: Sum(totals, PT),
                               AHA: Sum(totals, AHA),
@@ -171,14 +160,12 @@ Screens:
                               NeuroPsych: Sum(totals, NeuroPsych),
                               SW: Sum(totals, SW),
                               Diet: Sum(totals, Diet),
-
                               SP_Consult: CountIf(totals, SP_IsConsult) > 0,
                               NeuroPsych_Consult: CountIf(totals, NeuroPsych_IsConsult) > 0
                           }
                       )
                   )
               );
-
               // 3) Rows for the popup ("Consult" only when the total is zero)
               ClearCollect(
                   colWardStaffingLines,
@@ -196,8 +183,10 @@ Screens:
                       )
                   )
               );
-
               Set(locShowStaffing, true)
+            Text: =""
+            Visible: =false
+            Width: =10
       - Dd_Title:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
@@ -205,13 +194,13 @@ Screens:
             DropShadow: =DropShadow.Regular
             Fill: =RGBA(7, 95, 115, 1)
             Height: =70
-            Width: =1333
-            X: =18
-            Y: =12
             RadiusBottomLeft: =18
             RadiusBottomRight: =18
             RadiusTopLeft: =18
             RadiusTopRight: =18
+            Width: =1333
+            X: =18
+            Y: =12
           Children:
             - imgHeaderGradient_Dd:
                 Control: Image@2.2.3
@@ -225,14 +214,13 @@ Screens:
                 Properties:
                   Font: =Font.'Segoe UI'
                   FontColor: =RGBA(255, 255, 255, 1)
-                  Height: =36
+                  Height: =44
                   Size: =28
                   Text: ="Data Dashboard"
                   VerticalAlign: =VerticalAlign.Middle
                   Weight: ='TextCanvas.Weight'.Bold
                   Width: =500
                   X: =76
-                  Y: =8
             - lblSub_DdHdr:
                 Control: Text@0.0.51
                 Properties:
@@ -253,25 +241,24 @@ Screens:
                   FontSize: =50
                   Height: =70
                   Icon: ="ChevronLeft"
+                  OnSelect: =Back(ScreenTransition.Fade)
                   Text: =""
                   X: =1
-                  OnSelect: =Back(ScreenTransition.Fade)
             - conAfrm_Dd:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
                   BorderColor: =RGBA(14, 42, 70, 0.12)
-                  BorderStyle: =BorderStyle.Solid
                   BorderThickness: =1
                   Fill: =RGBA(255, 255, 255, 1)
                   Height: =40
-                  Width: =290
-                  X: =1027
-                  Y: =15
                   RadiusBottomLeft: =20
                   RadiusBottomRight: =20
                   RadiusTopLeft: =20
                   RadiusTopRight: =20
+                  Width: =290
+                  X: =1027
+                  Y: =15
                 Children:
                   - btnAfrm_Dd:
                       Control: Button@0.0.45
@@ -310,18 +297,16 @@ Screens:
                 Variant: ManualLayout
                 Properties:
                   BorderColor: =RGBA(14, 42, 70, 0.12)
-                  BorderStyle: =BorderStyle.Solid
                   BorderThickness: =1
-                  DropShadow: =DropShadow.Light
                   Fill: =RGBA(255, 255, 255, 1)
                   Height: =Parent.TemplateHeight - 8
-                  Width: =Parent.TemplateWidth - 12
-                  X: =6
-                  Y: =4
                   RadiusBottomLeft: =18
                   RadiusBottomRight: =18
                   RadiusTopLeft: =18
                   RadiusTopRight: =18
+                  Width: =Parent.TemplateWidth - 12
+                  X: =6
+                  Y: =4
                 Children:
                   - conWardBar_Dd:
                       Control: GroupContainer@1.5.0
@@ -329,21 +314,19 @@ Screens:
                       Properties:
                         Fill: =Switch(ThisItem.WardCode, "4A", RGBA(166, 199, 130, 1), "4B", RGBA(35, 100, 153, 1), "5A", RGBA(0, 144, 153, 1), "6A", RGBA(0, 200, 210, 1), RGBA(200, 200, 200, 1))
                         Height: =8
-                        Width: =Parent.Width
-                        X: =0
-                        Y: =0
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =18
                         RadiusTopRight: =18
+                        Width: =Parent.Width
                   - lblWardName_Dd:
                       Control: Label@2.5.1
                       Properties:
-                        Font: =Font.'Segoe UI'
                         Color: =RGBA(14, 28, 42, 1)
-                        Size: =20
+                        Font: =Font.'Segoe UI'
                         FontWeight: =FontWeight.Bold
                         Height: =30
+                        Size: =20
                         Text: =ThisItem.Title
                         Width: =160
                         X: =20
@@ -351,12 +334,12 @@ Screens:
                   - lblWardGo_Dd:
                       Control: Label@2.5.1
                       Properties:
-                        Font: =Font.'Segoe UI'
-                        Color: =RGBA(26, 90, 153, 1)
-                        Size: =12
-                        FontWeight: =FontWeight.Bold
                         Align: =Align.Right
+                        Color: =RGBA(26, 90, 153, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
                         Height: =20
+                        Size: =12
                         Text: ="Staffing ›"
                         Width: =110
                         X: =Parent.Width - 130
@@ -364,11 +347,11 @@ Screens:
                   - lblAcuCap_Dd:
                       Control: Label@2.5.1
                       Properties:
-                        Font: =Font.'Segoe UI'
                         Color: =RGBA(140, 155, 174, 1)
-                        Size: =11
+                        Font: =Font.'Segoe UI'
                         FontWeight: =FontWeight.Bold
                         Height: =16
+                        Size: =11
                         Text: ="SUM OF ACUITY"
                         Width: =200
                         X: =20
@@ -376,11 +359,11 @@ Screens:
                   - lblAcu_Dd:
                       Control: Label@2.5.1
                       Properties:
-                        Font: =Font.'Segoe UI'
                         Color: =RGBA(14, 28, 42, 1)
-                        Size: =44
+                        Font: =Font.'Segoe UI'
                         FontWeight: =FontWeight.Bold
                         Height: =54
+                        Size: =44
                         Text: =Text(Coalesce(LookUp(colDdWardStats, WardCode = ThisItem.WardCode).Acuity, 0), "0")
                         Width: =Parent.Width - 40
                         X: =20
@@ -391,34 +374,33 @@ Screens:
                       Properties:
                         Fill: =Switch(LookUp(colDdWardStats, WardCode = ThisItem.WardCode).Trend, "up", RGBA(254, 242, 242, 1), "down", RGBA(232, 246, 240, 1), RGBA(235, 242, 248, 1))
                         Height: =28
-                        Width: =Parent.Width - 40
-                        X: =20
-                        Y: =134
                         RadiusBottomLeft: =14
                         RadiusBottomRight: =14
                         RadiusTopLeft: =14
                         RadiusTopRight: =14
+                        Width: =Parent.Width - 40
+                        X: =20
+                        Y: =134
                       Children:
                         - lblTrend_Dd:
                             Control: Label@2.5.1
                             Properties:
                               Align: =Align.Center
-                              Font: =Font.'Segoe UI'
                               Color: =Switch(LookUp(colDdWardStats, WardCode = ThisItem.WardCode).Trend, "up", RGBA(180, 26, 26, 1), "down", RGBA(12, 122, 82, 1), RGBA(58, 80, 104, 1))
-                              Size: =12
+                              Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =Parent.Height
+                              Size: =12
                               Text: =Switch(LookUp(colDdWardStats, WardCode = ThisItem.WardCode).Trend, "up", "▲ Higher than last week", "down", "▼ Lower than last week", "same", "– Same as last week", "first", "No earlier week to compare", "No data this week")
-                              VerticalAlign: =VerticalAlign.Middle
                               Width: =Parent.Width
                   - lblAvg_Dd:
                       Control: Label@2.5.1
                       Properties:
-                        Font: =Font.'Segoe UI'
-                        Color: =RGBA(140, 155, 174, 1)
-                        Size: =11
                         Align: =Align.Center
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
                         Height: =18
+                        Size: =11
                         Text: |-
                           =With({s: LookUp(colDdWardStats, WardCode = ThisItem.WardCode)}, If(IsBlank(s.ThisAvg), "", "Average " & Text(s.ThisAvg, "0.0") & " this week" & If(IsBlank(s.LastAvg), "", "  ·  " & Text(s.LastAvg, "0.0") & " last week")))
                         Width: =Parent.Width - 40
@@ -445,7 +427,6 @@ Screens:
                         Items.Labels: =City
                         Items.Series: =Area
                         Width: =Parent.Width
-                        X: =0
                         Y: =190
                   - btnWardCard_Dd:
                       Control: Button@0.0.45
@@ -453,10 +434,6 @@ Screens:
                         Appearance: ='ButtonCanvas.Appearance'.Transparent
                         BorderStyle: =BorderStyle.None
                         Height: =Parent.Height
-                        Width: =Parent.Width
-                        X: =0
-                        Y: =0
-                        Text: =""
                         OnSelect: |-
                           =Set(locSelectedWard, ThisItem.WardCode);
                           ClearCollect(
@@ -471,32 +448,32 @@ Screens:
                               )
                           );
                           Select(btnCalc_Dd)
+                        Text: =""
+                        Width: =Parent.Width
       - Dd_CardTrend:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
             BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
             BorderThickness: =1
-            DropShadow: =DropShadow.Light
             Fill: =RGBA(255, 255, 255, 1)
             Height: =194
-            Width: =1333
-            X: =18
-            Y: =559
             RadiusBottomLeft: =18
             RadiusBottomRight: =18
             RadiusTopLeft: =18
             RadiusTopRight: =18
+            Width: =1333
+            X: =18
+            Y: =559
           Children:
             - lblTrendT_Dd:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =16
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
                   Height: =26
+                  Size: =16
                   Text: ="Average acuity by week"
                   Width: =400
                   X: =20
@@ -504,11 +481,11 @@ Screens:
             - lblTrendS_Dd:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
-                  Color: =RGBA(140, 155, 174, 1)
-                  Size: =12
                   Align: =Align.Right
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
                   Height: =20
+                  Size: =12
                   Text: ="One line per ward"
                   Width: =300
                   X: =Parent.Width - 320
@@ -521,10 +498,15 @@ Screens:
                   ItemColorSet: =[RGBA(166, 199, 130, 1), RGBA(35, 100, 153, 1), RGBA(0, 144, 153, 1), RGBA(0, 200, 210, 1)]
                   Items: =colAcuityWeeklyWide
                   Items.Labels: =WeekLabel
-                  Items.Series1: ='Ward 4A'
-                  Items.Series2: ='Ward 4B'
-                  Items.Series3: ='Ward 5A'
-                  Items.Series4: ='Ward 6A'
+                  Items.Series1: =Ward 4A
+                  Items.Series2: =Ward 4B
+                  Items.Series3: =Ward 5A
+                  Items.Series4: =Ward 6A
+                  Items.Series5: =Ward 6A
+                  Items.Series6: =Ward 6A
+                  Items.Series7: =Ward 6A
+                  Items.Series8: =Ward 6A
+                  Items.Series9: =Ward 6A
                   NumberOfSeries: =4
                   Width: =Parent.Width - 28
                   X: =14
@@ -549,8 +531,6 @@ Screens:
             Height: =768
             Visible: =locShowStaffing
             Width: =1366
-            X: =0
-            Y: =0
           Children:
             - btnPScrim_Dd:
                 Control: Button@0.0.45
@@ -558,9 +538,9 @@ Screens:
                   Appearance: ='ButtonCanvas.Appearance'.Transparent
                   BorderStyle: =BorderStyle.None
                   Height: =768
+                  OnSelect: =Set(locShowStaffing, false)
                   Text: =""
                   Width: =1366
-                  OnSelect: =Set(locShowStaffing, false)
             - Dd_PopupCard:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
@@ -568,45 +548,45 @@ Screens:
                   DropShadow: =DropShadow.Bold
                   Fill: =RGBA(255, 255, 255, 1)
                   Height: =640
-                  Width: =760
-                  X: =303
-                  Y: =64
                   RadiusBottomLeft: =20
                   RadiusBottomRight: =20
                   RadiusTopLeft: =20
                   RadiusTopRight: =20
+                  Width: =760
+                  X: =303
+                  Y: =64
                 Children:
                   - lblPTitle_Dd:
                       Control: Label@2.5.1
                       Properties:
-                        Font: =Font.'Segoe UI'
                         Color: =RGBA(14, 28, 42, 1)
-                        Size: =20
+                        Font: =Font.'Segoe UI'
                         FontWeight: =FontWeight.Bold
                         Height: =30
+                        Size: =20
+                        Text: =If(locSelectedWard = "AFRM", "Predicted staffing  ·  AFRM (4A + 4B + 5A)", "Predicted staffing  ·  Ward " & locSelectedWard)
                         Width: =712
                         X: =24
                         Y: =16
-                        Text: =If(locSelectedWard = "AFRM", "Predicted staffing  ·  AFRM (4A + 4B + 5A)", "Predicted staffing  ·  Ward " & locSelectedWard)
                   - lblPSub_Dd:
                       Control: Label@2.5.1
                       Properties:
-                        Font: =Font.'Segoe UI'
                         Color: =RGBA(140, 155, 174, 1)
-                        Size: =12
+                        Font: =Font.'Segoe UI'
                         Height: =20
+                        Size: =12
+                        Text: ="Worked out from each diagnosis group's staffing ratio (per 10 patients) and the patients on the ward now."
                         Width: =712
                         X: =24
                         Y: =46
-                        Text: ="Worked out from each diagnosis group's staffing ratio (per 10 patients) and the patients on the ward now."
                   - lblPLeft_Dd:
                       Control: Label@2.5.1
                       Properties:
-                        Font: =Font.'Segoe UI'
                         Color: =RGBA(140, 155, 174, 1)
-                        Size: =11
+                        Font: =Font.'Segoe UI'
                         FontWeight: =FontWeight.Bold
                         Height: =16
+                        Size: =11
                         Text: ="RECOMMENDED FTE"
                         Width: =300
                         X: =24
@@ -628,56 +608,53 @@ Screens:
                             Variant: ManualLayout
                             Properties:
                               BorderColor: =RGBA(14, 42, 70, 0.12)
-                              BorderStyle: =BorderStyle.Solid
                               BorderThickness: =1
                               DropShadow: =DropShadow.None
                               Fill: =RGBA(244, 249, 252, 1)
                               Height: =48
-                              Width: =Parent.TemplateWidth - 8
-                              X: =4
-                              Y: =4
                               RadiusBottomLeft: =12
                               RadiusBottomRight: =12
                               RadiusTopLeft: =12
                               RadiusTopRight: =12
+                              Width: =Parent.TemplateWidth - 8
+                              X: =4
+                              Y: =4
                             Children:
                               - lblStaffName_Dd:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Font: =Font.'Segoe UI'
                                     Color: =RGBA(14, 28, 42, 1)
-                                    Size: =14
+                                    Font: =Font.'Segoe UI'
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
+                                    Size: =14
                                     Text: =ThisItem.Discipline
-                                    VerticalAlign: =VerticalAlign.Middle
                                     Width: =Parent.Width - 150
                                     X: =16
                               - lblStaffFte_Dd:
                                   Control: Label@2.5.1
                                   Properties:
                                     Align: =Align.Right
-                                    Font: =Font.'Segoe UI'
                                     Color: =If(ThisItem.Note = "Consult", RGBA(200, 120, 0, 1), RGBA(14, 28, 42, 1))
-                                    Size: =16
+                                    Font: =Font.'Segoe UI'
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
+                                    Size: =16
                                     Text: =If(ThisItem.Note = "Consult", "Consult", Text(ThisItem.Recommended, "0.00"))
-                                    VerticalAlign: =VerticalAlign.Middle
                                     Width: =110
                                     X: =Parent.Width - 126
                   - lblPRight_Dd:
                       Control: Label@2.5.1
                       Properties:
-                        Font: =Font.'Segoe UI'
                         Color: =RGBA(140, 155, 174, 1)
-                        Size: =11
+                        Font: =Font.'Segoe UI'
                         FontWeight: =FontWeight.Bold
                         Height: =16
+                        Size: =11
+                        Text: ="PATIENTS BY DIAGNOSIS  ·  " & Sum(colWardImpairmentCounts, PatientCount)
                         Width: =300
                         X: =492
                         Y: =86
-                        Text: ="PATIENTS BY DIAGNOSIS  ·  " & Sum(colWardImpairmentCounts, PatientCount)
                   - Gallery_Imp_Dd:
                       Control: Gallery@2.15.0
                       Variant: Vertical
@@ -695,18 +672,17 @@ Screens:
                             Variant: ManualLayout
                             Properties:
                               BorderColor: =RGBA(14, 42, 70, 0.12)
-                              BorderStyle: =BorderStyle.Solid
                               BorderThickness: =1
                               DropShadow: =DropShadow.None
                               Fill: =RGBA(244, 249, 252, 1)
                               Height: =48
-                              Width: =Parent.TemplateWidth - 8
-                              X: =4
-                              Y: =4
                               RadiusBottomLeft: =12
                               RadiusBottomRight: =12
                               RadiusTopLeft: =12
                               RadiusTopRight: =12
+                              Width: =Parent.TemplateWidth - 8
+                              X: =4
+                              Y: =4
                             Children:
                               - conImpDot_Dd:
                                   Control: GroupContainer@1.5.0
@@ -729,36 +705,33 @@ Screens:
                                           )
                                       )
                                     Height: =14
-                                    Width: =14
-                                    X: =14
-                                    Y: =17
                                     RadiusBottomLeft: =7
                                     RadiusBottomRight: =7
                                     RadiusTopLeft: =7
                                     RadiusTopRight: =7
+                                    Width: =14
+                                    X: =14
+                                    Y: =17
                               - lblImpName_Dd:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Font: =Font.'Segoe UI'
                                     Color: =RGBA(14, 28, 42, 1)
-                                    Size: =13
+                                    Font: =Font.'Segoe UI'
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
                                     Text: =ThisItem.Impairment
-                                    VerticalAlign: =VerticalAlign.Middle
                                     Width: =Parent.Width - 90
                                     X: =38
                               - lblImpN_Dd:
                                   Control: Label@2.5.1
                                   Properties:
                                     Align: =Align.Right
-                                    Font: =Font.'Segoe UI'
                                     Color: =RGBA(14, 28, 42, 1)
-                                    Size: =16
+                                    Font: =Font.'Segoe UI'
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
+                                    Size: =16
                                     Text: =ThisItem.PatientCount
-                                    VerticalAlign: =VerticalAlign.Middle
                                     Width: =44
                                     X: =Parent.Width - 56
                   - conPClose_Dd:
@@ -766,17 +739,16 @@ Screens:
                       Variant: ManualLayout
                       Properties:
                         BorderColor: =RGBA(26, 90, 153, 1)
-                        BorderStyle: =BorderStyle.Solid
                         BorderThickness: =1
                         Fill: =RGBA(26, 90, 153, 1)
                         Height: =44
-                        Width: =240
-                        X: =260
-                        Y: =574
                         RadiusBottomLeft: =22
                         RadiusBottomRight: =22
                         RadiusTopLeft: =22
                         RadiusTopRight: =22
+                        Width: =240
+                        X: =260
+                        Y: =574
                       Children:
                         - btnPClose_Dd:
                             Control: Button@0.0.45

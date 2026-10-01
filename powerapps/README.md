@@ -350,3 +350,23 @@ A board of every patient by EDD: **Overdue**, the next five working days (a week
 - **My patients** (any ward where you are the physio, OT or SP), soonest EDD first, with equipment out and flags. Tap to open.
 - **Equipment I have out** (signed out in your name), longest first (amber after 4 weeks, red after 6).
 - **Who is away** today and tomorrow, from the STARSPhysioLeave calendar.
+
+---
+
+# Desktop app: fits any window (desktop/ folder)
+
+The desktop screens now live in `desktop/` (the old copies in this folder were removed; they were out of date after your edits).
+- `desktop/as_pasted/` is **your** code exactly as you sent it (the source of truth, with your fixes and screen names).
+- `desktop/*.pa.yaml` is the same code made to fill any window. Paste these.
+- `desktop/Desktop_App_Formulas.txt` goes in App > Formulas.
+- `tools/make_responsive.py` is the script that does the conversion. If you change a screen in Studio and want it responsive, send me the new code and I will run it again.
+
+How it works: every screen was drawn for a 1366 x 768 window. Each X / Y / Width / Height is now written as `number * SX` (across) or `number * SY` (down), text sizes as `Round(size * SF, 0)`, corner radii as `radius * SR`. `SX`, `SY`, `SF` and `SR` come from the window size (App.Width / App.Height), so at 1366 x 768 nothing moves, on a wider or taller window everything stretches to fill it, and text never gets smaller than 75% or larger than 140%.
+
+## Set up
+1. **Unlock the aspect ratio.** In the desktop app: **Settings** (top bar) → **Display**: **Scale to fit = Off**, **Lock aspect ratio = Off**, **Lock orientation = Off** (or Landscape). Press Save.
+2. **App > Formulas.** In the Tree view click **App**. In the property drop-down (top left, next to the formula bar) choose **Formulas**. Paste the whole of `Desktop_App_Formulas.txt`.
+3. **Paste the screens** (any order; paste Home last). Each pasted screen keeps its name, so delete the old screen first or rename the copy.
+4. **Publish** and open it in a browser window; resize it to check.
+
+Screens: Home_Main, My_Day, Ward_All, Handover_All, Patient_Detail_Screen, Discharge_Planner, Equipment_Main, All_Allocated_Equipment, All_Available_Equipment, scrAuditOversight, Audit_Coverage, Usage_Log, Service_Dash, Physiotherapy_Screen, Physio_Data_New, Data_Health, Directory_Admin_New, PT_Leave_New.

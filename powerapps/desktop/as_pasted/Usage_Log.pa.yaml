@@ -1,0 +1,2616 @@
+Screens:
+  Usage_Log:
+    Properties:
+      Fill: =RGBA(235, 242, 248, 1)
+      ImagePosition: =ImagePosition.Fill
+      OnVisible: |-
+        =// Usage log oversight. Loads the log for the period, then Select(btnBuild_Ul) builds every summary.
+        Set(ulPreset, "90");
+        Set(ulFrom, DateAdd(Today(), -89));
+        Set(ulTo, Today());
+        Set(ulCat, "All");
+        Set(ulWard, "All");
+        Set(ulQ, "");
+        Set(ulTab, "Used");
+        Set(ulSort, "Loans");
+        Set(ulLogFilter, "All");
+        Set(ulShowDetail, false);
+        Set(ulKpi, {Out: 0, Back: 0, Now: 0, AvgDays: 0, Service: 0, OOS: 0});
+        ClearCollect(colUlCats, Table({ Value: "All categories" }, { Value: "Wheelchair" }, { Value: "Cushion" }, { Value: "Backrest" }));
+        ClearCollect(colUlWardOpts, Table({ Value: "All wards" }));
+        Collect(colUlWardOpts, SortByColumns(Choices(Equipment_Inventory_SharePoint.Ward), "Value", SortOrder.Ascending));
+        Select(btnLoad_Ul)
+    Children:
+      - btnLoad_Ul:
+          Control: Button@0.0.45
+          Properties:
+            Height: =10
+            OnSelect: |-
+              =Set(ulLoading, true);
+              // The log is read in 14-day slices so each request stays under the 500 / 2000 row limit
+              Clear(colUlLog);
+              ForAll(
+                  Sequence(RoundUp((DateDiff(ulFrom, ulTo, TimeUnit.Days) + 1) / 14, 0)) As c,
+                  Collect(
+                      colUlLog,
+                      Filter(
+                          Equipment_Usage_Log,
+                          EventDateTime >= DateAdd(ulFrom, (c.Value - 1) * 14, TimeUnit.Days) &&
+                          EventDateTime < DateAdd(ulFrom, c.Value * 14, TimeUnit.Days) &&
+                          EventDateTime < DateAdd(ulTo, 1, TimeUnit.Days)
+                      )
+                  )
+              );
+              // Loans that are still open, whatever the period
+              ClearCollect(
+                  colUlOpen,
+                  Filter(Equipment_Usage_Log, EventType.Value = "Sign Out" && EpisodeStatus.Value = "Open")
+              );
+              // Stock today (for service, out of service and the size table)
+              ClearCollect(
+                  colUlInv,
+                  AddColumns(
+                      Equipment_Inventory_SharePoint,
+                      iCat, Coalesce(Category.Value, ""),
+                      iType, If(Category.Value = "Wheelchair", Coalesce('Wheelchair Type'.Value, ""), ""),
+                      iWidth, Coalesce(Width.Value, ""),
+                      iStatus, Coalesce(Status.Value, ""),
+                      iDays, Coalesce(TotalDaysSignedOut, 0)
+                  )
+              );
+              Set(ulLoading, false);
+              Select(btnBuild_Ul)
+            Text: =""
+            Visible: =false
+            Width: =10
+      - btnBuild_Ul:
+          Control: Button@0.0.45
+          Properties:
+            Height: =10
+            OnSelect: |-
+              =// 1) the log rows that match the filters
+              ClearCollect(colUlF, Filter(colUlLog, (ulCat = "All" || Category = ulCat) && (ulWard = "All" || Ward = ulWard) && (ulQ = "" || ulQ in Lower(EquipmentTitle) || ulQ in Lower(Brand) || ulQ in Lower(Model) || ulQ in Lower(Coalesce(Physiotherapist, "")))));
+              // 2) headline numbers
+              Set(
+                  ulKpi,
+                  {
+                      Out: CountRows(Filter(colUlF, EventType.Value = "Sign Out")),
+                      Back: CountRows(Filter(colUlF, EventType.Value = "Sign In")),
+                      Now: CountRows(Filter(colUlOpen, (ulCat = "All" || Category = ulCat) && (ulWard = "All" || Ward = ulWard) && (ulQ = "" || ulQ in Lower(EquipmentTitle) || ulQ in Lower(Brand) || ulQ in Lower(Model) || ulQ in Lower(Coalesce(Physiotherapist, ""))))),
+                      AvgDays: With(
+                          { r: Filter(colUlF, EventType.Value = "Sign In" && !IsBlank(DaysSignedOutThisEpisode)) },
+                          If(CountRows(r) = 0, 0, Round(Average(r, DaysSignedOutThisEpisode), 1))
+                      ),
+                      Service: CountRows(Filter(colUlInv, iDays > 100 && (ulCat = "All" || iCat = ulCat))),
+                      OOS: CountRows(Filter(colUlInv, OutOfService = true && (ulCat = "All" || iCat = ulCat)))
+                  }
+              );
+              // 3) most used items (one row per item)
+              ClearCollect(
+                  colUlItems,
+                  SortByColumns(
+                      AddColumns(
+                          GroupBy(Filter(colUlF, EventType.Value = "Sign Out"), EquipmentItemID, Rows),
+                          Loans, CountRows(Rows),
+                          Days, (Sum(Rows, If(IsBlank(DaysSignedOutThisEpisode), If(EpisodeStatus.Value = "Open", DateDiff(DateSignedOut, Today(), TimeUnit.Days), 0), DaysSignedOutThisEpisode))),
+                          Code, First(Rows).EquipmentTitle,
+                          Desc, Trim(First(Rows).Brand & " " & First(Rows).Model),
+                          Cat, First(Rows).Category,
+                          Size, First(Rows).Width,
+                          NowStatus, Coalesce(LookUp(colUlInv, ID = EquipmentItemID).iStatus, "—"),
+                          YearDays, Coalesce(LookUp(colUlInv, ID = EquipmentItemID).iDays, 0)
+                      ),
+                      If(ulSort = "Days", "Days", "Loans"),
+                      SortOrder.Descending
+                  )
+              );
+              // 4) demand by size: stock, out now, free, and loans in the period
+              ClearCollect(
+                  colUlSize,
+                  SortByColumns(
+                      AddColumns(
+                          GroupBy(
+                              AddColumns(
+                                  Filter(colUlInv, iWidth <> "" && iCat in ["Wheelchair", "Cushion", "Backrest"] && (ulCat = "All" || iCat = ulCat)),
+                                  gKey, iCat & "|" & iType & "|" & iWidth
+                              ),
+                              gKey,
+                              Rows
+                          ),
+                          Cat, First(Rows).iCat,
+                          GType, First(Rows).iType,
+                          GWidth, First(Rows).iWidth,
+                          Stock, CountRows(Rows),
+                          Free, CountRows(Filter(Rows, iStatus = "Available")),
+                          OutNow, CountRows(Filter(Rows, iStatus = "Allocated")),
+                          Label, If(First(Rows).iCat = "Wheelchair", First(Rows).iType & "  ·  " & First(Rows).iWidth, First(Rows).iCat & "  ·  " & First(Rows).iWidth),
+                          Loans, CountRows(
+                              Filter(
+                                  colUlF,
+                                  EventType.Value = "Sign Out" && Category = First(Rows).iCat && Width = First(Rows).iWidth &&
+                                  (First(Rows).iCat <> "Wheelchair" || WheelchairType = First(Rows).iType)
+                              )
+                          )
+                      ),
+                      "Free", SortOrder.Ascending,
+                      "Loans", SortOrder.Descending
+                  )
+              );
+              // 5) wards and physios
+              ClearCollect(
+                  colUlWard,
+                  SortByColumns(
+                      AddColumns(
+                          GroupBy(AddColumns(Filter(colUlF, EventType.Value = "Sign Out" && !IsBlank(Ward)), WardKey, Ward), WardKey, Rows),
+                          Loans, CountRows(Rows),
+                          AvgDays, With(
+                              { r: Filter(Rows, !IsBlank(DaysSignedOutThisEpisode)) },
+                              If(CountRows(r) = 0, 0, Round(Average(r, DaysSignedOutThisEpisode), 1))
+                          ),
+                          OutNow, CountRows(Filter(colUlOpen, Ward = WardKey))
+                      ),
+                      "Loans", SortOrder.Descending
+                  )
+              );
+              ClearCollect(
+                  colUlPhysio,
+                  FirstN(
+                      SortByColumns(
+                          AddColumns(
+                              GroupBy(Filter(colUlF, EventType.Value = "Sign Out" && !IsBlank(Physiotherapist)), Physiotherapist, Rows),
+                              Loans, CountRows(Rows),
+                              Days, (Sum(Rows, If(IsBlank(DaysSignedOutThisEpisode), If(EpisodeStatus.Value = "Open", DateDiff(DateSignedOut, Today(), TimeUnit.Days), 0), DaysSignedOutThisEpisode)))
+                          ),
+                          "Loans", SortOrder.Descending
+                      ),
+                      12
+                  )
+              )
+            Text: =""
+            Visible: =false
+            Width: =10
+      - Ul_Title:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Regular
+            Fill: =RGBA(7, 95, 115, 1)
+            Height: =70
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+            Width: =1333
+            X: =18
+            Y: =12
+          Children:
+            - imgHeaderGradient_Ul:
+                Control: Image@2.2.3
+                Properties:
+                  Height: =Parent.Height
+                  Image: ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' width='1333' height='70' viewBox='0 0 1333 70' preserveAspectRatio='none'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001D46'/><stop offset='0.48' stop-color='#075F73'/><stop offset='1' stop-color='#00838A'/></linearGradient><linearGradient id='b' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001B36' stop-opacity='0.46'/><stop offset='0.45' stop-color='#002036' stop-opacity='0.18'/><stop offset='1' stop-color='#002036' stop-opacity='0.06'/></linearGradient></defs><rect width='1333' height='70' rx='18' fill='url(#a)'/><rect width='1333' height='70' rx='18' fill='url(#b)'/></svg>")
+                  ImagePosition: =ImagePosition.Fill
+                  Width: =Parent.Width
+            - lblTitle_UlHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  Height: =44
+                  Size: =28
+                  Text: ="Equipment Usage"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Weight: ='TextCanvas.Weight'.Bold
+                  Width: =500
+                  X: =76
+            - lblSub_UlHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 0.88)
+                  Height: =20
+                  Size: =12
+                  Text: =If(ulLoading, "Loading the usage log...", Text(ulFrom, "d mmm") & " – " & Text(ulTo, "d mmm yyyy") & "  ·  " & CountRows(colUlLog) & " log entries loaded")
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =700
+                  X: =76
+                  Y: =42
+            - btnBack_Ul:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontSize: =50
+                  Height: =70
+                  Icon: ="ChevronLeft"
+                  OnSelect: =Back(ScreenTransition.Fade)
+                  Text: =""
+                  X: =1
+            - conReload_Ul:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                  Width: =140
+                  X: =1177
+                  Y: =15
+                Children:
+                  - btnReload_Ul:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =13
+                        FontWeight: =FontWeight.Bold
+                        Height: =40
+                        Icon: ="ArrowClockwise"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        OnSelect: =Select(btnLoad_Ul)
+                        Text: ="Reload"
+                        Width: =140
+      - Ul_CardFilters:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =84
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+            Width: =1333
+            X: =18
+            Y: =95
+          Children:
+            - capPer_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =11
+                  Text: ="PERIOD"
+                  Width: =200
+                  X: =20
+                  Y: =10
+            - conPre30:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(ulPreset = "30", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(ulPreset = "30", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =40
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                  Width: =92
+                  X: =20
+                  Y: =30
+                Children:
+                  - btnPre30:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(ulPreset = "30", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =12
+                        FontWeight: =FontWeight.Bold
+                        Height: =40
+                        OnSelect: |-
+                          =Set(ulPreset, "30");
+                          Set(ulFrom, DateAdd(Today(), -29));
+                          Set(ulTo, Today());
+                          Reset(dpFrom_Ul);
+                          Reset(dpTo_Ul);
+                          Select(btnLoad_Ul)
+                        Text: ="Last 30 days"
+                        Width: =92
+            - conPre90:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(ulPreset = "90", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(ulPreset = "90", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =40
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                  Width: =92
+                  X: =120
+                  Y: =30
+                Children:
+                  - btnPre90:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(ulPreset = "90", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =12
+                        FontWeight: =FontWeight.Bold
+                        Height: =40
+                        OnSelect: |-
+                          =Set(ulPreset, "90");
+                          Set(ulFrom, DateAdd(Today(), -89));
+                          Set(ulTo, Today());
+                          Reset(dpFrom_Ul);
+                          Reset(dpTo_Ul);
+                          Select(btnLoad_Ul)
+                        Text: ="Last 90 days"
+                        Width: =92
+            - conPre365:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(ulPreset = "365", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(ulPreset = "365", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =40
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                  Width: =92
+                  X: =220
+                  Y: =30
+                Children:
+                  - btnPre365:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(ulPreset = "365", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =12
+                        FontWeight: =FontWeight.Bold
+                        Height: =40
+                        OnSelect: |-
+                          =Set(ulPreset, "365");
+                          Set(ulFrom, DateAdd(Today(), -364));
+                          Set(ulTo, Today());
+                          Reset(dpFrom_Ul);
+                          Reset(dpTo_Ul);
+                          Select(btnLoad_Ul)
+                        Text: ="Last 12 months"
+                        Width: =92
+            - capFrom_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =11
+                  Text: ="FROM"
+                  Width: =100
+                  X: =332
+                  Y: =10
+            - boxFrom_Ul:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40
+                  RadiusBottomLeft: =10
+                  RadiusBottomRight: =10
+                  RadiusTopLeft: =10
+                  RadiusTopRight: =10
+                  Width: =130
+                  X: =332
+                  Y: =30
+                Children:
+                  - dpFrom_Ul:
+                      Control: Classic/DatePicker@2.6.0
+                      Properties:
+                        BorderStyle: =BorderStyle.None
+                        Color: =RGBA(14, 28, 42, 1)
+                        DefaultDate: =ulFrom
+                        Font: =Font.'Segoe UI'
+                        OnChange: |-
+                          =If(
+                              Coalesce(Text(Self.SelectedDate, "yyyymmdd"), "") <> Coalesce(Text(ulFrom, "yyyymmdd"), ""),
+                              Set(ulFrom, Self.SelectedDate);
+                              Set(ulPreset, "custom");
+                              Select(btnLoad_Ul)
+                          )
+                        Width: =130
+            - capTo_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =11
+                  Text: ="TO"
+                  Width: =100
+                  X: =472
+                  Y: =10
+            - boxTo_Ul:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40
+                  RadiusBottomLeft: =10
+                  RadiusBottomRight: =10
+                  RadiusTopLeft: =10
+                  RadiusTopRight: =10
+                  Width: =130
+                  X: =472
+                  Y: =30
+                Children:
+                  - dpTo_Ul:
+                      Control: Classic/DatePicker@2.6.0
+                      Properties:
+                        BorderStyle: =BorderStyle.None
+                        Color: =RGBA(14, 28, 42, 1)
+                        DefaultDate: =ulTo
+                        Font: =Font.'Segoe UI'
+                        OnChange: |-
+                          =If(
+                              Coalesce(Text(Self.SelectedDate, "yyyymmdd"), "") <> Coalesce(Text(ulTo, "yyyymmdd"), ""),
+                              Set(ulTo, Self.SelectedDate);
+                              Set(ulPreset, "custom");
+                              Select(btnLoad_Ul)
+                          )
+                        Width: =130
+            - capCat_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =11
+                  Text: ="CATEGORY"
+                  Width: =130
+                  X: =612
+                  Y: =10
+            - boxCat_Ul:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40
+                  RadiusBottomLeft: =10
+                  RadiusBottomRight: =10
+                  RadiusTopLeft: =10
+                  RadiusTopRight: =10
+                  Width: =140
+                  X: =612
+                  Y: =30
+                Children:
+                  - ddCat_Ul:
+                      Control: Classic/DropDown@2.3.1
+                      Properties:
+                        BorderStyle: =BorderStyle.None
+                        ChevronBackground: =RGBA(26, 90, 153, 1)
+                        ChevronFill: =RGBA(255, 255, 255, 1)
+                        ChevronHoverBackground: =RGBA(18, 64, 112, 1)
+                        Color: =RGBA(14, 28, 42, 1)
+                        Default: =If(ulCat = "All", "All categories", ulCat)
+                        Font: =Font.'Segoe UI'
+                        Items: =colUlCats
+                        Items.Value: =Value
+                        OnChange: |-
+                          =Set(ulCat, If(ddCat_Ul.Selected.Value = "All categories", "All", ddCat_Ul.Selected.Value));
+                          Select(btnBuild_Ul)
+                        Size: =14
+                        Width: =140
+            - capWard_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =11
+                  Text: ="WARD"
+                  Width: =110
+                  X: =762
+                  Y: =10
+            - boxWard_Ul:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40
+                  RadiusBottomLeft: =10
+                  RadiusBottomRight: =10
+                  RadiusTopLeft: =10
+                  RadiusTopRight: =10
+                  Width: =110
+                  X: =762
+                  Y: =30
+                Children:
+                  - ddWard_Ul:
+                      Control: Classic/DropDown@2.3.1
+                      Properties:
+                        BorderStyle: =BorderStyle.None
+                        ChevronBackground: =RGBA(26, 90, 153, 1)
+                        ChevronFill: =RGBA(255, 255, 255, 1)
+                        ChevronHoverBackground: =RGBA(18, 64, 112, 1)
+                        Color: =RGBA(14, 28, 42, 1)
+                        Default: =If(ulWard = "All", "All wards", ulWard)
+                        Font: =Font.'Segoe UI'
+                        Items: =colUlWardOpts
+                        Items.Value: =Value
+                        OnChange: |-
+                          =Set(ulWard, If(ddWard_Ul.Selected.Value = "All wards", "All", ddWard_Ul.Selected.Value));
+                          Select(btnBuild_Ul)
+                        Size: =14
+                        Width: =110
+            - capSearch_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =11
+                  Text: ="SEARCH"
+                  Width: =200
+                  X: =882
+                  Y: =10
+            - boxSearch_Ul:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40
+                  RadiusBottomLeft: =10
+                  RadiusBottomRight: =10
+                  RadiusTopLeft: =10
+                  RadiusTopRight: =10
+                  Width: =320
+                  X: =882
+                  Y: =30
+                Children:
+                  - txtSearch_Ul:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        BorderStyle: =BorderStyle.None
+                        Color: =RGBA(14, 28, 42, 1)
+                        Default: =""
+                        DelayOutput: =true
+                        Font: =Font.'Segoe UI'
+                        HintText: ="Code, brand, model or physio"
+                        OnChange: |-
+                          =Set(ulQ, Lower(Trim(Self.Text)));
+                          Select(btnBuild_Ul)
+                        Size: =14
+            - conReset_Ul:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                  Width: =99
+                  X: =1214
+                  Y: =30
+                Children:
+                  - btnReset_Ul:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =13
+                        FontWeight: =FontWeight.Bold
+                        Height: =40
+                        OnSelect: |-
+                          =Set(ulPreset, "90");
+                          Set(ulFrom, DateAdd(Today(), -89));
+                          Set(ulTo, Today());
+                          Set(ulCat, "All");
+                          Set(ulWard, "All");
+                          Set(ulQ, "");
+                          Set(ulLogFilter, "All");
+                          Reset(dpFrom_Ul);
+                          Reset(dpTo_Ul);
+                          Reset(ddCat_Ul);
+                          Reset(ddWard_Ul);
+                          Reset(txtSearch_Ul);
+                          Select(btnLoad_Ul)
+                        Text: ="Reset"
+                        Width: =99
+      - Ul_Kpi_Out:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+            Width: =212
+            X: =18
+            Y: =191
+          Children:
+            - lblKpiT_Out_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =11
+                  Text: ="SIGNED OUT"
+                  Width: =180
+                  X: =16
+                  Y: =10
+            - lblKpiV_Out_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(14, 28, 42, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =38
+                  Size: =30
+                  Text: =Text(ulKpi.Out)
+                  Width: =180
+                  X: =16
+                  Y: =27
+            - lblKpiS_Out_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =16
+                  Size: =11
+                  Text: ="Loans started in the period"
+                  Width: =190
+                  X: =16
+                  Y: =68
+      - Ul_Kpi_Back:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+            Width: =212
+            X: =242
+            Y: =191
+          Children:
+            - lblKpiT_Back_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =11
+                  Text: ="RETURNED"
+                  Width: =180
+                  X: =16
+                  Y: =10
+            - lblKpiV_Back_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(14, 28, 42, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =38
+                  Size: =30
+                  Text: =Text(ulKpi.Back)
+                  Width: =180
+                  X: =16
+                  Y: =27
+            - lblKpiS_Back_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =16
+                  Size: =11
+                  Text: ="Returns in the period"
+                  Width: =190
+                  X: =16
+                  Y: =68
+      - Ul_Kpi_Now:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+            Width: =212
+            X: =466
+            Y: =191
+          Children:
+            - lblKpiT_Now_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =11
+                  Text: ="OUT RIGHT NOW"
+                  Width: =180
+                  X: =16
+                  Y: =10
+            - lblKpiV_Now_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(26, 90, 153, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =38
+                  Size: =30
+                  Text: =Text(ulKpi.Now)
+                  Width: =180
+                  X: =16
+                  Y: =27
+            - lblKpiS_Now_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =16
+                  Size: =11
+                  Text: ="Open loans, any date"
+                  Width: =190
+                  X: =16
+                  Y: =68
+      - Ul_Kpi_Avg:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+            Width: =212
+            X: =690
+            Y: =191
+          Children:
+            - lblKpiT_Avg_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =11
+                  Text: ="AVG DAYS OUT"
+                  Width: =180
+                  X: =16
+                  Y: =10
+            - lblKpiV_Avg_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(14, 28, 42, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =38
+                  Size: =30
+                  Text: =Text(ulKpi.AvgDays, "0.0")
+                  Width: =180
+                  X: =16
+                  Y: =27
+            - lblKpiS_Avg_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =16
+                  Size: =11
+                  Text: ="Per returned loan"
+                  Width: =190
+                  X: =16
+                  Y: =68
+      - Ul_Kpi_Svc:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+            Width: =212
+            X: =914
+            Y: =191
+          Children:
+            - lblKpiT_Svc_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =11
+                  Text: ="SERVICE DUE"
+                  Width: =180
+                  X: =16
+                  Y: =10
+            - lblKpiV_Svc_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =If(ulKpi.Service > 0, RGBA(180, 26, 26, 1), RGBA(12, 122, 82, 1))
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =38
+                  Size: =30
+                  Text: =Text(ulKpi.Service)
+                  Width: =180
+                  X: =16
+                  Y: =27
+            - lblKpiS_Svc_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =16
+                  Size: =11
+                  Text: ="Over 100 days in use"
+                  Width: =190
+                  X: =16
+                  Y: =68
+      - Ul_Kpi_Oos:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+            Width: =212
+            X: =1138
+            Y: =191
+          Children:
+            - lblKpiT_Oos_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =11
+                  Text: ="OUT OF SERVICE"
+                  Width: =180
+                  X: =16
+                  Y: =10
+            - lblKpiV_Oos_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =If(ulKpi.OOS > 0, RGBA(180, 26, 26, 1), RGBA(12, 122, 82, 1))
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =38
+                  Size: =30
+                  Text: =Text(ulKpi.OOS)
+                  Width: =180
+                  X: =16
+                  Y: =27
+            - lblKpiS_Oos_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =16
+                  Size: =11
+                  Text: ="Flagged on the item"
+                  Width: =190
+                  X: =16
+                  Y: =68
+      - Ul_CardLeft:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =458
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+            Width: =660
+            X: =18
+            Y: =295
+          Children:
+            - conTabUsed:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(ulTab = "Used", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(ulTab = "Used", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =34
+                  RadiusBottomLeft: =17
+                  RadiusBottomRight: =17
+                  RadiusTopLeft: =17
+                  RadiusTopRight: =17
+                  Width: =130
+                  X: =14
+                  Y: =12
+                Children:
+                  - btnTabUsed:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =17
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(ulTab = "Used", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =13
+                        FontWeight: =FontWeight.Bold
+                        Height: =34
+                        OnSelect: =Set(ulTab, "Used")
+                        Text: ="Most used"
+                        Width: =130
+            - conTabSize:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(ulTab = "Size", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(ulTab = "Size", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =34
+                  RadiusBottomLeft: =17
+                  RadiusBottomRight: =17
+                  RadiusTopLeft: =17
+                  RadiusTopRight: =17
+                  Width: =150
+                  X: =150
+                  Y: =12
+                Children:
+                  - btnTabSize:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =17
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(ulTab = "Size", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =13
+                        FontWeight: =FontWeight.Bold
+                        Height: =34
+                        OnSelect: =Set(ulTab, "Size")
+                        Text: ="Demand by size"
+                        Width: =150
+            - conTabWards:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(ulTab = "Wards", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(ulTab = "Wards", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =34
+                  RadiusBottomLeft: =17
+                  RadiusBottomRight: =17
+                  RadiusTopLeft: =17
+                  RadiusTopRight: =17
+                  Width: =170
+                  X: =306
+                  Y: =12
+                Children:
+                  - btnTabWards:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =17
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(ulTab = "Wards", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =13
+                        FontWeight: =FontWeight.Bold
+                        Height: =34
+                        OnSelect: =Set(ulTab, "Wards")
+                        Text: ="Wards and physios"
+                        Width: =170
+            - conSortLoans:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(ulSort = "Loans", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(ulSort = "Loans", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =30
+                  RadiusBottomLeft: =15
+                  RadiusBottomRight: =15
+                  RadiusTopLeft: =15
+                  RadiusTopRight: =15
+                  Visible: =ulTab = "Used"
+                  Width: =74
+                  X: =498
+                  Y: =14
+                Children:
+                  - btnSortLoans:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =15
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(ulSort = "Loans", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =12
+                        FontWeight: =FontWeight.Bold
+                        Height: =30
+                        OnSelect: |-
+                          =Set(ulSort, "Loans");
+                          Select(btnBuild_Ul)
+                        Text: ="By loans"
+                        Width: =74
+            - conSortDays:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(ulSort = "Days", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(ulSort = "Days", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =30
+                  RadiusBottomLeft: =15
+                  RadiusBottomRight: =15
+                  RadiusTopLeft: =15
+                  RadiusTopRight: =15
+                  Visible: =ulTab = "Used"
+                  Width: =70
+                  X: =576
+                  Y: =14
+                Children:
+                  - btnSortDays:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =15
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(ulSort = "Days", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =12
+                        FontWeight: =FontWeight.Bold
+                        Height: =30
+                        OnSelect: |-
+                          =Set(ulSort, "Days");
+                          Select(btnBuild_Ul)
+                        Text: ="By days"
+                        Width: =70
+            - hUsedItem_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =10
+                  Text: ="ITEM"
+                  Visible: =ulTab = "Used"
+                  Width: =200
+                  Wrap: =false
+                  X: =24
+                  Y: =58
+            - hUsedLoans_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =10
+                  Text: ="LOANS"
+                  Visible: =ulTab = "Used"
+                  Width: =56
+                  Wrap: =false
+                  X: =382
+                  Y: =58
+            - hUsedDays_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =10
+                  Text: ="DAYS OUT"
+                  Visible: =ulTab = "Used"
+                  Width: =60
+                  Wrap: =false
+                  X: =442
+                  Y: =58
+            - hUsedYear_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =10
+                  Text: ="THIS YEAR"
+                  Visible: =ulTab = "Used"
+                  Width: =64
+                  Wrap: =false
+                  X: =498
+                  Y: =58
+            - hUsedNow_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =10
+                  Text: ="NOW"
+                  Visible: =ulTab = "Used"
+                  Width: =60
+                  Wrap: =false
+                  X: =572
+                  Y: =58
+            - Gallery_Used_Ul:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =372
+                  Items: =colUlItems
+                  TemplatePadding: =0
+                  TemplateSize: =56
+                  Visible: =ulTab = "Used"
+                  Width: =660
+                  Y: =78
+                Children:
+                  - Ul_UsedRow:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =50
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        Width: =Parent.TemplateWidth - 20
+                        X: =10
+                        Y: =3
+                      Children:
+                        - conUsedBar_Ul:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =Switch(ThisItem.Cat, "Wheelchair", RGBA(166, 199, 130, 1), "Cushion", RGBA(0, 144, 153, 1), "Backrest", RGBA(0, 200, 210, 1), RGBA(210, 218, 227, 1))
+                              Height: =50
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =0
+                              Width: =6
+                        - lblUsedCode_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(14, 28, 42, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =20
+                              Size: =14
+                              Text: =ThisItem.Code
+                              Width: =320
+                              Wrap: =false
+                              X: =16
+                              Y: =5
+                        - lblUsedDesc_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =18
+                              Size: =11
+                              Text: =ThisItem.Desc & If(IsBlank(ThisItem.Size), "", "  ·  " & ThisItem.Size) & "  ·  " & ThisItem.Cat
+                              Width: =340
+                              Wrap: =false
+                              X: =16
+                              Y: =26
+                        - lblUsedLoans_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              Color: =RGBA(14, 28, 42, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =50
+                              Size: =16
+                              Text: =Text(ThisItem.Loans)
+                              Width: =56
+                              Wrap: =false
+                              X: =372
+                        - lblUsedDays_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              Color: =RGBA(58, 80, 104, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =50
+                              Size: =14
+                              Text: =Text(ThisItem.Days)
+                              Width: =56
+                              Wrap: =false
+                              X: =432
+                        - lblUsedYear_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              Color: =If(ThisItem.YearDays > 100, RGBA(180, 26, 26, 1), RGBA(58, 80, 104, 1))
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =50
+                              Size: =14
+                              Text: =Text(ThisItem.YearDays)
+                              Width: =56
+                              Wrap: =false
+                              X: =488
+                        - conUsedNow_Ul:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =Switch(ThisItem.NowStatus, "Available", RGBA(232, 246, 240, 1), "Allocated", RGBA(26, 90, 153, 0.08), RGBA(235, 242, 248, 1))
+                              Height: =26
+                              RadiusBottomLeft: =13
+                              RadiusBottomRight: =13
+                              RadiusTopLeft: =13
+                              RadiusTopRight: =13
+                              Width: =70
+                              X: =552
+                              Y: =12
+                            Children:
+                              - lblUsedNow_Ul:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Align: =Align.Center
+                                    Color: =Switch(ThisItem.NowStatus, "Available", RGBA(12, 122, 82, 1), "Allocated", RGBA(26, 90, 153, 1), RGBA(140, 155, 174, 1))
+                                    Font: =Font.'Segoe UI'
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Size: =11
+                                    Text: =ThisItem.NowStatus
+                                    Width: =Parent.Width
+                                    Wrap: =false
+            - lblUsedEmpty_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =24
+                  Size: =14
+                  Text: ="No loans in this period."
+                  Visible: =ulTab = "Used" && IsEmpty(colUlItems)
+                  Width: =660
+                  Y: =160
+            - hSizeLbl_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =10
+                  Text: ="SIZE  (bar = share out now)"
+                  Visible: =ulTab = "Size"
+                  Width: =240
+                  Wrap: =false
+                  X: =24
+                  Y: =58
+            - hSizeStock_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =10
+                  Text: ="STOCK"
+                  Visible: =ulTab = "Size"
+                  Width: =50
+                  Wrap: =false
+                  X: =310
+                  Y: =58
+            - hSizeOut_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =10
+                  Text: ="OUT"
+                  Visible: =ulTab = "Size"
+                  Width: =50
+                  Wrap: =false
+                  X: =362
+                  Y: =58
+            - hSizeFree_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =10
+                  Text: ="FREE"
+                  Visible: =ulTab = "Size"
+                  Width: =50
+                  Wrap: =false
+                  X: =414
+                  Y: =58
+            - hSizeLoans_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =10
+                  Text: ="LOANS"
+                  Visible: =ulTab = "Size"
+                  Width: =60
+                  Wrap: =false
+                  X: =466
+                  Y: =58
+            - hSizeFlag_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =10
+                  Text: ="STOCK LEVEL"
+                  Visible: =ulTab = "Size"
+                  Width: =92
+                  Wrap: =false
+                  X: =540
+                  Y: =58
+            - Gallery_Size_Ul:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =372
+                  Items: =colUlSize
+                  TemplatePadding: =0
+                  TemplateSize: =56
+                  Visible: =ulTab = "Size"
+                  Width: =660
+                  Y: =78
+                Children:
+                  - Ul_SizeRow:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =50
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        Width: =Parent.TemplateWidth - 20
+                        X: =10
+                        Y: =3
+                      Children:
+                        - conSizeBar_Ul:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =Switch(ThisItem.Cat, "Wheelchair", RGBA(166, 199, 130, 1), "Cushion", RGBA(0, 144, 153, 1), "Backrest", RGBA(0, 200, 210, 1), RGBA(210, 218, 227, 1))
+                              Height: =50
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =0
+                              Width: =6
+                        - lblSizeLbl_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(14, 28, 42, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =20
+                              Size: =14
+                              Text: =ThisItem.Label
+                              Width: =280
+                              Wrap: =false
+                              X: =16
+                              Y: =5
+                        - conSizeTrack_Ul:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =RGBA(235, 242, 248, 1)
+                              Height: =8
+                              Width: =250
+                              X: =16
+                              Y: =32
+                        - conSizeFill_Ul:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =If(ThisItem.Free = 0, RGBA(180, 26, 26, 1), ThisItem.Free <= 1 && ThisItem.Stock > 2, RGBA(200, 120, 0, 1), RGBA(12, 122, 82, 1))
+                              Height: =8
+                              Width: =250 * ThisItem.OutNow / Max(1, ThisItem.Stock)
+                              X: =16
+                              Y: =32
+                        - lblSizeStock_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              Color: =RGBA(58, 80, 104, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =50
+                              Size: =15
+                              Text: =Text(ThisItem.Stock)
+                              Width: =50
+                              Wrap: =false
+                              X: =300
+                        - lblSizeOut_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              Color: =RGBA(58, 80, 104, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =50
+                              Size: =15
+                              Text: =Text(ThisItem.OutNow)
+                              Width: =50
+                              Wrap: =false
+                              X: =352
+                        - lblSizeFree_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              Color: =If(ThisItem.Free = 0, RGBA(180, 26, 26, 1), ThisItem.Free <= 1 && ThisItem.Stock > 2, RGBA(200, 120, 0, 1), RGBA(12, 122, 82, 1))
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =50
+                              Size: =15
+                              Text: =Text(ThisItem.Free)
+                              Width: =50
+                              Wrap: =false
+                              X: =404
+                        - lblSizeLoans_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              Color: =RGBA(58, 80, 104, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =50
+                              Size: =15
+                              Text: =Text(ThisItem.Loans)
+                              Width: =60
+                              Wrap: =false
+                              X: =456
+                        - conSizeFlag_Ul:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =If(ThisItem.Free = 0, RGBA(254, 242, 242, 1), ThisItem.Free <= 1 && ThisItem.Stock > 2, RGBA(255, 246, 229, 1), RGBA(232, 246, 240, 1))
+                              Height: =26
+                              RadiusBottomLeft: =13
+                              RadiusBottomRight: =13
+                              RadiusTopLeft: =13
+                              RadiusTopRight: =13
+                              Width: =92
+                              X: =530
+                              Y: =12
+                            Children:
+                              - lblSizeFlag_Ul:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Align: =Align.Center
+                                    Color: =If(ThisItem.Free = 0, RGBA(180, 26, 26, 1), ThisItem.Free <= 1 && ThisItem.Stock > 2, RGBA(200, 120, 0, 1), RGBA(12, 122, 82, 1))
+                                    Font: =Font.'Segoe UI'
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Size: =11
+                                    Text: =If(ThisItem.Free = 0, "None free", ThisItem.Free <= 1 && ThisItem.Stock > 2, "Low", "OK")
+                                    Width: =Parent.Width
+                                    Wrap: =false
+            - hWards_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =10
+                  Text: ="LOANS BY WARD"
+                  Visible: =ulTab = "Wards"
+                  Width: =290
+                  Wrap: =false
+                  X: =24
+                  Y: =58
+            - Gallery_Wards_Ul:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =372
+                  Items: =colUlWard
+                  TemplatePadding: =0
+                  TemplateSize: =52
+                  Visible: =ulTab = "Wards"
+                  Width: =310
+                  X: =14
+                  Y: =78
+                Children:
+                  - Ul_WardRow:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =46
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        Width: =Parent.TemplateWidth - 12
+                        X: =6
+                        Y: =3
+                      Children:
+                        - conWardChip_Ul:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =Switch(ThisItem.WardKey, "4A", RGBA(166, 199, 130, 1), "4B", RGBA(35, 100, 153, 1), "5A", RGBA(0, 144, 153, 1), "6A", RGBA(0, 200, 210, 1), RGBA(210, 218, 227, 1))
+                              Height: =32
+                              RadiusBottomLeft: =10
+                              RadiusBottomRight: =10
+                              RadiusTopLeft: =10
+                              RadiusTopRight: =10
+                              Width: =44
+                              X: =8
+                              Y: =7
+                            Children:
+                              - lblWardChip_Ul:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Align: =Align.Center
+                                    Color: =RGBA(14, 28, 42, 1)
+                                    Font: =Font.'Segoe UI'
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Text: =ThisItem.WardKey
+                                    Width: =Parent.Width
+                                    Wrap: =false
+                        - lblWardLoans_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(14, 28, 42, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =20
+                              Text: =ThisItem.Loans & If(ThisItem.Loans = 1, " loan", " loans")
+                              Width: =110
+                              Wrap: =false
+                              X: =62
+                              Y: =4
+                        - lblWardSub_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =18
+                              Size: =11
+                              Text: =ThisItem.AvgDays & " days avg  ·  " & ThisItem.OutNow & " out now"
+                              Width: =230
+                              Wrap: =false
+                              X: =62
+                              Y: =24
+            - hPhys_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16
+                  Size: =10
+                  Text: ="LOANS BY PHYSIO (TOP 12)"
+                  Visible: =ulTab = "Wards"
+                  Width: =290
+                  Wrap: =false
+                  X: =344
+                  Y: =58
+            - Gallery_Phys_Ul:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =372
+                  Items: =colUlPhysio
+                  TemplatePadding: =0
+                  TemplateSize: =52
+                  Visible: =ulTab = "Wards"
+                  Width: =316
+                  X: =330
+                  Y: =78
+                Children:
+                  - Ul_PhysRow:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =46
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        Width: =Parent.TemplateWidth - 12
+                        X: =6
+                        Y: =3
+                      Children:
+                        - lblPhysName_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(14, 28, 42, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =20
+                              Text: =ThisItem.Physiotherapist
+                              Width: =Parent.Width - 100
+                              Wrap: =false
+                              X: =14
+                              Y: =4
+                        - lblPhysSub_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =18
+                              Size: =11
+                              Text: =ThisItem.Days & " days out in total"
+                              Width: =Parent.Width - 100
+                              Wrap: =false
+                              X: =14
+                              Y: =24
+                        - lblPhysLoans_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Right
+                              Color: =RGBA(14, 28, 42, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =46
+                              Size: =18
+                              Text: =Text(ThisItem.Loans)
+                              Width: =62
+                              Wrap: =false
+                              X: =Parent.Width - 76
+      - Ul_CardLog:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =458
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+            Width: =653
+            X: =698
+            Y: =295
+          Children:
+            - lblLog_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(14, 28, 42, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =26
+                  Size: =16
+                  Text: ="Activity log"
+                  Width: =300
+                  Wrap: =false
+                  X: =20
+                  Y: =12
+            - lblLogHint_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Right
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =18
+                  Size: =11
+                  Text: ="Newest first  ·  tap a line for the full record"
+                  Width: =303
+                  Wrap: =false
+                  X: =330
+                  Y: =16
+            - conLogAll:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(ulLogFilter = "All", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(ulLogFilter = "All", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =30
+                  RadiusBottomLeft: =15
+                  RadiusBottomRight: =15
+                  RadiusTopLeft: =15
+                  RadiusTopRight: =15
+                  Width: =92
+                  X: =14
+                  Y: =44
+                Children:
+                  - btnLogAll:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =15
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(ulLogFilter = "All", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =12
+                        FontWeight: =FontWeight.Bold
+                        Height: =30
+                        OnSelect: =Set(ulLogFilter, "All")
+                        Text: ="All  ·  " & CountRows(Filter(colUlF, true))
+                        Width: =92
+            - conLogOut:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(ulLogFilter = "Out", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(ulLogFilter = "Out", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =30
+                  RadiusBottomLeft: =15
+                  RadiusBottomRight: =15
+                  RadiusTopLeft: =15
+                  RadiusTopRight: =15
+                  Width: =120
+                  X: =112
+                  Y: =44
+                Children:
+                  - btnLogOut:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =15
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(ulLogFilter = "Out", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =12
+                        FontWeight: =FontWeight.Bold
+                        Height: =30
+                        OnSelect: =Set(ulLogFilter, "Out")
+                        Text: ="Sign-outs  ·  " & CountRows(Filter(colUlF, EventType.Value = "Sign Out"))
+                        Width: =120
+            - conLogBack:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(ulLogFilter = "Back", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(ulLogFilter = "Back", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =30
+                  RadiusBottomLeft: =15
+                  RadiusBottomRight: =15
+                  RadiusTopLeft: =15
+                  RadiusTopRight: =15
+                  Width: =104
+                  X: =238
+                  Y: =44
+                Children:
+                  - btnLogBack:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =15
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(ulLogFilter = "Back", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =12
+                        FontWeight: =FontWeight.Bold
+                        Height: =30
+                        OnSelect: =Set(ulLogFilter, "Back")
+                        Text: ="Returns  ·  " & CountRows(Filter(colUlF, EventType.Value = "Sign In"))
+                        Width: =104
+            - conLogSvc:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(ulLogFilter = "Svc", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(ulLogFilter = "Svc", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =30
+                  RadiusBottomLeft: =15
+                  RadiusBottomRight: =15
+                  RadiusTopLeft: =15
+                  RadiusTopRight: =15
+                  Width: =124
+                  X: =348
+                  Y: =44
+                Children:
+                  - btnLogSvc:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =15
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(ulLogFilter = "Svc", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =12
+                        FontWeight: =FontWeight.Bold
+                        Height: =30
+                        OnSelect: =Set(ulLogFilter, "Svc")
+                        Text: ="Service due  ·  " & CountRows(Filter(colUlF, Over100DaysAfterEvent = true || ServiceRequired = true))
+                        Width: =124
+            - conLogReview:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(ulLogFilter = "Review", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(ulLogFilter = "Review", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =30
+                  RadiusBottomLeft: =15
+                  RadiusBottomRight: =15
+                  RadiusTopLeft: =15
+                  RadiusTopRight: =15
+                  Width: =118
+                  X: =478
+                  Y: =44
+                Children:
+                  - btnLogReview:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =15
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(ulLogFilter = "Review", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =12
+                        FontWeight: =FontWeight.Bold
+                        Height: =30
+                        OnSelect: =Set(ulLogFilter, "Review")
+                        Text: ="To review  ·  " & CountRows(Filter(colUlF, EpisodeStatus.Value = "Legacy unmatched"))
+                        Width: =118
+            - Gallery_Log_Ul:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =372
+                  Items: =SortByColumns(Filter(colUlF, Switch(ulLogFilter, "Out", EventType.Value = "Sign Out", "Back", EventType.Value = "Sign In", "Svc", Over100DaysAfterEvent = true || ServiceRequired = true, "Review", EpisodeStatus.Value = "Legacy unmatched", true)), "EventDateTime", SortOrder.Descending)
+                  TemplatePadding: =0
+                  TemplateSize: =60
+                  Width: =653
+                  Y: =84
+                Children:
+                  - Ul_LogRow:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =54
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        Width: =Parent.TemplateWidth - 16
+                        X: =8
+                        Y: =3
+                      Children:
+                        - lblLogDate_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(14, 28, 42, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =20
+                              Text: =Text(ThisItem.EventDateTime, "d mmm")
+                              Width: =70
+                              Wrap: =false
+                              X: =12
+                              Y: =7
+                        - lblLogTime_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =18
+                              Size: =11
+                              Text: =Text(ThisItem.EventDateTime, "hh:mm")
+                              Width: =70
+                              Wrap: =false
+                              X: =12
+                              Y: =27
+                        - conLogEv_Ul:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =If(ThisItem.EventType.Value = "Sign Out", RGBA(26, 90, 153, 0.08), RGBA(232, 246, 240, 1))
+                              Height: =24
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              Width: =78
+                              X: =84
+                              Y: =15
+                            Children:
+                              - lblLogEv_Ul:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Align: =Align.Center
+                                    Color: =If(ThisItem.EventType.Value = "Sign Out", RGBA(26, 90, 153, 1), RGBA(12, 122, 82, 1))
+                                    Font: =Font.'Segoe UI'
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Size: =10
+                                    Text: =If(ThisItem.EventType.Value = "Sign Out", "SIGN OUT", "RETURN")
+                                    Width: =Parent.Width
+                                    Wrap: =false
+                        - lblLogItem_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(14, 28, 42, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =20
+                              Text: =ThisItem.EquipmentTitle
+                              Width: =230
+                              Wrap: =false
+                              X: =172
+                              Y: =5
+                        - lblLogDesc_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =18
+                              Size: =11
+                              Text: =Trim(ThisItem.Brand & " " & ThisItem.Model) & If(IsBlank(ThisItem.Width), "", "  ·  " & ThisItem.Width)
+                              Width: =236
+                              Wrap: =false
+                              X: =172
+                              Y: =26
+                        - lblLogWard_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(58, 80, 104, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =20
+                              Size: =12
+                              Text: ="Ward " & Coalesce(ThisItem.Ward, "—")
+                              Width: =110
+                              Wrap: =false
+                              X: =414
+                              Y: =5
+                        - lblLogPhys_Ul:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =18
+                              Size: =11
+                              Text: =Coalesce(ThisItem.Physiotherapist, "—")
+                              Width: =116
+                              Wrap: =false
+                              X: =414
+                              Y: =26
+                        - conLogDays_Ul:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =If(ThisItem.Over100DaysAfterEvent = true, RGBA(254, 242, 242, 1), RGBA(235, 242, 248, 1))
+                              Height: =26
+                              RadiusBottomLeft: =13
+                              RadiusBottomRight: =13
+                              RadiusTopLeft: =13
+                              RadiusTopRight: =13
+                              Width: =62
+                              X: =Parent.Width - 76
+                              Y: =14
+                            Children:
+                              - lblLogDays_Ul:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Align: =Align.Center
+                                    Color: =If(ThisItem.Over100DaysAfterEvent = true, RGBA(180, 26, 26, 1), RGBA(58, 80, 104, 1))
+                                    Font: =Font.'Segoe UI'
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Size: =12
+                                    Text: =If(ThisItem.EventType.Value = "Sign Out", "—", Coalesce(Text(ThisItem.DaysSignedOutThisEpisode), "?") & " d")
+                                    Width: =Parent.Width
+                                    Wrap: =false
+                        - btnLogRow_Ul:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderStyle: =BorderStyle.None
+                              Height: =Parent.Height
+                              OnSelect: |-
+                                =Set(ulDetail, ThisItem);
+                                Set(ulShowDetail, true)
+                              Text: =""
+                              Width: =Parent.Width
+            - lblLogEmpty_Ul:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =24
+                  Size: =14
+                  Text: ="No log entries match."
+                  Visible: =IsEmpty(Gallery_Log_Ul.AllItems)
+                  Width: =653
+                  Y: =200
+      - Ul_Popup:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(14, 28, 42, 0.45)
+            Height: =768
+            Visible: =ulShowDetail
+            Width: =1366
+          Children:
+            - btnDScrim_Ul:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  BorderStyle: =BorderStyle.None
+                  Height: =Parent.Height
+                  OnSelect: =Set(ulShowDetail, false)
+                  Text: =""
+                  Width: =Parent.Width
+            - Ul_PopupCard:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =590
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                  Width: =640
+                  X: =363
+                  Y: =89
+                Children:
+                  - lblDTitle_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =30
+                        Size: =20
+                        Text: =ulDetail.EquipmentTitle & "  ·  " & Trim(ulDetail.Brand & " " & ulDetail.Model)
+                        Width: =580
+                        Wrap: =false
+                        X: =24
+                        Y: =16
+                  - lblDSub_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(58, 80, 104, 1)
+                        Font: =Font.'Segoe UI'
+                        Height: =20
+                        Text: =ulDetail.EventType.Value & "  ·  " & Text(ulDetail.EventDateTime, "dddd d mmmm yyyy, hh:mm")
+                        Width: =580
+                        Wrap: =false
+                        X: =24
+                        Y: =48
+                  - capDCat_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16
+                        Size: =11
+                        Text: ="CATEGORY"
+                        Width: =280
+                        X: =24
+                        Y: =84
+                  - lblDCat_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24
+                        Size: =14
+                        Text: =Coalesce(ulDetail.Category, "—")
+                        Width: =280
+                        Wrap: =false
+                        X: =24
+                        Y: =100
+                  - capDType_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16
+                        Size: =11
+                        Text: ="WHEELCHAIR TYPE"
+                        Width: =280
+                        X: =324
+                        Y: =84
+                  - lblDType_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24
+                        Size: =14
+                        Text: =Coalesce(ulDetail.WheelchairType, "—")
+                        Width: =280
+                        Wrap: =false
+                        X: =324
+                        Y: =100
+                  - capDSize_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16
+                        Size: =11
+                        Text: ="SIZE (W × D × H)"
+                        Width: =280
+                        X: =24
+                        Y: =138
+                  - lblDSize_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24
+                        Size: =14
+                        Text: =Coalesce(ulDetail.Width & " × " & ulDetail.Depth & " × " & ulDetail.Height, "—")
+                        Width: =280
+                        Wrap: =false
+                        X: =24
+                        Y: =154
+                  - capDSwl_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16
+                        Size: =11
+                        Text: ="SAFE WORKING LOAD"
+                        Width: =280
+                        X: =324
+                        Y: =138
+                  - lblDSwl_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24
+                        Size: =14
+                        Text: =Coalesce(ulDetail.SWL, "—")
+                        Width: =280
+                        Wrap: =false
+                        X: =324
+                        Y: =154
+                  - capDLoc_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16
+                        Size: =11
+                        Text: ="LOCATION"
+                        Width: =280
+                        X: =24
+                        Y: =192
+                  - lblDLoc_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24
+                        Size: =14
+                        Text: =Coalesce(ulDetail.LocationAtEvent, "—")
+                        Width: =280
+                        Wrap: =false
+                        X: =24
+                        Y: =208
+                  - capDWard_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16
+                        Size: =11
+                        Text: ="WARD"
+                        Width: =280
+                        X: =324
+                        Y: =192
+                  - lblDWard_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24
+                        Size: =14
+                        Text: =Coalesce(ulDetail.Ward, "—")
+                        Width: =280
+                        Wrap: =false
+                        X: =324
+                        Y: =208
+                  - capDPhy_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16
+                        Size: =11
+                        Text: ="PHYSIOTHERAPIST"
+                        Width: =280
+                        X: =24
+                        Y: =246
+                  - lblDPhy_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24
+                        Size: =14
+                        Text: =Coalesce(ulDetail.Physiotherapist, "—")
+                        Width: =280
+                        Wrap: =false
+                        X: =24
+                        Y: =262
+                  - capDBy_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16
+                        Size: =11
+                        Text: ="ACTIONED BY"
+                        Width: =280
+                        X: =324
+                        Y: =246
+                  - lblDBy_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24
+                        Size: =14
+                        Text: =Coalesce(ulDetail.ActionedByName & If(IsBlank(ulDetail.SourceApp.Value), "", "  (" & ulDetail.SourceApp.Value & ")"), "—")
+                        Width: =280
+                        Wrap: =false
+                        X: =324
+                        Y: =262
+                  - capDOut_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16
+                        Size: =11
+                        Text: ="SIGNED OUT"
+                        Width: =280
+                        X: =24
+                        Y: =300
+                  - lblDOut_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24
+                        Size: =14
+                        Text: =Coalesce(Text(ulDetail.DateSignedOut, "d mmm yyyy"), "—")
+                        Width: =280
+                        Wrap: =false
+                        X: =24
+                        Y: =316
+                  - capDRet_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16
+                        Size: =11
+                        Text: ="RETURNED"
+                        Width: =280
+                        X: =324
+                        Y: =300
+                  - lblDRet_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24
+                        Size: =14
+                        Text: =Coalesce(If(IsBlank(ulDetail.DateReturned), "Not yet", Text(ulDetail.DateReturned, "d mmm yyyy")), "—")
+                        Width: =280
+                        Wrap: =false
+                        X: =324
+                        Y: =316
+                  - capDDays_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16
+                        Size: =11
+                        Text: ="DAYS THIS LOAN"
+                        Width: =280
+                        X: =24
+                        Y: =354
+                  - lblDDays_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24
+                        Size: =14
+                        Text: =Coalesce(Text(ulDetail.DaysSignedOutThisEpisode), "—")
+                        Width: =280
+                        Wrap: =false
+                        X: =24
+                        Y: =370
+                  - capDTot_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16
+                        Size: =11
+                        Text: ="TOTAL DAYS IN USE (YEAR)"
+                        Width: =280
+                        X: =324
+                        Y: =354
+                  - lblDTot_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24
+                        Size: =14
+                        Text: =Coalesce(Text(ulDetail.TotalDaysSignedOutAfterEvent), "—")
+                        Width: =280
+                        Wrap: =false
+                        X: =324
+                        Y: =370
+                  - capDFlags_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16
+                        Size: =11
+                        Text: ="FLAGS"
+                        Width: =280
+                        X: =24
+                        Y: =408
+                  - lblDFlags_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24
+                        Size: =14
+                        Text: |-
+                          =Coalesce(Concat(Filter(Table({t: "Needs Full Service", on: ulDetail.ServiceRequired = true}, {t: "High risk equipment", on: ulDetail.IsHighRiskEquipment = true}, {t: "Out of service", on: ulDetail.OutOfService = true}), on), t, "  ·  "), "—")
+                        Width: =280
+                        Wrap: =false
+                        X: =24
+                        Y: =424
+                  - capDSt_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16
+                        Size: =11
+                        Text: ="STATUS AFTER"
+                        Width: =280
+                        X: =324
+                        Y: =408
+                  - lblDSt_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24
+                        Size: =14
+                        Text: =Coalesce(ulDetail.StatusAfterEvent & "  ·  loan " & ulDetail.EpisodeStatus.Value, "—")
+                        Width: =280
+                        Wrap: =false
+                        X: =324
+                        Y: =424
+                  - capDNotes_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16
+                        Size: =11
+                        Text: ="NOTES"
+                        Width: =200
+                        X: =24
+                        Y: =462
+                  - lblDNotes_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(58, 80, 104, 1)
+                        Font: =Font.'Segoe UI'
+                        Text: =Coalesce(ulDetail.Notes, "—")
+                        Width: =590
+                        X: =24
+                        Y: =478
+                  - lblDKey_Ul:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        Height: =16
+                        Size: =10
+                        Text: ="Loan reference " & ulDetail.EpisodeKey
+                        Width: =590
+                        Wrap: =false
+                        X: =24
+                        Y: =522
+                  - conDClose_Ul:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(26, 90, 153, 1)
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(26, 90, 153, 1)
+                        Height: =42
+                        RadiusBottomLeft: =21
+                        RadiusBottomRight: =21
+                        RadiusTopLeft: =21
+                        RadiusTopRight: =21
+                        Width: =240
+                        X: =200
+                        Y: =526
+                      Children:
+                        - btnDClose_Ul:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =21
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(255, 255, 255, 1)
+                              FontSize: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =42
+                              OnSelect: =Set(ulShowDetail, false)
+                              Text: ="Close"
+                              Width: =240

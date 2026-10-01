@@ -1,0 +1,1954 @@
+Screens:
+  Service_Dash:
+    Properties:
+      Fill: =RGBA(235, 242, 248, 1)
+      ImagePosition: =ImagePosition.Fill
+      OnVisible: |-
+        =// Service dashboard. Reads Service_Log + stock, Select(btnBuild_Sd) builds every list.
+        Set(sdPreset, "365");
+        Set(sdFrom, DateAdd(Today(), -364));
+        Set(sdCat, "All");
+        Set(sdQ, "");
+        Set(sdTab, "Due");
+        Set(sdShowDetail, false);
+        Set(sdKpi, {Due: 0, DueOut: 0, Now: 0, AvgDays: 0, Done: 0, Condemned: 0});
+        ClearCollect(colSdCats, Table({ Value: "All categories" }, { Value: "Wheelchair" }, { Value: "Cushion" }, { Value: "Backrest" }));
+        Select(btnLoad_Sd)
+    Children:
+      - btnLoad_Sd:
+          Control: Button@0.0.45
+          Properties:
+            Height: =10 * SY
+            OnSelect: |-
+              =Set(sdLoading, true);
+              // episodes still at service (any date)
+              ClearCollect(colSdOpen, Filter(Service_Log, ServiceStatus.Value = "In Service"));
+              // finished episodes in the period
+              ClearCollect(colSdDone, Filter(Service_Log, ServiceStatus.Value = "Completed" && SentDateTime >= sdFrom));
+              // stock today
+              ClearCollect(
+                  colSdInv,
+                  AddColumns(
+                      Equipment_Inventory_SharePoint,
+                      iCat, Coalesce(Category.Value, ""),
+                      iType, If(Category.Value = "Wheelchair", Coalesce('Wheelchair Type'.Value, ""), ""),
+                      iWidth, Coalesce(Width.Value, ""),
+                      iStatus, Coalesce(Status.Value, ""),
+                      iDays, Coalesce(TotalDaysSignedOut, 0),
+                      iLoc, Coalesce(Location.Value, ""),
+                      iDesc, Trim(Brand & " " & Model)
+                  )
+              );
+              Set(sdLoading, false);
+              Select(btnBuild_Sd)
+            Text: =""
+            Visible: =false
+            Width: =10 * SX
+      - btnBuild_Sd:
+          Control: Button@0.0.45
+          Properties:
+            Height: =10 * SY
+            OnSelect: |-
+              =// 1) due now: more than 100 days in use and not already at service
+              ClearCollect(
+                  colSdDue,
+                  SortByColumns(
+                      Filter(colSdInv, iDays > 100 && iStatus in ["Available", "Allocated"] && (sdCat = "All" || iCat = sdCat) && (sdQ = "" || sdQ in Lower(Title) || sdQ in Lower(iDesc))),
+                      "iDays",
+                      SortOrder.Descending
+                  )
+              );
+              // 2) at service now
+              ClearCollect(
+                  colSdNow,
+                  SortByColumns(
+                      AddColumns(Filter(colSdOpen, (sdCat = "All" || Category = sdCat) && (sdQ = "" || sdQ in Lower(Title) || sdQ in Lower(Brand) || sdQ in Lower(Model))), DaysAway, DateDiff(SentDateTime, Now(), TimeUnit.Days)),
+                      "SentDateTime",
+                      SortOrder.Ascending
+                  )
+              );
+              // 3) history for the period
+              ClearCollect(
+                  colSdHist,
+                  SortByColumns(Filter(colSdDone, (sdCat = "All" || Category = sdCat) && (sdQ = "" || sdQ in Lower(Title) || sdQ in Lower(Brand) || sdQ in Lower(Model))), "ReturnedDateTime", SortOrder.Descending)
+              );
+              // 4) headline numbers
+              Set(
+                  sdKpi,
+                  {
+                      Due: CountRows(colSdDue),
+                      DueOut: CountRows(Filter(colSdDue, iStatus = "Allocated")),
+                      Now: CountRows(colSdNow),
+                      AvgDays: If(
+                          CountRows(Filter(colSdHist, !IsBlank(DaysAtService))) = 0,
+                          0,
+                          Round(Average(Filter(colSdHist, !IsBlank(DaysAtService)), DaysAtService), 1)
+                      ),
+                      Done: CountRows(Filter(colSdHist, !StartsWith(Coalesce(Outcome.Value, ""), "Condemned"))),
+                      Condemned: CountRows(Filter(colSdHist, StartsWith(Coalesce(Outcome.Value, ""), "Condemned")))
+                  }
+              )
+            Text: =""
+            Visible: =false
+            Width: =10 * SX
+      - Sd_Title:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Regular
+            Fill: =RGBA(7, 95, 115, 1)
+            Height: =70 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =1333 * SX
+            X: =18 * SX
+            Y: =12 * SY
+          Children:
+            - imgHeaderGradient_Sd:
+                Control: Image@2.2.3
+                Properties:
+                  Height: =Parent.Height
+                  Image: ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' width='1333' height='70' viewBox='0 0 1333 70' preserveAspectRatio='none'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001D46'/><stop offset='0.48' stop-color='#075F73'/><stop offset='1' stop-color='#00838A'/></linearGradient><linearGradient id='b' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001B36' stop-opacity='0.46'/><stop offset='0.45' stop-color='#002036' stop-opacity='0.18'/><stop offset='1' stop-color='#002036' stop-opacity='0.06'/></linearGradient></defs><rect width='1333' height='70' rx='18' fill='url(#a)'/><rect width='1333' height='70' rx='18' fill='url(#b)'/></svg>")
+                  ImagePosition: =ImagePosition.Fill
+                  Width: =Parent.Width
+            - lblTitle_SdHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  Height: =44 * SY
+                  Size: =Round(28 * SF, 0)
+                  Text: ="Equipment Servicing"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Weight: ='TextCanvas.Weight'.Bold
+                  Width: =700 * SX
+                  X: =76 * SX
+            - lblSub_SdHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 0.88)
+                  Height: =20 * SY
+                  Size: =Round(12 * SF, 0)
+                  Text: =If(sdLoading, "Loading the service log...", CountRows(colSdNow) & " at service now  ·  " & CountRows(colSdDue) & " due for service  ·  stock of " & CountRows(colSdInv) & " items")
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =800 * SX
+                  X: =76 * SX
+                  Y: =42 * SY
+            - btnBack_Sd:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontSize: =Round(50 * SF, 0)
+                  Height: =70 * SY
+                  Icon: ="ChevronLeft"
+                  OnSelect: =Back(ScreenTransition.Fade)
+                  Text: =""
+                  X: =1 * SX
+            - conReload_Sd:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =140 * SX
+                  X: =1177 * SX
+                  Y: =15 * SY
+                Children:
+                  - btnReload_Sd:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =Round(13 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
+                        Icon: ="ArrowClockwise"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        OnSelect: =Select(btnLoad_Sd)
+                        Text: ="Reload"
+                        Width: =140 * SX
+      - Sd_CardFilters:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =84 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =1333 * SX
+            X: =18 * SX
+            Y: =95 * SY
+          Children:
+            - capPer_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="SERVICED IN THE LAST"
+                  Width: =220 * SX
+                  X: =20 * SX
+                  Y: =10 * SY
+            - conPre90_Sd:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(sdPreset = "90", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(sdPreset = "90", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =40 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =112 * SX
+                  X: =20 * SX
+                  Y: =30 * SY
+                Children:
+                  - btnPre90_Sd:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(sdPreset = "90", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =Round(12 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
+                        OnSelect: |-
+                          =Set(sdPreset, "90");
+                          Set(sdFrom, DateAdd(Today(), -89));
+                          Select(btnLoad_Sd)
+                        Text: ="90 days"
+                        Width: =112 * SX
+            - conPre365_Sd:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(sdPreset = "365", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(sdPreset = "365", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =40 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =112 * SX
+                  X: =142 * SX
+                  Y: =30 * SY
+                Children:
+                  - btnPre365_Sd:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(sdPreset = "365", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =Round(12 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
+                        OnSelect: |-
+                          =Set(sdPreset, "365");
+                          Set(sdFrom, DateAdd(Today(), -364));
+                          Select(btnLoad_Sd)
+                        Text: ="12 months"
+                        Width: =112 * SX
+            - conPre3650_Sd:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(sdPreset = "3650", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(sdPreset = "3650", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =40 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =112 * SX
+                  X: =264 * SX
+                  Y: =30 * SY
+                Children:
+                  - btnPre3650_Sd:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(sdPreset = "3650", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =Round(12 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
+                        OnSelect: |-
+                          =Set(sdPreset, "3650");
+                          Set(sdFrom, DateAdd(Today(), -3649));
+                          Select(btnLoad_Sd)
+                        Text: ="All time"
+                        Width: =112 * SX
+            - capCat_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="CATEGORY"
+                  Width: =130 * SX
+                  X: =410 * SX
+                  Y: =10 * SY
+            - boxCat_Sd:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40 * SY
+                  RadiusBottomLeft: =10 * SR
+                  RadiusBottomRight: =10 * SR
+                  RadiusTopLeft: =10 * SR
+                  RadiusTopRight: =10 * SR
+                  Width: =170 * SX
+                  X: =410 * SX
+                  Y: =30 * SY
+                Children:
+                  - ddCat_Sd:
+                      Control: Classic/DropDown@2.3.1
+                      Properties:
+                        BorderStyle: =BorderStyle.None
+                        ChevronBackground: =RGBA(26, 90, 153, 1)
+                        ChevronFill: =RGBA(255, 255, 255, 1)
+                        ChevronHoverBackground: =RGBA(18, 64, 112, 1)
+                        Color: =RGBA(14, 28, 42, 1)
+                        Default: =If(sdCat = "All", "All categories", sdCat)
+                        Font: =Font.'Segoe UI'
+                        Items: =colSdCats
+                        Items.Value: =Value
+                        OnChange: |-
+                          =Set(sdCat, If(ddCat_Sd.Selected.Value = "All categories", "All", ddCat_Sd.Selected.Value));
+                          Select(btnBuild_Sd)
+                        Size: =Round(14 * SF, 0)
+                        Width: =170 * SX
+            - capSearch_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="SEARCH"
+                  Width: =200 * SX
+                  X: =600 * SX
+                  Y: =10 * SY
+            - boxSearch_Sd:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40 * SY
+                  RadiusBottomLeft: =10 * SR
+                  RadiusBottomRight: =10 * SR
+                  RadiusTopLeft: =10 * SR
+                  RadiusTopRight: =10 * SR
+                  Width: =440 * SX
+                  X: =600 * SX
+                  Y: =30 * SY
+                Children:
+                  - txtSearch_Sd:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        BorderStyle: =BorderStyle.None
+                        Color: =RGBA(14, 28, 42, 1)
+                        Default: =""
+                        DelayOutput: =true
+                        Font: =Font.'Segoe UI'
+                        HintText: ="Barcode, brand or model"
+                        OnChange: |-
+                          =Set(sdQ, Lower(Trim(Self.Text)));
+                          Select(btnBuild_Sd)
+                        Size: =Round(14 * SF, 0)
+                        Width: =440 * SX
+            - conReset_Sd:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =99 * SX
+                  X: =1214 * SX
+                  Y: =30 * SY
+                Children:
+                  - btnReset_Sd:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =Round(13 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
+                        OnSelect: |-
+                          =Set(sdPreset, "365");
+                          Set(sdFrom, DateAdd(Today(), -364));
+                          Set(sdCat, "All");
+                          Set(sdQ, "");
+                          Reset(ddCat_Sd);
+                          Reset(txtSearch_Sd);
+                          Select(btnLoad_Sd)
+                        Text: ="Reset"
+                        Width: =99 * SX
+      - Sd_Kpi_Due:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =212 * SX
+            X: =18 * SX
+            Y: =191 * SY
+          Children:
+            - lblKpiT_Due_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="DUE FOR SERVICE"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
+            - lblKpiV_Due_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =If(sdKpi.Due > 0, RGBA(180, 26, 26, 1), RGBA(12, 122, 82, 1))
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =38 * SY
+                  Size: =Round(30 * SF, 0)
+                  Text: =Text(sdKpi.Due)
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
+            - lblKpiS_Due_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="Over 100 days in use"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
+      - Sd_Kpi_DueOut:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =212 * SX
+            X: =242 * SX
+            Y: =191 * SY
+          Children:
+            - lblKpiT_DueOut_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="DUE, STILL OUT"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
+            - lblKpiV_DueOut_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =If(sdKpi.DueOut > 0, RGBA(180, 26, 26, 1), RGBA(12, 122, 82, 1))
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =38 * SY
+                  Size: =Round(30 * SF, 0)
+                  Text: =Text(sdKpi.DueOut)
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
+            - lblKpiS_DueOut_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="Service when it comes back"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
+      - Sd_Kpi_Now:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =212 * SX
+            X: =466 * SX
+            Y: =191 * SY
+          Children:
+            - lblKpiT_Now_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="AT SERVICE NOW"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
+            - lblKpiV_Now_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(26, 90, 153, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =38 * SY
+                  Size: =Round(30 * SF, 0)
+                  Text: =Text(sdKpi.Now)
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
+            - lblKpiS_Now_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="Not available to patients"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
+      - Sd_Kpi_Avg:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =212 * SX
+            X: =690 * SX
+            Y: =191 * SY
+          Children:
+            - lblKpiT_Avg_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="AVG DAYS AT SERVICE"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
+            - lblKpiV_Avg_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(14, 28, 42, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =38 * SY
+                  Size: =Round(30 * SF, 0)
+                  Text: =Text(sdKpi.AvgDays, "0.0")
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
+            - lblKpiS_Avg_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="Per finished service"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
+      - Sd_Kpi_Done:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =212 * SX
+            X: =914 * SX
+            Y: =191 * SY
+          Children:
+            - lblKpiT_Done_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="SERVICED"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
+            - lblKpiV_Done_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(12, 122, 82, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =38 * SY
+                  Size: =Round(30 * SF, 0)
+                  Text: =Text(sdKpi.Done)
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
+            - lblKpiS_Done_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="Back in stock, in the period"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
+      - Sd_Kpi_Cond:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =212 * SX
+            X: =1138 * SX
+            Y: =191 * SY
+          Children:
+            - lblKpiT_Cond_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="CONDEMNED"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
+            - lblKpiV_Cond_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =If(sdKpi.Condemned > 0, RGBA(180, 26, 26, 1), RGBA(12, 122, 82, 1))
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =38 * SY
+                  Size: =Round(30 * SF, 0)
+                  Text: =Text(sdKpi.Condemned)
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
+            - lblKpiS_Cond_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="Taken out of use, in the period"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
+      - Sd_CardMain:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =458 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =1333 * SX
+            X: =18 * SX
+            Y: =295 * SY
+          Children:
+            - conTabDue:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(sdTab = "Due", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(sdTab = "Due", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =34 * SY
+                  RadiusBottomLeft: =17 * SR
+                  RadiusBottomRight: =17 * SR
+                  RadiusTopLeft: =17 * SR
+                  RadiusTopRight: =17 * SR
+                  Width: =190 * SX
+                  X: =14 * SX
+                  Y: =12 * SY
+                Children:
+                  - btnTabDue:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =17 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(sdTab = "Due", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =Round(13 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =34 * SY
+                        OnSelect: =Set(sdTab, "Due")
+                        Text: ="Due for service  ·  " & sdKpi.Due
+                        Width: =190 * SX
+            - conTabNow:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(sdTab = "Now", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(sdTab = "Now", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =34 * SY
+                  RadiusBottomLeft: =17 * SR
+                  RadiusBottomRight: =17 * SR
+                  RadiusTopLeft: =17 * SR
+                  RadiusTopRight: =17 * SR
+                  Width: =190 * SX
+                  X: =210 * SX
+                  Y: =12 * SY
+                Children:
+                  - btnTabNow:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =17 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(sdTab = "Now", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =Round(13 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =34 * SY
+                        OnSelect: =Set(sdTab, "Now")
+                        Text: ="At service now  ·  " & sdKpi.Now
+                        Width: =190 * SX
+            - conTabHist:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(sdTab = "Hist", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(sdTab = "Hist", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =34 * SY
+                  RadiusBottomLeft: =17 * SR
+                  RadiusBottomRight: =17 * SR
+                  RadiusTopLeft: =17 * SR
+                  RadiusTopRight: =17 * SR
+                  Width: =160 * SX
+                  X: =406 * SX
+                  Y: =12 * SY
+                Children:
+                  - btnTabHist:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =17 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(sdTab = "Hist", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =Round(13 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =34 * SY
+                        OnSelect: =Set(sdTab, "Hist")
+                        Text: ="History  ·  " & CountRows(colSdHist)
+                        Width: =160 * SX
+            - lblHint_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Right
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =18 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="Send items for service, and take them back, in the mobile app (Servicing)."
+                  Width: =613 * SX
+                  Wrap: =false
+                  X: =700 * SX
+                  Y: =20 * SY
+            - hDueItem_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="ITEM"
+                  Visible: =sdTab = "Due"
+                  Width: =200 * SX
+                  Wrap: =false
+                  X: =24 * SX
+                  Y: =58 * SY
+            - hDueCat_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="CATEGORY / SIZE"
+                  Visible: =sdTab = "Due"
+                  Width: =200 * SX
+                  Wrap: =false
+                  X: =370 * SX
+                  Y: =58 * SY
+            - hDueSt_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="STATUS"
+                  Visible: =sdTab = "Due"
+                  Width: =80 * SX
+                  Wrap: =false
+                  X: =650 * SX
+                  Y: =58 * SY
+            - hDueDays_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="DAYS IN USE"
+                  Visible: =sdTab = "Due"
+                  Width: =90 * SX
+                  Wrap: =false
+                  X: =760 * SX
+                  Y: =58 * SY
+            - hDueLast_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="LAST SERVICED"
+                  Visible: =sdTab = "Due"
+                  Width: =140 * SX
+                  Wrap: =false
+                  X: =880 * SX
+                  Y: =58 * SY
+            - hDueLoc_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="LOCATION"
+                  Visible: =sdTab = "Due"
+                  Width: =200 * SX
+                  Wrap: =false
+                  X: =1050 * SX
+                  Y: =58 * SY
+            - Gallery_Due_Sd:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =372 * SY
+                  Items: =colSdDue
+                  TemplatePadding: =0
+                  TemplateSize: =56 * SY
+                  Visible: =sdTab = "Due"
+                  Width: =1333 * SX
+                  Y: =78 * SY
+                Children:
+                  - Sd_DueRow:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =50 * SY
+                        RadiusBottomLeft: =12 * SR
+                        RadiusBottomRight: =12 * SR
+                        RadiusTopLeft: =12 * SR
+                        RadiusTopRight: =12 * SR
+                        Width: =1313 * SX
+                        X: =10 * SX
+                        Y: =3 * SY
+                      Children:
+                        - conDueBar_Sd:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =Switch(ThisItem.iCat, "Wheelchair", RGBA(166, 199, 130, 1), "Cushion", RGBA(0, 144, 153, 1), "Backrest", RGBA(0, 200, 210, 1), RGBA(210, 218, 227, 1))
+                              Height: =50 * SY
+                              RadiusBottomLeft: =12 * SR
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =12 * SR
+                              RadiusTopRight: =0
+                              Width: =6 * SX
+                        - lblDueCode_Sd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(14, 28, 42, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =20 * SY
+                              Size: =Round(14 * SF, 0)
+                              Text: =ThisItem.Title
+                              Width: =330 * SX
+                              Wrap: =false
+                              X: =16 * SX
+                              Y: =5 * SY
+                        - lblDueDesc_Sd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =18 * SY
+                              Size: =Round(11 * SF, 0)
+                              Text: =ThisItem.iDesc
+                              Width: =330 * SX
+                              Wrap: =false
+                              X: =16 * SX
+                              Y: =26 * SY
+                        - lblDueCat_Sd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(58, 80, 104, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =20 * SY
+                              Text: =ThisItem.iCat & If(ThisItem.iType = "", "", "  ·  " & ThisItem.iType)
+                              Width: =260 * SX
+                              Wrap: =false
+                              X: =360 * SX
+                              Y: =5 * SY
+                        - lblDueSize_Sd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =18 * SY
+                              Size: =Round(11 * SF, 0)
+                              Text: =If(ThisItem.iWidth = "", "—", "Width " & ThisItem.iWidth)
+                              Width: =260 * SX
+                              Wrap: =false
+                              X: =360 * SX
+                              Y: =26 * SY
+                        - conDueStatus_Sd:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =If(ThisItem.iStatus = "Allocated", RGBA(26, 90, 153, 0.08), RGBA(232, 246, 240, 1))
+                              Height: =26 * SY
+                              RadiusBottomLeft: =13 * SR
+                              RadiusBottomRight: =13 * SR
+                              RadiusTopLeft: =13 * SR
+                              RadiusTopRight: =13 * SR
+                              Width: =96 * SX
+                              X: =640 * SX
+                              Y: =12 * SY
+                            Children:
+                              - lblDueStatus_Sd:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Align: =Align.Center
+                                    Color: =If(ThisItem.iStatus = "Allocated", RGBA(26, 90, 153, 1), RGBA(12, 122, 82, 1))
+                                    Font: =Font.'Segoe UI'
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Size: =Round(11 * SF, 0)
+                                    Text: =ThisItem.iStatus
+                                    Width: =Parent.Width
+                                    Wrap: =false
+                        - lblDueDays_Sd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              Color: =If(ThisItem.iDays > 130, RGBA(180, 26, 26, 1), RGBA(200, 120, 0, 1))
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =50 * SY
+                              Size: =Round(16 * SF, 0)
+                              Text: =Text(ThisItem.iDays) & " d"
+                              Width: =90 * SX
+                              Wrap: =false
+                              X: =760 * SX
+                        - lblDueLast_Sd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(58, 80, 104, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =50 * SY
+                              Text: =If(IsBlank(ThisItem.LastServiceDate), "Never recorded", Text(ThisItem.LastServiceDate, "d mmm yyyy"))
+                              Wrap: =false
+                              X: =870 * SX
+                        - lblDueLoc_Sd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(58, 80, 104, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =50 * SY
+                              Text: =If(ThisItem.iLoc = "", "—", ThisItem.iLoc)
+                              Width: =260 * SX
+                              Wrap: =false
+                              X: =1040 * SX
+            - lblDueEmpty_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =24 * SY
+                  Size: =Round(14 * SF, 0)
+                  Text: ="Nothing is due for service."
+                  Visible: =sdTab = "Due" && IsEmpty(colSdDue)
+                  Width: =1333 * SX
+                  Y: =160 * SY
+            - hNowItem_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="ITEM"
+                  Visible: =sdTab = "Now"
+                  Width: =200 * SX
+                  Wrap: =false
+                  X: =24 * SX
+                  Y: =58 * SY
+            - hNowType_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="SERVICE TYPE"
+                  Visible: =sdTab = "Now"
+                  Width: =120 * SX
+                  Wrap: =false
+                  X: =370 * SX
+                  Y: =58 * SY
+            - hNowSent_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="SENT"
+                  Visible: =sdTab = "Now"
+                  Width: =120 * SX
+                  Wrap: =false
+                  X: =510 * SX
+                  Y: =58 * SY
+            - hNowDays_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="TIME AWAY"
+                  Visible: =sdTab = "Now"
+                  Width: =110 * SX
+                  Wrap: =false
+                  X: =720 * SX
+                  Y: =58 * SY
+            - hNowNotes_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="WHAT NEEDS DOING"
+                  Visible: =sdTab = "Now"
+                  Width: =300 * SX
+                  Wrap: =false
+                  X: =860 * SX
+                  Y: =58 * SY
+            - Gallery_Now_Sd:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =372 * SY
+                  Items: =colSdNow
+                  TemplatePadding: =0
+                  TemplateSize: =62 * SY
+                  Visible: =sdTab = "Now"
+                  Width: =1333 * SX
+                  Y: =78 * SY
+                Children:
+                  - Sd_NowRow:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =56 * SY
+                        RadiusBottomLeft: =12 * SR
+                        RadiusBottomRight: =12 * SR
+                        RadiusTopLeft: =12 * SR
+                        RadiusTopRight: =12 * SR
+                        Width: =1313 * SX
+                        X: =10 * SX
+                        Y: =3 * SY
+                      Children:
+                        - conNowBar_Sd:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =Switch(ThisItem.Category, "Wheelchair", RGBA(166, 199, 130, 1), "Cushion", RGBA(0, 144, 153, 1), "Backrest", RGBA(0, 200, 210, 1), RGBA(210, 218, 227, 1))
+                              Height: =56 * SY
+                              RadiusBottomLeft: =12 * SR
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =12 * SR
+                              RadiusTopRight: =0
+                              Width: =6 * SX
+                        - lblNowCode_Sd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(14, 28, 42, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =20 * SY
+                              Size: =Round(14 * SF, 0)
+                              Text: =ThisItem.Title
+                              Width: =330 * SX
+                              Wrap: =false
+                              X: =16 * SX
+                              Y: =6 * SY
+                        - lblNowDesc_Sd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =18 * SY
+                              Size: =Round(11 * SF, 0)
+                              Text: =Trim(ThisItem.Brand & " " & ThisItem.Model) & If(IsBlank(ThisItem.Width), "", "  ·  " & ThisItem.Width)
+                              Width: =330 * SX
+                              Wrap: =false
+                              X: =16 * SX
+                              Y: =28 * SY
+                        - conNowType_Sd:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =RGBA(26, 90, 153, 0.08)
+                              Height: =26 * SY
+                              RadiusBottomLeft: =13 * SR
+                              RadiusBottomRight: =13 * SR
+                              RadiusTopLeft: =13 * SR
+                              RadiusTopRight: =13 * SR
+                              Width: =120 * SX
+                              X: =360 * SX
+                              Y: =15 * SY
+                            Children:
+                              - lblNowType_Sd:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Align: =Align.Center
+                                    Color: =RGBA(26, 90, 153, 1)
+                                    Font: =Font.'Segoe UI'
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Size: =Round(11 * SF, 0)
+                                    Text: =Coalesce(ThisItem.ServiceType.Value, "—")
+                                    Width: =Parent.Width
+                                    Wrap: =false
+                        - lblNowSent_Sd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(58, 80, 104, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =20 * SY
+                              Text: =Text(ThisItem.SentDateTime, "d mmm yyyy")
+                              Wrap: =false
+                              X: =500 * SX
+                              Y: =6 * SY
+                        - lblNowBy_Sd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =18 * SY
+                              Size: =Round(11 * SF, 0)
+                              Text: =Coalesce(ThisItem.SentByName, "—")
+                              Width: =200 * SX
+                              Wrap: =false
+                              X: =500 * SX
+                              Y: =28 * SY
+                        - lblNowDays_Sd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              Color: =If(ThisItem.DaysAway > 14, RGBA(180, 26, 26, 1), If(ThisItem.DaysAway > 7, RGBA(200, 120, 0, 1), RGBA(14, 28, 42, 1)))
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =56 * SY
+                              Size: =Round(16 * SF, 0)
+                              Text: =Text(ThisItem.DaysAway) & If(ThisItem.DaysAway = 1, " day", " days")
+                              Width: =110 * SX
+                              Wrap: =false
+                              X: =720 * SX
+                        - lblNowNotes_Sd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(58, 80, 104, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =56 * SY
+                              Size: =Round(12 * SF, 0)
+                              Text: =Coalesce(ThisItem.SendNotes, "")
+                              Width: =440 * SX
+                              X: =850 * SX
+                        - btnNowRow_Sd:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderStyle: =BorderStyle.None
+                              Height: =Parent.Height
+                              OnSelect: |-
+                                =Set(sdDetail, ThisItem);
+                                Set(sdShowDetail, true)
+                              Text: =""
+                              Width: =Parent.Width
+            - lblNowEmpty_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =24 * SY
+                  Size: =Round(14 * SF, 0)
+                  Text: ="Nothing is at service right now."
+                  Visible: =sdTab = "Now" && IsEmpty(colSdNow)
+                  Width: =1333 * SX
+                  Y: =160 * SY
+            - hHistItem_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="ITEM"
+                  Visible: =sdTab = "Hist"
+                  Width: =200 * SX
+                  Wrap: =false
+                  X: =24 * SX
+                  Y: =58 * SY
+            - hHistType_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="SERVICE TYPE"
+                  Visible: =sdTab = "Hist"
+                  Width: =120 * SX
+                  Wrap: =false
+                  X: =370 * SX
+                  Y: =58 * SY
+            - hHistDates_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="AT SERVICE  /  BACK BY"
+                  Visible: =sdTab = "Hist"
+                  Width: =220 * SX
+                  Wrap: =false
+                  X: =510 * SX
+                  Y: =58 * SY
+            - hHistDays_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="DAYS"
+                  Visible: =sdTab = "Hist"
+                  Width: =90 * SX
+                  Wrap: =false
+                  X: =730 * SX
+                  Y: =58 * SY
+            - hHistOut_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="OUTCOME"
+                  Visible: =sdTab = "Hist"
+                  Width: =200 * SX
+                  Wrap: =false
+                  X: =860 * SX
+                  Y: =58 * SY
+            - Gallery_Hist_Sd:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =372 * SY
+                  Items: =colSdHist
+                  TemplatePadding: =0
+                  TemplateSize: =62 * SY
+                  Visible: =sdTab = "Hist"
+                  Width: =1333 * SX
+                  Y: =78 * SY
+                Children:
+                  - Sd_HistRow:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =56 * SY
+                        RadiusBottomLeft: =12 * SR
+                        RadiusBottomRight: =12 * SR
+                        RadiusTopLeft: =12 * SR
+                        RadiusTopRight: =12 * SR
+                        Width: =1313 * SX
+                        X: =10 * SX
+                        Y: =3 * SY
+                      Children:
+                        - conHistBar_Sd:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =Switch(ThisItem.Category, "Wheelchair", RGBA(166, 199, 130, 1), "Cushion", RGBA(0, 144, 153, 1), "Backrest", RGBA(0, 200, 210, 1), RGBA(210, 218, 227, 1))
+                              Height: =56 * SY
+                              RadiusBottomLeft: =12 * SR
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =12 * SR
+                              RadiusTopRight: =0
+                              Width: =6 * SX
+                        - lblHistCode_Sd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(14, 28, 42, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =20 * SY
+                              Size: =Round(14 * SF, 0)
+                              Text: =ThisItem.Title
+                              Width: =330 * SX
+                              Wrap: =false
+                              X: =16 * SX
+                              Y: =6 * SY
+                        - lblHistDesc_Sd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =18 * SY
+                              Size: =Round(11 * SF, 0)
+                              Text: =Trim(ThisItem.Brand & " " & ThisItem.Model) & If(IsBlank(ThisItem.Width), "", "  ·  " & ThisItem.Width)
+                              Width: =330 * SX
+                              Wrap: =false
+                              X: =16 * SX
+                              Y: =28 * SY
+                        - lblHistType_Sd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(58, 80, 104, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =56 * SY
+                              Text: =Coalesce(ThisItem.ServiceType.Value, "—")
+                              Width: =130 * SX
+                              Wrap: =false
+                              X: =360 * SX
+                        - lblHistDates_Sd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(58, 80, 104, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =20 * SY
+                              Text: =Text(ThisItem.SentDateTime, "d mmm") & " – " & Text(ThisItem.ReturnedDateTime, "d mmm yyyy")
+                              Width: =220 * SX
+                              Wrap: =false
+                              X: =500 * SX
+                              Y: =6 * SY
+                        - lblHistBy_Sd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =18 * SY
+                              Size: =Round(11 * SF, 0)
+                              Text: =Coalesce(ThisItem.ReturnedByName, "—")
+                              Width: =220 * SX
+                              Wrap: =false
+                              X: =500 * SX
+                              Y: =28 * SY
+                        - lblHistDays_Sd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              Color: =RGBA(14, 28, 42, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =56 * SY
+                              Size: =Round(15 * SF, 0)
+                              Text: =Coalesce(Text(ThisItem.DaysAtService), "?") & " d"
+                              Width: =90 * SX
+                              Wrap: =false
+                              X: =730 * SX
+                        - conHistOut_Sd:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =If(StartsWith(Coalesce(ThisItem.Outcome.Value, ""), "Condemned"), RGBA(254, 242, 242, 1), RGBA(232, 246, 240, 1))
+                              Height: =26 * SY
+                              RadiusBottomLeft: =13 * SR
+                              RadiusBottomRight: =13 * SR
+                              RadiusTopLeft: =13 * SR
+                              RadiusTopRight: =13 * SR
+                              Width: =250 * SX
+                              X: =850 * SX
+                              Y: =15 * SY
+                            Children:
+                              - lblHistOut_Sd:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Align: =Align.Center
+                                    Color: =If(StartsWith(Coalesce(ThisItem.Outcome.Value, ""), "Condemned"), RGBA(180, 26, 26, 1), RGBA(12, 122, 82, 1))
+                                    Font: =Font.'Segoe UI'
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Size: =Round(11 * SF, 0)
+                                    Text: =Coalesce(ThisItem.Outcome.Value, "—")
+                                    Width: =Parent.Width
+                                    Wrap: =false
+                        - btnHistRow_Sd:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderStyle: =BorderStyle.None
+                              Height: =Parent.Height
+                              OnSelect: |-
+                                =Set(sdDetail, ThisItem);
+                                Set(sdShowDetail, true)
+                              Text: =""
+                              Width: =Parent.Width
+            - lblHistEmpty_Sd:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =24 * SY
+                  Size: =Round(14 * SF, 0)
+                  Text: ="No finished services in this period."
+                  Visible: =sdTab = "Hist" && IsEmpty(colSdHist)
+                  Width: =1333 * SX
+                  Y: =160 * SY
+      - Sd_Popup:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(14, 28, 42, 0.45)
+            Height: =768 * SY
+            Visible: =sdShowDetail
+            Width: =1366 * SX
+          Children:
+            - btnScrim_Sd:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  BorderStyle: =BorderStyle.None
+                  Height: =Parent.Height
+                  OnSelect: =Set(sdShowDetail, false)
+                  Text: =""
+                  Width: =Parent.Width
+            - Sd_PopupCard:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =590 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =640 * SX
+                  X: =363 * SX
+                  Y: =89 * SY
+                Children:
+                  - lblDTitle_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =30 * SY
+                        Size: =Round(20 * SF, 0)
+                        Text: =sdDetail.Title & "  ·  " & Trim(sdDetail.Brand & " " & sdDetail.Model)
+                        Width: =580 * SX
+                        Wrap: =false
+                        X: =24 * SX
+                        Y: =16 * SY
+                  - lblDSub_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(58, 80, 104, 1)
+                        Font: =Font.'Segoe UI'
+                        Height: =20 * SY
+                        Text: =sdDetail.ServiceType.Value & "  ·  " & sdDetail.ServiceStatus.Value
+                        Width: =580 * SX
+                        Wrap: =false
+                        X: =24 * SX
+                        Y: =48 * SY
+                  - capDCat_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Size: =Round(11 * SF, 0)
+                        Text: ="CATEGORY"
+                        Width: =280 * SX
+                        X: =24 * SX
+                        Y: =84 * SY
+                  - lblDCat_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24 * SY
+                        Size: =Round(14 * SF, 0)
+                        Text: =Coalesce(sdDetail.Category, "—")
+                        Width: =280 * SX
+                        Wrap: =false
+                        X: =24 * SX
+                        Y: =100 * SY
+                  - capDSize_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Size: =Round(11 * SF, 0)
+                        Text: ="SIZE (W × D × H)"
+                        Width: =280 * SX
+                        X: =324 * SX
+                        Y: =84 * SY
+                  - lblDSize_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24 * SY
+                        Size: =Round(14 * SF, 0)
+                        Text: =Coalesce(sdDetail.Width & " × " & sdDetail.Depth & " × " & sdDetail.Height, "—")
+                        Width: =280 * SX
+                        Wrap: =false
+                        X: =324 * SX
+                        Y: =100 * SY
+                  - capDType_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Size: =Round(11 * SF, 0)
+                        Text: ="WHEELCHAIR TYPE"
+                        Width: =280 * SX
+                        X: =24 * SX
+                        Y: =138 * SY
+                  - lblDType_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24 * SY
+                        Size: =Round(14 * SF, 0)
+                        Text: =Coalesce(sdDetail.WheelchairType, "—")
+                        Width: =280 * SX
+                        Wrap: =false
+                        X: =24 * SX
+                        Y: =154 * SY
+                  - capDUse_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Size: =Round(11 * SF, 0)
+                        Text: ="DAYS IN USE WHEN SENT"
+                        Width: =280 * SX
+                        X: =324 * SX
+                        Y: =138 * SY
+                  - lblDUse_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24 * SY
+                        Size: =Round(14 * SF, 0)
+                        Text: =Coalesce(Text(sdDetail.DaysInUseAtSend), "—")
+                        Width: =280 * SX
+                        Wrap: =false
+                        X: =324 * SX
+                        Y: =154 * SY
+                  - capDSent_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Size: =Round(11 * SF, 0)
+                        Text: ="SENT"
+                        Width: =280 * SX
+                        X: =24 * SX
+                        Y: =192 * SY
+                  - lblDSent_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24 * SY
+                        Size: =Round(14 * SF, 0)
+                        Text: =Coalesce(Text(sdDetail.SentDateTime, "d mmm yyyy, hh:mm"), "—")
+                        Width: =280 * SX
+                        Wrap: =false
+                        X: =24 * SX
+                        Y: =208 * SY
+                  - capDSentBy_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Size: =Round(11 * SF, 0)
+                        Text: ="SENT BY"
+                        Width: =280 * SX
+                        X: =324 * SX
+                        Y: =192 * SY
+                  - lblDSentBy_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24 * SY
+                        Size: =Round(14 * SF, 0)
+                        Text: =Coalesce(sdDetail.SentByName, "—")
+                        Width: =280 * SX
+                        Wrap: =false
+                        X: =324 * SX
+                        Y: =208 * SY
+                  - capDRet_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Size: =Round(11 * SF, 0)
+                        Text: ="RETURNED"
+                        Width: =280 * SX
+                        X: =24 * SX
+                        Y: =246 * SY
+                  - lblDRet_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24 * SY
+                        Size: =Round(14 * SF, 0)
+                        Text: =Coalesce(If(IsBlank(sdDetail.ReturnedDateTime), "Not yet", Text(sdDetail.ReturnedDateTime, "d mmm yyyy, hh:mm")), "—")
+                        Width: =280 * SX
+                        Wrap: =false
+                        X: =24 * SX
+                        Y: =262 * SY
+                  - capDRetBy_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Size: =Round(11 * SF, 0)
+                        Text: ="RETURNED BY"
+                        Width: =280 * SX
+                        X: =324 * SX
+                        Y: =246 * SY
+                  - lblDRetBy_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24 * SY
+                        Size: =Round(14 * SF, 0)
+                        Text: =Coalesce(sdDetail.ReturnedByName, "—")
+                        Width: =280 * SX
+                        Wrap: =false
+                        X: =324 * SX
+                        Y: =262 * SY
+                  - capDDays_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Size: =Round(11 * SF, 0)
+                        Text: ="DAYS AT SERVICE"
+                        Width: =280 * SX
+                        X: =24 * SX
+                        Y: =300 * SY
+                  - lblDDays_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24 * SY
+                        Size: =Round(14 * SF, 0)
+                        Text: =Coalesce(Text(sdDetail.DaysAtService), "—")
+                        Width: =280 * SX
+                        Wrap: =false
+                        X: =24 * SX
+                        Y: =316 * SY
+                  - capDOut_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Size: =Round(11 * SF, 0)
+                        Text: ="OUTCOME"
+                        Width: =280 * SX
+                        X: =324 * SX
+                        Y: =300 * SY
+                  - lblDOut_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =24 * SY
+                        Size: =Round(14 * SF, 0)
+                        Text: =Coalesce(sdDetail.Outcome.Value, "—")
+                        Width: =280 * SX
+                        Wrap: =false
+                        X: =324 * SX
+                        Y: =316 * SY
+                  - capDSendN_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Size: =Round(11 * SF, 0)
+                        Text: ="WHAT NEEDED DOING"
+                        Width: =300 * SX
+                        X: =24 * SX
+                        Y: =354 * SY
+                  - lblDSendN_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(58, 80, 104, 1)
+                        Font: =Font.'Segoe UI'
+                        Text: =Coalesce(sdDetail.SendNotes, "—")
+                        Width: =590 * SX
+                        X: =24 * SX
+                        Y: =370 * SY
+                  - capDRetN_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Size: =Round(11 * SF, 0)
+                        Text: ="WHAT WAS DONE"
+                        Width: =300 * SX
+                        X: =24 * SX
+                        Y: =416 * SY
+                  - lblDRetN_Sd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(58, 80, 104, 1)
+                        Font: =Font.'Segoe UI'
+                        Text: =Coalesce(sdDetail.ReturnNotes, "—")
+                        Width: =590 * SX
+                        X: =24 * SX
+                        Y: =432 * SY
+                  - conClose_Sd:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(26, 90, 153, 1)
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(26, 90, 153, 1)
+                        Height: =42 * SY
+                        RadiusBottomLeft: =21 * SR
+                        RadiusBottomRight: =21 * SR
+                        RadiusTopLeft: =21 * SR
+                        RadiusTopRight: =21 * SR
+                        Width: =240 * SX
+                        X: =200 * SX
+                        Y: =526 * SY
+                      Children:
+                        - btnDClose_Sd:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =21 * SR
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(255, 255, 255, 1)
+                              FontSize: =Round(15 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =42 * SY
+                              OnSelect: =Set(sdShowDetail, false)
+                              Text: ="Close"
+                              Width: =240 * SX

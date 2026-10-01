@@ -18,12 +18,8 @@ Screens:
           Control: Button@0.0.45
           Properties:
             Height: =10
-            Width: =10
-            Text: =""
-            Visible: =false
             OnSelect: |-
               =Set(dhLoading, true);
-
               // every patient on every ward
               ClearCollect(colDhW, ForAll(
                       Ward_4A_Shared As w,
@@ -58,7 +54,6 @@ Screens:
                       }
                   ));
               RemoveIf(colDhW, IsBlank(Patient));
-
               // stock today
               ClearCollect(
                   colDhInv,
@@ -75,10 +70,8 @@ Screens:
                       iPat, Trim(Coalesce('Patient Name', ""))
                   )
               );
-
               // items marked In Service and the service rows that are still open
               ClearCollect(colDhSvc, Filter(Service_Log, ServiceStatus.Value = "In Service"));
-
               // last 90 days: failed audits nobody was told about, and returns that matched no loan
               ClearCollect(
                   colDhAud,
@@ -88,16 +81,15 @@ Screens:
                   colDhLeg,
                   Filter(Equipment_Usage_Log, EpisodeStatus.Value = "Legacy unmatched" && EventDateTime >= DateAdd(Today(), -90, TimeUnit.Days))
               );
-
               Set(dhLoading, false);
               Select(btnBuild_Dh)
+            Text: =""
+            Visible: =false
+            Width: =10
       - btnBuild_Dh:
           Control: Button@0.0.45
           Properties:
             Height: =10
-            Width: =10
-            Text: =""
-            Visible: =false
             OnSelect: |-
               =ClearCollect(
                   colDhIssues,
@@ -106,141 +98,118 @@ Screens:
                       0
                   )
               );
-
               // ---------------- patients on the wards
               ForAll(
                   Filter(colDhW, UrnT = "") As p,
                   Collect(colDhIssues, { Group: "Ward", Kind: "No URN", Sev: "Medium", SevN: 2, WardCode: p.Ward, Ref: p.Ward & "|" & p.ID,
                       Where: "Ward " & p.Ward & If(p.BedT = "", "", "  ·  Bed " & p.BedT), Who: p.Patient, Detail: "The URN is empty, so equipment and audits cannot be matched to this patient." })
               );
-
               ForAll(
                   Filter(colDhW, !HasDOB) As p,
                   Collect(colDhIssues, { Group: "Ward", Kind: "No date of birth", Sev: "Low", SevN: 1, WardCode: p.Ward, Ref: p.Ward & "|" & p.ID,
                       Where: "Ward " & p.Ward & If(p.BedT = "", "", "  ·  Bed " & p.BedT), Who: p.Patient, Detail: "Date of birth is empty." })
               );
-
               ForAll(
                   Filter(colDhW, !HasDiag) As p,
                   Collect(colDhIssues, { Group: "Ward", Kind: "No diagnosis", Sev: "Medium", SevN: 2, WardCode: p.Ward, Ref: p.Ward & "|" & p.ID,
                       Where: "Ward " & p.Ward & If(p.BedT = "", "", "  ·  Bed " & p.BedT), Who: p.Patient, Detail: "No diagnosis chosen, so the patient is missing from the ward charts and staffing." })
               );
-
               ForAll(
                   Filter(colDhW, IsBlank(Admit)) As p,
                   Collect(colDhIssues, { Group: "Ward", Kind: "No admission date", Sev: "Medium", SevN: 2, WardCode: p.Ward, Ref: p.Ward & "|" & p.ID,
                       Where: "Ward " & p.Ward & If(p.BedT = "", "", "  ·  Bed " & p.BedT), Who: p.Patient, Detail: "Length of stay cannot be worked out." })
               );
-
               ForAll(
                   Filter(colDhW, !IsBlank(Admit) && Admit > Today()) As p,
                   Collect(colDhIssues, { Group: "Ward", Kind: "Admission date in the future", Sev: "Medium", SevN: 2, WardCode: p.Ward, Ref: p.Ward & "|" & p.ID,
                       Where: "Ward " & p.Ward & If(p.BedT = "", "", "  ·  Bed " & p.BedT), Who: p.Patient, Detail: "Admission date is " & Text(p.Admit, "d mmm yyyy") & "." })
               );
-
               ForAll(
                   Filter(colDhW, !HasPT) As p,
                   Collect(colDhIssues, { Group: "Ward", Kind: "No physio assigned", Sev: "Medium", SevN: 2, WardCode: p.Ward, Ref: p.Ward & "|" & p.ID,
                       Where: "Ward " & p.Ward & If(p.BedT = "", "", "  ·  Bed " & p.BedT), Who: p.Patient, Detail: "No physiotherapist is attached to this patient." })
               );
-
               ForAll(
                   Filter(colDhW, !IsBlank(EDD) && EDD < Today()) As p,
                   Collect(colDhIssues, { Group: "Ward", Kind: "EDD has passed", Sev: "High", SevN: 3, WardCode: p.Ward, Ref: p.Ward & "|" & p.ID,
                       Where: "Ward " & p.Ward & If(p.BedT = "", "", "  ·  Bed " & p.BedT), Who: p.Patient, Detail: "EDD was " & Text(p.EDD, "d mmm yyyy") & " (" & DateDiff(p.EDD, Today(), TimeUnit.Days) & " days ago). Update it or discharge the patient." })
               );
-
               ForAll(
                   Filter(colDhW, !IsBlank(EDD) && !IsBlank(Admit) && EDD < Admit) As p,
                   Collect(colDhIssues, { Group: "Ward", Kind: "EDD before admission", Sev: "High", SevN: 3, WardCode: p.Ward, Ref: p.Ward & "|" & p.ID,
                       Where: "Ward " & p.Ward & If(p.BedT = "", "", "  ·  Bed " & p.BedT), Who: p.Patient, Detail: "EDD " & Text(p.EDD, "d mmm yyyy") & " is before admission " & Text(p.Admit, "d mmm yyyy") & "." })
               );
-
               ForAll(
                   Filter(colDhW, IsBlank(EDD)) As p,
                   Collect(colDhIssues, { Group: "Ward", Kind: "No EDD", Sev: "Low", SevN: 1, WardCode: p.Ward, Ref: p.Ward & "|" & p.ID,
                       Where: "Ward " & p.Ward & If(p.BedT = "", "", "  ·  Bed " & p.BedT), Who: p.Patient, Detail: "No expected discharge date." })
               );
-
               ForAll(
                   Filter(colDhW As q, q.UrnT <> "" && CountRows(Filter(colDhW, UrnT = q.UrnT)) > 1) As p,
                   Collect(colDhIssues, { Group: "Ward", Kind: "Same URN twice", Sev: "High", SevN: 3, WardCode: p.Ward, Ref: p.Ward & "|" & p.ID,
                       Where: "Ward " & p.Ward & If(p.BedT = "", "", "  ·  Bed " & p.BedT), Who: p.Patient, Detail: "This URN is on " & CountRows(Filter(colDhW, UrnT = p.UrnT)) & " ward rows (" & Concat(Filter(colDhW, UrnT = p.UrnT), Ward, ", ") & ")." })
               );
-
               ForAll(
                   Filter(colDhW As q, q.BedT <> "" && CountRows(Filter(colDhW, Ward = q.Ward && BedT = q.BedT)) > 1) As p,
                   Collect(colDhIssues, { Group: "Ward", Kind: "Same bed twice", Sev: "High", SevN: 3, WardCode: p.Ward, Ref: p.Ward & "|" & p.ID,
                       Where: "Ward " & p.Ward & If(p.BedT = "", "", "  ·  Bed " & p.BedT), Who: p.Patient, Detail: "More than one patient is in bed " & p.BedT & " on ward " & p.Ward & "." })
               );
-
               // ---------------- stock
               ForAll(
                   Filter(colDhInv, iStatus = "Allocated" && !IsBlank('Date Signed Out') && DateDiff('Date Signed Out', Today(), TimeUnit.Days) > 42) As e,
                   Collect(colDhIssues, { Group: "Equipment", Kind: "Out over 6 weeks", Sev: "Medium", SevN: 2, WardCode: e.iWard, Ref: "E|" & e.ID,
                       Where: If(e.iWard = "", "No ward", "Ward " & e.iWard) & "  ·  " & e.iStatus, Who: e.Title & If(e.iDesc = "", "", "  ·  " & e.iDesc), Detail: "Out for " & DateDiff(e.'Date Signed Out', Today(), TimeUnit.Days) & " days with " & Coalesce(e.Physiotherapist, "no physio recorded") & "." })
               );
-
               ForAll(
                   Filter(colDhInv, iStatus = "Allocated" && IsBlank('Date Signed Out')) As e,
                   Collect(colDhIssues, { Group: "Equipment", Kind: "Allocated with no date", Sev: "Medium", SevN: 2, WardCode: e.iWard, Ref: "E|" & e.ID,
                       Where: If(e.iWard = "", "No ward", "Ward " & e.iWard) & "  ·  " & e.iStatus, Who: e.Title & If(e.iDesc = "", "", "  ·  " & e.iDesc), Detail: "Allocated but there is no sign-out date, so its time out cannot be counted." })
               );
-
               ForAll(
                   Filter(colDhInv, iStatus = "Allocated" && iUrn = "") As e,
                   Collect(colDhIssues, { Group: "Equipment", Kind: "Allocated with no URN", Sev: "High", SevN: 3, WardCode: e.iWard, Ref: "E|" & e.ID,
                       Where: If(e.iWard = "", "No ward", "Ward " & e.iWard) & "  ·  " & e.iStatus, Who: e.Title & If(e.iDesc = "", "", "  ·  " & e.iDesc), Detail: "Allocated to " & Coalesce(e.iPat, "nobody recorded") & " with no URN, so an audit cannot match it." })
               );
-
               ForAll(
                   Filter(colDhInv, iStatus = "Allocated" && IsBlank(Physiotherapist)) As e,
                   Collect(colDhIssues, { Group: "Equipment", Kind: "Allocated with no physio", Sev: "Medium", SevN: 2, WardCode: e.iWard, Ref: "E|" & e.ID,
                       Where: If(e.iWard = "", "No ward", "Ward " & e.iWard) & "  ·  " & e.iStatus, Who: e.Title & If(e.iDesc = "", "", "  ·  " & e.iDesc), Detail: "No physio is recorded, so a failed audit has nobody to be escalated to." })
               );
-
               ForAll(
                   Filter(colDhInv, OutOfService = true && iStatus in ["Available", "Allocated"]) As e,
                   Collect(colDhIssues, { Group: "Equipment", Kind: "Marked out of service but in use", Sev: "High", SevN: 3, WardCode: e.iWard, Ref: "E|" & e.ID,
                       Where: If(e.iWard = "", "No ward", "Ward " & e.iWard) & "  ·  " & e.iStatus, Who: e.Title & If(e.iDesc = "", "", "  ·  " & e.iDesc), Detail: "The out of service flag is set but the status is " & e.iStatus & "." })
               );
-
               ForAll(
                   Filter(colDhInv, iStatus = "In Service" && IsBlank(LookUp(colDhSvc, EquipmentItemID = ID))) As e,
                   Collect(colDhIssues, { Group: "Equipment", Kind: "In Service with no service record", Sev: "Medium", SevN: 2, WardCode: e.iWard, Ref: "E|" & e.ID,
                       Where: If(e.iWard = "", "No ward", "Ward " & e.iWard) & "  ·  " & e.iStatus, Who: e.Title & If(e.iDesc = "", "", "  ·  " & e.iDesc), Detail: "Status is In Service but there is no open Service_Log row." })
               );
-
               ForAll(
                   Filter(colDhInv, iCat = "") As e,
                   Collect(colDhIssues, { Group: "Equipment", Kind: "No category", Sev: "Medium", SevN: 2, WardCode: e.iWard, Ref: "E|" & e.ID,
                       Where: If(e.iWard = "", "No ward", "Ward " & e.iWard) & "  ·  " & e.iStatus, Who: e.Title & If(e.iDesc = "", "", "  ·  " & e.iDesc), Detail: "Category is empty so it will not appear in Find or Availability." })
               );
-
               ForAll(
                   Filter(colDhInv, iCat in ["Wheelchair", "Cushion", "Backrest"] && iWidth = "") As e,
                   Collect(colDhIssues, { Group: "Equipment", Kind: "No width", Sev: "Medium", SevN: 2, WardCode: e.iWard, Ref: "E|" & e.ID,
                       Where: If(e.iWard = "", "No ward", "Ward " & e.iWard) & "  ·  " & e.iStatus, Who: e.Title & If(e.iDesc = "", "", "  ·  " & e.iDesc), Detail: "Width is empty so it is missing from the size tables." })
               );
-
               ForAll(
                   Filter(colDhInv, iCat = "Wheelchair" && iType = "") As e,
                   Collect(colDhIssues, { Group: "Equipment", Kind: "No wheelchair type", Sev: "Low", SevN: 1, WardCode: e.iWard, Ref: "E|" & e.ID,
                       Where: If(e.iWard = "", "No ward", "Ward " & e.iWard) & "  ·  " & e.iStatus, Who: e.Title & If(e.iDesc = "", "", "  ·  " & e.iDesc), Detail: "Wheelchair type is empty." })
               );
-
               ForAll(
                   Filter(colDhInv, IsBlank(Brand) || IsBlank(Model)) As e,
                   Collect(colDhIssues, { Group: "Equipment", Kind: "No brand or model", Sev: "Low", SevN: 1, WardCode: e.iWard, Ref: "E|" & e.ID,
                       Where: If(e.iWard = "", "No ward", "Ward " & e.iWard) & "  ·  " & e.iStatus, Who: e.Title & If(e.iDesc = "", "", "  ·  " & e.iDesc), Detail: "Brand or model is empty." })
               );
-
               ForAll(
                   Filter(colDhInv, iStatus = "Available" && iLoc = "") As e,
                   Collect(colDhIssues, { Group: "Equipment", Kind: "Available with no location", Sev: "Low", SevN: 1, WardCode: e.iWard, Ref: "E|" & e.ID,
                       Where: If(e.iWard = "", "No ward", "Ward " & e.iWard) & "  ·  " & e.iStatus, Who: e.Title & If(e.iDesc = "", "", "  ·  " & e.iDesc), Detail: "No location recorded, so staff cannot find it." })
               );
-
               // ---------------- audits and returns
               ForAll(
                   Filter(colDhAud, EscalationSent <> true) As a,
@@ -264,7 +233,6 @@ Screens:
                       }
                   )
               );
-
               // headline numbers
               Set(
                   dhKpi,
@@ -282,15 +250,14 @@ Screens:
                       )
                   }
               );
-
               Select(btnShow_Dh)
+            Text: =""
+            Visible: =false
+            Width: =10
       - btnShow_Dh:
           Control: Button@0.0.45
           Properties:
             Height: =10
-            Width: =10
-            Text: =""
-            Visible: =false
             OnSelect: |-
               =// issues that match the filters (the kind list ignores the kind chosen)
               ClearCollect(
@@ -321,6 +288,9 @@ Screens:
                   colDhShow,
                   SortByColumns(Filter(colDhPool, dhKind = "" || Kind = dhKind), "SevN", SortOrder.Descending, "Where", SortOrder.Ascending)
               )
+            Text: =""
+            Visible: =false
+            Width: =10
       - Dh_Title:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
@@ -328,13 +298,13 @@ Screens:
             DropShadow: =DropShadow.Regular
             Fill: =RGBA(7, 95, 115, 1)
             Height: =70
-            Width: =1333
-            X: =18
-            Y: =12
             RadiusBottomLeft: =18
             RadiusBottomRight: =18
             RadiusTopLeft: =18
             RadiusTopRight: =18
+            Width: =1333
+            X: =18
+            Y: =12
           Children:
             - imgHeaderGradient_Dh:
                 Control: Image@2.2.3
@@ -348,14 +318,13 @@ Screens:
                 Properties:
                   Font: =Font.'Segoe UI'
                   FontColor: =RGBA(255, 255, 255, 1)
-                  Height: =36
+                  Height: =44
                   Size: =28
                   Text: ="Data Health"
                   VerticalAlign: =VerticalAlign.Middle
                   Weight: ='TextCanvas.Weight'.Bold
                   Width: =700
                   X: =76
-                  Y: =8
             - lblSub_DhHdr:
                 Control: Text@0.0.51
                 Properties:
@@ -376,26 +345,25 @@ Screens:
                   FontSize: =50
                   Height: =70
                   Icon: ="ChevronLeft"
+                  OnSelect: =Back(ScreenTransition.Fade)
                   Text: =""
                   X: =1
-                  OnSelect: =Back(ScreenTransition.Fade)
             - conReload_Dh:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
                   DropShadow: =DropShadow.None
                   Fill: =RGBA(255, 255, 255, 1)
                   Height: =40
-                  Width: =140
-                  X: =1177
-                  Y: =15
                   RadiusBottomLeft: =20
                   RadiusBottomRight: =20
                   RadiusTopLeft: =20
                   RadiusTopRight: =20
-                  BorderColor: =RGBA(14, 42, 70, 0.12)
-                  BorderStyle: =BorderStyle.Solid
-                  BorderThickness: =1
+                  Width: =140
+                  X: =1177
+                  Y: =15
                 Children:
                   - btnReload_Dh:
                       Control: Button@0.0.45
@@ -407,38 +375,36 @@ Screens:
                         FontSize: =13
                         FontWeight: =FontWeight.Bold
                         Height: =40
-                        Width: =140
-                        Text: ="Reload"
-                        OnSelect: =Select(btnLoad_Dh)
                         Icon: ="ArrowClockwise"
                         IconStyle: ='ButtonCanvas.IconStyle'.Filled
                         Layout: ='ButtonCanvas.Layout'.IconBefore
+                        OnSelect: =Select(btnLoad_Dh)
+                        Text: ="Reload"
+                        Width: =140
       - Dh_CardFilters:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            DropShadow: =DropShadow.Light
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
             Fill: =RGBA(255, 255, 255, 1)
             Height: =84
-            Width: =1333
-            X: =18
-            Y: =95
             RadiusBottomLeft: =18
             RadiusBottomRight: =18
             RadiusTopLeft: =18
             RadiusTopRight: =18
-            BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
-            BorderThickness: =1
+            Width: =1333
+            X: =18
+            Y: =95
           Children:
             - capGrp_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
                   Height: =16
+                  Size: =11
                   Text: ="WHAT"
                   Width: =200
                   X: =20
@@ -447,19 +413,18 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  BorderColor: =If(dhGroup = "All", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
                   DropShadow: =DropShadow.None
                   Fill: =If(dhGroup = "All", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
                   Height: =40
-                  Width: =52
-                  X: =20
-                  Y: =30
                   RadiusBottomLeft: =20
                   RadiusBottomRight: =20
                   RadiusTopLeft: =20
                   RadiusTopRight: =20
-                  BorderColor: =If(dhGroup = "All", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
-                  BorderStyle: =BorderStyle.Solid
-                  BorderThickness: =1
+                  Width: =52
+                  X: =20
+                  Y: =30
                 Children:
                   - btnGrpAll_Dh:
                       Control: Button@0.0.45
@@ -471,29 +436,28 @@ Screens:
                         FontSize: =12
                         FontWeight: =FontWeight.Bold
                         Height: =40
-                        Width: =52
-                        Text: ="All"
                         OnSelect: |-
                           =Set(dhGroup, "All");
                           Set(dhKind, "");
                           Select(btnShow_Dh)
+                        Text: ="All"
+                        Width: =52
             - conGrpW_Dh:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  BorderColor: =If(dhGroup = "Ward", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
                   DropShadow: =DropShadow.None
                   Fill: =If(dhGroup = "Ward", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
                   Height: =40
-                  Width: =82
-                  X: =78
-                  Y: =30
                   RadiusBottomLeft: =20
                   RadiusBottomRight: =20
                   RadiusTopLeft: =20
                   RadiusTopRight: =20
-                  BorderColor: =If(dhGroup = "Ward", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
-                  BorderStyle: =BorderStyle.Solid
-                  BorderThickness: =1
+                  Width: =82
+                  X: =78
+                  Y: =30
                 Children:
                   - btnGrpW_Dh:
                       Control: Button@0.0.45
@@ -505,29 +469,28 @@ Screens:
                         FontSize: =12
                         FontWeight: =FontWeight.Bold
                         Height: =40
-                        Width: =82
-                        Text: ="Patients"
                         OnSelect: |-
                           =Set(dhGroup, "Ward");
                           Set(dhKind, "");
                           Select(btnShow_Dh)
+                        Text: ="Patients"
+                        Width: =82
             - conGrpE_Dh:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  BorderColor: =If(dhGroup = "Equipment", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
                   DropShadow: =DropShadow.None
                   Fill: =If(dhGroup = "Equipment", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
                   Height: =40
-                  Width: =96
-                  X: =166
-                  Y: =30
                   RadiusBottomLeft: =20
                   RadiusBottomRight: =20
                   RadiusTopLeft: =20
                   RadiusTopRight: =20
-                  BorderColor: =If(dhGroup = "Equipment", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
-                  BorderStyle: =BorderStyle.Solid
-                  BorderThickness: =1
+                  Width: =96
+                  X: =166
+                  Y: =30
                 Children:
                   - btnGrpE_Dh:
                       Control: Button@0.0.45
@@ -539,29 +502,27 @@ Screens:
                         FontSize: =12
                         FontWeight: =FontWeight.Bold
                         Height: =40
-                        Width: =96
-                        Text: ="Equipment"
                         OnSelect: |-
                           =Set(dhGroup, "Equipment");
                           Set(dhKind, "");
                           Select(btnShow_Dh)
+                        Text: ="Equipment"
             - conGrpA_Dh:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  BorderColor: =If(dhGroup = "Audit", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
                   DropShadow: =DropShadow.None
                   Fill: =If(dhGroup = "Audit", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
                   Height: =40
-                  Width: =78
-                  X: =268
-                  Y: =30
                   RadiusBottomLeft: =20
                   RadiusBottomRight: =20
                   RadiusTopLeft: =20
                   RadiusTopRight: =20
-                  BorderColor: =If(dhGroup = "Audit", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
-                  BorderStyle: =BorderStyle.Solid
-                  BorderThickness: =1
+                  Width: =78
+                  X: =268
+                  Y: =30
                 Children:
                   - btnGrpA_Dh:
                       Control: Button@0.0.45
@@ -573,20 +534,20 @@ Screens:
                         FontSize: =12
                         FontWeight: =FontWeight.Bold
                         Height: =40
-                        Width: =78
-                        Text: ="Audits"
                         OnSelect: |-
                           =Set(dhGroup, "Audit");
                           Set(dhKind, "");
                           Select(btnShow_Dh)
+                        Text: ="Audits"
+                        Width: =78
             - capSev_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
                   Height: =16
+                  Size: =11
                   Text: ="HOW SERIOUS"
                   Width: =200
                   X: =372
@@ -595,19 +556,18 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  BorderColor: =If(dhSev = "All", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
                   DropShadow: =DropShadow.None
                   Fill: =If(dhSev = "All", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
                   Height: =40
-                  Width: =52
-                  X: =372
-                  Y: =30
                   RadiusBottomLeft: =20
                   RadiusBottomRight: =20
                   RadiusTopLeft: =20
                   RadiusTopRight: =20
-                  BorderColor: =If(dhSev = "All", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
-                  BorderStyle: =BorderStyle.Solid
-                  BorderThickness: =1
+                  Width: =52
+                  X: =372
+                  Y: =30
                 Children:
                   - btnSevAll_Dh:
                       Control: Button@0.0.45
@@ -619,29 +579,28 @@ Screens:
                         FontSize: =12
                         FontWeight: =FontWeight.Bold
                         Height: =40
-                        Width: =52
-                        Text: ="All"
                         OnSelect: |-
                           =Set(dhSev, "All");
                           Set(dhKind, "");
                           Select(btnShow_Dh)
+                        Text: ="All"
+                        Width: =52
             - conSevH_Dh:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  BorderColor: =If(dhSev = "High", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
                   DropShadow: =DropShadow.None
                   Fill: =If(dhSev = "High", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
                   Height: =40
-                  Width: =66
-                  X: =430
-                  Y: =30
                   RadiusBottomLeft: =20
                   RadiusBottomRight: =20
                   RadiusTopLeft: =20
                   RadiusTopRight: =20
-                  BorderColor: =If(dhSev = "High", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
-                  BorderStyle: =BorderStyle.Solid
-                  BorderThickness: =1
+                  Width: =66
+                  X: =430
+                  Y: =30
                 Children:
                   - btnSevH_Dh:
                       Control: Button@0.0.45
@@ -653,29 +612,28 @@ Screens:
                         FontSize: =12
                         FontWeight: =FontWeight.Bold
                         Height: =40
-                        Width: =66
-                        Text: ="High"
                         OnSelect: |-
                           =Set(dhSev, "High");
                           Set(dhKind, "");
                           Select(btnShow_Dh)
+                        Text: ="High"
+                        Width: =66
             - conSevM_Dh:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  BorderColor: =If(dhSev = "Medium", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
                   DropShadow: =DropShadow.None
                   Fill: =If(dhSev = "Medium", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
                   Height: =40
-                  Width: =82
-                  X: =502
-                  Y: =30
                   RadiusBottomLeft: =20
                   RadiusBottomRight: =20
                   RadiusTopLeft: =20
                   RadiusTopRight: =20
-                  BorderColor: =If(dhSev = "Medium", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
-                  BorderStyle: =BorderStyle.Solid
-                  BorderThickness: =1
+                  Width: =82
+                  X: =502
+                  Y: =30
                 Children:
                   - btnSevM_Dh:
                       Control: Button@0.0.45
@@ -687,29 +645,28 @@ Screens:
                         FontSize: =12
                         FontWeight: =FontWeight.Bold
                         Height: =40
-                        Width: =82
-                        Text: ="Medium"
                         OnSelect: |-
                           =Set(dhSev, "Medium");
                           Set(dhKind, "");
                           Select(btnShow_Dh)
+                        Text: ="Medium"
+                        Width: =82
             - conSevL_Dh:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  BorderColor: =If(dhSev = "Low", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
                   DropShadow: =DropShadow.None
                   Fill: =If(dhSev = "Low", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
                   Height: =40
-                  Width: =62
-                  X: =590
-                  Y: =30
                   RadiusBottomLeft: =20
                   RadiusBottomRight: =20
                   RadiusTopLeft: =20
                   RadiusTopRight: =20
-                  BorderColor: =If(dhSev = "Low", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
-                  BorderStyle: =BorderStyle.Solid
-                  BorderThickness: =1
+                  Width: =62
+                  X: =590
+                  Y: =30
                 Children:
                   - btnSevL_Dh:
                       Control: Button@0.0.45
@@ -721,20 +678,20 @@ Screens:
                         FontSize: =12
                         FontWeight: =FontWeight.Bold
                         Height: =40
-                        Width: =62
-                        Text: ="Low"
                         OnSelect: |-
                           =Set(dhSev, "Low");
                           Set(dhKind, "");
                           Select(btnShow_Dh)
+                        Text: ="Low"
+                        Width: =62
             - capWard_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
                   Height: =16
+                  Size: =11
                   Text: ="WARD"
                   Width: =110
                   X: =680
@@ -743,19 +700,18 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
+                  BorderThickness: =1
                   DropShadow: =DropShadow.None
                   Fill: =RGBA(255, 255, 255, 1)
                   Height: =40
-                  Width: =120
-                  X: =680
-                  Y: =30
                   RadiusBottomLeft: =10
                   RadiusBottomRight: =10
                   RadiusTopLeft: =10
                   RadiusTopRight: =10
-                  BorderColor: =RGBA(14, 42, 70, 0.22)
-                  BorderStyle: =BorderStyle.Solid
-                  BorderThickness: =1
+                  Width: =120
+                  X: =680
+                  Y: =30
                 Children:
                   - ddWard_Dh:
                       Control: Classic/DropDown@2.3.1
@@ -767,7 +723,6 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: =If(dhWard = "All", "All wards", dhWard)
                         Font: =Font.'Segoe UI'
-                        Height: =40
                         Items: =colDhWardOpts
                         Items.Value: =Value
                         OnChange: |-
@@ -779,11 +734,11 @@ Screens:
             - capSearch_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
                   Height: =16
+                  Size: =11
                   Text: ="SEARCH"
                   Width: =200
                   X: =820
@@ -792,19 +747,18 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
+                  BorderThickness: =1
                   DropShadow: =DropShadow.None
                   Fill: =RGBA(255, 255, 255, 1)
                   Height: =40
-                  Width: =374
-                  X: =820
-                  Y: =30
                   RadiusBottomLeft: =10
                   RadiusBottomRight: =10
                   RadiusTopLeft: =10
                   RadiusTopRight: =10
-                  BorderColor: =RGBA(14, 42, 70, 0.22)
-                  BorderStyle: =BorderStyle.Solid
-                  BorderThickness: =1
+                  Width: =374
+                  X: =820
+                  Y: =30
                 Children:
                   - txtSearch_Dh:
                       Control: Classic/TextInput@2.3.2
@@ -814,7 +768,6 @@ Screens:
                         Default: =""
                         DelayOutput: =true
                         Font: =Font.'Segoe UI'
-                        Height: =40
                         HintText: ="Patient, barcode or wording"
                         OnChange: |-
                           =Set(dhQ, Lower(Trim(Self.Text)));
@@ -826,19 +779,18 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
                   DropShadow: =DropShadow.None
                   Fill: =RGBA(255, 255, 255, 1)
                   Height: =40
-                  Width: =99
-                  X: =1214
-                  Y: =30
                   RadiusBottomLeft: =20
                   RadiusBottomRight: =20
                   RadiusTopLeft: =20
                   RadiusTopRight: =20
-                  BorderColor: =RGBA(14, 42, 70, 0.12)
-                  BorderStyle: =BorderStyle.Solid
-                  BorderThickness: =1
+                  Width: =99
+                  X: =1214
+                  Y: =30
                 Children:
                   - btnReset_Dh:
                       Control: Button@0.0.45
@@ -850,8 +802,6 @@ Screens:
                         FontSize: =13
                         FontWeight: =FontWeight.Bold
                         Height: =40
-                        Width: =99
-                        Text: ="Reset"
                         OnSelect: |-
                           =Set(dhGroup, "All");
                           Set(dhSev, "All");
@@ -861,32 +811,32 @@ Screens:
                           Reset(ddWard_Dh);
                           Reset(txtSearch_Dh);
                           Select(btnShow_Dh)
+                        Text: ="Reset"
+                        Width: =99
       - Dh_Kpi_Total:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            DropShadow: =DropShadow.Light
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
             Fill: =RGBA(255, 255, 255, 1)
             Height: =92
-            Width: =212
-            X: =18
-            Y: =191
             RadiusBottomLeft: =18
             RadiusBottomRight: =18
             RadiusTopLeft: =18
             RadiusTopRight: =18
-            BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
-            BorderThickness: =1
+            Width: =212
+            X: =18
+            Y: =191
           Children:
             - lblKpiT_Total_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
                   Height: =16
+                  Size: =11
                   Text: ="THINGS TO FIX"
                   Width: =192
                   X: =16
@@ -894,11 +844,11 @@ Screens:
             - lblKpiV_Total_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =If(dhKpi.Total > 0, RGBA(180, 26, 26, 1), RGBA(12, 122, 82, 1))
-                  Size: =30
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
                   Height: =38
+                  Size: =30
                   Text: =Text(dhKpi.Total)
                   Width: =192
                   X: =16
@@ -906,10 +856,10 @@ Screens:
             - lblKpiS_Total_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   Height: =16
+                  Size: =11
                   Text: ="Across the wards and stock"
                   Width: =192
                   X: =16
@@ -918,28 +868,26 @@ Screens:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            DropShadow: =DropShadow.Light
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
             Fill: =RGBA(255, 255, 255, 1)
             Height: =92
-            Width: =212
-            X: =242
-            Y: =191
             RadiusBottomLeft: =18
             RadiusBottomRight: =18
             RadiusTopLeft: =18
             RadiusTopRight: =18
-            BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
-            BorderThickness: =1
+            Width: =212
+            X: =242
+            Y: =191
           Children:
             - lblKpiT_High_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
                   Height: =16
+                  Size: =11
                   Text: ="HIGH PRIORITY"
                   Width: =192
                   X: =16
@@ -947,11 +895,11 @@ Screens:
             - lblKpiV_High_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =If(dhKpi.High > 0, RGBA(180, 26, 26, 1), RGBA(12, 122, 82, 1))
-                  Size: =30
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
                   Height: =38
+                  Size: =30
                   Text: =Text(dhKpi.High)
                   Width: =192
                   X: =16
@@ -959,10 +907,10 @@ Screens:
             - lblKpiS_High_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   Height: =16
+                  Size: =11
                   Text: ="Wrong or unsafe data"
                   Width: =192
                   X: =16
@@ -971,28 +919,26 @@ Screens:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            DropShadow: =DropShadow.Light
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
             Fill: =RGBA(255, 255, 255, 1)
             Height: =92
-            Width: =212
-            X: =466
-            Y: =191
             RadiusBottomLeft: =18
             RadiusBottomRight: =18
             RadiusTopLeft: =18
             RadiusTopRight: =18
-            BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
-            BorderThickness: =1
+            Width: =212
+            X: =466
+            Y: =191
           Children:
             - lblKpiT_Ward_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
                   Height: =16
+                  Size: =11
                   Text: ="PATIENT RECORDS"
                   Width: =192
                   X: =16
@@ -1000,11 +946,11 @@ Screens:
             - lblKpiV_Ward_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =30
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
                   Height: =38
+                  Size: =30
                   Text: =Text(dhKpi.Ward)
                   Width: =192
                   X: =16
@@ -1012,10 +958,10 @@ Screens:
             - lblKpiS_Ward_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   Height: =16
+                  Size: =11
                   Text: ="Gaps in ward lists"
                   Width: =192
                   X: =16
@@ -1024,28 +970,26 @@ Screens:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            DropShadow: =DropShadow.Light
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
             Fill: =RGBA(255, 255, 255, 1)
             Height: =92
-            Width: =212
-            X: =690
-            Y: =191
             RadiusBottomLeft: =18
             RadiusBottomRight: =18
             RadiusTopLeft: =18
             RadiusTopRight: =18
-            BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
-            BorderThickness: =1
+            Width: =212
+            X: =690
+            Y: =191
           Children:
             - lblKpiT_Equip_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
                   Height: =16
+                  Size: =11
                   Text: ="EQUIPMENT RECORDS"
                   Width: =192
                   X: =16
@@ -1053,11 +997,11 @@ Screens:
             - lblKpiV_Equip_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =30
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
                   Height: =38
+                  Size: =30
                   Text: =Text(dhKpi.Equip)
                   Width: =192
                   X: =16
@@ -1065,10 +1009,10 @@ Screens:
             - lblKpiS_Equip_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   Height: =16
+                  Size: =11
                   Text: ="Gaps in the stock list"
                   Width: =192
                   X: =16
@@ -1077,28 +1021,26 @@ Screens:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            DropShadow: =DropShadow.Light
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
             Fill: =RGBA(255, 255, 255, 1)
             Height: =92
-            Width: =212
-            X: =914
-            Y: =191
             RadiusBottomLeft: =18
             RadiusBottomRight: =18
             RadiusTopLeft: =18
             RadiusTopRight: =18
-            BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
-            BorderThickness: =1
+            Width: =212
+            X: =914
+            Y: =191
           Children:
             - lblKpiT_Audit_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
                   Height: =16
+                  Size: =11
                   Text: ="AUDITS AND RETURNS"
                   Width: =192
                   X: =16
@@ -1106,11 +1048,11 @@ Screens:
             - lblKpiV_Audit_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =30
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
                   Height: =38
+                  Size: =30
                   Text: =Text(dhKpi.Audit)
                   Width: =192
                   X: =16
@@ -1118,10 +1060,10 @@ Screens:
             - lblKpiS_Audit_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   Height: =16
+                  Size: =11
                   Text: ="Last 90 days"
                   Width: =192
                   X: =16
@@ -1130,28 +1072,26 @@ Screens:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            DropShadow: =DropShadow.Light
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
             Fill: =RGBA(255, 255, 255, 1)
             Height: =92
-            Width: =212
-            X: =1138
-            Y: =191
             RadiusBottomLeft: =18
             RadiusBottomRight: =18
             RadiusTopLeft: =18
             RadiusTopRight: =18
-            BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
-            BorderThickness: =1
+            Width: =212
+            X: =1138
+            Y: =191
           Children:
             - lblKpiT_Clean_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
                   Height: =16
+                  Size: =11
                   Text: ="PATIENTS WITHOUT A PROBLEM"
                   Width: =192
                   X: =16
@@ -1159,11 +1099,11 @@ Screens:
             - lblKpiV_Clean_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =If(dhKpi.Clean >= 90, RGBA(12, 122, 82, 1), If(dhKpi.Clean >= 70, RGBA(200, 120, 0, 1), RGBA(180, 26, 26, 1)))
-                  Size: =30
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
                   Height: =38
+                  Size: =30
                   Text: =dhKpi.Clean & "%"
                   Width: =192
                   X: =16
@@ -1171,10 +1111,10 @@ Screens:
             - lblKpiS_Clean_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   Height: =16
+                  Size: =11
                   Text: ="Ignoring low priority items"
                   Width: =192
                   X: =16
@@ -1183,46 +1123,44 @@ Screens:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            DropShadow: =DropShadow.Light
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
             Fill: =RGBA(255, 255, 255, 1)
             Height: =458
-            Width: =450
-            X: =18
-            Y: =295
             RadiusBottomLeft: =18
             RadiusBottomRight: =18
             RadiusTopLeft: =18
             RadiusTopRight: =18
-            BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
-            BorderThickness: =1
+            Width: =450
+            X: =18
+            Y: =295
           Children:
             - lblKinds_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =16
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
                   Height: =26
+                  Size: =16
                   Text: ="What is wrong"
                   Width: =250
+                  Wrap: =false
                   X: =20
                   Y: =12
-                  Wrap: =false
             - lblKindsHint_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
+                  Align: =Align.Right
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   Height: =18
+                  Size: =11
                   Text: ="Tap one to list only those"
                   Width: =190
+                  Wrap: =false
                   X: =240
                   Y: =16
-                  Align: =Align.Right
-                  Wrap: =false
             - Gallery_Kinds_Dh:
                 Control: Gallery@2.15.0
                 Variant: Vertical
@@ -1232,26 +1170,24 @@ Screens:
                   TemplatePadding: =0
                   TemplateSize: =52
                   Width: =450
-                  X: =0
                   Y: =50
                 Children:
                   - Dh_KindRow:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
                         DropShadow: =DropShadow.None
                         Fill: =If(dhKind = ThisItem.KindKey, RGBA(26, 90, 153, 0.08), RGBA(244, 249, 252, 1))
                         Height: =46
-                        Width: =420
-                        X: =10
-                        Y: =3
                         RadiusBottomLeft: =12
                         RadiusBottomRight: =12
                         RadiusTopLeft: =12
                         RadiusTopRight: =12
-                        BorderColor: =RGBA(14, 42, 70, 0.12)
-                        BorderStyle: =BorderStyle.Solid
-                        BorderThickness: =1
+                        Width: =420
+                        X: =10
+                        Y: =3
                       Children:
                         - conKindBar_Dh:
                             Control: GroupContainer@1.5.0
@@ -1260,123 +1196,113 @@ Screens:
                               DropShadow: =DropShadow.None
                               Fill: =Switch(ThisItem.KSev, "High", RGBA(180, 26, 26, 1), "Medium", RGBA(200, 120, 0, 1), RGBA(140, 155, 174, 1))
                               Height: =46
-                              Width: =6
-                              X: =0
-                              Y: =0
                               RadiusBottomLeft: =12
                               RadiusBottomRight: =0
                               RadiusTopLeft: =12
                               RadiusTopRight: =0
+                              Width: =6
                         - lblKindName_Dh:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =Font.'Segoe UI'
                               Color: =RGBA(14, 28, 42, 1)
-                              Size: =13
+                              Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =20
                               Text: =ThisItem.KindKey
                               Width: =300
+                              Wrap: =false
                               X: =16
                               Y: =4
-                              Wrap: =false
                         - lblKindGrp_Dh:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =Font.'Segoe UI'
                               Color: =RGBA(140, 155, 174, 1)
-                              Size: =11
+                              Font: =Font.'Segoe UI'
                               Height: =18
+                              Size: =11
                               Text: =Switch(ThisItem.KGroup, "Ward", "Patients", ThisItem.KGroup) & "  ·  " & ThisItem.KSev
                               Width: =300
+                              Wrap: =false
                               X: =16
                               Y: =24
-                              Wrap: =false
                         - lblKindN_Dh:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =Font.'Segoe UI'
+                              Align: =Align.Right
                               Color: =RGBA(14, 28, 42, 1)
-                              Size: =18
+                              Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =46
+                              Size: =18
                               Text: =Text(ThisItem.N)
                               Width: =70
-                              X: =330
-                              Y: =0
-                              Align: =Align.Right
-                              VerticalAlign: =VerticalAlign.Middle
                               Wrap: =false
+                              X: =330
                         - btnKind_Dh:
                             Control: Button@0.0.45
                             Properties:
                               Appearance: ='ButtonCanvas.Appearance'.Transparent
                               BorderStyle: =BorderStyle.None
                               Height: =Parent.Height
-                              Width: =Parent.Width
-                              X: =0
-                              Y: =0
-                              Text: =""
                               OnSelect: |-
                                 =Set(dhKind, If(dhKind = ThisItem.KindKey, "", ThisItem.KindKey));
                                 Select(btnShow_Dh)
+                              Text: =""
+                              Width: =Parent.Width
             - lblKindsEmpty_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
-                  Color: =RGBA(140, 155, 174, 1)
-                  Size: =14
-                  Height: =24
-                  Text: ="Nothing to fix. Nice."
-                  Width: =450
-                  X: =0
-                  Y: =190
                   Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =24
+                  Size: =14
+                  Text: ="Nothing to fix. Nice."
                   Visible: =IsEmpty(colDhKinds)
+                  Width: =450
+                  Y: =190
       - Dh_CardIssues:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            DropShadow: =DropShadow.Light
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
             Fill: =RGBA(255, 255, 255, 1)
             Height: =458
-            Width: =869
-            X: =482
-            Y: =295
             RadiusBottomLeft: =18
             RadiusBottomRight: =18
             RadiusTopLeft: =18
             RadiusTopRight: =18
-            BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
-            BorderThickness: =1
+            Width: =869
+            X: =482
+            Y: =295
           Children:
             - lblIss_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =16
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
                   Height: =26
+                  Size: =16
                   Text: =If(dhKind = "", "Everything to fix", dhKind)
                   Width: =600
+                  Wrap: =false
                   X: =20
                   Y: =12
-                  Wrap: =false
             - lblIssN_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
+                  Align: =Align.Right
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   Height: =18
+                  Size: =11
                   Text: =CountRows(colDhShow) & " shown  ·  worst first"
                   Width: =229
+                  Wrap: =false
                   X: =620
                   Y: =16
-                  Align: =Align.Right
-                  Wrap: =false
             - Gallery_Iss_Dh:
                 Control: Gallery@2.15.0
                 Variant: Vertical
@@ -1386,26 +1312,24 @@ Screens:
                   TemplatePadding: =0
                   TemplateSize: =66
                   Width: =869
-                  X: =0
                   Y: =50
                 Children:
                   - Dh_IssRow:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
                         DropShadow: =DropShadow.None
                         Fill: =RGBA(244, 249, 252, 1)
                         Height: =60
-                        Width: =849
-                        X: =8
-                        Y: =3
                         RadiusBottomLeft: =12
                         RadiusBottomRight: =12
                         RadiusTopLeft: =12
                         RadiusTopRight: =12
-                        BorderColor: =RGBA(14, 42, 70, 0.12)
-                        BorderStyle: =BorderStyle.Solid
-                        BorderThickness: =1
+                        Width: =849
+                        X: =8
+                        Y: =3
                       Children:
                         - conIssBar_Dh:
                             Control: GroupContainer@1.5.0
@@ -1414,33 +1338,31 @@ Screens:
                               DropShadow: =DropShadow.None
                               Fill: =Switch(ThisItem.Sev, "High", RGBA(180, 26, 26, 1), "Medium", RGBA(200, 120, 0, 1), RGBA(140, 155, 174, 1))
                               Height: =60
-                              Width: =6
-                              X: =0
-                              Y: =0
                               RadiusBottomLeft: =12
                               RadiusBottomRight: =0
                               RadiusTopLeft: =12
                               RadiusTopRight: =0
+                              Width: =6
                         - lblIssKind_Dh:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =Font.'Segoe UI'
                               Color: =RGBA(14, 28, 42, 1)
-                              Size: =14
+                              Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =20
+                              Size: =14
                               Text: =ThisItem.Kind
                               Width: =360
+                              Wrap: =false
                               X: =16
                               Y: =6
-                              Wrap: =false
                         - lblIssDetail_Dh:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =Font.'Segoe UI'
                               Color: =RGBA(58, 80, 104, 1)
-                              Size: =11
+                              Font: =Font.'Segoe UI'
                               Height: =30
+                              Size: =11
                               Text: =ThisItem.Detail
                               Width: =440
                               X: =16
@@ -1448,28 +1370,27 @@ Screens:
                         - lblIssWho_Dh:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =Font.'Segoe UI'
                               Color: =RGBA(58, 80, 104, 1)
-                              Size: =13
+                              Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =20
                               Text: =ThisItem.Who
                               Width: =220
+                              Wrap: =false
                               X: =480
                               Y: =6
-                              Wrap: =false
                         - lblIssWhere_Dh:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =Font.'Segoe UI'
                               Color: =RGBA(140, 155, 174, 1)
-                              Size: =11
+                              Font: =Font.'Segoe UI'
                               Height: =18
+                              Size: =11
                               Text: =ThisItem.Where
                               Width: =230
+                              Wrap: =false
                               X: =480
                               Y: =28
-                              Wrap: =false
                         - conIssSev_Dh:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -1477,64 +1398,56 @@ Screens:
                               DropShadow: =DropShadow.None
                               Fill: =Switch(ThisItem.Sev, "High", RGBA(254, 242, 242, 1), "Medium", RGBA(255, 246, 229, 1), RGBA(235, 242, 248, 1))
                               Height: =26
-                              Width: =62
-                              X: =716
-                              Y: =17
                               RadiusBottomLeft: =13
                               RadiusBottomRight: =13
                               RadiusTopLeft: =13
                               RadiusTopRight: =13
+                              Width: =62
+                              X: =716
+                              Y: =17
                             Children:
                               - lblIssSev_Dh:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Font: =Font.'Segoe UI'
+                                    Align: =Align.Center
                                     Color: =Switch(ThisItem.Sev, "High", RGBA(180, 26, 26, 1), "Medium", RGBA(200, 120, 0, 1), RGBA(140, 155, 174, 1))
-                                    Size: =11
+                                    Font: =Font.'Segoe UI'
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
+                                    Size: =11
                                     Text: =ThisItem.Sev
                                     Width: =Parent.Width
-                                    X: =0
-                                    Y: =0
-                                    Align: =Align.Center
-                                    VerticalAlign: =VerticalAlign.Middle
                                     Wrap: =false
                         - lblIssOpen_Dh:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =Font.'Segoe UI'
                               Color: =RGBA(26, 90, 153, 1)
-                              Size: =11
+                              Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =60
+                              Size: =11
                               Text: =If(ThisItem.Group = "Ward", "Open ward ›", "")
                               Width: =62
-                              X: =782
-                              Y: =0
-                              VerticalAlign: =VerticalAlign.Middle
                               Wrap: =false
+                              X: =782
                         - btnIss_Dh:
                             Control: Button@0.0.45
                             Properties:
                               Appearance: ='ButtonCanvas.Appearance'.Transparent
                               BorderStyle: =BorderStyle.None
                               Height: =Parent.Height
-                              Width: =Parent.Width
-                              X: =0
-                              Y: =0
-                              Text: =""
                               OnSelect: =If(ThisItem.Group = "Ward", Set(varWard, ThisItem.WardCode); Navigate(Ward_All, ScreenTransition.Fade))
+                              Text: =""
+                              Width: =Parent.Width
             - lblIssEmpty_Dh:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
-                  Color: =RGBA(140, 155, 174, 1)
-                  Size: =14
-                  Height: =24
-                  Text: ="Nothing matches."
-                  Width: =869
-                  X: =0
-                  Y: =190
                   Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =24
+                  Size: =14
+                  Text: ="Nothing matches."
                   Visible: =IsEmpty(colDhShow)
+                  Width: =869
+                  Y: =190

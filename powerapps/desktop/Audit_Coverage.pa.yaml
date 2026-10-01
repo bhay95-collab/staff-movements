@@ -1,0 +1,1834 @@
+Screens:
+  Audit_Coverage:
+    Properties:
+      Fill: =RGBA(235, 242, 248, 1)
+      ImagePosition: =ImagePosition.Fill
+      OnVisible: |-
+        =// Audit coverage. Loads 12 months of audits + stock, Select(btnBuild_Ac) builds every list.
+        Set(acThr, 60);
+        Set(acPeriod, 90);
+        Set(acScope, "Allocated");
+        Set(acCat, "All");
+        Set(acWard, "All");
+        Set(acQ, "");
+        Set(acTab, "To");
+        Set(acShowDetail, false);
+        Set(acKpi, {Scope: 0, Covered: 0, Pct: 0, Never: 0, Overdue: 0, Pass: 0, Unesc: 0});
+        ClearCollect(colAcCats, Table({ Value: "All categories" }, { Value: "Wheelchair" }, { Value: "Cushion" }, { Value: "Backrest" }));
+        ClearCollect(colAcWardOpts, Table({ Value: "All wards" }));
+        Collect(colAcWardOpts, SortByColumns(Choices(Equipment_Inventory_SharePoint.Ward), "Value", SortOrder.Ascending));
+        Select(btnLoad_Ac)
+    Children:
+      - btnLoad_Ac:
+          Control: Button@0.0.45
+          Properties:
+            Height: =10 * SY
+            OnSelect: |-
+              =Set(acLoading, true);
+              // audits for the last 12 months, in 30-day slices so each request stays under the row limit
+              Clear(colAcAud);
+              ForAll(
+                  Sequence(13) As c,
+                  Collect(
+                      colAcAud,
+                      Filter(
+                          Equipment_Audits,
+                          AuditDateTime >= DateAdd(Today(), -(c.Value * 30) + 1, TimeUnit.Days) &&
+                          AuditDateTime < DateAdd(Today(), -((c.Value - 1) * 30) + 1, TimeUnit.Days)
+                      )
+                  )
+              );
+              // stock today
+              ClearCollect(
+                  colAcInv,
+                  AddColumns(
+                      Equipment_Inventory_SharePoint,
+                      iCat, Coalesce(Category.Value, ""),
+                      iType, If(Category.Value = "Wheelchair", Coalesce('Wheelchair Type'.Value, ""), ""),
+                      iWidth, Coalesce(Width.Value, ""),
+                      iStatus, Coalesce(Status.Value, ""),
+                      iWard, Coalesce(Ward.Value, ""),
+                      iDesc, Trim(Brand & " " & Model)
+                  )
+              );
+              Set(acLoading, false);
+              Select(btnBuild_Ac)
+            Text: =""
+            Visible: =false
+            Width: =10 * SX
+      - btnBuild_Ac:
+          Control: Button@0.0.45
+          Properties:
+            Height: =10 * SY
+            OnSelect: |-
+              =// 1) audits tagged with the item they belong to
+              ClearCollect(
+                  colAcJ,
+                  AddColumns(
+                      colAcAud,
+                      EquipId, Equipment.Id,
+                      aPass, AuditOutcome.Value = "Pass",
+                      aWardName, Coalesce(ActualWard.Value, "Unknown"),
+                      aCat, Coalesce(LookUp(colAcInv, ID = Equipment.Id).iCat, "Unknown")
+                  )
+              );
+              // 2) last audit per item
+              ClearCollect(
+                  colAcLast,
+                  AddColumns(
+                      GroupBy(colAcJ, EquipId, Rows),
+                      LastDate, Max(Rows, AuditDateTime),
+                      Times, CountRows(Rows),
+                      LastOutcome, First(SortByColumns(Rows, "AuditDateTime", SortOrder.Descending)).AuditOutcome.Value
+                  )
+              );
+              // 3) every item in scope with how long since it was last checked
+              ClearCollect(
+                  colAcItems,
+                  AddColumns(
+                      Filter(
+                          colAcInv,
+                          IsActive <> false && OutOfService <> true &&
+                          If(acScope = "Allocated", iStatus = "Allocated", iStatus in ["Allocated", "Available"]) &&
+                          (acCat = "All" || iCat = acCat) && (acWard = "All" || iWard = acWard) && (acQ = "" || acQ in Lower(Title) || acQ in Lower(iDesc))
+                      ),
+                      LastDate, LookUp(colAcLast, EquipId = ID).LastDate,
+                      LastOutcome, LookUp(colAcLast, EquipId = ID).LastOutcome,
+                      SinceDays, If(IsBlank(LookUp(colAcLast, EquipId = ID).LastDate), 9999, DateDiff(LookUp(colAcLast, EquipId = ID).LastDate, Today(), TimeUnit.Days))
+                  )
+              );
+              ClearCollect(
+                  colAcTo,
+                  SortByColumns(
+                      Filter(colAcItems, SinceDays > acThr),
+                      "SinceDays", SortOrder.Descending
+                  )
+              );
+              // 4) audits inside the pass-rate period
+              ClearCollect(colAcP, Filter(colAcJ, AuditDateTime >= DateAdd(Today(), -(acPeriod - 1), TimeUnit.Days)));
+              ClearCollect(
+                  colAcByCat,
+                  SortByColumns(
+                      AddColumns(
+                          GroupBy(AddColumns(colAcP, CatKey, aCat), CatKey, Rows),
+                          Audits, CountRows(Rows),
+                          Passed, CountRows(Filter(Rows, aPass)),
+                          Pct, Round(100 * CountRows(Filter(Rows, aPass)) / CountRows(Rows), 0)
+                      ),
+                      "Audits", SortOrder.Descending
+                  )
+              );
+              ClearCollect(
+                  colAcByWard,
+                  SortByColumns(
+                      AddColumns(
+                          GroupBy(AddColumns(colAcP, WardKey, aWardName), WardKey, Rows),
+                          Audits, CountRows(Rows),
+                          Passed, CountRows(Filter(Rows, aPass)),
+                          Pct, Round(100 * CountRows(Filter(Rows, aPass)) / CountRows(Rows), 0)
+                      ),
+                      "Audits", SortOrder.Descending
+                  )
+              );
+              // 5) failed audits nobody has been told about
+              ClearCollect(
+                  colAcUnesc,
+                  SortByColumns(Filter(colAcP, EscalationRequired = true && EscalationSent <> true), "AuditDateTime", SortOrder.Descending)
+              );
+              // 6) headline numbers
+              Set(
+                  acKpi,
+                  {
+                      Scope: CountRows(colAcItems),
+                      Covered: CountRows(Filter(colAcItems, SinceDays <= acThr)),
+                      Pct: If(CountRows(colAcItems) = 0, 0, Round(100 * CountRows(Filter(colAcItems, SinceDays <= acThr)) / CountRows(colAcItems), 0)),
+                      Never: CountRows(Filter(colAcItems, SinceDays = 9999)),
+                      Overdue: CountRows(Filter(colAcItems, SinceDays > acThr && SinceDays < 9999)),
+                      Pass: If(CountRows(colAcP) = 0, 0, Round(100 * CountRows(Filter(colAcP, aPass)) / CountRows(colAcP), 0)),
+                      Unesc: CountRows(colAcUnesc)
+                  }
+              )
+            Text: =""
+            Visible: =false
+            Width: =10 * SX
+      - Ac_Title:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Regular
+            Fill: =RGBA(7, 95, 115, 1)
+            Height: =70 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =1333 * SX
+            X: =18 * SX
+            Y: =12 * SY
+          Children:
+            - imgHeaderGradient_Ac:
+                Control: Image@2.2.3
+                Properties:
+                  Height: =Parent.Height
+                  Image: ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' width='1333' height='70' viewBox='0 0 1333 70' preserveAspectRatio='none'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001D46'/><stop offset='0.48' stop-color='#075F73'/><stop offset='1' stop-color='#00838A'/></linearGradient><linearGradient id='b' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001B36' stop-opacity='0.46'/><stop offset='0.45' stop-color='#002036' stop-opacity='0.18'/><stop offset='1' stop-color='#002036' stop-opacity='0.06'/></linearGradient></defs><rect width='1333' height='70' rx='18' fill='url(#a)'/><rect width='1333' height='70' rx='18' fill='url(#b)'/></svg>")
+                  ImagePosition: =ImagePosition.Fill
+                  Width: =Parent.Width
+            - lblTitle_AcHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  Height: =44 * SY
+                  Size: =Round(28 * SF, 0)
+                  Text: ="Audit Coverage"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Weight: ='TextCanvas.Weight'.Bold
+                  Width: =700 * SX
+                  X: =76 * SX
+            - lblSub_AcHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 0.88)
+                  Height: =20 * SY
+                  Size: =Round(12 * SF, 0)
+                  Text: =If(acLoading, "Loading audits...", acKpi.Pct & "% of " & acKpi.Scope & " items audited in the last " & acThr & " days  ·  " & CountRows(colAcAud) & " audits loaded")
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =800 * SX
+                  X: =76 * SX
+                  Y: =42 * SY
+            - btnBack_Ac:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontSize: =Round(50 * SF, 0)
+                  Height: =70 * SY
+                  Icon: ="ChevronLeft"
+                  OnSelect: =Back(ScreenTransition.Fade)
+                  Text: =""
+                  X: =1 * SX
+            - conReload_Ac:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =140 * SX
+                  X: =1177 * SX
+                  Y: =15 * SY
+                Children:
+                  - btnReload_Ac:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =Round(13 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
+                        Icon: ="ArrowClockwise"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        OnSelect: =Select(btnLoad_Ac)
+                        Text: ="Reload"
+                        Width: =140 * SX
+      - Ac_CardFilters:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =84 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =1333 * SX
+            X: =18 * SX
+            Y: =95 * SY
+          Children:
+            - capThr_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="AUDIT AGAIN AFTER"
+                  Width: =200 * SX
+                  X: =20 * SX
+                  Y: =10 * SY
+            - conThr30_Ac:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(acThr = 30, RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(acThr = 30, RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =40 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =58 * SX
+                  X: =20 * SX
+                  Y: =30 * SY
+                Children:
+                  - btnThr30_Ac:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(acThr = 30, RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =Round(12 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
+                        OnSelect: |-
+                          =Set(acThr, 30);
+                          Select(btnBuild_Ac)
+                        Text: ="30 d"
+                        Width: =58 * SX
+            - conThr60_Ac:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(acThr = 60, RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(acThr = 60, RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =40 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =58 * SX
+                  X: =84 * SX
+                  Y: =30 * SY
+                Children:
+                  - btnThr60_Ac:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(acThr = 60, RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =Round(12 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
+                        OnSelect: |-
+                          =Set(acThr, 60);
+                          Select(btnBuild_Ac)
+                        Text: ="60 d"
+                        Width: =58 * SX
+            - conThr90_Ac:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(acThr = 90, RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(acThr = 90, RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =40 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =58 * SX
+                  X: =148 * SX
+                  Y: =30 * SY
+                Children:
+                  - btnThr90_Ac:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(acThr = 90, RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =Round(12 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
+                        OnSelect: |-
+                          =Set(acThr, 90);
+                          Select(btnBuild_Ac)
+                        Text: ="90 d"
+                        Width: =58 * SX
+            - conThr180_Ac:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(acThr = 180, RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(acThr = 180, RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =40 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =62 * SX
+                  X: =212 * SX
+                  Y: =30 * SY
+                Children:
+                  - btnThr180_Ac:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(acThr = 180, RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =Round(12 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
+                        OnSelect: |-
+                          =Set(acThr, 180);
+                          Select(btnBuild_Ac)
+                        Text: ="180 d"
+                        Width: =62 * SX
+            - capScope_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="WHICH ITEMS"
+                  Width: =200 * SX
+                  X: =296 * SX
+                  Y: =10 * SY
+            - conScopeA_Ac:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(acScope = "Allocated", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(acScope = "Allocated", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =40 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =92 * SX
+                  X: =296 * SX
+                  Y: =30 * SY
+                Children:
+                  - btnScopeA_Ac:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(acScope = "Allocated", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =Round(12 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
+                        OnSelect: |-
+                          =Set(acScope, "Allocated");
+                          Select(btnBuild_Ac)
+                        Text: ="Allocated"
+                        Width: =92 * SX
+            - conScopeB_Ac:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(acScope = "All", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(acScope = "All", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =40 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =104 * SX
+                  X: =394 * SX
+                  Y: =30 * SY
+                Children:
+                  - btnScopeB_Ac:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(acScope = "All", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =Round(12 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
+                        OnSelect: |-
+                          =Set(acScope, "All");
+                          Select(btnBuild_Ac)
+                        Text: ="All in stock"
+                        Width: =104 * SX
+            - capCat_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="CATEGORY"
+                  Width: =130 * SX
+                  X: =514 * SX
+                  Y: =10 * SY
+            - boxCat_Ac:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40 * SY
+                  RadiusBottomLeft: =10 * SR
+                  RadiusBottomRight: =10 * SR
+                  RadiusTopLeft: =10 * SR
+                  RadiusTopRight: =10 * SR
+                  Width: =150 * SX
+                  X: =514 * SX
+                  Y: =30 * SY
+                Children:
+                  - ddCat_Ac:
+                      Control: Classic/DropDown@2.3.1
+                      Properties:
+                        BorderStyle: =BorderStyle.None
+                        ChevronBackground: =RGBA(26, 90, 153, 1)
+                        ChevronFill: =RGBA(255, 255, 255, 1)
+                        ChevronHoverBackground: =RGBA(18, 64, 112, 1)
+                        Color: =RGBA(14, 28, 42, 1)
+                        Default: =If(acCat = "All", "All categories", acCat)
+                        Font: =Font.'Segoe UI'
+                        Items: =colAcCats
+                        Items.Value: =Value
+                        OnChange: |-
+                          =Set(acCat, If(ddCat_Ac.Selected.Value = "All categories", "All", ddCat_Ac.Selected.Value));
+                          Select(btnBuild_Ac)
+                        Size: =Round(14 * SF, 0)
+                        Width: =150 * SX
+            - capWard_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="WARD"
+                  Width: =110 * SX
+                  X: =674 * SX
+                  Y: =10 * SY
+            - boxWard_Ac:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40 * SY
+                  RadiusBottomLeft: =10 * SR
+                  RadiusBottomRight: =10 * SR
+                  RadiusTopLeft: =10 * SR
+                  RadiusTopRight: =10 * SR
+                  Width: =110 * SX
+                  X: =674 * SX
+                  Y: =30 * SY
+                Children:
+                  - ddWard_Ac:
+                      Control: Classic/DropDown@2.3.1
+                      Properties:
+                        BorderStyle: =BorderStyle.None
+                        ChevronBackground: =RGBA(26, 90, 153, 1)
+                        ChevronFill: =RGBA(255, 255, 255, 1)
+                        ChevronHoverBackground: =RGBA(18, 64, 112, 1)
+                        Color: =RGBA(14, 28, 42, 1)
+                        Default: =If(acWard = "All", "All wards", acWard)
+                        Font: =Font.'Segoe UI'
+                        Items: =colAcWardOpts
+                        Items.Value: =Value
+                        OnChange: |-
+                          =Set(acWard, If(ddWard_Ac.Selected.Value = "All wards", "All", ddWard_Ac.Selected.Value));
+                          Select(btnBuild_Ac)
+                        Size: =Round(14 * SF, 0)
+                        Width: =110 * SX
+            - capSearch_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="SEARCH"
+                  Width: =200 * SX
+                  X: =794 * SX
+                  Y: =10 * SY
+            - boxSearch_Ac:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40 * SY
+                  RadiusBottomLeft: =10 * SR
+                  RadiusBottomRight: =10 * SR
+                  RadiusTopLeft: =10 * SR
+                  RadiusTopRight: =10 * SR
+                  Width: =300 * SX
+                  X: =794 * SX
+                  Y: =30 * SY
+                Children:
+                  - txtSearch_Ac:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        BorderStyle: =BorderStyle.None
+                        Color: =RGBA(14, 28, 42, 1)
+                        Default: =""
+                        DelayOutput: =true
+                        Font: =Font.'Segoe UI'
+                        HintText: ="Barcode, brand or model"
+                        OnChange: |-
+                          =Set(acQ, Lower(Trim(Self.Text)));
+                          Select(btnBuild_Ac)
+                        Size: =Round(14 * SF, 0)
+                        Width: =300 * SX
+            - conReset_Ac:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =99 * SX
+                  X: =1214 * SX
+                  Y: =30 * SY
+                Children:
+                  - btnReset_Ac:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =Round(13 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
+                        OnSelect: |-
+                          =Set(acThr, 60);
+                          Set(acPeriod, 90);
+                          Set(acScope, "Allocated");
+                          Set(acCat, "All");
+                          Set(acWard, "All");
+                          Set(acQ, "");
+                          Reset(ddCat_Ac);
+                          Reset(ddWard_Ac);
+                          Reset(txtSearch_Ac);
+                          Select(btnBuild_Ac)
+                        Text: ="Reset"
+                        Width: =99 * SX
+      - Ac_Kpi_Scope:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =212 * SX
+            X: =18 * SX
+            Y: =191 * SY
+          Children:
+            - lblKpiT_Scope_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="ITEMS IN SCOPE"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
+            - lblKpiV_Scope_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(14, 28, 42, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =38 * SY
+                  Size: =Round(30 * SF, 0)
+                  Text: =Text(acKpi.Scope)
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
+            - lblKpiS_Scope_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="Matching the filters"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
+      - Ac_Kpi_Pct:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =212 * SX
+            X: =242 * SX
+            Y: =191 * SY
+          Children:
+            - lblKpiT_Pct_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="AUDITED IN TIME"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
+            - lblKpiV_Pct_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =If(acKpi.Pct >= 80, RGBA(12, 122, 82, 1), If(acKpi.Pct >= 50, RGBA(200, 120, 0, 1), RGBA(180, 26, 26, 1)))
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =38 * SY
+                  Size: =Round(30 * SF, 0)
+                  Text: =acKpi.Pct & "%"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
+            - lblKpiS_Pct_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="Within the audit-again window"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
+      - Ac_Kpi_Never:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =212 * SX
+            X: =466 * SX
+            Y: =191 * SY
+          Children:
+            - lblKpiT_Never_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="NEVER AUDITED"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
+            - lblKpiV_Never_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =If(acKpi.Never > 0, RGBA(180, 26, 26, 1), RGBA(12, 122, 82, 1))
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =38 * SY
+                  Size: =Round(30 * SF, 0)
+                  Text: =Text(acKpi.Never)
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
+            - lblKpiS_Never_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="In the last 12 months"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
+      - Ac_Kpi_Over:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =212 * SX
+            X: =690 * SX
+            Y: =191 * SY
+          Children:
+            - lblKpiT_Over_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="OVERDUE"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
+            - lblKpiV_Over_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =If(acKpi.Overdue > 0, RGBA(180, 26, 26, 1), RGBA(12, 122, 82, 1))
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =38 * SY
+                  Size: =Round(30 * SF, 0)
+                  Text: =Text(acKpi.Overdue)
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
+            - lblKpiS_Over_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="Audited, but too long ago"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
+      - Ac_Kpi_Pass:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =212 * SX
+            X: =914 * SX
+            Y: =191 * SY
+          Children:
+            - lblKpiT_Pass_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="PASS RATE"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
+            - lblKpiV_Pass_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =If(acKpi.Pass >= 90, RGBA(12, 122, 82, 1), If(acKpi.Pass >= 75, RGBA(200, 120, 0, 1), RGBA(180, 26, 26, 1)))
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =38 * SY
+                  Size: =Round(30 * SF, 0)
+                  Text: =acKpi.Pass & "%"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
+            - lblKpiS_Pass_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="Audits in the period"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
+      - Ac_Kpi_Unesc:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =212 * SX
+            X: =1138 * SX
+            Y: =191 * SY
+          Children:
+            - lblKpiT_Unesc_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="FAILED, NOT ESCALATED"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
+            - lblKpiV_Unesc_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =If(acKpi.Unesc > 0, RGBA(180, 26, 26, 1), RGBA(12, 122, 82, 1))
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =38 * SY
+                  Size: =Round(30 * SF, 0)
+                  Text: =Text(acKpi.Unesc)
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
+            - lblKpiS_Unesc_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="Physio not yet told"
+                  Width: =192 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
+      - Ac_CardMain:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =458 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =1333 * SX
+            X: =18 * SX
+            Y: =295 * SY
+          Children:
+            - conTabTo:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(acTab = "To", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(acTab = "To", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =34 * SY
+                  RadiusBottomLeft: =17 * SR
+                  RadiusBottomRight: =17 * SR
+                  RadiusTopLeft: =17 * SR
+                  RadiusTopRight: =17 * SR
+                  Width: =170 * SX
+                  X: =14 * SX
+                  Y: =12 * SY
+                Children:
+                  - btnTabTo:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =17 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(acTab = "To", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =Round(13 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =34 * SY
+                        OnSelect: =Set(acTab, "To")
+                        Text: ="To audit  ·  " & CountRows(colAcTo)
+                        Width: =170 * SX
+            - conTabRate:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(acTab = "Rate", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(acTab = "Rate", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =34 * SY
+                  RadiusBottomLeft: =17 * SR
+                  RadiusBottomRight: =17 * SR
+                  RadiusTopLeft: =17 * SR
+                  RadiusTopRight: =17 * SR
+                  Width: =130 * SX
+                  X: =190 * SX
+                  Y: =12 * SY
+                Children:
+                  - btnTabRate:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =17 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(acTab = "Rate", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =Round(13 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =34 * SY
+                        OnSelect: =Set(acTab, "Rate")
+                        Text: ="Pass rates"
+                        Width: =130 * SX
+            - conTabUn:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(acTab = "Un", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(acTab = "Un", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =34 * SY
+                  RadiusBottomLeft: =17 * SR
+                  RadiusBottomRight: =17 * SR
+                  RadiusTopLeft: =17 * SR
+                  RadiusTopRight: =17 * SR
+                  Width: =230 * SX
+                  X: =326 * SX
+                  Y: =12 * SY
+                Children:
+                  - btnTabUn:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =17 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(acTab = "Un", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =Round(13 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =34 * SY
+                        OnSelect: =Set(acTab, "Un")
+                        Text: ="Failed, not escalated  ·  " & acKpi.Unesc
+                        Width: =230 * SX
+            - conPer90_Ac:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(acPeriod = 90, RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(acPeriod = 90, RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =30 * SY
+                  RadiusBottomLeft: =15 * SR
+                  RadiusBottomRight: =15 * SR
+                  RadiusTopLeft: =15 * SR
+                  RadiusTopRight: =15 * SR
+                  Visible: =acTab = "Rate"
+                  Width: =120 * SX
+                  X: =1060 * SX
+                  Y: =14 * SY
+                Children:
+                  - btnPer90_Ac:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =15 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(acPeriod = 90, RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =Round(12 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =30 * SY
+                        OnSelect: |-
+                          =Set(acPeriod, 90);
+                          Select(btnBuild_Ac)
+                        Text: ="Last 90 days"
+                        Width: =120 * SX
+            - conPer365_Ac:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(acPeriod = 365, RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =If(acPeriod = 365, RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =30 * SY
+                  RadiusBottomLeft: =15 * SR
+                  RadiusBottomRight: =15 * SR
+                  RadiusTopLeft: =15 * SR
+                  RadiusTopRight: =15 * SR
+                  Visible: =acTab = "Rate"
+                  Width: =130 * SX
+                  X: =1186 * SX
+                  Y: =14 * SY
+                Children:
+                  - btnPer365_Ac:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =15 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(acPeriod = 365, RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =Round(12 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =30 * SY
+                        OnSelect: |-
+                          =Set(acPeriod, 365);
+                          Select(btnBuild_Ac)
+                        Text: ="Last 12 months"
+                        Width: =130 * SX
+            - hToItem_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="ITEM"
+                  Visible: =acTab = "To"
+                  Width: =200 * SX
+                  Wrap: =false
+                  X: =24 * SX
+                  Y: =58 * SY
+            - hToSt_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="STATUS"
+                  Visible: =acTab = "To"
+                  Width: =80 * SX
+                  Wrap: =false
+                  X: =350 * SX
+                  Y: =58 * SY
+            - hToWard_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="WARD / PHYSIO"
+                  Visible: =acTab = "To"
+                  Width: =200 * SX
+                  Wrap: =false
+                  X: =460 * SX
+                  Y: =58 * SY
+            - hToLast_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="LAST AUDIT"
+                  Visible: =acTab = "To"
+                  Width: =140 * SX
+                  Wrap: =false
+                  X: =700 * SX
+                  Y: =58 * SY
+            - hToSince_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="SINCE"
+                  Visible: =acTab = "To"
+                  Width: =90 * SX
+                  Wrap: =false
+                  X: =860 * SX
+                  Y: =58 * SY
+            - hToFlag_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="FLAG"
+                  Visible: =acTab = "To"
+                  Width: =100 * SX
+                  Wrap: =false
+                  X: =990 * SX
+                  Y: =58 * SY
+            - Gallery_To_Ac:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =372 * SY
+                  Items: =colAcTo
+                  TemplatePadding: =0
+                  TemplateSize: =56 * SY
+                  Visible: =acTab = "To"
+                  Width: =1333 * SX
+                  Y: =78 * SY
+                Children:
+                  - Ac_ToRow:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =50 * SY
+                        RadiusBottomLeft: =12 * SR
+                        RadiusBottomRight: =12 * SR
+                        RadiusTopLeft: =12 * SR
+                        RadiusTopRight: =12 * SR
+                        Width: =1313 * SX
+                        X: =10 * SX
+                        Y: =3 * SY
+                      Children:
+                        - conToBar_Ac:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =Switch(ThisItem.iCat, "Wheelchair", RGBA(166, 199, 130, 1), "Cushion", RGBA(0, 144, 153, 1), "Backrest", RGBA(0, 200, 210, 1), RGBA(210, 218, 227, 1))
+                              Height: =50 * SY
+                              RadiusBottomLeft: =12 * SR
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =12 * SR
+                              RadiusTopRight: =0
+                              Width: =6 * SX
+                        - lblToCode_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(14, 28, 42, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =20 * SY
+                              Size: =Round(14 * SF, 0)
+                              Text: =ThisItem.Title
+                              Width: =300 * SX
+                              Wrap: =false
+                              X: =16 * SX
+                              Y: =5 * SY
+                        - lblToDesc_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =18 * SY
+                              Size: =Round(11 * SF, 0)
+                              Text: =ThisItem.iDesc & If(ThisItem.iWidth = "", "", "  ·  " & ThisItem.iWidth)
+                              Width: =300 * SX
+                              Wrap: =false
+                              X: =16 * SX
+                              Y: =26 * SY
+                        - conToSt_Ac:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =If(ThisItem.iStatus = "Allocated", RGBA(26, 90, 153, 0.08), RGBA(232, 246, 240, 1))
+                              Height: =26 * SY
+                              RadiusBottomLeft: =13 * SR
+                              RadiusBottomRight: =13 * SR
+                              RadiusTopLeft: =13 * SR
+                              RadiusTopRight: =13 * SR
+                              Width: =92 * SX
+                              X: =340 * SX
+                              Y: =12 * SY
+                            Children:
+                              - lblToSt_Ac:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Align: =Align.Center
+                                    Color: =If(ThisItem.iStatus = "Allocated", RGBA(26, 90, 153, 1), RGBA(12, 122, 82, 1))
+                                    Font: =Font.'Segoe UI'
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Size: =Round(11 * SF, 0)
+                                    Text: =ThisItem.iStatus
+                                    Width: =Parent.Width
+                                    Wrap: =false
+                        - lblToWard_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(58, 80, 104, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =20 * SY
+                              Text: =If(ThisItem.iWard = "", "—", "Ward " & ThisItem.iWard)
+                              Width: =120 * SX
+                              Wrap: =false
+                              X: =450 * SX
+                              Y: =5 * SY
+                        - lblToPhys_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =18 * SY
+                              Size: =Round(11 * SF, 0)
+                              Text: =Coalesce(ThisItem.Physiotherapist, "—")
+                              Width: =220 * SX
+                              Wrap: =false
+                              X: =450 * SX
+                              Y: =26 * SY
+                        - lblToLast_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(58, 80, 104, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =20 * SY
+                              Text: =If(IsBlank(ThisItem.LastDate), "Never", Text(ThisItem.LastDate, "d mmm yyyy"))
+                              Width: =140 * SX
+                              Wrap: =false
+                              X: =690 * SX
+                              Y: =5 * SY
+                        - lblToRes_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =18 * SY
+                              Size: =Round(11 * SF, 0)
+                              Text: |-
+                                =If(IsBlank(ThisItem.LastOutcome), "", "Result: " & ThisItem.LastOutcome)
+                              Width: =160 * SX
+                              Wrap: =false
+                              X: =690 * SX
+                              Y: =26 * SY
+                        - lblToSince_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              Color: =RGBA(14, 28, 42, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =50 * SY
+                              Size: =Round(16 * SF, 0)
+                              Text: =If(ThisItem.SinceDays = 9999, "—", ThisItem.SinceDays & " d")
+                              Width: =90 * SX
+                              Wrap: =false
+                              X: =860 * SX
+                        - conToFlag_Ac:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =If(ThisItem.SinceDays = 9999, RGBA(254, 242, 242, 1), RGBA(255, 246, 229, 1))
+                              Height: =26 * SY
+                              RadiusBottomLeft: =13 * SR
+                              RadiusBottomRight: =13 * SR
+                              RadiusTopLeft: =13 * SR
+                              RadiusTopRight: =13 * SR
+                              Width: =110 * SX
+                              X: =980 * SX
+                              Y: =12 * SY
+                            Children:
+                              - lblToFlag_Ac:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Align: =Align.Center
+                                    Color: =If(ThisItem.SinceDays = 9999, RGBA(180, 26, 26, 1), RGBA(200, 120, 0, 1))
+                                    Font: =Font.'Segoe UI'
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Size: =Round(11 * SF, 0)
+                                    Text: =If(ThisItem.SinceDays = 9999, "Never audited", "Overdue")
+                                    Width: =Parent.Width
+                                    Wrap: =false
+                        - lblToOut_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =50 * SY
+                              Size: =Round(12 * SF, 0)
+                              Text: =If(ThisItem.iStatus = "Allocated", "Out since " & Text(ThisItem.'Date Signed Out', "d mmm"), "")
+                              Width: =190 * SX
+                              Wrap: =false
+                              X: =1110 * SX
+            - lblToEmpty_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =24 * SY
+                  Size: =Round(14 * SF, 0)
+                  Text: ="Every item in scope has been audited recently."
+                  Visible: =acTab = "To" && IsEmpty(colAcTo)
+                  Width: =1333 * SX
+                  Y: =160 * SY
+            - hCat_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="PASS RATE BY CATEGORY"
+                  Visible: =acTab = "Rate"
+                  Width: =300 * SX
+                  Wrap: =false
+                  X: =24 * SX
+                  Y: =58 * SY
+            - Gallery_Cat_Ac:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =372 * SY
+                  Items: =colAcByCat
+                  TemplatePadding: =0
+                  TemplateSize: =52 * SY
+                  Visible: =acTab = "Rate"
+                  Width: =660 * SX
+                  Y: =78 * SY
+                Children:
+                  - Ac_CatRow:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =46 * SY
+                        RadiusBottomLeft: =12 * SR
+                        RadiusBottomRight: =12 * SR
+                        RadiusTopLeft: =12 * SR
+                        RadiusTopRight: =12 * SR
+                        Width: =640 * SX
+                        X: =10 * SX
+                        Y: =3 * SY
+                      Children:
+                        - lblCatName_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(14, 28, 42, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =46 * SY
+                              Size: =Round(14 * SF, 0)
+                              Text: =ThisItem.CatKey
+                              Wrap: =false
+                              X: =14 * SX
+                        - conCatTrack_Ac:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =RGBA(235, 242, 248, 1)
+                              Height: =8 * SY
+                              Width: =200 * SX
+                              X: =170 * SX
+                              Y: =19 * SY
+                        - conCatFill_Ac:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =If(ThisItem.Pct >= 90, RGBA(12, 122, 82, 1), If(ThisItem.Pct >= 75, RGBA(200, 120, 0, 1), RGBA(180, 26, 26, 1)))
+                              Height: =8 * SY
+                              Width: =200 * SX * ThisItem.Pct / 100
+                              X: =170 * SX
+                              Y: =19 * SY
+                        - lblCatPct_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              Color: =If(ThisItem.Pct >= 90, RGBA(12, 122, 82, 1), If(ThisItem.Pct >= 75, RGBA(200, 120, 0, 1), RGBA(180, 26, 26, 1)))
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =46 * SY
+                              Size: =Round(16 * SF, 0)
+                              Text: =ThisItem.Pct & "%"
+                              Width: =70 * SX
+                              Wrap: =false
+                              X: =384 * SX
+                        - lblCatN_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =46 * SY
+                              Size: =Round(12 * SF, 0)
+                              Text: =ThisItem.Passed & " of " & ThisItem.Audits & " passed"
+                              Width: =160 * SX
+                              Wrap: =false
+                              X: =464 * SX
+            - hWard_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="PASS RATE BY WARD"
+                  Visible: =acTab = "Rate"
+                  Width: =300 * SX
+                  Wrap: =false
+                  X: =694 * SX
+                  Y: =58 * SY
+            - Gallery_Ward_Ac:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =372 * SY
+                  Items: =colAcByWard
+                  TemplatePadding: =0
+                  TemplateSize: =52 * SY
+                  Visible: =acTab = "Rate"
+                  Width: =653 * SX
+                  X: =680 * SX
+                  Y: =78 * SY
+                Children:
+                  - Ac_WardRow:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =46 * SY
+                        RadiusBottomLeft: =12 * SR
+                        RadiusBottomRight: =12 * SR
+                        RadiusTopLeft: =12 * SR
+                        RadiusTopRight: =12 * SR
+                        Width: =640 * SX
+                        X: =10 * SX
+                        Y: =3 * SY
+                      Children:
+                        - lblWardName_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(14, 28, 42, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =46 * SY
+                              Size: =Round(14 * SF, 0)
+                              Text: =ThisItem.WardKey
+                              Wrap: =false
+                              X: =14 * SX
+                        - conWardTrack_Ac:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =RGBA(235, 242, 248, 1)
+                              Height: =8 * SY
+                              Width: =200 * SX
+                              X: =170 * SX
+                              Y: =19 * SY
+                        - conWardFill_Ac:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =If(ThisItem.Pct >= 90, RGBA(12, 122, 82, 1), If(ThisItem.Pct >= 75, RGBA(200, 120, 0, 1), RGBA(180, 26, 26, 1)))
+                              Height: =8 * SY
+                              Width: =200 * SX * ThisItem.Pct / 100
+                              X: =170 * SX
+                              Y: =19 * SY
+                        - lblWardPct_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              Color: =If(ThisItem.Pct >= 90, RGBA(12, 122, 82, 1), If(ThisItem.Pct >= 75, RGBA(200, 120, 0, 1), RGBA(180, 26, 26, 1)))
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =46 * SY
+                              Size: =Round(16 * SF, 0)
+                              Text: =ThisItem.Pct & "%"
+                              Width: =70 * SX
+                              Wrap: =false
+                              X: =384 * SX
+                        - lblWardN_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =46 * SY
+                              Size: =Round(12 * SF, 0)
+                              Text: =ThisItem.Passed & " of " & ThisItem.Audits & " passed"
+                              Width: =160 * SX
+                              Wrap: =false
+                              X: =464 * SX
+            - hUnItem_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="ITEM"
+                  Visible: =acTab = "Un"
+                  Width: =200 * SX
+                  Wrap: =false
+                  X: =24 * SX
+                  Y: =58 * SY
+            - hUnOut_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="RESULT"
+                  Visible: =acTab = "Un"
+                  Width: =100 * SX
+                  Wrap: =false
+                  X: =310 * SX
+                  Y: =58 * SY
+            - hUnWard_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="WARD / AUDITED BY"
+                  Visible: =acTab = "Un"
+                  Width: =200 * SX
+                  Wrap: =false
+                  X: =480 * SX
+                  Y: =58 * SY
+            - hUnPT_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="TREATING PHYSIO"
+                  Visible: =acTab = "Un"
+                  Width: =200 * SX
+                  Wrap: =false
+                  X: =740 * SX
+                  Y: =58 * SY
+            - hUnCom_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Size: =Round(10 * SF, 0)
+                  Text: ="COMMENTS"
+                  Visible: =acTab = "Un"
+                  Width: =200 * SX
+                  Wrap: =false
+                  X: =1030 * SX
+                  Y: =58 * SY
+            - Gallery_Un_Ac:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =372 * SY
+                  Items: =colAcUnesc
+                  TemplatePadding: =0
+                  TemplateSize: =62 * SY
+                  Visible: =acTab = "Un"
+                  Width: =1333 * SX
+                  Y: =78 * SY
+                Children:
+                  - Ac_UnRow:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =56 * SY
+                        RadiusBottomLeft: =12 * SR
+                        RadiusBottomRight: =12 * SR
+                        RadiusTopLeft: =12 * SR
+                        RadiusTopRight: =12 * SR
+                        Width: =1313 * SX
+                        X: =10 * SX
+                        Y: =3 * SY
+                      Children:
+                        - conUnBar_Ac:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =RGBA(180, 26, 26, 1)
+                              Height: =56 * SY
+                              RadiusBottomLeft: =12 * SR
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =12 * SR
+                              RadiusTopRight: =0
+                              Width: =6 * SX
+                        - lblUnCode_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(14, 28, 42, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =20 * SY
+                              Size: =Round(14 * SF, 0)
+                              Text: =ThisItem.Barcode
+                              Width: =260 * SX
+                              Wrap: =false
+                              X: =16 * SX
+                              Y: =6 * SY
+                        - lblUnDate_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =18 * SY
+                              Size: =Round(11 * SF, 0)
+                              Text: =Text(ThisItem.AuditDateTime, "d mmm yyyy, hh:mm")
+                              Width: =260 * SX
+                              Wrap: =false
+                              X: =16 * SX
+                              Y: =28 * SY
+                        - conUnOut_Ac:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =RGBA(254, 242, 242, 1)
+                              Height: =26 * SY
+                              RadiusBottomLeft: =13 * SR
+                              RadiusBottomRight: =13 * SR
+                              RadiusTopLeft: =13 * SR
+                              RadiusTopRight: =13 * SR
+                              Width: =150 * SX
+                              X: =300 * SX
+                              Y: =15 * SY
+                            Children:
+                              - lblUnOut_Ac:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Align: =Align.Center
+                                    Color: =RGBA(180, 26, 26, 1)
+                                    Font: =Font.'Segoe UI'
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Size: =Round(11 * SF, 0)
+                                    Text: =Coalesce(ThisItem.AuditOutcome.Value, "—")
+                                    Width: =Parent.Width
+                                    Wrap: =false
+                        - lblUnWard_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(58, 80, 104, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =20 * SY
+                              Text: ="Ward " & ThisItem.aWardName
+                              Width: =140 * SX
+                              Wrap: =false
+                              X: =470 * SX
+                              Y: =6 * SY
+                        - lblUnBy_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =18 * SY
+                              Size: =Round(11 * SF, 0)
+                              Text: ="Audited by " & Coalesce(ThisItem.AuditedBy.DisplayName, "—")
+                              Width: =240 * SX
+                              Wrap: =false
+                              X: =470 * SX
+                              Y: =28 * SY
+                        - lblUnPT_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(58, 80, 104, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =56 * SY
+                              Size: =Round(12 * SF, 0)
+                              Text: =Coalesce(ThisItem.TreatingPTNames, "No treating physio recorded")
+                              Width: =280 * SX
+                              X: =730 * SX
+                        - lblUnCom_Ac:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =56 * SY
+                              Size: =Round(12 * SF, 0)
+                              Text: =Coalesce(ThisItem.Comments, "")
+                              Width: =280 * SX
+                              X: =1020 * SX
+            - lblUnEmpty_Ac:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =24 * SY
+                  Size: =Round(14 * SF, 0)
+                  Text: ="Every failed audit has been escalated."
+                  Visible: =acTab = "Un" && IsEmpty(colAcUnesc)
+                  Width: =1333 * SX
+                  Y: =160 * SY

@@ -13,13 +13,9 @@ Screens:
       - btnLoad_Md:
           Control: Button@0.0.45
           Properties:
-            Height: =10
-            Width: =10
-            Text: =""
-            Visible: =false
+            Height: =10 * SY
             OnSelect: |-
               =Set(mdLoading, true);
-
               // my patients on every ward
               ClearCollect(colMdW, ForAll(
                       Filter(
@@ -77,7 +73,6 @@ Screens:
                           EDD: w.EDD, Falls: Coalesce(w.'Falls Risk', false), NDIS: Coalesce(w.NDIS, false), Maint: Coalesce(w.Maintenance, false), Link: Coalesce(w.'Link Worker', false)
                       }
                   ));
-
               // equipment signed out to me
               ClearCollect(
                   colMdEq,
@@ -92,7 +87,6 @@ Screens:
                       "DaysOut", SortOrder.Descending
                   )
               );
-
               // who is away today and tomorrow
               Clear(colMdLeave);
               IfError(
@@ -138,16 +132,15 @@ Screens:
                   ),
                   Set(mdCalOK, false)
               );
-
               Set(mdLoading, false);
               Select(btnBuild_Md)
+            Text: =""
+            Visible: =false
+            Width: =10 * SX
       - btnBuild_Md:
           Control: Button@0.0.45
           Properties:
-            Height: =10
-            Width: =10
-            Text: =""
-            Visible: =false
+            Height: =10 * SY
             OnSelect: |-
               =ClearCollect(
                   colMdPts,
@@ -169,20 +162,23 @@ Screens:
                       Old: CountRows(Filter(colMdEq, DaysOut > 42))
                   }
               )
+            Text: =""
+            Visible: =false
+            Width: =10 * SX
       - Md_Title:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
             DropShadow: =DropShadow.Regular
             Fill: =RGBA(7, 95, 115, 1)
-            Height: =70
-            Width: =1333
-            X: =18
-            Y: =12
-            RadiusBottomLeft: =18
-            RadiusBottomRight: =18
-            RadiusTopLeft: =18
-            RadiusTopRight: =18
+            Height: =70 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =1333 * SX
+            X: =18 * SX
+            Y: =12 * SY
           Children:
             - imgHeaderGradient_Md:
                 Control: Image@2.2.3
@@ -196,356 +192,341 @@ Screens:
                 Properties:
                   Font: =Font.'Segoe UI'
                   FontColor: =RGBA(255, 255, 255, 1)
-                  Height: =36
-                  Size: =28
+                  Height: =44 * SY
+                  Size: =Round(28 * SF, 0)
                   Text: ="My Day"
                   VerticalAlign: =VerticalAlign.Middle
                   Weight: ='TextCanvas.Weight'.Bold
-                  Width: =700
-                  X: =76
-                  Y: =8
+                  Width: =700 * SX
+                  X: =76 * SX
             - lblSub_MdHdr:
                 Control: Text@0.0.51
                 Properties:
                   Font: =Font.'Segoe UI'
                   FontColor: =RGBA(255, 255, 255, 0.88)
-                  Height: =20
-                  Size: =12
+                  Height: =20 * SY
+                  Size: =Round(12 * SF, 0)
                   Text: =Switch(true, Hour(Now()) < 12, "Good morning", Hour(Now()) < 17, "Good afternoon", "Good evening") & ", " & First(Split(User().FullName, " ")).Value & "  ·  " & Text(Today(), "dddd d mmmm")
                   VerticalAlign: =VerticalAlign.Middle
-                  Width: =800
-                  X: =76
-                  Y: =42
+                  Width: =800 * SX
+                  X: =76 * SX
+                  Y: =42 * SY
             - btnBack_Md:
                 Control: Button@0.0.45
                 Properties:
                   Appearance: ='ButtonCanvas.Appearance'.Transparent
                   FontColor: =RGBA(255, 255, 255, 1)
-                  FontSize: =50
-                  Height: =70
+                  FontSize: =Round(50 * SF, 0)
+                  Height: =70 * SY
                   Icon: ="ChevronLeft"
-                  Text: =""
-                  X: =1
                   OnSelect: =Back(ScreenTransition.Fade)
+                  Text: =""
+                  X: =1 * SX
             - conReload_Md:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
                   DropShadow: =DropShadow.None
                   Fill: =RGBA(255, 255, 255, 1)
-                  Height: =40
-                  Width: =140
-                  X: =1177
-                  Y: =15
-                  RadiusBottomLeft: =20
-                  RadiusBottomRight: =20
-                  RadiusTopLeft: =20
-                  RadiusTopRight: =20
-                  BorderColor: =RGBA(14, 42, 70, 0.12)
-                  BorderStyle: =BorderStyle.Solid
-                  BorderThickness: =1
+                  Height: =40 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =140 * SX
+                  X: =1177 * SX
+                  Y: =15 * SY
                 Children:
                   - btnReload_Md:
                       Control: Button@0.0.45
                       Properties:
                         Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20
+                        BorderRadius: =20 * SR
                         Font: =Font.'Segoe UI'
                         FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =13
+                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
-                        Height: =40
-                        Width: =140
-                        Text: ="Reload"
-                        OnSelect: =Select(btnLoad_Md)
+                        Height: =40 * SY
                         Icon: ="ArrowClockwise"
                         IconStyle: ='ButtonCanvas.IconStyle'.Filled
                         Layout: ='ButtonCanvas.Layout'.IconBefore
+                        OnSelect: =Select(btnLoad_Md)
+                        Text: ="Reload"
+                        Width: =140 * SX
       - Md_Kpi_Pts:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            DropShadow: =DropShadow.Light
-            Fill: =RGBA(255, 255, 255, 1)
-            Height: =92
-            Width: =324
-            X: =18
-            Y: =95
-            RadiusBottomLeft: =18
-            RadiusBottomRight: =18
-            RadiusTopLeft: =18
-            RadiusTopRight: =18
             BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
             BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =324 * SX
+            X: =18 * SX
+            Y: =95 * SY
           Children:
             - lblKpiT_Pts_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =16
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="MY PATIENTS"
-                  Width: =304
-                  X: =16
-                  Y: =10
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
             - lblKpiV_Pts_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =30
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =38
+                  Height: =38 * SY
+                  Size: =Round(30 * SF, 0)
                   Text: =Text(mdKpi.Patients)
-                  Width: =304
-                  X: =16
-                  Y: =27
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
             - lblKpiS_Pts_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
-                  Height: =16
+                  Font: =Font.'Segoe UI'
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="Across all wards"
-                  Width: =304
-                  X: =16
-                  Y: =68
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
       - Md_Kpi_Soon:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            DropShadow: =DropShadow.Light
-            Fill: =RGBA(255, 255, 255, 1)
-            Height: =92
-            Width: =324
-            X: =354
-            Y: =95
-            RadiusBottomLeft: =18
-            RadiusBottomRight: =18
-            RadiusTopLeft: =18
-            RadiusTopRight: =18
             BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
             BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =324 * SX
+            X: =354 * SX
+            Y: =95 * SY
           Children:
             - lblKpiT_Soon_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =16
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="EDD IN 3 DAYS OR LESS"
-                  Width: =304
-                  X: =16
-                  Y: =10
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
             - lblKpiV_Soon_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =If(mdKpi.Soon > 0, RGBA(200, 120, 0, 1), RGBA(12, 122, 82, 1))
-                  Size: =30
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =38
+                  Height: =38 * SY
+                  Size: =Round(30 * SF, 0)
                   Text: =Text(mdKpi.Soon)
-                  Width: =304
-                  X: =16
-                  Y: =27
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
             - lblKpiS_Soon_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
-                  Height: =16
+                  Font: =Font.'Segoe UI'
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="Includes any EDD that has passed"
-                  Width: =304
-                  X: =16
-                  Y: =68
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
       - Md_Kpi_Eq:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            DropShadow: =DropShadow.Light
-            Fill: =RGBA(255, 255, 255, 1)
-            Height: =92
-            Width: =324
-            X: =690
-            Y: =95
-            RadiusBottomLeft: =18
-            RadiusBottomRight: =18
-            RadiusTopLeft: =18
-            RadiusTopRight: =18
             BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
             BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =324 * SX
+            X: =690 * SX
+            Y: =95 * SY
           Children:
             - lblKpiT_Eq_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =16
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="EQUIPMENT I HAVE OUT"
-                  Width: =304
-                  X: =16
-                  Y: =10
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
             - lblKpiV_Eq_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(26, 90, 153, 1)
-                  Size: =30
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =38
+                  Height: =38 * SY
+                  Size: =Round(30 * SF, 0)
                   Text: =Text(mdKpi.Equip)
-                  Width: =304
-                  X: =16
-                  Y: =27
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
             - lblKpiS_Eq_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
-                  Height: =16
+                  Font: =Font.'Segoe UI'
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="Signed out in my name"
-                  Width: =304
-                  X: =16
-                  Y: =68
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
       - Md_Kpi_Old:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            DropShadow: =DropShadow.Light
-            Fill: =RGBA(255, 255, 255, 1)
-            Height: =92
-            Width: =324
-            X: =1026
-            Y: =95
-            RadiusBottomLeft: =18
-            RadiusBottomRight: =18
-            RadiusTopLeft: =18
-            RadiusTopRight: =18
             BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
             BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =324 * SX
+            X: =1026 * SX
+            Y: =95 * SY
           Children:
             - lblKpiT_Old_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =16
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="OUT OVER 6 WEEKS"
-                  Width: =304
-                  X: =16
-                  Y: =10
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
             - lblKpiV_Old_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =If(mdKpi.Old > 0, RGBA(180, 26, 26, 1), RGBA(12, 122, 82, 1))
-                  Size: =30
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =38
+                  Height: =38 * SY
+                  Size: =Round(30 * SF, 0)
                   Text: =Text(mdKpi.Old)
-                  Width: =304
-                  X: =16
-                  Y: =27
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
             - lblKpiS_Old_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
-                  Height: =16
+                  Font: =Font.'Segoe UI'
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="Please review or return"
-                  Width: =304
-                  X: =16
-                  Y: =68
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
       - Md_CardPts:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            DropShadow: =DropShadow.Light
-            Fill: =RGBA(255, 255, 255, 1)
-            Height: =558
-            Width: =500
-            X: =18
-            Y: =195
-            RadiusBottomLeft: =18
-            RadiusBottomRight: =18
-            RadiusTopLeft: =18
-            RadiusTopRight: =18
             BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
             BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =558 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            X: =18 * SX
+            Y: =195 * SY
           Children:
             - lblPts_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =16
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(16 * SF, 0)
                   Text: ="My patients"
-                  Width: =250
-                  X: =20
-                  Y: =12
+                  Width: =250 * SX
                   Wrap: =false
+                  X: =20 * SX
+                  Y: =12 * SY
             - lblPtsHint_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
-                  Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
-                  Height: =18
-                  Text: ="Soonest EDD first  ·  tap to open"
-                  Width: =230
-                  X: =250
-                  Y: =16
                   Align: =Align.Right
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =18 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="Soonest EDD first  ·  tap to open"
+                  Width: =230 * SX
                   Wrap: =false
+                  X: =250 * SX
+                  Y: =16 * SY
             - Gallery_Pts_Md:
                 Control: Gallery@2.15.0
                 Variant: Vertical
                 Properties:
-                  Height: =500
+                  Height: =500 * SY
                   Items: =colMdPts
                   TemplatePadding: =0
-                  TemplateSize: =58
-                  Width: =500
-                  X: =0
-                  Y: =50
+                  TemplateSize: =58 * SY
+                  Width: =500 * SX
+                  Y: =50 * SY
                 Children:
                   - Md_PtRow:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
                         DropShadow: =DropShadow.None
                         Fill: =RGBA(244, 249, 252, 1)
-                        Height: =52
-                        Width: =478
-                        X: =6
-                        Y: =3
-                        RadiusBottomLeft: =12
-                        RadiusBottomRight: =12
-                        RadiusTopLeft: =12
-                        RadiusTopRight: =12
-                        BorderColor: =RGBA(14, 42, 70, 0.12)
-                        BorderStyle: =BorderStyle.Solid
-                        BorderThickness: =1
+                        Height: =52 * SY
+                        RadiusBottomLeft: =12 * SR
+                        RadiusBottomRight: =12 * SR
+                        RadiusTopLeft: =12 * SR
+                        RadiusTopRight: =12 * SR
+                        Width: =478 * SX
+                        X: =6 * SX
+                        Y: =3 * SY
                       Children:
                         - conPtBed_Md:
                             Control: GroupContainer@1.5.0
@@ -553,208 +534,190 @@ Screens:
                             Properties:
                               DropShadow: =DropShadow.None
                               Fill: =RGBA(26, 90, 153, 0.08)
-                              Height: =32
-                              Width: =54
-                              X: =10
-                              Y: =10
-                              RadiusBottomLeft: =16
-                              RadiusBottomRight: =16
-                              RadiusTopLeft: =16
-                              RadiusTopRight: =16
+                              Height: =32 * SY
+                              RadiusBottomLeft: =16 * SR
+                              RadiusBottomRight: =16 * SR
+                              RadiusTopLeft: =16 * SR
+                              RadiusTopRight: =16 * SR
+                              Width: =54 * SX
+                              X: =10 * SX
+                              Y: =10 * SY
                             Children:
                               - lblPtBed_Md:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Font: =Font.'Segoe UI'
+                                    Align: =Align.Center
                                     Color: =RGBA(26, 90, 153, 1)
-                                    Size: =11
+                                    Font: =Font.'Segoe UI'
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
+                                    Size: =Round(11 * SF, 0)
                                     Text: =ThisItem.Ward & If(ThisItem.BedT = "", "", "-" & ThisItem.BedT)
                                     Width: =Parent.Width
-                                    X: =0
-                                    Y: =0
-                                    Align: =Align.Center
-                                    VerticalAlign: =VerticalAlign.Middle
                                     Wrap: =false
                         - lblPtName_Md:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =Font.'Segoe UI'
                               Color: =RGBA(14, 28, 42, 1)
-                              Size: =14
+                              Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
-                              Height: =20
+                              Height: =20 * SY
+                              Size: =Round(14 * SF, 0)
                               Text: =ThisItem.Patient
-                              Width: =200
-                              X: =76
-                              Y: =5
+                              Width: =200 * SX
                               Wrap: =false
+                              X: =76 * SX
+                              Y: =5 * SY
                         - lblPtSub_Md:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =Font.'Segoe UI'
                               Color: =If(ThisItem.EquipN > 0, RGBA(26, 90, 153, 1), RGBA(140, 155, 174, 1))
-                              Size: =11
-                              Height: =18
+                              Font: =Font.'Segoe UI'
+                              Height: =18 * SY
+                              Size: =Round(11 * SF, 0)
                               Text: =If(ThisItem.EquipN = 0, "No equipment out", ThisItem.EquipN & If(ThisItem.EquipN = 1, " item out", " items out"))
-                              Width: =200
-                              X: =76
-                              Y: =26
+                              Width: =200 * SX
                               Wrap: =false
+                              X: =76 * SX
+                              Y: =26 * SY
                         - conPtEdd_Md:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
                               DropShadow: =DropShadow.None
                               Fill: =If(IsBlank(ThisItem.EDD), RGBA(235, 242, 248, 1), ThisItem.EDD < Today(), RGBA(254, 242, 242, 1), ThisItem.EDD <= DateAdd(Today(), 3), RGBA(255, 246, 229, 1), RGBA(235, 242, 248, 1))
-                              Height: =26
-                              Width: =88
-                              X: =290
-                              Y: =13
-                              RadiusBottomLeft: =13
-                              RadiusBottomRight: =13
-                              RadiusTopLeft: =13
-                              RadiusTopRight: =13
+                              Height: =26 * SY
+                              RadiusBottomLeft: =13 * SR
+                              RadiusBottomRight: =13 * SR
+                              RadiusTopLeft: =13 * SR
+                              RadiusTopRight: =13 * SR
+                              Width: =88 * SX
+                              X: =290 * SX
+                              Y: =13 * SY
                             Children:
                               - lblPtEdd_Md:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Font: =Font.'Segoe UI'
+                                    Align: =Align.Center
                                     Color: =If(IsBlank(ThisItem.EDD), RGBA(140, 155, 174, 1), ThisItem.EDD < Today(), RGBA(180, 26, 26, 1), ThisItem.EDD <= DateAdd(Today(), 3), RGBA(200, 120, 0, 1), RGBA(58, 80, 104, 1))
-                                    Size: =11
+                                    Font: =Font.'Segoe UI'
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
+                                    Size: =Round(11 * SF, 0)
                                     Text: =If(IsBlank(ThisItem.EDD), "No EDD", ThisItem.EDD < Today(), "Overdue", ThisItem.EDD = Today(), "Today", "EDD " & Text(ThisItem.EDD, "d mmm"))
                                     Width: =Parent.Width
-                                    X: =0
-                                    Y: =0
-                                    Align: =Align.Center
-                                    VerticalAlign: =VerticalAlign.Middle
                                     Wrap: =false
                         - conPtFlF_Md:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Visible: =ThisItem.Falls
                               DropShadow: =DropShadow.None
                               Fill: =RGBA(0, 144, 153, 1)
-                              Height: =20
-                              Width: =20
-                              X: =388
-                              Y: =16
-                              RadiusBottomLeft: =10
-                              RadiusBottomRight: =10
-                              RadiusTopLeft: =10
-                              RadiusTopRight: =10
+                              Height: =20 * SY
+                              RadiusBottomLeft: =10 * SR
+                              RadiusBottomRight: =10 * SR
+                              RadiusTopLeft: =10 * SR
+                              RadiusTopRight: =10 * SR
+                              Visible: =ThisItem.Falls
+                              Width: =20 * SX
+                              X: =388 * SX
+                              Y: =16 * SY
                             Children:
                               - lblPtFlF_Md:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Font: =Font.'Segoe UI'
+                                    Align: =Align.Center
                                     Color: =RGBA(255, 255, 255, 1)
-                                    Size: =10
+                                    Font: =Font.'Segoe UI'
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
+                                    Size: =Round(10 * SF, 0)
                                     Text: ="F"
                                     Width: =Parent.Width
-                                    X: =0
-                                    Y: =0
-                                    Align: =Align.Center
-                                    VerticalAlign: =VerticalAlign.Middle
                                     Wrap: =false
                         - conPtFlN_Md:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Visible: =ThisItem.NDIS
                               DropShadow: =DropShadow.None
                               Fill: =RGBA(26, 90, 153, 1)
-                              Height: =20
-                              Width: =20
-                              X: =410
-                              Y: =16
-                              RadiusBottomLeft: =10
-                              RadiusBottomRight: =10
-                              RadiusTopLeft: =10
-                              RadiusTopRight: =10
+                              Height: =20 * SY
+                              RadiusBottomLeft: =10 * SR
+                              RadiusBottomRight: =10 * SR
+                              RadiusTopLeft: =10 * SR
+                              RadiusTopRight: =10 * SR
+                              Visible: =ThisItem.NDIS
+                              Width: =20 * SX
+                              X: =410 * SX
+                              Y: =16 * SY
                             Children:
                               - lblPtFlN_Md:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Font: =Font.'Segoe UI'
+                                    Align: =Align.Center
                                     Color: =RGBA(255, 255, 255, 1)
-                                    Size: =10
+                                    Font: =Font.'Segoe UI'
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
+                                    Size: =Round(10 * SF, 0)
                                     Text: ="N"
                                     Width: =Parent.Width
-                                    X: =0
-                                    Y: =0
-                                    Align: =Align.Center
-                                    VerticalAlign: =VerticalAlign.Middle
                                     Wrap: =false
                         - conPtFlL_Md:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Visible: =ThisItem.Link
                               DropShadow: =DropShadow.None
                               Fill: =RGBA(200, 120, 0, 1)
-                              Height: =20
-                              Width: =20
-                              X: =432
-                              Y: =16
-                              RadiusBottomLeft: =10
-                              RadiusBottomRight: =10
-                              RadiusTopLeft: =10
-                              RadiusTopRight: =10
+                              Height: =20 * SY
+                              RadiusBottomLeft: =10 * SR
+                              RadiusBottomRight: =10 * SR
+                              RadiusTopLeft: =10 * SR
+                              RadiusTopRight: =10 * SR
+                              Visible: =ThisItem.Link
+                              Width: =20 * SX
+                              X: =432 * SX
+                              Y: =16 * SY
                             Children:
                               - lblPtFlL_Md:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Font: =Font.'Segoe UI'
+                                    Align: =Align.Center
                                     Color: =RGBA(255, 255, 255, 1)
-                                    Size: =10
+                                    Font: =Font.'Segoe UI'
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
+                                    Size: =Round(10 * SF, 0)
                                     Text: ="L"
                                     Width: =Parent.Width
-                                    X: =0
-                                    Y: =0
-                                    Align: =Align.Center
-                                    VerticalAlign: =VerticalAlign.Middle
                                     Wrap: =false
                         - conPtFlM_Md:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Visible: =ThisItem.Maint
                               DropShadow: =DropShadow.None
                               Fill: =RGBA(124, 77, 160, 1)
-                              Height: =20
-                              Width: =20
-                              X: =454
-                              Y: =16
-                              RadiusBottomLeft: =10
-                              RadiusBottomRight: =10
-                              RadiusTopLeft: =10
-                              RadiusTopRight: =10
+                              Height: =20 * SY
+                              RadiusBottomLeft: =10 * SR
+                              RadiusBottomRight: =10 * SR
+                              RadiusTopLeft: =10 * SR
+                              RadiusTopRight: =10 * SR
+                              Visible: =ThisItem.Maint
+                              Width: =20 * SX
+                              X: =454 * SX
+                              Y: =16 * SY
                             Children:
                               - lblPtFlM_Md:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Font: =Font.'Segoe UI'
+                                    Align: =Align.Center
                                     Color: =RGBA(255, 255, 255, 1)
-                                    Size: =10
+                                    Font: =Font.'Segoe UI'
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
+                                    Size: =Round(10 * SF, 0)
                                     Text: ="M"
                                     Width: =Parent.Width
-                                    X: =0
-                                    Y: =0
-                                    Align: =Align.Center
-                                    VerticalAlign: =VerticalAlign.Middle
                                     Wrap: =false
                         - btnPt_Md:
                             Control: Button@0.0.45
@@ -762,10 +725,6 @@ Screens:
                               Appearance: ='ButtonCanvas.Appearance'.Transparent
                               BorderStyle: =BorderStyle.None
                               Height: =Parent.Height
-                              Width: =Parent.Width
-                              X: =0
-                              Y: =0
-                              Text: =""
                               OnSelect: |-
                                 =Set(varSelectedList, "Ward_" & ThisItem.Ward & "_Shared");
                                 Set(varWardCode, ThisItem.Ward);
@@ -782,92 +741,88 @@ Screens:
                                     )
                                 );
                                 Navigate(Patient_Detail_Screen, ScreenTransition.Fade)
+                              Text: =""
+                              Width: =Parent.Width
             - lblPtsEmpty_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
-                  Color: =RGBA(140, 155, 174, 1)
-                  Size: =14
-                  Height: =24
-                  Text: ="You are not on any ward list."
-                  Width: =500
-                  X: =0
-                  Y: =220
                   Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =24 * SY
+                  Size: =Round(14 * SF, 0)
+                  Text: ="You are not on any ward list."
                   Visible: =IsEmpty(colMdPts) && !mdLoading
+                  Width: =500 * SX
+                  Y: =220 * SY
       - Md_CardEq:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            DropShadow: =DropShadow.Light
-            Fill: =RGBA(255, 255, 255, 1)
-            Height: =558
-            Width: =500
-            X: =530
-            Y: =195
-            RadiusBottomLeft: =18
-            RadiusBottomRight: =18
-            RadiusTopLeft: =18
-            RadiusTopRight: =18
             BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
             BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =558 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            X: =530 * SX
+            Y: =195 * SY
           Children:
             - lblEq_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =16
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(16 * SF, 0)
                   Text: ="Equipment I have out"
-                  Width: =250
-                  X: =20
-                  Y: =12
+                  Width: =250 * SX
                   Wrap: =false
+                  X: =20 * SX
+                  Y: =12 * SY
             - lblEqHint_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
-                  Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
-                  Height: =18
-                  Text: ="Longest first  ·  return it when it is clean"
-                  Width: =230
-                  X: =250
-                  Y: =16
                   Align: =Align.Right
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =18 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="Longest first  ·  return it when it is clean"
+                  Width: =230 * SX
                   Wrap: =false
+                  X: =250 * SX
+                  Y: =16 * SY
             - Gallery_Eq_Md:
                 Control: Gallery@2.15.0
                 Variant: Vertical
                 Properties:
-                  Height: =500
+                  Height: =500 * SY
                   Items: =colMdEq
                   TemplatePadding: =0
-                  TemplateSize: =62
-                  Width: =500
-                  X: =0
-                  Y: =50
+                  TemplateSize: =62 * SY
+                  Width: =500 * SX
+                  Y: =50 * SY
                 Children:
                   - Md_EqRow:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
                         DropShadow: =DropShadow.None
                         Fill: =RGBA(244, 249, 252, 1)
-                        Height: =56
-                        Width: =478
-                        X: =6
-                        Y: =3
-                        RadiusBottomLeft: =12
-                        RadiusBottomRight: =12
-                        RadiusTopLeft: =12
-                        RadiusTopRight: =12
-                        BorderColor: =RGBA(14, 42, 70, 0.12)
-                        BorderStyle: =BorderStyle.Solid
-                        BorderThickness: =1
+                        Height: =56 * SY
+                        RadiusBottomLeft: =12 * SR
+                        RadiusBottomRight: =12 * SR
+                        RadiusTopLeft: =12 * SR
+                        RadiusTopRight: =12 * SR
+                        Width: =478 * SX
+                        X: =6 * SX
+                        Y: =3 * SY
                       Children:
                         - conEqBar_Md:
                             Control: GroupContainer@1.5.0
@@ -875,229 +830,214 @@ Screens:
                             Properties:
                               DropShadow: =DropShadow.None
                               Fill: =Switch(ThisItem.Cat, "Wheelchair", RGBA(166, 199, 130, 1), "Cushion", RGBA(0, 144, 153, 1), "Backrest", RGBA(0, 200, 210, 1), RGBA(210, 218, 227, 1))
-                              Height: =56
-                              Width: =6
-                              X: =0
-                              Y: =0
-                              RadiusBottomLeft: =12
+                              Height: =56 * SY
+                              RadiusBottomLeft: =12 * SR
                               RadiusBottomRight: =0
-                              RadiusTopLeft: =12
+                              RadiusTopLeft: =12 * SR
                               RadiusTopRight: =0
+                              Width: =6 * SX
                         - lblEqCode_Md:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =Font.'Segoe UI'
                               Color: =RGBA(14, 28, 42, 1)
-                              Size: =14
+                              Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
-                              Height: =20
+                              Height: =20 * SY
+                              Size: =Round(14 * SF, 0)
                               Text: =ThisItem.Title
-                              Width: =250
-                              X: =16
-                              Y: =6
+                              Width: =250 * SX
                               Wrap: =false
+                              X: =16 * SX
+                              Y: =6 * SY
                         - lblEqDesc_Md:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =Font.'Segoe UI'
                               Color: =RGBA(140, 155, 174, 1)
-                              Size: =11
-                              Height: =18
+                              Font: =Font.'Segoe UI'
+                              Height: =18 * SY
+                              Size: =Round(11 * SF, 0)
                               Text: =ThisItem.Desc & If(IsBlank(ThisItem.Width.Value), "", "  ·  " & ThisItem.Width.Value)
-                              Width: =250
-                              X: =16
-                              Y: =28
+                              Width: =250 * SX
                               Wrap: =false
+                              X: =16 * SX
+                              Y: =28 * SY
                         - lblEqPt_Md:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =Font.'Segoe UI'
                               Color: =RGBA(58, 80, 104, 1)
-                              Size: =13
+                              Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
-                              Height: =20
+                              Height: =20 * SY
                               Text: =Coalesce(ThisItem.'Patient Name', "—")
-                              Width: =130
-                              X: =270
-                              Y: =6
+                              Width: =130 * SX
                               Wrap: =false
+                              X: =270 * SX
+                              Y: =6 * SY
                         - lblEqWard_Md:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =Font.'Segoe UI'
                               Color: =RGBA(140, 155, 174, 1)
-                              Size: =11
-                              Height: =18
+                              Font: =Font.'Segoe UI'
+                              Height: =18 * SY
+                              Size: =Round(11 * SF, 0)
                               Text: =If(ThisItem.WardName = "", "", "Ward " & ThisItem.WardName)
-                              Width: =130
-                              X: =270
-                              Y: =28
+                              Width: =130 * SX
                               Wrap: =false
+                              X: =270 * SX
+                              Y: =28 * SY
                         - conEqDays_Md:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
                               DropShadow: =DropShadow.None
                               Fill: =If(ThisItem.DaysOut > 42, RGBA(254, 242, 242, 1), If(ThisItem.DaysOut > 28, RGBA(255, 246, 229, 1), RGBA(235, 242, 248, 1)))
-                              Height: =26
-                              Width: =60
-                              X: =408
-                              Y: =15
-                              RadiusBottomLeft: =13
-                              RadiusBottomRight: =13
-                              RadiusTopLeft: =13
-                              RadiusTopRight: =13
+                              Height: =26 * SY
+                              RadiusBottomLeft: =13 * SR
+                              RadiusBottomRight: =13 * SR
+                              RadiusTopLeft: =13 * SR
+                              RadiusTopRight: =13 * SR
+                              Width: =60 * SX
+                              X: =408 * SX
+                              Y: =15 * SY
                             Children:
                               - lblEqDays_Md:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Font: =Font.'Segoe UI'
+                                    Align: =Align.Center
                                     Color: =If(ThisItem.DaysOut > 42, RGBA(180, 26, 26, 1), If(ThisItem.DaysOut > 28, RGBA(200, 120, 0, 1), RGBA(58, 80, 104, 1)))
-                                    Size: =12
+                                    Font: =Font.'Segoe UI'
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
+                                    Size: =Round(12 * SF, 0)
                                     Text: =ThisItem.DaysOut & " d"
                                     Width: =Parent.Width
-                                    X: =0
-                                    Y: =0
-                                    Align: =Align.Center
-                                    VerticalAlign: =VerticalAlign.Middle
                                     Wrap: =false
             - lblEqEmpty_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
-                  Color: =RGBA(140, 155, 174, 1)
-                  Size: =14
-                  Height: =24
-                  Text: ="Nothing is signed out to you."
-                  Width: =500
-                  X: =0
-                  Y: =220
                   Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =24 * SY
+                  Size: =Round(14 * SF, 0)
+                  Text: ="Nothing is signed out to you."
                   Visible: =IsEmpty(colMdEq) && !mdLoading
+                  Width: =500 * SX
+                  Y: =220 * SY
       - Md_CardLv:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            DropShadow: =DropShadow.Light
-            Fill: =RGBA(255, 255, 255, 1)
-            Height: =558
-            Width: =309
-            X: =1042
-            Y: =195
-            RadiusBottomLeft: =18
-            RadiusBottomRight: =18
-            RadiusTopLeft: =18
-            RadiusTopRight: =18
             BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
             BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =558 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =309 * SX
+            X: =1042 * SX
+            Y: =195 * SY
           Children:
             - lblLv_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =16
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(16 * SF, 0)
                   Text: ="Who is away"
-                  Width: =200
-                  X: =20
-                  Y: =12
+                  Width: =200 * SX
                   Wrap: =false
+                  X: =20 * SX
+                  Y: =12 * SY
             - lblLvHint_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
-                  Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
-                  Height: =18
-                  Text: ="Today and tomorrow"
-                  Width: =140
-                  X: =150
-                  Y: =16
                   Align: =Align.Right
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =18 * SY
+                  Size: =Round(11 * SF, 0)
+                  Text: ="Today and tomorrow"
+                  Width: =140 * SX
                   Wrap: =false
+                  X: =150 * SX
+                  Y: =16 * SY
             - Gallery_Lv_Md:
                 Control: Gallery@2.15.0
                 Variant: Vertical
                 Properties:
-                  Height: =500
+                  Height: =500 * SY
                   Items: =colMdLeave
                   TemplatePadding: =0
-                  TemplateSize: =62
-                  Width: =309
-                  X: =0
-                  Y: =50
+                  TemplateSize: =62 * SY
+                  Width: =309 * SX
+                  Y: =50 * SY
                 Children:
                   - Md_LvRow:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
                         DropShadow: =DropShadow.None
                         Fill: =RGBA(244, 249, 252, 1)
-                        Height: =56
-                        Width: =295
-                        X: =6
-                        Y: =3
-                        RadiusBottomLeft: =12
-                        RadiusBottomRight: =12
-                        RadiusTopLeft: =12
-                        RadiusTopRight: =12
-                        BorderColor: =RGBA(14, 42, 70, 0.12)
-                        BorderStyle: =BorderStyle.Solid
-                        BorderThickness: =1
+                        Height: =56 * SY
+                        RadiusBottomLeft: =12 * SR
+                        RadiusBottomRight: =12 * SR
+                        RadiusTopLeft: =12 * SR
+                        RadiusTopRight: =12 * SR
+                        Width: =295 * SX
+                        X: =6 * SX
+                        Y: =3 * SY
                       Children:
                         - lblLvName_Md:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =Font.'Segoe UI'
                               Color: =RGBA(14, 28, 42, 1)
-                              Size: =13
+                              Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
-                              Height: =20
+                              Height: =20 * SY
                               Text: =ThisItem.EventTitle
-                              Width: =275
-                              X: =12
-                              Y: =6
+                              Width: =275 * SX
                               Wrap: =false
+                              X: =12 * SX
+                              Y: =6 * SY
                         - lblLvWhen_Md:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =Font.'Segoe UI'
                               Color: =If(ThisItem.StartLocal < DateAdd(Today(), 1, TimeUnit.Days) && ThisItem.EndLocal > Today(), RGBA(200, 120, 0, 1), RGBA(140, 155, 174, 1))
-                              Size: =11
-                              Height: =18
+                              Font: =Font.'Segoe UI'
+                              Height: =18 * SY
+                              Size: =Round(11 * SF, 0)
                               Text: =If(ThisItem.StartLocal < DateAdd(Today(), 1, TimeUnit.Days) && ThisItem.EndLocal > Today(), "Away today", "Away tomorrow") & If(ThisItem.IsAllDay, "", "  ·  " & Text(ThisItem.StartLocal, "h:mm am/pm") & " – " & Text(ThisItem.EndLocal, "h:mm am/pm"))
-                              Width: =275
-                              X: =12
-                              Y: =28
+                              Width: =275 * SX
                               Wrap: =false
+                              X: =12 * SX
+                              Y: =28 * SY
             - lblLvEmpty_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
-                  Color: =RGBA(140, 155, 174, 1)
-                  Size: =14
-                  Height: =24
-                  Text: ="Nobody is on leave."
-                  Width: =309
-                  X: =0
-                  Y: =220
                   Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =24 * SY
+                  Size: =Round(14 * SF, 0)
+                  Text: ="Nobody is on leave."
                   Visible: =IsEmpty(colMdLeave) && mdCalOK && !mdLoading
+                  Width: =309 * SX
+                  Y: =220 * SY
             - lblLvNo_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
-                  Color: =RGBA(180, 26, 26, 1)
-                  Size: =13
-                  Height: =40
-                  Text: ="The leave calendar could not be read."
-                  Width: =270
-                  X: =20
-                  Y: =200
                   Align: =Align.Center
+                  Color: =RGBA(180, 26, 26, 1)
+                  Font: =Font.'Segoe UI'
+                  Text: ="The leave calendar could not be read."
                   Visible: =!mdCalOK
+                  Width: =270 * SX
+                  X: =20 * SX
+                  Y: =200 * SY

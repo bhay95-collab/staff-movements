@@ -1,0 +1,765 @@
+Screens:
+  Physio_Data_New:
+    Properties:
+      Fill: =RGBA(235, 242, 248, 1)
+      ImagePosition: =ImagePosition.Fill
+      OnVisible: |-
+        =// -------------------------------
+        // 0) Cache + normalize raw data
+        // -------------------------------
+        Set(locShowStaffing, false);
+        ClearCollect(
+            colAcuityRaw,
+            AddColumns(
+                Acuity_Longitudinal,
+                WardKey, Upper(Trim(WardCode.Value)),
+                WeekStartKey, DateValue(WeekStart)
+            )
+        );
+        // -------------------------------
+        // 1) "This week" + "last week" from existing data
+        //    (previous available week, not assumed -7)
+        // -------------------------------
+        With(
+            {
+                weeks: Sort(
+                    Distinct(colAcuityRaw, WeekStartKey),
+                    Value,
+                    SortOrder.Descending
+                )
+            },
+            Set(locThisWeekStart, If(CountRows(weeks) >= 1, First(weeks).Value, Blank()));
+            Set(locLastWeekStart, If(CountRows(weeks) >= 2, Last(FirstN(weeks, 2)).Value, Blank()))
+        );
+        // -------------------------------
+        // 2) Weekly aggregated dataset (1 row per ward + week)
+        // -------------------------------
+        ClearCollect(
+            colAcuityWeekly,
+            AddColumns(
+                GroupBy(
+                    Filter(colAcuityRaw, !IsBlank(WardKey) && !IsBlank(WeekStartKey)),
+                    WardKey,
+                    WeekStartKey,
+                    WeekRows
+                ),
+                WeeklyAverage,
+                If(CountRows(WeekRows) = 0, Blank(), Average(WeekRows, AcuityScore))
+            )
+        );
+        // -------------------------------
+        // 3) Pivot: 1 row per week, 1 column per ward (for the line chart)
+        // -------------------------------
+        ClearCollect(
+            colAcuityWeeklyWide,
+            DropColumns(
+                AddColumns(
+                    Sort(Distinct(colAcuityWeekly, WeekStartKey), Value, SortOrder.Ascending),
+                    WeekLabel, Text(Value, "dd mmm"),
+                    'Ward 4A', LookUp(colAcuityWeekly, WeekStartKey = Value && WardKey = "4A", WeeklyAverage),
+                    'Ward 4B', LookUp(colAcuityWeekly, WeekStartKey = Value && WardKey = "4B", WeeklyAverage),
+                    'Ward 5A', LookUp(colAcuityWeekly, WeekStartKey = Value && WardKey = "5A", WeeklyAverage),
+                    'Ward 6A', LookUp(colAcuityWeekly, WeekStartKey = Value && WardKey = "6A", WeeklyAverage)
+                ),
+                Value
+            )
+        );
+        // -------------------------------
+        // 4) One row per ward for the cards: total acuity + this week vs last week
+        // -------------------------------
+        ClearCollect(
+            colDdWardStats,
+            ForAll(
+                colWardSummaryConfig As w,
+                With(
+                    {
+                        t: LookUp(colAcuityWeekly, WardKey = Upper(Trim(w.WardCode)) && WeekStartKey = locThisWeekStart, WeeklyAverage),
+                        l: LookUp(colAcuityWeekly, WardKey = Upper(Trim(w.WardCode)) && WeekStartKey = locLastWeekStart, WeeklyAverage)
+                    },
+                    {
+                        WardCode: w.WardCode,
+                        Acuity: Switch(
+                            w.WardCode,
+                            "4A", Sum(Filter(Ward_4A_Shared, !IsBlank(Patient)), 'Acuity Score'),
+                            "4B", Sum(Filter(Ward_4B_Shared, !IsBlank(Patient)), 'Acuity Score'),
+                            "5A", Sum(Filter(Ward_5A_Shared, !IsBlank(Patient)), 'Acuity Score'),
+                            "6A", Sum(Filter(Ward_6A_Shared, !IsBlank(Patient)), 'Acuity Score'),
+                            0
+                        ),
+                        ThisAvg: t,
+                        LastAvg: l,
+                        Trend: If(IsBlank(t), "none", IsBlank(l), "first", t > l, "up", t < l, "down", "same")
+                    }
+                )
+            )
+        )
+    Children:
+      - btnCalc_Dd:
+          Control: Button@0.0.45
+          Properties:
+            Height: =10 * SY
+            OnSelect: |-
+              =// 1) Normalize to Impairment + PatientCount (colStaffPie is filled by the ward card / AFRM button)
+              ClearCollect(
+                  colWardImpairmentCounts,
+                  AddColumns(
+                      GroupBy(
+                          AddColumns(
+                              Filter(colStaffPie, !IsBlank(City) && Value(Area) > 0),
+                              Impairment,
+                                  Coalesce(
+                                      LookUp(colDiagnosisMap, Upper(Trim(DiagnosisLabel)) = Upper(Trim(City)), Impairment),
+                                      City
+                                  ),
+                              Patients,
+                                  Value(Area)
+                          ),
+                          Impairment,
+                          Rows
+                      ),
+                      PatientCount,
+                          Sum(Rows, Patients)
+                  )
+              );
+              // 2) Recommended staffing = sum across impairments
+              ClearCollect(
+                  colWardStaffingRecommended,
+                  With(
+                      {
+                          totals:
+                              ForAll(
+                                  colWardImpairmentCounts As d,
+                                  With(
+                                      {
+                                          r: LookUp(colStaffRatios, Upper(Trim(Impairment)) = Upper(Trim(d.Impairment))),
+                                          factor: d.PatientCount / 10
+                                      },
+                                      {
+                                          OT: factor * Coalesce(r.OT, 0),
+                                          PT: factor * Coalesce(r.PT, 0),
+                                          AHA: factor * Coalesce(r.AHA, 0),
+                                          SP: factor * Coalesce(r.SP, 0),
+                                          ClinPsych: factor * Coalesce(r.ClinPsych, 0),
+                                          NeuroPsych: factor * Coalesce(r.NeuroPsych, 0),
+                                          SW: factor * Coalesce(r.SW, 0),
+                                          Diet: factor * Coalesce(r.Diet, 0),
+                                          SP_IsConsult: !IsBlank(r.Impairment) && IsBlank(r.SP) && d.PatientCount > 0,
+                                          NeuroPsych_IsConsult: !IsBlank(r.Impairment) && IsBlank(r.NeuroPsych) && d.PatientCount > 0
+                                      }
+                                  )
+                              )
+                      },
+                      Table(
+                          {
+                              Ward: locSelectedWard,
+                              OT: Sum(totals, OT),
+                              PT: Sum(totals, PT),
+                              AHA: Sum(totals, AHA),
+                              SP: Sum(totals, SP),
+                              ClinPsych: Sum(totals, ClinPsych),
+                              NeuroPsych: Sum(totals, NeuroPsych),
+                              SW: Sum(totals, SW),
+                              Diet: Sum(totals, Diet),
+                              SP_Consult: CountIf(totals, SP_IsConsult) > 0,
+                              NeuroPsych_Consult: CountIf(totals, NeuroPsych_IsConsult) > 0
+                          }
+                      )
+                  )
+              );
+              // 3) Rows for the popup ("Consult" only when the total is zero)
+              ClearCollect(
+                  colWardStaffingLines,
+                  With(
+                      { s: First(colWardStaffingRecommended) },
+                      Table(
+                          { Sort: 1, Discipline: "Physio", Recommended: Round(s.PT, 2), Note: "" },
+                          { Sort: 2, Discipline: "OT", Recommended: Round(s.OT, 2), Note: "" },
+                          { Sort: 3, Discipline: "Allied Health Assistant", Recommended: Round(s.AHA, 2), Note: "" },
+                          { Sort: 4, Discipline: "Speech Pathology", Recommended: Round(s.SP, 2), Note: If(s.SP = 0 && s.SP_Consult, "Consult", "") },
+                          { Sort: 5, Discipline: "Clinical Psych", Recommended: Round(s.ClinPsych, 2), Note: "" },
+                          { Sort: 6, Discipline: "Neuro Psych", Recommended: Round(s.NeuroPsych, 2), Note: If(s.NeuroPsych = 0 && s.NeuroPsych_Consult, "Consult", "") },
+                          { Sort: 7, Discipline: "Social Work", Recommended: Round(s.SW, 2), Note: "" },
+                          { Sort: 8, Discipline: "Dietitian", Recommended: Round(s.Diet, 2), Note: "" }
+                      )
+                  )
+              );
+              Set(locShowStaffing, true)
+            Text: =""
+            Visible: =false
+            Width: =10 * SX
+      - Dd_Title:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Regular
+            Fill: =RGBA(7, 95, 115, 1)
+            Height: =70 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =1333 * SX
+            X: =18 * SX
+            Y: =12 * SY
+          Children:
+            - imgHeaderGradient_Dd:
+                Control: Image@2.2.3
+                Properties:
+                  Height: =Parent.Height
+                  Image: ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' width='1333' height='70' viewBox='0 0 1333 70' preserveAspectRatio='none'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001D46'/><stop offset='0.48' stop-color='#075F73'/><stop offset='1' stop-color='#00838A'/></linearGradient><linearGradient id='b' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001B36' stop-opacity='0.46'/><stop offset='0.45' stop-color='#002036' stop-opacity='0.18'/><stop offset='1' stop-color='#002036' stop-opacity='0.06'/></linearGradient></defs><rect width='1333' height='70' rx='18' fill='url(#a)'/><rect width='1333' height='70' rx='18' fill='url(#b)'/></svg>")
+                  ImagePosition: =ImagePosition.Fill
+                  Width: =Parent.Width
+            - lblTitle_DdHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  Height: =44 * SY
+                  Size: =Round(28 * SF, 0)
+                  Text: ="Data Dashboard"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Weight: ='TextCanvas.Weight'.Bold
+                  Width: =500 * SX
+                  X: =76 * SX
+            - lblSub_DdHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 0.88)
+                  Height: =20 * SY
+                  Size: =Round(12 * SF, 0)
+                  Text: ="Acuity and predicted staffing by ward  ·  tap a ward for its staffing"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =600 * SX
+                  X: =76 * SX
+                  Y: =42 * SY
+            - btnBack_Dd:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontSize: =Round(50 * SF, 0)
+                  Height: =70 * SY
+                  Icon: ="ChevronLeft"
+                  OnSelect: =Back(ScreenTransition.Fade)
+                  Text: =""
+                  X: =1 * SX
+            - conAfrm_Dd:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =290 * SX
+                  X: =1027 * SX
+                  Y: =15 * SY
+                Children:
+                  - btnAfrm_Dd:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =Round(13 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
+                        Icon: ="People"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        OnSelect: |-
+                          =// AFRM combined staffing = 4A + 4B + 5A
+                          Set(locSelectedWard, "AFRM");
+                          ClearCollect(colStaffPie, col4A_PieData, col4B_PieData, col5A_PieData);
+                          Select(btnCalc_Dd)
+                        Text: ="AFRM staffing (4A + 4B + 5A)"
+                        Width: =290 * SX
+      - Gallery_Wards_Dd:
+          Control: Gallery@2.15.0
+          Variant: Horizontal
+          Properties:
+            Height: =452 * SY
+            Items: =colWardSummaryConfig
+            TemplatePadding: =0
+            TemplateSize: =336 * SX
+            Width: =1344 * SX
+            X: =12 * SX
+            Y: =95 * SY
+          Children:
+            - Dd_WardCard:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =Parent.TemplateHeight - 8 * SY
+                  RadiusBottomLeft: =18 * SR
+                  RadiusBottomRight: =18 * SR
+                  RadiusTopLeft: =18 * SR
+                  RadiusTopRight: =18 * SR
+                  Width: =Parent.TemplateWidth - 12 * SX
+                  X: =6 * SX
+                  Y: =4 * SY
+                Children:
+                  - conWardBar_Dd:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        Fill: =Switch(ThisItem.WardCode, "4A", RGBA(166, 199, 130, 1), "4B", RGBA(35, 100, 153, 1), "5A", RGBA(0, 144, 153, 1), "6A", RGBA(0, 200, 210, 1), RGBA(200, 200, 200, 1))
+                        Height: =8 * SY
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =18 * SR
+                        RadiusTopRight: =18 * SR
+                        Width: =Parent.Width
+                  - lblWardName_Dd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =30 * SY
+                        Size: =Round(20 * SF, 0)
+                        Text: =ThisItem.Title
+                        Width: =160 * SX
+                        X: =20 * SX
+                        Y: =20 * SY
+                  - lblWardGo_Dd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Right
+                        Color: =RGBA(26, 90, 153, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =20 * SY
+                        Size: =Round(12 * SF, 0)
+                        Text: ="Staffing ›"
+                        Width: =110 * SX
+                        X: =Parent.Width - 130 * SX
+                        Y: =25 * SY
+                  - lblAcuCap_Dd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Size: =Round(11 * SF, 0)
+                        Text: ="SUM OF ACUITY"
+                        Width: =200 * SX
+                        X: =20 * SX
+                        Y: =58 * SY
+                  - lblAcu_Dd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =54 * SY
+                        Size: =Round(44 * SF, 0)
+                        Text: =Text(Coalesce(LookUp(colDdWardStats, WardCode = ThisItem.WardCode).Acuity, 0), "0")
+                        Width: =Parent.Width - 40 * SX
+                        X: =20 * SX
+                        Y: =74 * SY
+                  - conTrend_Dd:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        Fill: =Switch(LookUp(colDdWardStats, WardCode = ThisItem.WardCode).Trend, "up", RGBA(254, 242, 242, 1), "down", RGBA(232, 246, 240, 1), RGBA(235, 242, 248, 1))
+                        Height: =28 * SY
+                        RadiusBottomLeft: =14 * SR
+                        RadiusBottomRight: =14 * SR
+                        RadiusTopLeft: =14 * SR
+                        RadiusTopRight: =14 * SR
+                        Width: =Parent.Width - 40 * SX
+                        X: =20 * SX
+                        Y: =134 * SY
+                      Children:
+                        - lblTrend_Dd:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              Color: =Switch(LookUp(colDdWardStats, WardCode = ThisItem.WardCode).Trend, "up", RGBA(180, 26, 26, 1), "down", RGBA(12, 122, 82, 1), RGBA(58, 80, 104, 1))
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =Parent.Height
+                              Size: =Round(12 * SF, 0)
+                              Text: =Switch(LookUp(colDdWardStats, WardCode = ThisItem.WardCode).Trend, "up", "▲ Higher than last week", "down", "▼ Lower than last week", "same", "– Same as last week", "first", "No earlier week to compare", "No data this week")
+                              Width: =Parent.Width
+                  - lblAvg_Dd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        Height: =18 * SY
+                        Size: =Round(11 * SF, 0)
+                        Text: |-
+                          =With({s: LookUp(colDdWardStats, WardCode = ThisItem.WardCode)}, If(IsBlank(s.ThisAvg), "", "Average " & Text(s.ThisAvg, "0.0") & " this week" & If(IsBlank(s.LastAvg), "", "  ·  " & Text(s.LastAvg, "0.0") & " last week")))
+                        Width: =Parent.Width - 40 * SX
+                        X: =20 * SX
+                        Y: =166 * SY
+                  - pieDiag_Dd:
+                      Control: PieChart@2.3.0
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Height: =Parent.Height - 196 * SY
+                        ItemColorSet: |-
+                          =[
+                              RGBA(0, 204, 255, 1),
+                              RGBA(204, 204, 255, 1),
+                              RGBA(198, 224, 180, 1),
+                              RGBA(255, 51, 153, 1),
+                              RGBA(180, 198, 231, 1),
+                              RGBA(255, 91, 91, 1),
+                              RGBA(233, 143, 214, 1),
+                              RGBA(255, 204, 153, 1)
+                          ]
+                        Items: |-
+                          =Switch(ThisItem.WardCode, "4A", col4A_PieData, "4B", col4B_PieData, "5A", col5A_PieData, "6A", col6A_PieData, Table({ City: "", Area: 0 }))
+                        Items.Labels: =City
+                        Items.Series: =Area
+                        Width: =Parent.Width
+                        Y: =190 * SY
+                  - btnWardCard_Dd:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderStyle: =BorderStyle.None
+                        Height: =Parent.Height
+                        OnSelect: |-
+                          =Set(locSelectedWard, ThisItem.WardCode);
+                          ClearCollect(
+                              colStaffPie,
+                              Switch(
+                                  ThisItem.WardCode,
+                                  "4A", col4A_PieData,
+                                  "4B", col4B_PieData,
+                                  "5A", col5A_PieData,
+                                  "6A", col6A_PieData,
+                                  Table({ City: "", Area: 0 })
+                              )
+                          );
+                          Select(btnCalc_Dd)
+                        Text: =""
+                        Width: =Parent.Width
+      - Dd_CardTrend:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =194 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =1333 * SX
+            X: =18 * SX
+            Y: =559 * SY
+          Children:
+            - lblTrendT_Dd:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(14, 28, 42, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =26 * SY
+                  Size: =Round(16 * SF, 0)
+                  Text: ="Average acuity by week"
+                  Width: =400 * SX
+                  X: =20 * SX
+                  Y: =8 * SY
+            - lblTrendS_Dd:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Right
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =20 * SY
+                  Size: =Round(12 * SF, 0)
+                  Text: ="One line per ward"
+                  Width: =300 * SX
+                  X: =Parent.Width - 320 * SX
+                  Y: =11 * SY
+            - chtWeeklyAcuity_Dd:
+                Control: LineChart@2.3.0
+                Group: CompositeLineChart_Dd
+                Properties:
+                  Height: =124 * SY
+                  ItemColorSet: =[RGBA(166, 199, 130, 1), RGBA(35, 100, 153, 1), RGBA(0, 144, 153, 1), RGBA(0, 200, 210, 1)]
+                  Items: =colAcuityWeeklyWide
+                  Items.Labels: =WeekLabel
+                  Items.Series1: =Ward 4A
+                  Items.Series2: =Ward 4B
+                  Items.Series3: =Ward 5A
+                  Items.Series4: =Ward 6A
+                  Items.Series5: =Ward 6A
+                  Items.Series6: =Ward 6A
+                  Items.Series7: =Ward 6A
+                  Items.Series8: =Ward 6A
+                  Items.Series9: =Ward 6A
+                  NumberOfSeries: =4
+                  Width: =Parent.Width - 28 * SX
+                  X: =14 * SX
+                  XLabelAngle: =0
+                  Y: =34 * SY
+            - legend_Dd:
+                Control: Legend@2.1.0
+                Group: CompositeLineChart_Dd
+                Properties:
+                  Height: =30 * SY
+                  ItemColorSet: =chtWeeklyAcuity_Dd.ItemColorSet
+                  Items: =chtWeeklyAcuity_Dd.SeriesLabels
+                  Items.Value: =Value
+                  Width: =Parent.Width - 60 * SX
+                  X: =30 * SX
+                  Y: =160 * SY
+      - Dd_Popup:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(14, 28, 42, 0.45)
+            Height: =768 * SY
+            Visible: =locShowStaffing
+            Width: =1366 * SX
+          Children:
+            - btnPScrim_Dd:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  BorderStyle: =BorderStyle.None
+                  Height: =768 * SY
+                  OnSelect: =Set(locShowStaffing, false)
+                  Text: =""
+                  Width: =1366 * SX
+            - Dd_PopupCard:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =640 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =760 * SX
+                  X: =303 * SX
+                  Y: =64 * SY
+                Children:
+                  - lblPTitle_Dd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =30 * SY
+                        Size: =Round(20 * SF, 0)
+                        Text: =If(locSelectedWard = "AFRM", "Predicted staffing  ·  AFRM (4A + 4B + 5A)", "Predicted staffing  ·  Ward " & locSelectedWard)
+                        Width: =712 * SX
+                        X: =24 * SX
+                        Y: =16 * SY
+                  - lblPSub_Dd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        Height: =20 * SY
+                        Size: =Round(12 * SF, 0)
+                        Text: ="Worked out from each diagnosis group's staffing ratio (per 10 patients) and the patients on the ward now."
+                        Width: =712 * SX
+                        X: =24 * SX
+                        Y: =46 * SY
+                  - lblPLeft_Dd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Size: =Round(11 * SF, 0)
+                        Text: ="RECOMMENDED FTE"
+                        Width: =300 * SX
+                        X: =24 * SX
+                        Y: =86 * SY
+                  - Gallery_Staff_Dd:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        Height: =448 * SY
+                        Items: =SortByColumns(colWardStaffingLines, "Sort", SortOrder.Ascending)
+                        TemplatePadding: =0
+                        TemplateSize: =56 * SY
+                        Width: =440 * SX
+                        X: =20 * SX
+                        Y: =108 * SY
+                      Children:
+                        - Dd_StaffRow:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              BorderColor: =RGBA(14, 42, 70, 0.12)
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                              Fill: =RGBA(244, 249, 252, 1)
+                              Height: =48 * SY
+                              RadiusBottomLeft: =12 * SR
+                              RadiusBottomRight: =12 * SR
+                              RadiusTopLeft: =12 * SR
+                              RadiusTopRight: =12 * SR
+                              Width: =Parent.TemplateWidth - 8 * SX
+                              X: =4 * SX
+                              Y: =4 * SY
+                            Children:
+                              - lblStaffName_Dd:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Color: =RGBA(14, 28, 42, 1)
+                                    Font: =Font.'Segoe UI'
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Size: =Round(14 * SF, 0)
+                                    Text: =ThisItem.Discipline
+                                    Width: =Parent.Width - 150 * SX
+                                    X: =16 * SX
+                              - lblStaffFte_Dd:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Align: =Align.Right
+                                    Color: =If(ThisItem.Note = "Consult", RGBA(200, 120, 0, 1), RGBA(14, 28, 42, 1))
+                                    Font: =Font.'Segoe UI'
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Size: =Round(16 * SF, 0)
+                                    Text: =If(ThisItem.Note = "Consult", "Consult", Text(ThisItem.Recommended, "0.00"))
+                                    Width: =110 * SX
+                                    X: =Parent.Width - 126 * SX
+                  - lblPRight_Dd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Size: =Round(11 * SF, 0)
+                        Text: ="PATIENTS BY DIAGNOSIS  ·  " & Sum(colWardImpairmentCounts, PatientCount)
+                        Width: =300 * SX
+                        X: =492 * SX
+                        Y: =86 * SY
+                  - Gallery_Imp_Dd:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        Height: =448 * SY
+                        Items: =SortByColumns(colWardImpairmentCounts, "PatientCount", SortOrder.Descending)
+                        TemplatePadding: =0
+                        TemplateSize: =56 * SY
+                        Width: =250 * SX
+                        X: =488 * SX
+                        Y: =108 * SY
+                      Children:
+                        - Dd_ImpRow:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              BorderColor: =RGBA(14, 42, 70, 0.12)
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                              Fill: =RGBA(244, 249, 252, 1)
+                              Height: =48 * SY
+                              RadiusBottomLeft: =12 * SR
+                              RadiusBottomRight: =12 * SR
+                              RadiusTopLeft: =12 * SR
+                              RadiusTopRight: =12 * SR
+                              Width: =Parent.TemplateWidth - 8 * SX
+                              X: =4 * SX
+                              Y: =4 * SY
+                            Children:
+                              - conImpDot_Dd:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: |-
+                                      =With(
+                                          { k: Upper(Trim(ThisItem.Impairment)) },
+                                          Switch(
+                                              k,
+                                              "ORTHOPAEDIC", RGBA(0, 204, 255, 1), "ORTHOPEDIC", RGBA(0, 204, 255, 1), "ORTHO", RGBA(0, 204, 255, 1),
+                                              "AMPUTATION", RGBA(255, 51, 153, 1), "AMP", RGBA(255, 51, 153, 1),
+                                              "TRAUMATIC BRAIN INJURY", RGBA(198, 224, 180, 1), "TBI", RGBA(198, 224, 180, 1), "BRAIN INJURY", RGBA(198, 224, 180, 1),
+                                              "SPINAL CORD DYSFUNCTION", RGBA(180, 198, 231, 1), "SCI", RGBA(180, 198, 231, 1), "SPINAL", RGBA(180, 198, 231, 1),
+                                              "RECONDITIONING AND RESTORATIVE", RGBA(204, 204, 255, 1), "RECONDITIONING", RGBA(204, 204, 255, 1), "RECON", RGBA(204, 204, 255, 1),
+                                              "MAJOR TRAUMA", RGBA(255, 91, 91, 1), "TRAUMA", RGBA(255, 91, 91, 1),
+                                              "STROKE", RGBA(233, 143, 214, 1), "STROKE / NEUROLOGY", RGBA(233, 143, 214, 1),
+                                              "NEUROLOGY", RGBA(255, 204, 153, 1), "NEURO", RGBA(255, 204, 153, 1),
+                                              RGBA(210, 218, 227, 1)
+                                          )
+                                      )
+                                    Height: =14 * SY
+                                    RadiusBottomLeft: =7 * SR
+                                    RadiusBottomRight: =7 * SR
+                                    RadiusTopLeft: =7 * SR
+                                    RadiusTopRight: =7 * SR
+                                    Width: =14 * SX
+                                    X: =14 * SX
+                                    Y: =17 * SY
+                              - lblImpName_Dd:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Color: =RGBA(14, 28, 42, 1)
+                                    Font: =Font.'Segoe UI'
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Text: =ThisItem.Impairment
+                                    Width: =Parent.Width - 90 * SX
+                                    X: =38 * SX
+                              - lblImpN_Dd:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Align: =Align.Right
+                                    Color: =RGBA(14, 28, 42, 1)
+                                    Font: =Font.'Segoe UI'
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Size: =Round(16 * SF, 0)
+                                    Text: =ThisItem.PatientCount
+                                    Width: =44 * SX
+                                    X: =Parent.Width - 56 * SX
+                  - conPClose_Dd:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(26, 90, 153, 1)
+                        BorderThickness: =1
+                        Fill: =RGBA(26, 90, 153, 1)
+                        Height: =44 * SY
+                        RadiusBottomLeft: =22 * SR
+                        RadiusBottomRight: =22 * SR
+                        RadiusTopLeft: =22 * SR
+                        RadiusTopRight: =22 * SR
+                        Width: =240 * SX
+                        X: =260 * SX
+                        Y: =574 * SY
+                      Children:
+                        - btnPClose_Dd:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =22 * SR
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(255, 255, 255, 1)
+                              FontSize: =Round(13 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =44 * SY
+                              OnSelect: =Set(locShowStaffing, false)
+                              Text: ="Close"
+                              Width: =240 * SX

@@ -1,0 +1,486 @@
+Screens:
+  PT_Leave_New:
+    Properties:
+      Fill: =RGBA(235, 242, 248, 1)
+      ImagePosition: =ImagePosition.Fill
+      OnVisible: |-
+        =// Monday of the week to show (on a weekend, show next week)
+        Set(
+            varLeaveWeekStart,
+            DateAdd(Today(), 1 - Weekday(Today(), StartOfWeek.Monday) + If(Weekday(Today(), StartOfWeek.Monday) >= 6, 7, 0))
+        );
+        ClearCollect(colMyCalendars, Office365Outlook.CalendarGetTables().value);
+        // Find STARSPhysioLeave calendar by DisplayName AND owner address
+        Set(
+            varLeaveCalendar,
+            LookUp(
+                colMyCalendars,
+                Lower(Trim(DisplayName)) = "starsphysioleave" &&
+                Lower(
+                    LookUp(DynamicProperties, key = "Owner").value.Address
+                ) = "starsphysioleave@health.qld.gov.au"
+            )
+        );
+        // Calendar ID
+        Set(varLeaveCalendarId, varLeaveCalendar.Name);
+        If(
+            IsBlank(varLeaveCalendarId),
+            Notify("STARSPhysioLeave calendar not found or not accessible.", NotificationType.Error),
+            Select(btnRefresh_Lv)
+        )
+    Children:
+      - btnRefresh_Lv:
+          Control: Button@0.0.45
+          Properties:
+            Height: =10 * SY
+            OnSelect: |-
+              =If(
+                  IsBlank(varLeaveCalendarId),
+                  Notify("STARSPhysioLeave calendar not found or not accessible.", NotificationType.Error),
+                  // Week end (exclusive)
+                  Set(varLeaveWeekEnd, DateAdd(varLeaveWeekStart, 7));
+                  // Local midnight DateTime values
+                  Set(varLeaveStartDT, varLeaveWeekStart + Time(0, 0, 0));
+                  Set(varLeaveEndDT,   varLeaveWeekEnd   + Time(0, 0, 0));
+                  // Convert local -> UTC DateTime
+                  Set(varUTCStartDT, DateAdd(varLeaveStartDT, TimeZoneOffset(varLeaveStartDT), TimeUnit.Minutes));
+                  Set(varUTCEndDT,   DateAdd(varLeaveEndDT,   TimeZoneOffset(varLeaveEndDT),   TimeUnit.Minutes));
+                  // Convert UTC DateTime -> ISO 8601 UTC text (this is what the connector wants)
+                  Set(varUTCStartText, Text(varUTCStartDT, DateTimeFormat.UTC));
+                  Set(varUTCEndText,   Text(varUTCEndDT,   DateTimeFormat.UTC));
+                  // Pull events using ISO UTC strings
+                  ClearCollect(
+                      colLeaveEventsRaw,
+                      Office365Outlook.GetEventsCalendarViewV2(
+                          varLeaveCalendarId,
+                          varUTCStartText,
+                          varUTCEndText
+                      ).value
+                  );
+                  // Shape for display (local start / end)
+                  ClearCollect(
+                      colLeaveEvents,
+                      AddColumns(
+                          colLeaveEventsRaw,
+                          StartLocal,
+                          DateAdd(DateTimeValue(ThisRecord.Start), -TimeZoneOffset(DateTimeValue(ThisRecord.Start)), TimeUnit.Minutes),
+                          EndLocal,
+                          DateAdd(DateTimeValue(ThisRecord.End), -TimeZoneOffset(DateTimeValue(ThisRecord.End)), TimeUnit.Minutes),
+                          EventTitle,
+                          Coalesce(ThisRecord.Subject, "(No title)")
+                      )
+                  );
+                  // Mon-Fri columns. Away = entries that overlap that day (so multi-day leave shows on every day)
+                  ClearCollect(
+                      colLeaveDays,
+                      ForAll(
+                          Sequence(5),
+                          With(
+                              { d: DateAdd(varLeaveWeekStart, Value - 1) },
+                              {
+                                  DayDate: d,
+                                  DayName: Text(d, "dddd"),
+                                  DayNum: Text(d, "d mmmm"),
+                                  IsToday: d = Today(),
+                                  Away: CountRows(Filter(colLeaveEvents, StartLocal < DateAdd(d, 1) && EndLocal > d))
+                              }
+                          )
+                      )
+                  )
+              )
+            Text: =""
+            Visible: =false
+            Width: =10 * SX
+      - Lv_Title:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Regular
+            Fill: =RGBA(7, 95, 115, 1)
+            Height: =70 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =1333 * SX
+            X: =18 * SX
+            Y: =12 * SY
+          Children:
+            - imgHeaderGradient_Lv:
+                Control: Image@2.2.3
+                Properties:
+                  Height: =Parent.Height
+                  Image: ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' width='1333' height='70' viewBox='0 0 1333 70' preserveAspectRatio='none'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001D46'/><stop offset='0.48' stop-color='#075F73'/><stop offset='1' stop-color='#00838A'/></linearGradient><linearGradient id='b' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001B36' stop-opacity='0.46'/><stop offset='0.45' stop-color='#002036' stop-opacity='0.18'/><stop offset='1' stop-color='#002036' stop-opacity='0.06'/></linearGradient></defs><rect width='1333' height='70' rx='18' fill='url(#a)'/><rect width='1333' height='70' rx='18' fill='url(#b)'/></svg>")
+                  ImagePosition: =ImagePosition.Fill
+                  Width: =Parent.Width
+            - lblTitle_LvHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  Height: =44 * SY
+                  Size: =Round(28 * SF, 0)
+                  Text: ="Physio Leave"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Weight: ='TextCanvas.Weight'.Bold
+                  Width: =400 * SX
+                  X: =76 * SX
+            - lblSub_LvHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 0.88)
+                  Height: =20 * SY
+                  Size: =Round(12 * SF, 0)
+                  Text: =Text(varLeaveWeekStart, "d mmm") & " – " & Text(DateAdd(varLeaveWeekStart, 4), "d mmm yyyy") & "  ·  " & CountRows(colLeaveEvents) & If(CountRows(colLeaveEvents) = 1, " entry", " entries") & "  ·  tap an entry to open it in Outlook"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =600 * SX
+                  X: =76 * SX
+                  Y: =42 * SY
+            - btnBack_Lv:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontSize: =Round(50 * SF, 0)
+                  Height: =70 * SY
+                  Icon: ="ChevronLeft"
+                  OnSelect: =Back(ScreenTransition.Fade)
+                  Text: =""
+                  X: =1 * SX
+            - conRefresh_Lv:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =40 * SX
+                  X: =893 * SX
+                  Y: =15 * SY
+                Children:
+                  - btnRefreshUi_Lv:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =Round(18 * SF, 0)
+                        Height: =40 * SY
+                        Icon: ="ArrowClockwise"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        OnSelect: =Select(btnRefresh_Lv)
+                        Text: =""
+                        Width: =40 * SX
+            - conJump_Lv:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40 * SY
+                  RadiusBottomLeft: =12 * SR
+                  RadiusBottomRight: =12 * SR
+                  RadiusTopLeft: =12 * SR
+                  RadiusTopRight: =12 * SR
+                  Width: =160 * SX
+                  X: =941 * SX
+                  Y: =15 * SY
+                Children:
+                  - dpJump_Lv:
+                      Control: Classic/DatePicker@2.6.0
+                      Properties:
+                        BorderStyle: =BorderStyle.None
+                        Color: =RGBA(14, 28, 42, 1)
+                        DefaultDate: =varLeaveWeekStart
+                        Font: =Font.'Segoe UI'
+                        OnChange: |-
+                          =Set(varLeaveWeekStart, DateAdd(dpJump_Lv.SelectedDate, 1 - Weekday(dpJump_Lv.SelectedDate, StartOfWeek.Monday)));
+                          Select(btnRefresh_Lv)
+                        Size: =Round(13 * SF, 0)
+                        Width: =160 * SX
+            - conPrev_Lv:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =40 * SX
+                  X: =1111 * SX
+                  Y: =15 * SY
+                Children:
+                  - btnPrev_Lv:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =Round(18 * SF, 0)
+                        Height: =40 * SY
+                        Icon: ="ChevronLeft"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        OnSelect: |-
+                          =Set(varLeaveWeekStart, DateAdd(varLeaveWeekStart, -7));
+                          Select(btnRefresh_Lv)
+                        Text: =""
+                        Width: =40 * SX
+            - conToday_Lv:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =110 * SX
+                  X: =1159 * SX
+                  Y: =15 * SY
+                Children:
+                  - btnToday_Lv:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =Round(13 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
+                        OnSelect: |-
+                          =Set(varLeaveWeekStart, DateAdd(Today(), 1 - Weekday(Today(), StartOfWeek.Monday)));
+                          Select(btnRefresh_Lv)
+                        Text: ="This week"
+                        Width: =110 * SX
+            - conNext_Lv:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  Width: =40 * SX
+                  X: =1277 * SX
+                  Y: =15 * SY
+                Children:
+                  - btnNext_Lv:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =Round(18 * SF, 0)
+                        Height: =40 * SY
+                        Icon: ="ChevronRight"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        OnSelect: |-
+                          =Set(varLeaveWeekStart, DateAdd(varLeaveWeekStart, 7));
+                          Select(btnRefresh_Lv)
+                        Text: =""
+                        Width: =40 * SX
+      - Gallery_LvDays:
+          Control: Gallery@2.15.0
+          Variant: Horizontal
+          Properties:
+            Height: =658 * SY
+            Items: =colLeaveDays
+            TemplatePadding: =0
+            TemplateSize: =268 * SX
+            Width: =1340 * SX
+            X: =14 * SX
+            Y: =95 * SY
+          Children:
+            - lblDayKey_Lv:
+                Control: Label@2.5.1
+                Properties:
+                  Text: =Text(ThisItem.DayDate, "[$-en-US]yyyy-mm-dd")
+                  Visible: =false
+            - Lv_DayCard:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(ThisItem.IsToday, RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderThickness: =If(ThisItem.IsToday, 2, 1)
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =Parent.TemplateHeight - 8 * SY
+                  RadiusBottomLeft: =18 * SR
+                  RadiusBottomRight: =18 * SR
+                  RadiusTopLeft: =18 * SR
+                  RadiusTopRight: =18 * SR
+                  Width: =Parent.TemplateWidth - 8 * SX
+                  X: =4 * SX
+                  Y: =4 * SY
+                Children:
+                  - lblDayName_Lv:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =If(ThisItem.IsToday, RGBA(26, 90, 153, 1), RGBA(14, 28, 42, 1))
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =32 * SY
+                        Size: =Round(18 * SF, 0)
+                        Text: =ThisItem.DayName
+                        Width: =Parent.Width - 112 * SX
+                        Wrap: =false
+                        X: =18 * SX
+                        Y: =14 * SY
+                  - lblDayNum_Lv:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(58, 80, 104, 1)
+                        Font: =Font.'Segoe UI'
+                        Height: =22 * SY
+                        Text: =ThisItem.DayNum & If(ThisItem.IsToday, "  ·  Today", "")
+                        Width: =Parent.Width - 32 * SX
+                        X: =18 * SX
+                        Y: =48 * SY
+                  - conAway_Lv:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        Fill: =If(ThisItem.Away > 0, RGBA(0, 144, 153, 0.12), RGBA(244, 249, 252, 1))
+                        Height: =26 * SY
+                        RadiusBottomLeft: =14 * SR
+                        RadiusBottomRight: =14 * SR
+                        RadiusTopLeft: =14 * SR
+                        RadiusTopRight: =14 * SR
+                        Width: =84 * SX
+                        X: =Parent.Width - 98 * SX
+                        Y: =17 * SY
+                      Children:
+                        - lblAway_Lv:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Center
+                              Color: =If(ThisItem.Away > 0, RGBA(0, 144, 153, 1), RGBA(140, 155, 174, 1))
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =Parent.Height
+                              Size: =Round(12 * SF, 0)
+                              Text: =If(ThisItem.Away = 0, "No leave", ThisItem.Away & " away")
+                              Width: =Parent.Width
+                  - conDivider_Lv:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        Fill: =RGBA(14, 42, 70, 0.12)
+                        Height: =1 * SY
+                        Width: =Parent.Width - 32 * SX
+                        X: =16 * SX
+                        Y: =80 * SY
+                  - Gallery_LvEvents:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        Height: =Parent.Height - 96 * SY
+                        Items: |-
+                          =With({d: DateValue(lblDayKey_Lv.Text, "en-US")}, SortByColumns(Filter(colLeaveEvents, StartLocal < DateAdd(d, 1) && EndLocal > d), "IsAllDay", SortOrder.Descending, "StartLocal", SortOrder.Ascending))
+                        TemplatePadding: =0
+                        TemplateSize: =84 * SY
+                        Width: =Parent.Width
+                        Y: =88 * SY
+                      Children:
+                        - Lv_EventCard:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              BorderColor: =RGBA(14, 42, 70, 0.12)
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                              Fill: =RGBA(244, 249, 252, 1)
+                              Height: =76 * SY
+                              RadiusBottomLeft: =12 * SR
+                              RadiusBottomRight: =12 * SR
+                              RadiusTopLeft: =12 * SR
+                              RadiusTopRight: =12 * SR
+                              Width: =Parent.TemplateWidth - 20 * SX
+                              X: =10 * SX
+                              Y: =4 * SY
+                            Children:
+                              - conEvBar_Lv:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =If(ThisItem.IsAllDay = true, RGBA(0, 144, 153, 1), RGBA(200, 120, 0, 1))
+                                    Height: =Parent.Height
+                                    RadiusBottomLeft: =12 * SR
+                                    RadiusBottomRight: =0
+                                    RadiusTopLeft: =12 * SR
+                                    RadiusTopRight: =0
+                                    Width: =6 * SX
+                              - lblEvTitle_Lv:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Color: =RGBA(14, 28, 42, 1)
+                                    Font: =Font.'Segoe UI'
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =42 * SY
+                                    Text: =ThisItem.EventTitle
+                                    Width: =Parent.Width - 28 * SX
+                                    X: =16 * SX
+                                    Y: =6 * SY
+                              - lblEvSub_Lv:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Color: =RGBA(140, 155, 174, 1)
+                                    Font: =Font.'Segoe UI'
+                                    Height: =18 * SY
+                                    Size: =Round(11 * SF, 0)
+                                    Text: =If(ThisItem.IsAllDay = true, "All day" & If(DateDiff(DateValue(ThisItem.StartLocal), DateValue(ThisItem.EndLocal), TimeUnit.Days) > 1, "  ·  " & Text(DateValue(ThisItem.StartLocal), "d mmm") & " – " & Text(DateAdd(DateValue(ThisItem.EndLocal), -1, TimeUnit.Days), "d mmm"), ""), Text(ThisItem.StartLocal, "h:mm am/pm") & " – " & Text(ThisItem.EndLocal, "h:mm am/pm"))
+                                    Width: =Parent.Width - 28 * SX
+                                    X: =16 * SX
+                                    Y: =52 * SY
+                              - btnEv_Lv:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderStyle: =BorderStyle.None
+                                    Height: =Parent.Height
+                                    OnSelect: =Launch(ThisItem.WebLink)
+                                    Text: =""
+                                    Width: =Parent.Width
+                  - lblNoLeave_Lv:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        Color: =RGBA(140, 155, 174, 1)
+                        Font: =Font.'Segoe UI'
+                        Height: =24 * SY
+                        Text: ="Nobody on leave"
+                        Visible: =IsEmpty(Gallery_LvEvents.AllItems)
+                        Width: =Parent.Width
+                        Y: =120 * SY
+      - lblNoCal_Lv:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            Color: =RGBA(180, 26, 26, 1)
+            Font: =Font.'Segoe UI'
+            FontWeight: =FontWeight.Bold
+            Height: =60 * SY
+            Size: =Round(16 * SF, 0)
+            Text: ="The STARSPhysioLeave calendar could not be found or is not shared with you."
+            Visible: =IsBlank(varLeaveCalendarId)
+            Width: =800 * SX
+            X: =283 * SX
+            Y: =340 * SY

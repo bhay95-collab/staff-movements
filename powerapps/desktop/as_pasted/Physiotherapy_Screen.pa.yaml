@@ -1,0 +1,700 @@
+Screens:
+  Physiotherapy_Screen:
+    Properties:
+      Fill: =RGBA(235, 242, 248, 1)
+      ImagePosition: =ImagePosition.Fill
+      OnVisible: |-
+        =// Call flow and parse JSON
+        Set(
+            varTeamBriefJson,
+            GetTeamBriefFiles.Run().filesjson
+        );
+        Clear(colTeamBriefFiles);
+        If(
+            !IsBlank(varTeamBriefJson),
+            ForAll(
+                ParseJSON(varTeamBriefJson) As fileRow,
+                Collect(
+                    colTeamBriefFiles,
+                    {
+                        Id:        Text(fileRow.ItemInternalId),
+                        Name:      Text(fileRow.'{Name}'),
+                        FileName:  Text(fileRow.'{FilenameWithExtension}'),
+                        // Folder path only, e.g. "Shared Documents/Team Brief/" or ".../Team Brief/Archive/"
+                        Path:      Text(fileRow.'{Path}'),
+                        // Full path including file/folder name, e.g. ".../Team Brief/Archive/" or ".../file.pdf"
+                        FullPath:  Text(fileRow.'{FullPath}'),
+                        Link:      Text(fileRow.'{Link}'),
+                        // True for folders, false for files
+                        IsFolder:  fileRow.'{IsFolder}'
+                    }
+                )
+            )
+        );
+        // Start in the Team Brief root folder
+        Set(varCurrentFolderPath, "Shared Documents/Team Brief/");
+        Set(varDirectorOverride, false);
+        Set(varDiscipline, "Physio");
+        Set(
+            varTeamNotesRecord,
+            LookUp(Discipline_Team_Notes, Title = varDiscipline)
+        );
+        Set(varUserEmail, Lower(User().Email));
+        // Who am I? (decides Manage Staff and notes editing)
+        Set(
+            varMeDirectory,
+            LookUp(ClinicianDirectory, Lower(Person.Email) = varUserEmail)
+        );
+        Set(
+            varMeProfile,
+            Office365Users.UserProfileV2(varUserEmail)
+        );
+        Set(
+            varMeSP,
+            {
+                '@odata.type': "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                Claims: "i:0#.f|membership|" & varUserEmail,
+                DisplayName: Coalesce(varMeProfile.displayName, User().FullName, varUserEmail),
+                Email: varUserEmail,
+                Department: Coalesce(varMeProfile.department, ""),
+                JobTitle: Coalesce(varMeProfile.jobTitle, ""),
+                Picture: ""
+            }
+        )
+    Children:
+      - Pt_Title:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Regular
+            Fill: =RGBA(7, 95, 115, 1)
+            Height: =70
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+            Width: =1333
+            X: =18
+            Y: =12
+          Children:
+            - imgHeaderGradient_Pt:
+                Control: Image@2.2.3
+                Properties:
+                  Height: =Parent.Height
+                  Image: ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' width='1333' height='70' viewBox='0 0 1333 70' preserveAspectRatio='none'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001D46'/><stop offset='0.48' stop-color='#075F73'/><stop offset='1' stop-color='#00838A'/></linearGradient><linearGradient id='b' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001B36' stop-opacity='0.46'/><stop offset='0.45' stop-color='#002036' stop-opacity='0.18'/><stop offset='1' stop-color='#002036' stop-opacity='0.06'/></linearGradient></defs><rect width='1333' height='70' rx='18' fill='url(#a)'/><rect width='1333' height='70' rx='18' fill='url(#b)'/></svg>")
+                  ImagePosition: =ImagePosition.Fill
+                  Width: =Parent.Width
+            - lblTitle_PtHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  Height: =44
+                  Size: =28
+                  Text: ="Physio Team Info"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Weight: ='TextCanvas.Weight'.Bold
+                  Width: =500
+                  X: =76
+            - lblSub_PtHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 0.88)
+                  Height: =20
+                  Size: =12
+                  Text: ="Team brief documents and notes for the team"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =500
+                  X: =76
+                  Y: =42
+            - btnBack_Pt:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontSize: =50
+                  Height: =70
+                  Icon: ="ChevronLeft"
+                  OnSelect: =Back(ScreenTransition.Fade)
+                  Text: =""
+                  X: =1
+            - conStaff_Pt:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                  Visible: =Coalesce(varMeDirectory.Access.Value, "") in ["Director", "Team Leader"]
+                  Width: =150
+                  X: =837
+                  Y: =15
+                Children:
+                  - btnStaff_Pt:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =13
+                        FontWeight: =FontWeight.Bold
+                        Height: =40
+                        Icon: ="PeopleAdd"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        OnSelect: |-
+                          =If(
+                              IsBlank(varMeDirectory),
+                              Notify("You are not listed in the Clinician Directory.", NotificationType.Error),
+                              Set(varAdminDiscipline, varMeDirectory.Discipline.Value);
+                              Set(varAdminAccess, varMeDirectory.Access.Value);
+                              Navigate(Directory_Admin_New, ScreenTransition.Fade)
+                          )
+                        Text: ="Manage Staff"
+                        Width: =150
+            - conDash_Pt:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                  Width: =160
+                  X: =997
+                  Y: =15
+                Children:
+                  - btnDash_Pt:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =13
+                        FontWeight: =FontWeight.Bold
+                        Height: =40
+                        Icon: ="Database"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        OnSelect: |-
+                          =// 1) Build a unified collection for all wards (keeps all original columns)
+                          ClearCollect(
+                              colAllWardData,
+                              AddColumns(Filter(Ward_4A_Shared, !IsBlank(Patient)), WardCode, "4A"),
+                              AddColumns(Filter(Ward_4B_Shared, !IsBlank(Patient)), WardCode, "4B"),
+                              AddColumns(Filter(Ward_5A_Shared, !IsBlank(Patient)), WardCode, "5A"),
+                              AddColumns(Filter(Ward_6A_Shared, !IsBlank(Patient)), WardCode, "6A")
+                          );
+                          // 2) Config for the 4 tiles on the data screen
+                          ClearCollect(
+                              colWardSummaryConfig,
+                              { WardCode: "4A", Title: "Ward 4A" },
+                              { WardCode: "4B", Title: "Ward 4B" },
+                              { WardCode: "5A", Title: "Ward 5A" },
+                              { WardCode: "6A", Title: "Ward 6A" }
+                          );
+                          // 3) Diagnosis summary for each ward. Shape: City (diagnosis text), Area (count)
+                          ClearCollect(
+                              colPieDiagnoses,
+                              { Diag: "Ortho" }, { Diag: "Recon" }, { Diag: "TBI" }, { Diag: "Amp" },
+                              { Diag: "SCI" }, { Diag: "Trauma" }, { Diag: "Stroke" }, { Diag: "Neuro" }
+                          );
+                          ClearCollect(col4A_PieData, ForAll(colPieDiagnoses As d, { City: d.Diag, Area: CountRows(Filter(colAllWardData, WardCode = "4A" && field_3.Value = d.Diag)) }));
+                          ClearCollect(col4B_PieData, ForAll(colPieDiagnoses As d, { City: d.Diag, Area: CountRows(Filter(colAllWardData, WardCode = "4B" && field_3.Value = d.Diag)) }));
+                          ClearCollect(col5A_PieData, ForAll(colPieDiagnoses As d, { City: d.Diag, Area: CountRows(Filter(colAllWardData, WardCode = "5A" && field_3.Value = d.Diag)) }));
+                          ClearCollect(col6A_PieData, ForAll(colPieDiagnoses As d, { City: d.Diag, Area: CountRows(Filter(colAllWardData, WardCode = "6A" && field_3.Value = d.Diag)) }));
+                          // 4) Navigate to the data screen
+                          Navigate(Physiotherapy_Screen, ScreenTransition.Fade)
+                        Text: ="Data Dashboard"
+                        Width: =160
+            - conLeave_Pt:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40
+                  RadiusBottomLeft: =20
+                  RadiusBottomRight: =20
+                  RadiusTopLeft: =20
+                  RadiusTopRight: =20
+                  Width: =150
+                  X: =1167
+                  Y: =15
+                Children:
+                  - btnLeave_Pt:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =13
+                        FontWeight: =FontWeight.Bold
+                        Height: =40
+                        Icon: ="Calendar"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        OnSelect: =Navigate(PT_Leave_New, ScreenTransition.Fade)
+                        Text: ="Leave Calendar"
+                        Width: =150
+      - Pt_CardDocs:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =658
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+            Width: =430
+            X: =18
+            Y: =95
+          Children:
+            - lblDocs_Pt:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(14, 28, 42, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =28
+                  Size: =16
+                  Text: ="Documents for review"
+                  Width: =390
+                  X: =20
+                  Y: =14
+            - lblPath_Pt:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =24
+                  Size: =12
+                  Text: |-
+                    =With({p: Substitute(varCurrentFolderPath, "Shared Documents/", "")}, Substitute(Left(p, Len(p) - 1), "/", "  ›  "))
+                  Width: =310
+                  X: =20
+                  Y: =48
+            - conUp_Pt:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =32
+                  RadiusBottomLeft: =16
+                  RadiusBottomRight: =16
+                  RadiusTopLeft: =16
+                  RadiusTopRight: =16
+                  Visible: =varCurrentFolderPath <> "Shared Documents/Team Brief/"
+                  Width: =74
+                  X: =340
+                  Y: =44
+                Children:
+                  - btnUp_Pt:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =16
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =13
+                        FontWeight: =FontWeight.Bold
+                        Icon: ="ChevronLeft"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        OnSelect: |-
+                          =Set(varCurrentFolderPath, With({p: varCurrentFolderPath}, Left(p, Len(p) - Len(Last(Split(Left(p, Len(p) - 1), "/")).Value) - 1)))
+                        Text: ="Up"
+                        Width: =74
+            - Gallery_Docs_Pt:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =560
+                  Items: =Filter(colTeamBriefFiles, Path = varCurrentFolderPath)
+                  TemplatePadding: =0
+                  TemplateSize: =72
+                  Width: =430
+                  Y: =88
+                Children:
+                  - Pt_DocRow:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =64
+                        RadiusBottomLeft: =14
+                        RadiusBottomRight: =14
+                        RadiusTopLeft: =14
+                        RadiusTopRight: =14
+                        Width: =Parent.TemplateWidth - 20
+                        X: =10
+                        Y: =4
+                      Children:
+                        - conDocIcon_Pt:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =RGBA(255, 255, 255, 1)
+                              Height: =44
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              Width: =44
+                              X: =12
+                              Y: =10
+                            Children:
+                              - icoDoc_Pt:
+                                  Control: Classic/Icon@2.5.0
+                                  Properties:
+                                    Color: =If(ThisItem.IsFolder = true, RGBA(255, 183, 77, 1), EndsWith(Lower(ThisItem.FileName), ".pdf"), RGBA(220, 53, 69, 1), EndsWith(Lower(ThisItem.FileName), ".doc") || EndsWith(Lower(ThisItem.FileName), ".docx"), RGBA(0, 90, 158, 1), EndsWith(Lower(ThisItem.FileName), ".msg") || EndsWith(Lower(ThisItem.FileName), ".eml"), RGBA(0, 123, 167, 1), RGBA(90, 90, 90, 1))
+                                    Height: =26
+                                    Icon: =If(ThisItem.IsFolder = true, Icon.Folder, EndsWith(Lower(ThisItem.FileName), ".pdf"), Icon.DocumentPDF, EndsWith(Lower(ThisItem.FileName), ".doc") || EndsWith(Lower(ThisItem.FileName), ".docx"), Icon.Document, EndsWith(Lower(ThisItem.FileName), ".msg") || EndsWith(Lower(ThisItem.FileName), ".eml"), Icon.Mail, Icon.DocumentWithContent)
+                                    Width: =26
+                                    X: =9
+                                    Y: =9
+                        - lblDocName_Pt:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(14, 28, 42, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =24
+                              Size: =14
+                              Text: =Coalesce(ThisItem.FileName, ThisItem.Name)
+                              Width: =Parent.Width - 130
+                              X: =68
+                              Y: =10
+                        - lblDocKind_Pt:
+                            Control: Label@2.5.1
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Font: =Font.'Segoe UI'
+                              Height: =18
+                              Size: =11
+                              Text: =If(ThisItem.IsFolder = true, "Folder", If(CountRows(Split(ThisItem.FileName, ".")) > 1, Upper(Last(Split(ThisItem.FileName, ".")).Value) & " file", "File"))
+                              Width: =Parent.Width - 130
+                              X: =68
+                              Y: =34
+                        - icoDocGo_Pt:
+                            Control: Classic/Icon@2.5.0
+                            Properties:
+                              Color: =RGBA(140, 155, 174, 1)
+                              Height: =24
+                              Icon: =Icon.ChevronRight
+                              Visible: =ThisItem.IsFolder = true
+                              Width: =24
+                              X: =Parent.Width - 40
+                              Y: =20
+                        - lblDocOpen_Pt:
+                            Control: Label@2.5.1
+                            Properties:
+                              Align: =Align.Right
+                              Color: =RGBA(26, 90, 153, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =20
+                              Size: =12
+                              Text: ="Open"
+                              Visible: =!(ThisItem.IsFolder = true)
+                              Width: =60
+                              X: =Parent.Width - 76
+                              Y: =22
+                        - btnDocRow_Pt:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderStyle: =BorderStyle.None
+                              Height: =Parent.Height
+                              OnSelect: =If(ThisItem.IsFolder = true, Set(varCurrentFolderPath, ThisItem.Path & ThisItem.Name & "/"), If(!IsBlank(ThisItem.Link), Launch(ThisItem.Link)))
+                              Text: =""
+                              Width: =Parent.Width
+            - lblDocsEmpty_Pt:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =30
+                  Size: =14
+                  Text: ="Nothing in this folder."
+                  Visible: =IsEmpty(Gallery_Docs_Pt.AllItems)
+                  Width: =430
+                  Y: =140
+      - Pt_CardNotes:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =658
+            RadiusBottomLeft: =18
+            RadiusBottomRight: =18
+            RadiusTopLeft: =18
+            RadiusTopRight: =18
+            Width: =883
+            X: =468
+            Y: =95
+          Children:
+            - lblNotes_Pt:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(14, 28, 42, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =28
+                  Size: =16
+                  Text: ="Notes for the team"
+                  Width: =400
+                  X: =20
+                  Y: =14
+            - lblNotesSub_Pt:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =18
+                  Size: =12
+                  Text: =If(IsBlank(varTeamNotesRecord.LastUpdatedOn), "Not edited yet", "Last updated " & Text(varTeamNotesRecord.LastUpdatedOn, "dd/mm/yyyy hh:mm") & If(IsBlank(varTeamNotesRecord.LastUpdatedBy.DisplayName), "", " by " & varTeamNotesRecord.LastUpdatedBy.DisplayName))
+                  Width: =500
+                  X: =20
+                  Y: =44
+            - conEditing_Pt:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  Fill: =RGBA(232, 246, 240, 1)
+                  Height: =30
+                  RadiusBottomLeft: =15
+                  RadiusBottomRight: =15
+                  RadiusTopLeft: =15
+                  RadiusTopRight: =15
+                  Visible: =(varDirectorOverride || (Coalesce(varMeDirectory.Discipline.Value, "") = "Physio" && Coalesce(varMeDirectory.Access.Value, "") = "Director"))
+                  Width: =130
+                  X: =733
+                  Y: =14
+                Children:
+                  - lblEditing_Pt:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        Color: =RGBA(12, 122, 82, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =Parent.Height
+                        Size: =12
+                        Text: ="Editing on"
+                        Width: =Parent.Width
+            - conCode_Pt:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.22)
+                  BorderThickness: =1
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =38
+                  RadiusBottomLeft: =10
+                  RadiusBottomRight: =10
+                  RadiusTopLeft: =10
+                  RadiusTopRight: =10
+                  Visible: =!(varDirectorOverride || (Coalesce(varMeDirectory.Discipline.Value, "") = "Physio" && Coalesce(varMeDirectory.Access.Value, "") = "Director"))
+                  Width: =170
+                  X: =583
+                  Y: =10
+                Children:
+                  - txtAdminCode_Pt:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        BorderStyle: =BorderStyle.None
+                        Color: =RGBA(14, 28, 42, 1)
+                        Default: =""
+                        Font: =Font.'Segoe UI'
+                        Height: =38
+                        HintText: ="Edit password"
+                        Mode: =TextMode.Password
+                        Width: =170
+            - conUnlock_Pt:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(26, 90, 153, 1)
+                  BorderThickness: =1
+                  Fill: =RGBA(26, 90, 153, 1)
+                  Height: =38
+                  RadiusBottomLeft: =19
+                  RadiusBottomRight: =19
+                  RadiusTopLeft: =19
+                  RadiusTopRight: =19
+                  Visible: =!(varDirectorOverride || (Coalesce(varMeDirectory.Discipline.Value, "") = "Physio" && Coalesce(varMeDirectory.Access.Value, "") = "Director"))
+                  Width: =100
+                  X: =763
+                  Y: =10
+                Children:
+                  - btnUnlock_Pt:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =19
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(255, 255, 255, 1)
+                        FontSize: =13
+                        FontWeight: =FontWeight.Bold
+                        Height: =38
+                        OnSelect: |-
+                          =If(
+                              txtAdminCode_Pt.Text = "Wombats",
+                              Set(varDirectorOverride, true);
+                              Reset(txtAdminCode_Pt),
+                              Notify("Wrong password.", NotificationType.Error)
+                          )
+                        Text: ="Unlock"
+                        Width: =100
+            - conNotesBox_Pt:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
+                  Fill: =RGBA(244, 249, 252, 1)
+                  Height: =500
+                  RadiusBottomLeft: =14
+                  RadiusBottomRight: =14
+                  RadiusTopLeft: =14
+                  RadiusTopRight: =14
+                  Width: =843
+                  X: =20
+                  Y: =76
+                Children:
+                  - txtTeamNotes_Pt:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        BorderStyle: =BorderStyle.None
+                        Color: =RGBA(14, 28, 42, 1)
+                        Default: =Coalesce(varTeamNotesRecord.TeamNotes, "")
+                        DisplayMode: =If((varDirectorOverride || (Coalesce(varMeDirectory.Discipline.Value, "") = "Physio" && Coalesce(varMeDirectory.Access.Value, "") = "Director")), DisplayMode.Edit, DisplayMode.View)
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Font: =Font.'Segoe UI'
+                        Height: =Parent.Height - 24
+                        HintText: ="Notes"
+                        Mode: =TextMode.MultiLine
+                        Size: =14
+                        Width: =Parent.Width - 24
+                        X: =12
+                        Y: =12
+            - conSave_Pt:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(26, 90, 153, 1)
+                  BorderThickness: =1
+                  Fill: =RGBA(26, 90, 153, 1)
+                  Height: =42
+                  RadiusBottomLeft: =21
+                  RadiusBottomRight: =21
+                  RadiusTopLeft: =21
+                  RadiusTopRight: =21
+                  Visible: =(varDirectorOverride || (Coalesce(varMeDirectory.Discipline.Value, "") = "Physio" && Coalesce(varMeDirectory.Access.Value, "") = "Director")) && txtTeamNotes_Pt.Text <> Coalesce(varTeamNotesRecord.TeamNotes, "")
+                  Width: =160
+                  X: =20
+                  Y: =598
+                Children:
+                  - btnSave_Pt:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =21
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(255, 255, 255, 1)
+                        FontSize: =13
+                        FontWeight: =FontWeight.Bold
+                        Height: =42
+                        OnSelect: |-
+                          =With(
+                              {
+                                  saved: Patch(
+                                      Discipline_Team_Notes,
+                                      If(IsBlank(varTeamNotesRecord), Defaults(Discipline_Team_Notes), varTeamNotesRecord),
+                                      {
+                                          Title: varDiscipline,
+                                          TeamNotes: txtTeamNotes_Pt.Text,
+                                          LastUpdatedBy: varMeSP,
+                                          LastUpdatedOn: Now()
+                                      }
+                                  )
+                              },
+                              If(
+                                  IsEmpty(Errors(Discipline_Team_Notes)),
+                                  Set(varTeamNotesRecord, saved);
+                                  Reset(txtTeamNotes_Pt);
+                                  Notify("Notes saved.", NotificationType.Success),
+                                  Notify("Could not save the notes. Please try again.", NotificationType.Error)
+                              )
+                          )
+                        Text: ="Save notes"
+                        Width: =160
+            - conDiscard_Pt:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderThickness: =1
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =42
+                  RadiusBottomLeft: =21
+                  RadiusBottomRight: =21
+                  RadiusTopLeft: =21
+                  RadiusTopRight: =21
+                  Visible: =(varDirectorOverride || (Coalesce(varMeDirectory.Discipline.Value, "") = "Physio" && Coalesce(varMeDirectory.Access.Value, "") = "Director")) && txtTeamNotes_Pt.Text <> Coalesce(varTeamNotesRecord.TeamNotes, "")
+                  Width: =130
+                  X: =192
+                  Y: =598
+                Children:
+                  - btnDiscard_Pt:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =21
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =13
+                        FontWeight: =FontWeight.Bold
+                        Height: =42
+                        OnSelect: =Reset(txtTeamNotes_Pt)
+                        Text: ="Discard"
+                        Width: =130
+            - lblUnsaved_Pt:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(200, 120, 0, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Height: =42
+                  Size: =12
+                  Text: ="You have unsaved changes."
+                  Visible: =(varDirectorOverride || (Coalesce(varMeDirectory.Discipline.Value, "") = "Physio" && Coalesce(varMeDirectory.Access.Value, "") = "Director")) && txtTeamNotes_Pt.Text <> Coalesce(varTeamNotesRecord.TeamNotes, "")
+                  Width: =300
+                  X: =340
+                  Y: =598

@@ -1,5 +1,5 @@
 Screens:
-  All_Available_New:
+  All_Available_Equipment:
     Properties:
       Fill: =RGBA(235, 242, 248, 1)
       ImagePosition: =ImagePosition.Fill
@@ -20,14 +20,14 @@ Screens:
           Properties:
             DropShadow: =DropShadow.Regular
             Fill: =RGBA(7, 95, 115, 1)
-            Height: =70
-            Width: =1333
-            X: =18
-            Y: =12
-            RadiusBottomLeft: =18
-            RadiusBottomRight: =18
-            RadiusTopLeft: =18
-            RadiusTopRight: =18
+            Height: =70 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =1333 * SX
+            X: =18 * SX
+            Y: =12 * SY
           Children:
             - imgHeaderGradient_Av:
                 Control: Image@2.2.3
@@ -41,94 +41,90 @@ Screens:
                 Properties:
                   Font: =Font.'Segoe UI'
                   FontColor: =RGBA(255, 255, 255, 1)
-                  Height: =36
-                  Size: =28
+                  Height: =44 * SY
+                  Size: =Round(28 * SF, 0)
                   Text: ="Available Equipment"
                   VerticalAlign: =VerticalAlign.Middle
                   Weight: ='TextCanvas.Weight'.Bold
-                  Width: =600
-                  X: =76
-                  Y: =8
+                  Width: =600 * SX
+                  X: =76 * SX
             - lblSub_AvHdr:
                 Control: Text@0.0.51
                 Properties:
                   Font: =Font.'Segoe UI'
                   FontColor: =RGBA(255, 255, 255, 0.88)
-                  Height: =20
-                  Size: =12
+                  Height: =20 * SY
+                  Size: =Round(12 * SF, 0)
                   Text: =CountRows(Gallery_Available.AllItems) & " items shown  ·  tap a row for its details"
                   VerticalAlign: =VerticalAlign.Middle
-                  Width: =600
-                  X: =76
-                  Y: =42
+                  Width: =600 * SX
+                  X: =76 * SX
+                  Y: =42 * SY
             - btnBack_Av:
                 Control: Button@0.0.45
                 Properties:
                   Appearance: ='ButtonCanvas.Appearance'.Transparent
                   FontColor: =RGBA(255, 255, 255, 1)
-                  FontSize: =50
-                  Height: =70
+                  FontSize: =Round(50 * SF, 0)
+                  Height: =70 * SY
                   Icon: ="ChevronLeft"
-                  Text: =""
-                  X: =1
                   OnSelect: =Back(ScreenTransition.Fade)
+                  Text: =""
+                  X: =1 * SX
       - Av_CardFilters:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
             BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
             BorderThickness: =1
-            DropShadow: =DropShadow.Light
             Fill: =RGBA(255, 255, 255, 1)
-            Height: =658
-            Width: =400
-            X: =18
-            Y: =95
-            RadiusBottomLeft: =18
-            RadiusBottomRight: =18
-            RadiusTopLeft: =18
-            RadiusTopRight: =18
+            Height: =658 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =400 * SX
+            X: =18 * SX
+            Y: =95 * SY
           Children:
             - lblFilters_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =16
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =28
+                  Height: =28 * SY
+                  Size: =Round(16 * SF, 0)
                   Text: ="Filters"
-                  Width: =200
-                  X: =20
-                  Y: =16
+                  Width: =200 * SX
+                  X: =20 * SX
+                  Y: =16 * SY
             - conReset_Av:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
                   BorderColor: =RGBA(14, 42, 70, 0.12)
-                  BorderStyle: =BorderStyle.Solid
                   BorderThickness: =1
                   Fill: =RGBA(255, 255, 255, 1)
-                  Height: =34
-                  Width: =110
-                  X: =270
-                  Y: =14
-                  RadiusBottomLeft: =17
-                  RadiusBottomRight: =17
-                  RadiusTopLeft: =17
-                  RadiusTopRight: =17
+                  Height: =34 * SY
+                  RadiusBottomLeft: =17 * SR
+                  RadiusBottomRight: =17 * SR
+                  RadiusTopLeft: =17 * SR
+                  RadiusTopRight: =17 * SR
+                  Width: =110 * SX
+                  X: =270 * SX
+                  Y: =14 * SY
                 Children:
                   - btnReset_Av:
                       Control: Button@0.0.45
                       Properties:
                         Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =17
+                        BorderRadius: =17 * SR
                         Font: =Font.'Segoe UI'
                         FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =13
+                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
-                        Height: =34
+                        Height: =34 * SY
                         Icon: ="ArrowClockwise"
                         IconStyle: ='ButtonCanvas.IconStyle'.Filled
                         Layout: ='ButtonCanvas.Layout'.IconBefore
@@ -142,35 +138,34 @@ Screens:
                           Reset(chkService_Av);
                           Set(avSelected, Blank())
                         Text: ="Reset"
-                        Width: =110
+                        Width: =110 * SX
             - capCat_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =16
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="CATEGORY"
-                  Width: =360
-                  X: =20
-                  Y: =64
+                  Width: =360 * SX
+                  X: =20 * SX
+                  Y: =64 * SY
             - boxCat_Av:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
                   BorderColor: =RGBA(14, 42, 70, 0.22)
-                  BorderStyle: =BorderStyle.Solid
                   BorderThickness: =1
                   Fill: =RGBA(255, 255, 255, 1)
-                  Height: =40
-                  Width: =360
-                  X: =20
-                  Y: =82
-                  RadiusBottomLeft: =10
-                  RadiusBottomRight: =10
-                  RadiusTopLeft: =10
-                  RadiusTopRight: =10
+                  Height: =40 * SY
+                  RadiusBottomLeft: =10 * SR
+                  RadiusBottomRight: =10 * SR
+                  RadiusTopLeft: =10 * SR
+                  RadiusTopRight: =10 * SR
+                  Width: =360 * SX
+                  X: =20 * SX
+                  Y: =82 * SY
                 Children:
                   - ddType_Av:
                       Control: Classic/DropDown@2.3.1
@@ -182,7 +177,6 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: ="All"
                         Font: =Font.'Segoe UI'
-                        Height: =40
                         Items: |-
                           =With(
                               {
@@ -210,36 +204,35 @@ Screens:
                               )
                           )
                         Items.Value: =Value
-                        Size: =14
-                        Width: =360
+                        Size: =Round(14 * SF, 0)
+                        Width: =360 * SX
             - capWc_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =16
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="WHEELCHAIR TYPE"
-                  Width: =360
-                  X: =20
-                  Y: =134
+                  Width: =360 * SX
+                  X: =20 * SX
+                  Y: =134 * SY
             - boxWc_Av:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
                   BorderColor: =RGBA(14, 42, 70, 0.22)
-                  BorderStyle: =BorderStyle.Solid
                   BorderThickness: =1
                   Fill: =RGBA(255, 255, 255, 1)
-                  Height: =40
-                  Width: =360
-                  X: =20
-                  Y: =152
-                  RadiusBottomLeft: =10
-                  RadiusBottomRight: =10
-                  RadiusTopLeft: =10
-                  RadiusTopRight: =10
+                  Height: =40 * SY
+                  RadiusBottomLeft: =10 * SR
+                  RadiusBottomRight: =10 * SR
+                  RadiusTopLeft: =10 * SR
+                  RadiusTopRight: =10 * SR
+                  Width: =360 * SX
+                  X: =20 * SX
+                  Y: =152 * SY
                 Children:
                   - ddWCType_Av:
                       Control: Classic/DropDown@2.3.1
@@ -251,7 +244,6 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: ="All"
                         Font: =Font.'Segoe UI'
-                        Height: =40
                         Items: |-
                           =With(
                               {
@@ -279,36 +271,35 @@ Screens:
                               )
                           )
                         Items.Value: =Value
-                        Size: =14
-                        Width: =360
+                        Size: =Round(14 * SF, 0)
+                        Width: =360 * SX
             - capW_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =16
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="WIDTH"
-                  Width: =112
-                  X: =20
-                  Y: =204
+                  Width: =112 * SX
+                  X: =20 * SX
+                  Y: =204 * SY
             - boxW_Av:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
                   BorderColor: =RGBA(14, 42, 70, 0.22)
-                  BorderStyle: =BorderStyle.Solid
                   BorderThickness: =1
                   Fill: =RGBA(255, 255, 255, 1)
-                  Height: =40
-                  Width: =112
-                  X: =20
-                  Y: =222
-                  RadiusBottomLeft: =10
-                  RadiusBottomRight: =10
-                  RadiusTopLeft: =10
-                  RadiusTopRight: =10
+                  Height: =40 * SY
+                  RadiusBottomLeft: =10 * SR
+                  RadiusBottomRight: =10 * SR
+                  RadiusTopLeft: =10 * SR
+                  RadiusTopRight: =10 * SR
+                  Width: =112 * SX
+                  X: =20 * SX
+                  Y: =222 * SY
                 Children:
                   - ddWidth_Av:
                       Control: Classic/DropDown@2.3.1
@@ -320,7 +311,6 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: ="All"
                         Font: =Font.'Segoe UI'
-                        Height: =40
                         Items: |-
                           =With(
                               {
@@ -348,36 +338,35 @@ Screens:
                               )
                           )
                         Items.Value: =Value
-                        Size: =14
-                        Width: =112
+                        Size: =Round(14 * SF, 0)
+                        Width: =112 * SX
             - capD_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =16
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="DEPTH"
-                  Width: =112
-                  X: =144
-                  Y: =204
+                  Width: =112 * SX
+                  X: =144 * SX
+                  Y: =204 * SY
             - boxD_Av:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
                   BorderColor: =RGBA(14, 42, 70, 0.22)
-                  BorderStyle: =BorderStyle.Solid
                   BorderThickness: =1
                   Fill: =RGBA(255, 255, 255, 1)
-                  Height: =40
-                  Width: =112
-                  X: =144
-                  Y: =222
-                  RadiusBottomLeft: =10
-                  RadiusBottomRight: =10
-                  RadiusTopLeft: =10
-                  RadiusTopRight: =10
+                  Height: =40 * SY
+                  RadiusBottomLeft: =10 * SR
+                  RadiusBottomRight: =10 * SR
+                  RadiusTopLeft: =10 * SR
+                  RadiusTopRight: =10 * SR
+                  Width: =112 * SX
+                  X: =144 * SX
+                  Y: =222 * SY
                 Children:
                   - ddDepth_Av:
                       Control: Classic/DropDown@2.3.1
@@ -389,7 +378,6 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: ="All"
                         Font: =Font.'Segoe UI'
-                        Height: =40
                         Items: |-
                           =With(
                               {
@@ -417,36 +405,35 @@ Screens:
                               )
                           )
                         Items.Value: =Value
-                        Size: =14
-                        Width: =112
+                        Size: =Round(14 * SF, 0)
+                        Width: =112 * SX
             - capH_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =16
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="HEIGHT"
-                  Width: =112
-                  X: =268
-                  Y: =204
+                  Width: =112 * SX
+                  X: =268 * SX
+                  Y: =204 * SY
             - boxH_Av:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
                   BorderColor: =RGBA(14, 42, 70, 0.22)
-                  BorderStyle: =BorderStyle.Solid
                   BorderThickness: =1
                   Fill: =RGBA(255, 255, 255, 1)
-                  Height: =40
-                  Width: =112
-                  X: =268
-                  Y: =222
-                  RadiusBottomLeft: =10
-                  RadiusBottomRight: =10
-                  RadiusTopLeft: =10
-                  RadiusTopRight: =10
+                  Height: =40 * SY
+                  RadiusBottomLeft: =10 * SR
+                  RadiusBottomRight: =10 * SR
+                  RadiusTopLeft: =10 * SR
+                  RadiusTopRight: =10 * SR
+                  Width: =112 * SX
+                  X: =268 * SX
+                  Y: =222 * SY
                 Children:
                   - ddHeight_Av:
                       Control: Classic/DropDown@2.3.1
@@ -458,7 +445,6 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: ="All"
                         Font: =Font.'Segoe UI'
-                        Height: =40
                         Items: |-
                           =With(
                               {
@@ -486,36 +472,35 @@ Screens:
                               )
                           )
                         Items.Value: =Value
-                        Size: =14
-                        Width: =112
+                        Size: =Round(14 * SF, 0)
+                        Width: =112 * SX
             - capCode_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =16
+                  Height: =16 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="EQUIPMENT CODE"
-                  Width: =360
-                  X: =20
-                  Y: =274
+                  Width: =360 * SX
+                  X: =20 * SX
+                  Y: =274 * SY
             - boxCode_Av:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
                   BorderColor: =RGBA(14, 42, 70, 0.22)
-                  BorderStyle: =BorderStyle.Solid
                   BorderThickness: =1
                   Fill: =RGBA(255, 255, 255, 1)
-                  Height: =40
-                  Width: =360
-                  X: =20
-                  Y: =292
-                  RadiusBottomLeft: =10
-                  RadiusBottomRight: =10
-                  RadiusTopLeft: =10
-                  RadiusTopRight: =10
+                  Height: =40 * SY
+                  RadiusBottomLeft: =10 * SR
+                  RadiusBottomRight: =10 * SR
+                  RadiusTopLeft: =10 * SR
+                  RadiusTopRight: =10 * SR
+                  Width: =360 * SX
+                  X: =20 * SX
+                  Y: =292 * SY
                 Children:
                   - txtCode_Av:
                       Control: Classic/TextInput@2.3.2
@@ -524,111 +509,104 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: =""
                         Font: =Font.'Segoe UI'
-                        Height: =40
                         HintText: ="Equipment code"
-                        Size: =14
-                        Width: =360
+                        Size: =Round(14 * SF, 0)
+                        Width: =360 * SX
             - conService_Av:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
                   BorderColor: =RGBA(14, 42, 70, 0.12)
-                  BorderStyle: =BorderStyle.Solid
                   BorderThickness: =1
                   Fill: =If(chkService_Av.Value, RGBA(254, 242, 242, 1), RGBA(244, 249, 252, 1))
-                  Height: =56
-                  Width: =360
-                  X: =20
-                  Y: =352
-                  RadiusBottomLeft: =14
-                  RadiusBottomRight: =14
-                  RadiusTopLeft: =14
-                  RadiusTopRight: =14
+                  Height: =56 * SY
+                  RadiusBottomLeft: =14 * SR
+                  RadiusBottomRight: =14 * SR
+                  RadiusTopLeft: =14 * SR
+                  RadiusTopRight: =14 * SR
+                  Width: =360 * SX
+                  X: =20 * SX
+                  Y: =352 * SY
                 Children:
                   - lblSvc_Av:
                       Control: Label@2.5.1
                       Properties:
-                        Font: =Font.'Segoe UI'
                         Color: =RGBA(14, 28, 42, 1)
-                        Size: =14
+                        Font: =Font.'Segoe UI'
                         FontWeight: =FontWeight.Bold
-                        Height: =24
+                        Height: =24 * SY
+                        Size: =Round(14 * SF, 0)
                         Text: ="Service due only"
-                        Width: =280
-                        X: =16
-                        Y: =6
+                        Width: =280 * SX
+                        X: =16 * SX
+                        Y: =6 * SY
                   - lblSvcSub_Av:
                       Control: Label@2.5.1
                       Properties:
-                        Font: =Font.'Segoe UI'
                         Color: =RGBA(140, 155, 174, 1)
-                        Size: =11
-                        Height: =18
+                        Font: =Font.'Segoe UI'
+                        Height: =18 * SY
+                        Size: =Round(11 * SF, 0)
                         Text: ="More than 100 days in use this year"
-                        Width: =280
-                        X: =16
-                        Y: =30
+                        Width: =280 * SX
+                        X: =16 * SX
+                        Y: =30 * SY
                   - chkService_Av:
                       Control: Classic/CheckBox@2.1.0
                       Properties:
-                        CheckboxBackgroundFill: =RGBA(255, 255, 255, 1)
                         CheckboxBorderColor: =RGBA(180, 26, 26, 1)
                         CheckboxSize: =30
                         CheckmarkFill: =RGBA(180, 26, 26, 1)
-                        Default: =false
                         Font: =Font.'Segoe UI'
-                        Height: =40
+                        Height: =40 * SY
                         Text: =""
-                        Width: =40
-                        X: =Parent.Width - 56
-                        Y: =8
+                        Width: =40 * SX
+                        X: =Parent.Width - 56 * SX
+                        Y: =8 * SY
             - lblFilterHint_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =12
-                  Height: =40
-                  Width: =360
-                  X: =20
-                  Y: =424
+                  Font: =Font.'Segoe UI'
+                  Size: =Round(12 * SF, 0)
                   Text: |-
                     ="Filters combine: only equipment matching every filter is listed."
+                  Width: =360 * SX
+                  X: =20 * SX
+                  Y: =424 * SY
       - Av_CardList:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
             BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
             BorderThickness: =1
-            DropShadow: =DropShadow.Light
             Fill: =RGBA(255, 255, 255, 1)
-            Height: =658
-            Width: =590
-            X: =438
-            Y: =95
-            RadiusBottomLeft: =18
-            RadiusBottomRight: =18
-            RadiusTopLeft: =18
-            RadiusTopRight: =18
+            Height: =658 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =590 * SX
+            X: =438 * SX
+            Y: =95 * SY
           Children:
             - lblList_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =16
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =28
-                  Width: =500
-                  X: =20
-                  Y: =16
+                  Height: =28 * SY
+                  Size: =Round(16 * SF, 0)
                   Text: ="Available now  ·  " & CountRows(Gallery_Available.AllItems)
+                  Width: =500 * SX
+                  X: =20 * SX
+                  Y: =16 * SY
             - Gallery_Available:
                 Control: Gallery@2.15.0
                 Variant: Vertical
                 Properties:
-                  Height: =598
+                  Height: =598 * SY
                   Items: |-
                     =With(
                         {
@@ -645,7 +623,6 @@ Screens:
                                 Filter(
                                     Equipment_Inventory_SharePoint,
                                     Status.Value = "Available",
-
                                     ( typeFilter   = "All" || Category.Value          = typeFilter ),
                                     ( wcTypeFilter = "All" || 'Wheelchair Type'.Value = wcTypeFilter ),
                                     ( widthFilter  = "All" || Width.Value             = widthFilter ),
@@ -663,27 +640,26 @@ Screens:
                         )
                     )
                   TemplatePadding: =0
-                  TemplateSize: =120
-                  Width: =590
-                  Y: =54
+                  TemplateSize: =120 * SY
+                  Width: =590 * SX
+                  Y: =54 * SY
                 Children:
                   - Av_Row:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
                         BorderColor: =If(avSelected.ID = ThisItem.ID, RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
-                        BorderStyle: =BorderStyle.Solid
                         BorderThickness: =If(avSelected.ID = ThisItem.ID, 2, 1)
                         DropShadow: =DropShadow.None
                         Fill: =If(avSelected.ID = ThisItem.ID, RGBA(26, 90, 153, 0.08), RGBA(244, 249, 252, 1))
-                        Height: =112
-                        Width: =Parent.TemplateWidth - 20
-                        X: =10
-                        Y: =4
-                        RadiusBottomLeft: =14
-                        RadiusBottomRight: =14
-                        RadiusTopLeft: =14
-                        RadiusTopRight: =14
+                        Height: =112 * SY
+                        RadiusBottomLeft: =14 * SR
+                        RadiusBottomRight: =14 * SR
+                        RadiusTopLeft: =14 * SR
+                        RadiusTopRight: =14 * SR
+                        Width: =Parent.TemplateWidth - 20 * SX
+                        X: =10 * SX
+                        Y: =4 * SY
                       Children:
                         - conBar_Av:
                             Control: GroupContainer@1.5.0
@@ -691,481 +667,459 @@ Screens:
                             Properties:
                               Fill: =Switch(ThisItem.Category.Value, "Wheelchair", RGBA(166, 199, 130, 1), "Cushion", RGBA(0, 144, 153, 1), "Backrest", RGBA(0, 200, 210, 1), RGBA(210, 218, 227, 1))
                               Height: =Parent.Height
-                              Width: =8
-                              X: =0
-                              Y: =0
-                              RadiusBottomLeft: =14
+                              RadiusBottomLeft: =14 * SR
                               RadiusBottomRight: =0
-                              RadiusTopLeft: =14
+                              RadiusTopLeft: =14 * SR
                               RadiusTopRight: =0
+                              Width: =8 * SX
                         - lblRow1_Av:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =Font.'Segoe UI'
                               Color: =RGBA(14, 28, 42, 1)
-                              Size: =15
+                              Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
-                              Height: =46
+                              Height: =46 * SY
+                              Size: =Round(15 * SF, 0)
                               Text: =ThisItem.Brand & " " & ThisItem.Model
-                              Width: =Parent.Width - 200
-                              X: =26
-                              Y: =8
+                              Width: =Parent.Width - 200 * SX
+                              X: =26 * SX
+                              Y: =8 * SY
                         - conChip_Av:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
                               Fill: =Switch(ThisItem.Category.Value, "Wheelchair", RGBA(166, 199, 130, 1), "Cushion", RGBA(0, 144, 153, 1), "Backrest", RGBA(0, 200, 210, 1), RGBA(210, 218, 227, 1))
-                              Height: =20
-                              Width: =110
-                              X: =26
-                              Y: =60
-                              RadiusBottomLeft: =10
-                              RadiusBottomRight: =10
-                              RadiusTopLeft: =10
-                              RadiusTopRight: =10
+                              Height: =20 * SY
+                              RadiusBottomLeft: =10 * SR
+                              RadiusBottomRight: =10 * SR
+                              RadiusTopLeft: =10 * SR
+                              RadiusTopRight: =10 * SR
+                              Width: =110 * SX
+                              X: =26 * SX
+                              Y: =60 * SY
                             Children:
                               - lblChip_Av:
                                   Control: Label@2.5.1
                                   Properties:
                                     Align: =Align.Center
-                                    Font: =Font.'Segoe UI'
                                     Color: =RGBA(14, 28, 42, 1)
-                                    Size: =11
+                                    Font: =Font.'Segoe UI'
                                     FontWeight: =FontWeight.Bold
-                                    Height: =20
+                                    Height: =20 * SY
+                                    Size: =Round(11 * SF, 0)
                                     Text: =Coalesce(ThisItem.Category.Value, "-")
                                     Width: =Parent.Width
                         - lblBar_Av:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =Font.'Segoe UI'
                               Color: =RGBA(58, 80, 104, 1)
-                              Size: =12
-                              Height: =20
+                              Font: =Font.'Segoe UI'
+                              Height: =20 * SY
+                              Size: =Round(12 * SF, 0)
                               Text: ="Barcode " & ThisItem.Title
-                              Width: =Parent.Width - 350
-                              X: =146
-                              Y: =60
+                              Width: =Parent.Width - 350 * SX
+                              X: =146 * SX
+                              Y: =60 * SY
                         - lblRow3_Av:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =Font.'Segoe UI'
                               Color: =RGBA(140, 155, 174, 1)
-                              Size: =12
-                              Height: =20
+                              Font: =Font.'Segoe UI'
+                              Height: =20 * SY
+                              Size: =Round(12 * SF, 0)
                               Text: |-
                                 ="Location: " & Coalesce(ThisItem.Location.Value, "-") & "  ·  W " & Coalesce(ThisItem.Width.Value, "-") & "  D " & Coalesce(ThisItem.Depth.Value, "-") & "  H " & Coalesce(ThisItem.Height.Value, "-")
-                              Width: =Parent.Width - 200
-                              X: =26
-                              Y: =86
+                              Width: =Parent.Width - 200 * SX
+                              X: =26 * SX
+                              Y: =86 * SY
                         - conDays_Av:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Fill: =If(Coalesce(ThisItem.TotalDaysSignedOut, 0) > 100, RGBA(254, 242, 242, 1), RGBA(255, 255, 255, 1))
                               BorderColor: =If(Coalesce(ThisItem.TotalDaysSignedOut, 0) > 100, RGBA(180, 26, 26, 1), RGBA(14, 42, 70, 0.12))
-                              BorderStyle: =BorderStyle.Solid
                               BorderThickness: =1
-                              Height: =56
-                              Width: =140
-                              X: =Parent.Width - 156
-                              Y: =28
-                              RadiusBottomLeft: =12
-                              RadiusBottomRight: =12
-                              RadiusTopLeft: =12
-                              RadiusTopRight: =12
+                              Fill: =If(Coalesce(ThisItem.TotalDaysSignedOut, 0) > 100, RGBA(254, 242, 242, 1), RGBA(255, 255, 255, 1))
+                              Height: =56 * SY
+                              RadiusBottomLeft: =12 * SR
+                              RadiusBottomRight: =12 * SR
+                              RadiusTopLeft: =12 * SR
+                              RadiusTopRight: =12 * SR
+                              Width: =140 * SX
+                              X: =Parent.Width - 156 * SX
+                              Y: =28 * SY
                             Children:
                               - lblDays_Av:
                                   Control: Label@2.5.1
                                   Properties:
                                     Align: =Align.Center
-                                    Font: =Font.'Segoe UI'
                                     Color: =If(Coalesce(ThisItem.TotalDaysSignedOut, 0) > 100, RGBA(180, 26, 26, 1), RGBA(14, 28, 42, 1))
-                                    Size: =18
+                                    Font: =Font.'Segoe UI'
                                     FontWeight: =FontWeight.Bold
-                                    Height: =30
+                                    Height: =30 * SY
+                                    Size: =Round(18 * SF, 0)
                                     Text: =Coalesce(ThisItem.TotalDaysSignedOut, 0) & " days"
                                     Width: =Parent.Width
-                                    X: =0
-                                    Y: =6
+                                    Y: =6 * SY
                               - lblDaysCap_Av:
                                   Control: Label@2.5.1
                                   Properties:
                                     Align: =Align.Center
-                                    Font: =Font.'Segoe UI'
                                     Color: =RGBA(140, 155, 174, 1)
-                                    Size: =10
+                                    Font: =Font.'Segoe UI'
                                     FontWeight: =FontWeight.Bold
-                                    Height: =16
+                                    Height: =16 * SY
+                                    Size: =Round(10 * SF, 0)
                                     Text: =If(Coalesce(ThisItem.TotalDaysSignedOut, 0) > 100, "SERVICE DUE", "IN USE THIS YEAR")
                                     Width: =Parent.Width
-                                    X: =0
-                                    Y: =34
+                                    Y: =34 * SY
                         - btnRow_Av:
                             Control: Button@0.0.45
                             Properties:
                               Appearance: ='ButtonCanvas.Appearance'.Transparent
                               BorderStyle: =BorderStyle.None
                               Height: =Parent.Height
-                              Width: =Parent.Width
-                              X: =0
-                              Y: =0
-                              Text: =""
                               OnSelect: =Set(avSelected, LookUp(Equipment_Inventory_SharePoint, ID = ThisItem.ID))
+                              Text: =""
+                              Width: =Parent.Width
             - lblEmpty_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
-                  Color: =RGBA(140, 155, 174, 1)
-                  Size: =14
                   Align: =Align.Center
-                  Height: =30
+                  Color: =RGBA(140, 155, 174, 1)
+                  Font: =Font.'Segoe UI'
+                  Height: =30 * SY
+                  Size: =Round(14 * SF, 0)
                   Text: ="No available equipment matches these filters."
                   Visible: =IsEmpty(Gallery_Available.AllItems)
-                  Width: =590
-                  X: =0
-                  Y: =120
+                  Width: =590 * SX
+                  Y: =120 * SY
       - Av_CardDetails:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
             BorderColor: =RGBA(14, 42, 70, 0.12)
-            BorderStyle: =BorderStyle.Solid
             BorderThickness: =1
-            DropShadow: =DropShadow.Light
             Fill: =RGBA(255, 255, 255, 1)
-            Height: =658
-            Width: =293
-            X: =1058
-            Y: =95
-            RadiusBottomLeft: =18
-            RadiusBottomRight: =18
-            RadiusTopLeft: =18
-            RadiusTopRight: =18
+            Height: =658 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            Width: =293 * SX
+            X: =1058 * SX
+            Y: =95 * SY
           Children:
             - lblDetTitle_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =16
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =28
-                  Width: =250
-                  X: =20
-                  Y: =16
+                  Height: =28 * SY
+                  Size: =Round(16 * SF, 0)
                   Text: ="Item details"
+                  Width: =250 * SX
+                  X: =20 * SX
+                  Y: =16 * SY
             - lblKBc_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="BARCODE"
-                  Width: =100
-                  X: =20
-                  Y: =60
+                  Visible: =!IsBlank(avSelected)
+                  Width: =100 * SX
+                  X: =20 * SX
+                  Y: =60 * SY
             - lblVBc_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =14
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(14 * SF, 0)
                   Text: =Coalesce(avSelected.Title, "-")
-                  Width: =150
-                  X: =124
-                  Y: =60
+                  Visible: =!IsBlank(avSelected)
+                  X: =124 * SX
+                  Y: =60 * SY
             - lblKCt_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="CATEGORY"
-                  Width: =100
-                  X: =20
-                  Y: =92
+                  Visible: =!IsBlank(avSelected)
+                  Width: =100 * SX
+                  X: =20 * SX
+                  Y: =92 * SY
             - lblVCt_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =14
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(14 * SF, 0)
                   Text: =Coalesce(avSelected.Category.Value, "-")
-                  Width: =150
-                  X: =124
-                  Y: =92
+                  Visible: =!IsBlank(avSelected)
+                  X: =124 * SX
+                  Y: =92 * SY
             - lblKBr_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="BRAND"
-                  Width: =100
-                  X: =20
-                  Y: =124
+                  Visible: =!IsBlank(avSelected)
+                  Width: =100 * SX
+                  X: =20 * SX
+                  Y: =124 * SY
             - lblVBr_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =14
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(14 * SF, 0)
                   Text: =Coalesce(avSelected.Brand, "-")
-                  Width: =150
-                  X: =124
-                  Y: =124
+                  Visible: =!IsBlank(avSelected)
+                  X: =124 * SX
+                  Y: =124 * SY
             - lblKMd_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="MODEL"
-                  Width: =100
-                  X: =20
-                  Y: =156
+                  Visible: =!IsBlank(avSelected)
+                  Width: =100 * SX
+                  X: =20 * SX
+                  Y: =156 * SY
             - lblVMd_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =14
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(14 * SF, 0)
                   Text: =Coalesce(avSelected.Model, "-")
-                  Width: =150
-                  X: =124
-                  Y: =156
+                  Visible: =!IsBlank(avSelected)
+                  X: =124 * SX
+                  Y: =156 * SY
             - lblKWt_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="TYPE"
-                  Width: =100
-                  X: =20
-                  Y: =188
+                  Visible: =!IsBlank(avSelected)
+                  Width: =100 * SX
+                  X: =20 * SX
+                  Y: =188 * SY
             - lblVWt_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =14
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(14 * SF, 0)
                   Text: =Coalesce(avSelected.'Wheelchair Type'.Value, "-")
-                  Width: =150
-                  X: =124
-                  Y: =188
+                  Visible: =!IsBlank(avSelected)
+                  X: =124 * SX
+                  Y: =188 * SY
             - lblKWd_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="WIDTH"
-                  Width: =100
-                  X: =20
-                  Y: =220
+                  Visible: =!IsBlank(avSelected)
+                  Width: =100 * SX
+                  X: =20 * SX
+                  Y: =220 * SY
             - lblVWd_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =14
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(14 * SF, 0)
                   Text: =Coalesce(avSelected.Width.Value, "-")
-                  Width: =150
-                  X: =124
-                  Y: =220
+                  Visible: =!IsBlank(avSelected)
+                  X: =124 * SX
+                  Y: =220 * SY
             - lblKDp_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="DEPTH"
-                  Width: =100
-                  X: =20
-                  Y: =252
+                  Visible: =!IsBlank(avSelected)
+                  Width: =100 * SX
+                  X: =20 * SX
+                  Y: =252 * SY
             - lblVDp_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =14
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(14 * SF, 0)
                   Text: =Coalesce(avSelected.Depth.Value, "-")
-                  Width: =150
-                  X: =124
-                  Y: =252
+                  Visible: =!IsBlank(avSelected)
+                  X: =124 * SX
+                  Y: =252 * SY
             - lblKHt_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="HEIGHT"
-                  Width: =100
-                  X: =20
-                  Y: =284
+                  Visible: =!IsBlank(avSelected)
+                  Width: =100 * SX
+                  X: =20 * SX
+                  Y: =284 * SY
             - lblVHt_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =14
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(14 * SF, 0)
                   Text: =Coalesce(avSelected.Height.Value, "-")
-                  Width: =150
-                  X: =124
-                  Y: =284
+                  Visible: =!IsBlank(avSelected)
+                  X: =124 * SX
+                  Y: =284 * SY
             - lblKLc_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="LOCATION"
-                  Width: =100
-                  X: =20
-                  Y: =316
+                  Visible: =!IsBlank(avSelected)
+                  Width: =100 * SX
+                  X: =20 * SX
+                  Y: =316 * SY
             - lblVLc_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =14
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(14 * SF, 0)
                   Text: =Coalesce(avSelected.Location.Value, "-")
-                  Width: =150
-                  X: =124
-                  Y: =316
+                  Visible: =!IsBlank(avSelected)
+                  X: =124 * SX
+                  Y: =316 * SY
             - lblKDu_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =11
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(11 * SF, 0)
                   Text: ="DAYS IN USE"
-                  Width: =100
-                  X: =20
-                  Y: =356
+                  Visible: =!IsBlank(avSelected)
+                  Width: =100 * SX
+                  X: =20 * SX
+                  Y: =356 * SY
             - lblVDu_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!IsBlank(avSelected)
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(14, 28, 42, 1)
-                  Size: =14
+                  Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =26
+                  Height: =26 * SY
+                  Size: =Round(14 * SF, 0)
                   Text: =Coalesce(Text(Coalesce(avSelected.TotalDaysSignedOut, 0)), "-")
-                  Width: =150
-                  X: =124
-                  Y: =356
+                  Visible: =!IsBlank(avSelected)
+                  X: =124 * SX
+                  Y: =356 * SY
             - conSvc_Av:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
-                  Visible: =!IsBlank(avSelected) && Coalesce(avSelected.TotalDaysSignedOut, 0) > 100
-                  Fill: =RGBA(254, 242, 242, 1)
                   BorderColor: =RGBA(180, 26, 26, 1)
-                  BorderStyle: =BorderStyle.Solid
                   BorderThickness: =1
-                  Height: =96
-                  Width: =253
-                  X: =20
-                  Y: =404
-                  RadiusBottomLeft: =12
-                  RadiusBottomRight: =12
-                  RadiusTopLeft: =12
-                  RadiusTopRight: =12
+                  Fill: =RGBA(254, 242, 242, 1)
+                  Height: =96 * SY
+                  RadiusBottomLeft: =12 * SR
+                  RadiusBottomRight: =12 * SR
+                  RadiusTopLeft: =12 * SR
+                  RadiusTopRight: =12 * SR
+                  Visible: =!IsBlank(avSelected) && Coalesce(avSelected.TotalDaysSignedOut, 0) > 100
+                  Width: =253 * SX
+                  X: =20 * SX
+                  Y: =404 * SY
                 Children:
                   - lblSvcMsg_Av:
                       Control: Label@2.5.1
                       Properties:
-                        Font: =Font.'Segoe UI'
                         Color: =RGBA(180, 26, 26, 1)
-                        Size: =12
+                        Font: =Font.'Segoe UI'
                         FontWeight: =FontWeight.Bold
-                        Height: =84
+                        Height: =84 * SY
+                        Size: =Round(12 * SF, 0)
                         Text: |-
                           ="Over 100 days in use this year. Needs a Full Service: set aside and contact CA."
-                        Width: =Parent.Width - 24
-                        X: =12
-                        Y: =6
+                        Width: =Parent.Width - 24 * SX
+                        X: =12 * SX
+                        Y: =6 * SY
             - lblNoSel_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Visible: =!(!IsBlank(avSelected))
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =13
-                  Height: =60
+                  Font: =Font.'Segoe UI'
+                  Height: =60 * SY
                   Text: ="Tap a row to see the item's details."
-                  Width: =253
-                  X: =20
-                  Y: =70
+                  Visible: =!(!IsBlank(avSelected))
+                  Width: =253 * SX
+                  X: =20 * SX
+                  Y: =70 * SY
             - lblAllocHint_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Font: =Font.'Segoe UI'
                   Color: =RGBA(140, 155, 174, 1)
-                  Size: =12
-                  Height: =54
-                  Width: =253
-                  X: =20
-                  Y: =596
+                  Font: =Font.'Segoe UI'
+                  Height: =54 * SY
+                  Size: =Round(12 * SF, 0)
                   Text: ="To allocate an item, open the patient and use Allocate to patient."
+                  Width: =253 * SX
+                  X: =20 * SX
+                  Y: =596 * SY
