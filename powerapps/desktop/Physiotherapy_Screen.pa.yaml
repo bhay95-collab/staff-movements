@@ -287,7 +287,7 @@ Screens:
                   Height: =24 * SY
                   Size: =Round(12 * SF, 0)
                   Text: |-
-                    =With({p: Substitute(varCurrentFolderPath, "Shared Documents/", "")}, Substitute(Left(p, Len(p) - 1), "/", "  ›  "))
+                    =With({p: Substitute(varCurrentFolderPath, "Shared Documents/", "")}, Substitute(Left(p, Max(0, Len(p) - 1)), "/", "  ›  "))
                   Width: =310 * SX
                   X: =20 * SX
                   Y: =48 * SY
@@ -321,7 +321,7 @@ Screens:
                         IconStyle: ='ButtonCanvas.IconStyle'.Filled
                         Layout: ='ButtonCanvas.Layout'.IconBefore
                         OnSelect: |-
-                          =Set(varCurrentFolderPath, With({p: varCurrentFolderPath}, Left(p, Len(p) - Len(Last(Split(Left(p, Len(p) - 1), "/")).Value) - 1)))
+                          =Set(varCurrentFolderPath, With({p: varCurrentFolderPath}, Left(p, Max(0, Len(p) - Len(Last(Split(Left(p, Max(0, Len(p) - 1)), "/")).Value) - 1))))
                         Text: ="Up"
                         Width: =74 * SX
             - Gallery_Docs_Pt:
