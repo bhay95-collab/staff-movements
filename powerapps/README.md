@@ -376,3 +376,6 @@ The Classic combo box for **Physio** in the bed panel would not list names (blan
 
 ## Fix: containers not filling (My Day and others)
 Studio leaves any property that still has its default value out of the code it gives you (for example a container whose Width is 500, a label whose Height is 40 or text size is 13). The conversion could not scale what was not written, so a few boxes stayed fixed-size while their contents stretched. `tools/make_responsive.py` now writes those defaults back in before scaling. To rebuild everything from your code run `sh tools/build_desktop.sh`.
+
+## App icon
+`powerapps/icon/` has the app icon (white wheelchair on the app's teal/navy gradient): `STARS_Equipment_icon_512.png` (upload this one), `_1024.png` and `_192.png`, plus `STARS_Equipment_icon.svg`. Studio: **Settings → General → App icon → Upload**, pick the 512 PNG, save and publish. Do the same in the mobile app. Square, full-bleed, and the symbol stays inside the middle 70% so round and rounded-square masks never clip it.
