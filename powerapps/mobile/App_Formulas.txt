@@ -24,6 +24,15 @@ C_AmberBg = RGBA(255, 246, 229, 1);
 AppFont = Font.'Segoe UI';
 HeaderImage = "data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' width='400' height='80' viewBox='0 0 400 80' preserveAspectRatio='none'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001D46'/><stop offset='0.48' stop-color='#075F73'/><stop offset='1' stop-color='#00838A'/></linearGradient></defs><rect width='400' height='80' fill='url(#a)'/></svg>");
 
+// ---- screen size (phones and tablets, portrait or landscape)
+// UI scales every text size, button, row and gap with the screen (0.9 to 1.25).
+UI = Max(0.9, Min(1.25, Min(App.Width, App.Height * 0.55) / 390));
+// PageW is the width of the content column (it stops growing on tablets); Gutter is the empty space either side.
+PageW = Min(App.Width, 720);
+Gutter = (App.Width - PageW) / 2;
+// SheetW is the width of pop-up sheets.
+SheetW = Min(App.Width, 600);
+
 // ---- who is using the app
 MeEmail = Lower(User().Email);
 MeName = User().FullName;

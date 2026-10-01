@@ -91,6 +91,14 @@ Do this in a **copy** of the current mobile app so every SharePoint connection i
 ## Sizing (second pass)
 Everything was enlarged for real phone use: text is 14-24 (was 11-20), page titles 36, buttons and fields about 60 high, list rows 100+ high with 15px gaps, and tiles, chips and segment buttons are all at least 50 high. Headers are 95 high. Wording on the Home tiles was shortened to fit the bigger text. The Find filter sheet and the Servicing sheets are taller. Nothing else changed: same screens, same names, same data.
 
+## Fits any screen (phones and tablets)
+Four new shared formulas in `App_Formulas.txt` (**paste the whole file again** into App > Formulas, replacing what is there):
+- `UI` scales text, buttons, rows and gaps with the screen, between 0.9 (small phone) and 1.25 (tablet). It uses the smaller of the width and 55% of the height, so a phone turned sideways does not blow up.
+- `PageW` is the width of the content column. It stops growing at 720, so on a tablet the content stays centred instead of stretching across the whole screen.
+- `Gutter` is the empty space either side of that column.
+- `SheetW` is the width of pop-up sheets (max 600), centred on tablets.
+Headers and bottom bars still span the full width; their text and buttons line up with the centred content. Rotating the device updates everything automatically. If something looks too big or too small everywhere, change the two numbers in `UI` (0.9 and 1.25).
+
 ## Layout note (why widths are written as App.Width)
 Inside an auto-layout container Power Apps sizes each child itself, but the child's own **Width** property still returns whatever formula it holds. Controls inside that child that use `Parent.Width` then get the wrong number (text centred off the button, pills in the wrong place). Every auto-layout child therefore has its real width written out from `App.Width` (for example `(App.Width - 48) / 3` for three tabs), so everything inside lines up on any phone.
 
