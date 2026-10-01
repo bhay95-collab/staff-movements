@@ -433,7 +433,7 @@ Screens:
                   Text: ="Ward " & varWard
                   VerticalAlign: =VerticalAlign.Middle
                   Weight: ='TextCanvas.Weight'.Bold
-                  Width: =240 * SX
+                  Width: =205 * SX
                   X: =76 * SX
             - TextCanvas7_Sub:
                 Control: Text@0.0.51
@@ -445,7 +445,7 @@ Screens:
                   Text: |-
                     =With({p: CountRows(Filter(colWard, !IsBlank(Trim(Patient))))}, p & If(p = 1, " patient", " patients") & "  ·  " & (CountRows(colWard) - p) & " empty")
                   VerticalAlign: =VerticalAlign.Middle
-                  Width: =240 * SX
+                  Width: =205 * SX
                   X: =76 * SX
                   Y: =42 * SY
             - ButtonCanvas31_1:
@@ -484,8 +484,8 @@ Screens:
                   PaddingLeft: =8 * SX
                   PaddingRight: =8 * SX
                   PaddingTop: =8 * SY
-                  Width: =754 * SX
-                  X: =566 * SX
+                  Width: =800 * SX
+                  X: =520 * SX
                 Children:
                   - Container52:
                       Control: GroupContainer@1.5.0
@@ -554,12 +554,12 @@ Screens:
                         Height: =40 * SY
                         LayoutMaxHeight: =40 * SY
                         LayoutMinHeight: =10 * SY
-                        LayoutMinWidth: =175 * SX
+                        LayoutMinWidth: =160 * SX
                         RadiusBottomLeft: =20 * SR
                         RadiusBottomRight: =20 * SR
                         RadiusTopLeft: =20 * SR
                         RadiusTopRight: =20 * SR
-                        Width: =175 * SX
+                        Width: =160 * SX
                         X: =397 * SX
                         Y: =15 * SY
                       Children:
@@ -602,12 +602,12 @@ Screens:
                         Height: =40 * SY
                         LayoutMaxHeight: =40 * SY
                         LayoutMinHeight: =10 * SY
-                        LayoutMinWidth: =150 * SX
+                        LayoutMinWidth: =140 * SX
                         RadiusBottomLeft: =20 * SR
                         RadiusBottomRight: =20 * SR
                         RadiusTopLeft: =20 * SR
                         RadiusTopRight: =20 * SR
-                        Width: =150 * SX
+                        Width: =140 * SX
                         X: =184 * SX
                         Y: =15 * SY
                       Children:
@@ -718,12 +718,12 @@ Screens:
                         Height: =40 * SY
                         LayoutMaxHeight: =40 * SY
                         LayoutMinHeight: =10 * SY
-                        LayoutMinWidth: =170 * SX
+                        LayoutMinWidth: =160 * SX
                         RadiusBottomLeft: =20 * SR
                         RadiusBottomRight: =20 * SR
                         RadiusTopLeft: =20 * SR
                         RadiusTopRight: =20 * SR
-                        Width: =170 * SX
+                        Width: =160 * SX
                         X: =530 * SX
                         Y: =15 * SY
                       Children:
@@ -740,6 +740,41 @@ Screens:
                               OnSelect: =Set(wdShowPatientList,true)
                               Text: ="Patient List/Data"
                               Width: =Parent.Width
+                  - conOutcome_Ward:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.Center
+                        BorderStyle: =BorderStyle.None
+                        DropShadow: =DropShadow.Semibold
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =40 * SY
+                        LayoutMaxHeight: =40 * SY
+                        LayoutMinHeight: =20 * SY
+                        LayoutMinWidth: =165 * SX
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Width: =165 * SX
+                      Children:
+                        - btnOutcome_Ward:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =20 * SR
+                              BorderStyle: =BorderStyle.None
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(7, 58, 87, 1)
+                              FontSize: =Round(14 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =Parent.Height
+                              Icon: ="Open"
+                              IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                              Layout: ='ButtonCanvas.Layout'.IconBefore
+                              OnSelect: =Launch("https://bhay95-collab.github.io/basic-outcome-measures/")
+                              Text: ="Outcome Measures"
+                              Width: =Parent.Width
             - Container62:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
@@ -755,7 +790,7 @@ Screens:
                   RadiusTopRight: =23 * SR
                   Visible: =!IsEmpty(Filter(colWard, IsDirty))
                   Width: =100 * SX
-                  X: =326 * SX
+                  X: =288 * SX
                   Y: =12 * SY
                 Children:
                   - ButtonCanvas21:
@@ -1042,7 +1077,7 @@ Screens:
                   RadiusTopRight: =23 * SR
                   Visible: =!IsEmpty(Filter(colWard, IsDirty))
                   Width: =120 * SX
-                  X: =436 * SX
+                  X: =394 * SX
                   Y: =12 * SY
                 Children:
                   - btnDiscard_Ward:
