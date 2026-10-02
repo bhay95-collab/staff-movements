@@ -44,3 +44,6 @@ Screens: `Home` and `scrTrainingSessions` (same names as before, so nothing else
 - Booking row columns: as in your code (`Title`, `SessionID`, `TrainingType`, `SessionDate`, `SlotNumber`, `BookedUserName`, `BookedUserEmail`, `BookingStatus` Booked / Cancelled, `BookedOn`).
 - Capacity defaults (6 / 8) are unchanged; set `Capacity` on the date to override.
 - The background picture (`mnh-team-bg-stars`) is no longer used so the app matches the other STARS apps; it can be put back on the screen's BackgroundImage.
+
+## Emails (branded)
+Email attendees and Email waitlist use the shared email look. Re-paste the whole of `App_Formulas.txt` (it now ends with `EmailHead` and `EmailFoot`), then paste `scrTrainingSessions.pa.yaml`.

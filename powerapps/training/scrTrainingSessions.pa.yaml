@@ -417,11 +417,21 @@ Screens:
                       IsBlank(to),
                       Notify("Nobody is booked into this date yet.", NotificationType.Warning),
                       IfError(
-                          Office365Outlook.SendEmailV2(
-                              to,
-                              Trim(txtEmailSubject_Ts.Text),
-                              Substitute(Substitute(txtEmailBody_Ts.Text, Char(13), ""), Char(10), "<br>"),
-                              { IsHtml: true }
+                          With(
+                              {
+                                  subj: Trim(txtEmailSubject_Ts.Text),
+                                  msg: Substitute(Substitute(Substitute(Substitute(txtEmailBody_Ts.Text, "&", "&amp;"), "<", "&lt;"), Char(13), ""), Char(10), "<br>")
+                              },
+                              Office365Outlook.SendEmailV2(
+                                  to,
+                                  subj,
+                                  Substitute(Substitute(EmailHead, "{{TITLE}}", Substitute(Substitute(subj, "&", "&amp;"), "<", "&lt;")), "{{SUB}}", varSelectedTrainingType & "&nbsp;&nbsp;|&nbsp;&nbsp;" & Text(varSelectedSession.SessionDate, "ddd d mmm yyyy") & "&nbsp;&nbsp;|&nbsp;&nbsp;" & Text(varSelectedSession.SessionDate, "h:mm AM/PM")) &
+                                  "<tr><td style='padding:28px 32px 0 32px;font-size:15px;line-height:23px;color:#3A5068;'>" & msg & "</td></tr>" &
+                                  "<tr><td style='padding:20px 32px 0 32px;'><div style='font-size:11px;font-weight:700;letter-spacing:1px;color:#8C9BAE;padding:0 0 8px 2px;'>SESSION</div><table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='border-collapse:separate;border-spacing:0;width:100%;border:1px solid #E3EAF1;border-radius:14px;overflow:hidden;'>" & "<tr><td style='width:190px;padding:10px 14px;background-color:#F7FAFC;font-size:11px;font-weight:600;letter-spacing:1px;color:#8C9BAE;'>COURSE</td><td style='padding:10px 14px;font-size:14px;color:#0E1C2A;'>" & varSelectedTrainingType & "</td></tr>" & "<tr><td style='width:190px;padding:10px 14px;background-color:#F7FAFC;font-size:11px;font-weight:600;letter-spacing:1px;color:#8C9BAE;border-top:1px solid #E3EAF1;'>DATE</td><td style='padding:10px 14px;font-size:14px;color:#0E1C2A;border-top:1px solid #E3EAF1;'>" & Text(varSelectedSession.SessionDate, "dddd d mmmm yyyy") & "</td></tr>" & "<tr><td style='width:190px;padding:10px 14px;background-color:#F7FAFC;font-size:11px;font-weight:600;letter-spacing:1px;color:#8C9BAE;border-top:1px solid #E3EAF1;'>TIME</td><td style='padding:10px 14px;font-size:14px;color:#0E1C2A;border-top:1px solid #E3EAF1;'>" & Text(varSelectedSession.SessionDate, "h:mm AM/PM") & "</td></tr>" & "<tr><td style='width:190px;padding:10px 14px;background-color:#F7FAFC;font-size:11px;font-weight:600;letter-spacing:1px;color:#8C9BAE;border-top:1px solid #E3EAF1;'>LOCATION</td><td style='padding:10px 14px;font-size:14px;color:#0E1C2A;border-top:1px solid #E3EAF1;'>" & Coalesce(varSelectedSession.Location, "To be confirmed") & "</td></tr>" & "</table></td></tr>" &
+                                  "<tr><td style='padding:8px 32px 20px 32px;'>&nbsp;</td></tr>" &
+                                  Substitute(EmailFoot, "{{NOTE}}", "You are receiving this because you are booked into this session."),
+                                  { IsHtml: true }
+                              )
                           );
                           Set(tsShowEmail, false);
                           Notify("Email sent to the booked attendees.", NotificationType.Success),
@@ -448,10 +458,13 @@ Screens:
                           Office365Outlook.SendEmailV2(
                               to,
                               varSelectedTrainingType & " training: a place may be available (" & Text(varSelectedSession.SessionDate, "dd/mm/yyyy h:mm AM/PM") & ")",
-                              "Hi all,<br><br>You are on the waitlist for " & varSelectedTrainingType & " training on " &
-                              Text(varSelectedSession.SessionDate, "dddd d mmmm") & " at " & Text(varSelectedSession.SessionDate, "h:mm AM/PM") & ".<br>" &
-                              "A place may be available. If you would like it, please open the Training Register app and book a place.<br><br>" &
-                              "Thanks,<br>" & MeName,
+                              Substitute(Substitute(EmailHead, "{{TITLE}}", "A place may be available"), "{{SUB}}", varSelectedTrainingType & "&nbsp;&nbsp;|&nbsp;&nbsp;" & Text(varSelectedSession.SessionDate, "ddd d mmm yyyy") & "&nbsp;&nbsp;|&nbsp;&nbsp;" & Text(varSelectedSession.SessionDate, "h:mm AM/PM")) &
+                              "<tr><td style='padding:28px 32px 0 32px;font-size:15px;line-height:23px;color:#3A5068;'>Hi all,<br><br>A place may have opened up for the <b style='color:#0E1C2A;'>" & varSelectedTrainingType & "</b> session below. " &
+                              "If you would like it, open the <b style='color:#0E1C2A;'>Training Register</b> app and book a place. " &
+                              "Places are given to whoever books first.</td></tr>" &
+                              "<tr><td style='padding:20px 32px 0 32px;'><div style='font-size:11px;font-weight:700;letter-spacing:1px;color:#8C9BAE;padding:0 0 8px 2px;'>SESSION</div><table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='border-collapse:separate;border-spacing:0;width:100%;border:1px solid #E3EAF1;border-radius:14px;overflow:hidden;'>" & "<tr><td style='width:190px;padding:10px 14px;background-color:#F7FAFC;font-size:11px;font-weight:600;letter-spacing:1px;color:#8C9BAE;'>COURSE</td><td style='padding:10px 14px;font-size:14px;color:#0E1C2A;'>" & varSelectedTrainingType & "</td></tr>" & "<tr><td style='width:190px;padding:10px 14px;background-color:#F7FAFC;font-size:11px;font-weight:600;letter-spacing:1px;color:#8C9BAE;border-top:1px solid #E3EAF1;'>DATE</td><td style='padding:10px 14px;font-size:14px;color:#0E1C2A;border-top:1px solid #E3EAF1;'>" & Text(varSelectedSession.SessionDate, "dddd d mmmm yyyy") & "</td></tr>" & "<tr><td style='width:190px;padding:10px 14px;background-color:#F7FAFC;font-size:11px;font-weight:600;letter-spacing:1px;color:#8C9BAE;border-top:1px solid #E3EAF1;'>TIME</td><td style='padding:10px 14px;font-size:14px;color:#0E1C2A;border-top:1px solid #E3EAF1;'>" & Text(varSelectedSession.SessionDate, "h:mm AM/PM") & "</td></tr>" & "<tr><td style='width:190px;padding:10px 14px;background-color:#F7FAFC;font-size:11px;font-weight:600;letter-spacing:1px;color:#8C9BAE;border-top:1px solid #E3EAF1;'>LOCATION</td><td style='padding:10px 14px;font-size:14px;color:#0E1C2A;border-top:1px solid #E3EAF1;'>" & Coalesce(varSelectedSession.Location, "To be confirmed") & "</td></tr>" & "</table></td></tr>" &
+                              "<tr><td style='padding:24px 32px 28px 32px;font-size:15px;line-height:22px;color:#3A5068;'>Thanks,<br><b style='color:#0E1C2A;'>" & MeName & "</b></td></tr>" &
+                              Substitute(EmailFoot, "{{NOTE}}", "You are receiving this because you are on the waitlist for this session."),
                               { IsHtml: true }
                           );
                           Notify("Email sent to the waitlist.", NotificationType.Success),
@@ -2088,7 +2101,7 @@ Screens:
                               Size: =Round(14 * UI, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =Round(23 * UI, 0)
-                              Text: ="MESSAGE TO EVERYONE BOOKED"
+                              Text: ="YOUR MESSAGE (session details are added for you)"
                               Width: =Parent.Width
                               X: =0
                               Y: =0
@@ -2116,7 +2129,7 @@ Screens:
                                   Properties:
                                     BorderStyle: =BorderStyle.None
                                     Color: =C_Ink
-                                    Default: ="Hi all," & Char(10) & Char(10) & "You are booked into " & varSelectedTrainingType & " training on " & Text(varSelectedSession.SessionDate, "dddd d mmmm") & " at " & Text(varSelectedSession.SessionDate, "h:mm AM/PM") & "." & Char(10) & "The session will be at " & Coalesce(varSelectedSession.Location, "the usual location") & "." & Char(10) & Char(10) & "If you have any questions please reach out." & Char(10) & Char(10) & "Regards," & Char(10) & MeName
+                                    Default: ="Hi all," & Char(10) & Char(10) & Char(10) & Char(10) & "Regards," & Char(10) & MeName
                                     Fill: =RGBA(0, 0, 0, 0)
                                     Font: =AppFont
                                     Height: =Parent.Height
