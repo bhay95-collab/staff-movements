@@ -334,7 +334,7 @@ Screens:
                   Height: =560 * SY
                   Items: =Filter(colTeamBriefFiles, Path = varCurrentFolderPath)
                   TemplatePadding: =0
-                  TemplateSize: =72 * SY
+                  TemplateSize: =80 * SY
                   Width: =430 * SX
                   Y: =88 * SY
                 Children:
@@ -346,7 +346,7 @@ Screens:
                         BorderThickness: =1
                         DropShadow: =DropShadow.None
                         Fill: =RGBA(244, 249, 252, 1)
-                        Height: =64 * SY
+                        Height: =72 * SY
                         RadiusBottomLeft: =14 * SR
                         RadiusBottomRight: =14 * SR
                         RadiusTopLeft: =14 * SR
@@ -359,7 +359,8 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Fill: =RGBA(255, 255, 255, 1)
+                              Fill: |-
+                                =If(ThisItem.IsFolder = true, RGBA(255, 183, 77, 0.2), With({e: If(CountRows(Split(ThisItem.FileName, ".")) > 1, Lower(Last(Split(ThisItem.FileName, ".")).Value), "")}, Switch(e, "pdf", RGBA(209, 52, 56, 0.12), "doc", RGBA(24, 90, 189, 0.12), "docx", RGBA(24, 90, 189, 0.12), "rtf", RGBA(24, 90, 189, 0.12), "xls", RGBA(16, 124, 65, 0.12), "xlsx", RGBA(16, 124, 65, 0.12), "csv", RGBA(16, 124, 65, 0.12), "ppt", RGBA(196, 62, 28, 0.12), "pptx", RGBA(196, 62, 28, 0.12), "mp4", RGBA(122, 63, 192, 0.12), "mov", RGBA(122, 63, 192, 0.12), "avi", RGBA(122, 63, 192, 0.12), "wmv", RGBA(122, 63, 192, 0.12), "mkv", RGBA(122, 63, 192, 0.12), "png", RGBA(0, 130, 114, 0.12), "jpg", RGBA(0, 130, 114, 0.12), "jpeg", RGBA(0, 130, 114, 0.12), "gif", RGBA(0, 130, 114, 0.12), "bmp", RGBA(0, 130, 114, 0.12), "svg", RGBA(0, 130, 114, 0.12), "msg", RGBA(0, 114, 198, 0.12), "eml", RGBA(0, 114, 198, 0.12), "zip", RGBA(141, 110, 99, 0.12), "7z", RGBA(141, 110, 99, 0.12), "rar", RGBA(141, 110, 99, 0.12), "html", RGBA(70, 90, 120, 0.12), "htm", RGBA(70, 90, 120, 0.12), "txt", RGBA(70, 90, 120, 0.12), RGBA(90, 106, 128, 0.12))))
                               Height: =44 * SY
                               RadiusBottomLeft: =12 * SR
                               RadiusBottomRight: =12 * SR
@@ -367,29 +368,47 @@ Screens:
                               RadiusTopRight: =12 * SR
                               Width: =44 * SX
                               X: =12 * SX
-                              Y: =10 * SY
+                              Y: =14 * SY
                             Children:
                               - icoDoc_Pt:
                                   Control: Classic/Icon@2.5.0
                                   Properties:
-                                    Color: =If(ThisItem.IsFolder = true, RGBA(255, 183, 77, 1), EndsWith(Lower(ThisItem.FileName), ".pdf"), RGBA(220, 53, 69, 1), EndsWith(Lower(ThisItem.FileName), ".doc") || EndsWith(Lower(ThisItem.FileName), ".docx"), RGBA(0, 90, 158, 1), EndsWith(Lower(ThisItem.FileName), ".msg") || EndsWith(Lower(ThisItem.FileName), ".eml"), RGBA(0, 123, 167, 1), RGBA(90, 90, 90, 1))
+                                    Color: =RGBA(230, 140, 0, 1)
                                     Height: =26 * SY
-                                    Icon: =If(ThisItem.IsFolder = true, Icon.Folder, EndsWith(Lower(ThisItem.FileName), ".pdf"), Icon.DocumentPDF, EndsWith(Lower(ThisItem.FileName), ".doc") || EndsWith(Lower(ThisItem.FileName), ".docx"), Icon.Document, EndsWith(Lower(ThisItem.FileName), ".msg") || EndsWith(Lower(ThisItem.FileName), ".eml"), Icon.Mail, Icon.DocumentWithContent)
+                                    Icon: =Icon.Folder
+                                    Visible: =ThisItem.IsFolder = true
                                     Width: =26 * SX
                                     X: =9 * SX
                                     Y: =9 * SY
+                              - lblDocExt_Pt:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Align: =Align.Center
+                                    Color: |-
+                                      =With({e: If(CountRows(Split(ThisItem.FileName, ".")) > 1, Lower(Last(Split(ThisItem.FileName, ".")).Value), "")}, Switch(e, "pdf", RGBA(209, 52, 56, 1), "doc", RGBA(24, 90, 189, 1), "docx", RGBA(24, 90, 189, 1), "rtf", RGBA(24, 90, 189, 1), "xls", RGBA(16, 124, 65, 1), "xlsx", RGBA(16, 124, 65, 1), "csv", RGBA(16, 124, 65, 1), "ppt", RGBA(196, 62, 28, 1), "pptx", RGBA(196, 62, 28, 1), "mp4", RGBA(122, 63, 192, 1), "mov", RGBA(122, 63, 192, 1), "avi", RGBA(122, 63, 192, 1), "wmv", RGBA(122, 63, 192, 1), "mkv", RGBA(122, 63, 192, 1), "png", RGBA(0, 130, 114, 1), "jpg", RGBA(0, 130, 114, 1), "jpeg", RGBA(0, 130, 114, 1), "gif", RGBA(0, 130, 114, 1), "bmp", RGBA(0, 130, 114, 1), "svg", RGBA(0, 130, 114, 1), "msg", RGBA(0, 114, 198, 1), "eml", RGBA(0, 114, 198, 1), "zip", RGBA(141, 110, 99, 1), "7z", RGBA(141, 110, 99, 1), "rar", RGBA(141, 110, 99, 1), "html", RGBA(70, 90, 120, 1), "htm", RGBA(70, 90, 120, 1), "txt", RGBA(70, 90, 120, 1), RGBA(90, 106, 128, 1)))
+                                    Font: =Font.'Segoe UI'
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Size: =Round(11 * SF, 0)
+                                    Text: |-
+                                      =With({e: If(CountRows(Split(ThisItem.FileName, ".")) > 1, Lower(Last(Split(ThisItem.FileName, ".")).Value), "")}, If(e = "", "FILE", Upper(Left(e, 4))))
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Visible: =!(ThisItem.IsFolder = true)
+                                    Width: =Parent.Width
                         - lblDocName_Pt:
                             Control: Label@2.5.1
                             Properties:
                               Color: =RGBA(14, 28, 42, 1)
                               Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
-                              Height: =24 * SY
+                              Height: =40 * SY
                               Size: =Round(14 * SF, 0)
-                              Text: =Coalesce(ThisItem.FileName, ThisItem.Name)
-                              Width: =Parent.Width - 130 * SX
+                              Text: |-
+                                =With({n: Coalesce(ThisItem.FileName, ThisItem.Name)}, If(ThisItem.IsFolder = true || CountRows(Split(n, ".")) < 2, n, Left(n, Len(n) - Len(Last(Split(n, ".")).Value) - 1)))
+                              VerticalAlign: =VerticalAlign.Bottom
+                              Width: =Parent.Width - 150 * SX
                               X: =68 * SX
-                              Y: =10 * SY
+                              Y: =7 * SY
                         - lblDocKind_Pt:
                             Control: Label@2.5.1
                             Properties:
@@ -398,9 +417,9 @@ Screens:
                               Height: =18 * SY
                               Size: =Round(11 * SF, 0)
                               Text: =If(ThisItem.IsFolder = true, "Folder", If(CountRows(Split(ThisItem.FileName, ".")) > 1, Upper(Last(Split(ThisItem.FileName, ".")).Value) & " file", "File"))
-                              Width: =Parent.Width - 130 * SX
+                              Width: =Parent.Width - 150 * SX
                               X: =68 * SX
-                              Y: =34 * SY
+                              Y: =49 * SY
                         - icoDocGo_Pt:
                             Control: Classic/Icon@2.5.0
                             Properties:
@@ -410,7 +429,7 @@ Screens:
                               Visible: =ThisItem.IsFolder = true
                               Width: =24 * SX
                               X: =Parent.Width - 40 * SX
-                              Y: =20 * SY
+                              Y: =24 * SY
                         - lblDocOpen_Pt:
                             Control: Label@2.5.1
                             Properties:
@@ -424,7 +443,7 @@ Screens:
                               Visible: =!(ThisItem.IsFolder = true)
                               Width: =60 * SX
                               X: =Parent.Width - 76 * SX
-                              Y: =22 * SY
+                              Y: =26 * SY
                         - btnDocRow_Pt:
                             Control: Button@0.0.45
                             Properties:
