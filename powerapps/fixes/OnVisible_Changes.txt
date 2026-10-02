@@ -1,0 +1,443 @@
+===== Directory_Admin_New : screen OnVisible =====
+If(
+    IsBlank(varMeDirectory),
+    Set(
+        varMeDirectory,
+        LookUp(ClinicianDirectory, Lower(Person.Email) = Lower(User().Email))
+    )
+);
+If(
+    IsBlank(varMeDirectory),
+    Notify("Access denied: you are not in the Clinician Directory.", NotificationType.Error);
+    Back(),
+    !(varMeDirectory.Access.Value = "Director" || varMeDirectory.Access.Value = "Team Leader"),
+    Notify("Access denied: Admin access required.", NotificationType.Error);
+    Back(),
+    Set(varAdminDiscipline, varMeDirectory.Discipline.Value);
+    Set(varAdminAccess, varMeDirectory.Access.Value);
+    Set(adShowRemove, false);
+    // Cache staff for my discipline only
+    ClearCollect(
+        colDirectory,
+        AddColumns(
+            Filter(ClinicianDirectory, Discipline.Value = varAdminDiscipline),
+            PersonName, Coalesce(Person.DisplayName, ""),
+            PersonEmail, Coalesce(Person.Email, ""),
+            AccessText, Coalesce(Access.Value, "")
+        )
+    );
+    Select(btnPie_Ad)
+)
+
+===== Equipment_Main : screen OnVisible =====
+Set(eqLoading, true);
+// =======================================================
+// SHARED INITIALISATION
+// (Patient Detail relies on these even if no Ward screen was opened first)
+// NOTE: the four ward caches that used to be built here are gone.
+// They all wrote into the same collection and overwrote each other.
+// Patients are now looked up straight from the ward lists when needed.
+// =======================================================
+// Typed empty People table
+Set(
+    varEmptyPeople,
+    FirstN(
+        Table(
+            {
+                Claims: "",
+                DisplayName: "",
+                Email: "",
+                Department: "",
+                JobTitle: "",
+                Picture: ""
+            }
+        ),
+        0
+    )
+);
+Concurrent(
+    // Clinician option lists
+    ClearCollect(
+        colClinicians_Physio,
+        AddColumns(
+            Filter(ClinicianDirectory, Discipline.Value = "Physio" && !IsBlank(Person)),
+            DisplayNameFlat, Coalesce(Person.DisplayName, Person.Email, ""),
+            DisplayKey, Lower(Trim(Person.Claims)),
+            PersonRec, Person
+        )
+    ),
+    ClearCollect(
+        colClinicians_OT,
+        AddColumns(
+            Filter(ClinicianDirectory, Discipline.Value = "OT" && !IsBlank(Person)),
+            DisplayNameFlat, Coalesce(Person.DisplayName, Person.Email, ""),
+            DisplayKey, Lower(Trim(Person.Claims)),
+            PersonRec, Person
+        )
+    ),
+    ClearCollect(
+        colClinicians_SP,
+        AddColumns(
+            Filter(ClinicianDirectory, Discipline.Value = "SP" && !IsBlank(Person)),
+            DisplayNameFlat, Coalesce(Person.DisplayName, Person.Email, ""),
+            DisplayKey, Lower(Trim(Person.Claims)),
+            PersonRec, Person
+        )
+    ),
+    // Equipment I signed out today
+    ClearCollect(
+        colGroupedEquipment,
+        Filter(
+            Equipment_Inventory_SharePoint,
+            Status.Value = "Allocated" &&
+            DateDiff(DateValue('Date Signed Out'), Today()) = 0 &&
+            Physiotherapist = User().FullName
+        )
+    )
+);
+// Current user directory record
+If(
+    IsBlank(varMeDirectory),
+    Set(
+        varMeDirectory,
+        LookUp(ClinicianDirectory, Lower(Person.Email) = Lower(User().Email))
+    )
+);
+// Reset the screen
+Set(varSearchPatient, "");
+Set(varSearchCode, "");
+Set(varSelectedItem, Blank());
+Set(varShowDischargedEquipmentPopup, false);
+Reset(TextInput_SearchPatient);
+Set(eqLoading, false)
+
+===== Home_Main : screen OnVisible =====
+Set(varHomeMenu, false);
+// Latest ward status colours from SharePoint
+Refresh(Home_Colors_Shared);
+ClearCollect(HomeColorCollection, Home_Colors_Shared);
+// Who am I? (decides whether the acuity number is shown)
+If(
+    IsBlank(varMeDirectory),
+    Set(
+        varMeDirectory,
+        LookUp(ClinicianDirectory, Lower(Person.Email) = Lower(User().Email))
+    )
+);
+// At-a-glance numbers per ward: beds, patients, total acuity, EDD within 3 days
+ClearCollect(
+    colHomeStats,
+    With(
+        { rows: Ward_4A_Shared },
+        {
+            Key: "Ward4A",
+            Beds: CountRows(rows),
+            Patients: CountRows(Filter(rows, !IsBlank(Patient))),
+            Acuity: Sum(Filter(rows, !IsBlank(Patient)), 'Acuity Score'),
+            EddSoon: CountRows(
+                Filter(
+                    rows,
+                    !IsBlank(Patient),
+                    !IsBlank(EDD),
+                    EDD >= Today(),
+                    EDD <= DateAdd(Today(), 3)
+                )
+            )
+        }
+    ),
+    With(
+        { rows: Ward_4B_Shared },
+        {
+            Key: "Ward4B",
+            Beds: CountRows(rows),
+            Patients: CountRows(Filter(rows, !IsBlank(Patient))),
+            Acuity: Sum(Filter(rows, !IsBlank(Patient)), 'Acuity Score'),
+            EddSoon: CountRows(
+                Filter(
+                    rows,
+                    !IsBlank(Patient),
+                    !IsBlank(EDD),
+                    EDD >= Today(),
+                    EDD <= DateAdd(Today(), 3)
+                )
+            )
+        }
+    ),
+    With(
+        { rows: Ward_5A_Shared },
+        {
+            Key: "Ward5A",
+            Beds: CountRows(rows),
+            Patients: CountRows(Filter(rows, !IsBlank(Patient))),
+            Acuity: Sum(Filter(rows, !IsBlank(Patient)), 'Acuity Score'),
+            EddSoon: CountRows(
+                Filter(
+                    rows,
+                    !IsBlank(Patient),
+                    !IsBlank(EDD),
+                    EDD >= Today(),
+                    EDD <= DateAdd(Today(), 3)
+                )
+            )
+        }
+    ),
+    With(
+        { rows: Ward_6A_Shared },
+        {
+            Key: "Ward6A",
+            Beds: CountRows(rows),
+            Patients: CountRows(Filter(rows, !IsBlank(Patient))),
+            Acuity: Sum(Filter(rows, !IsBlank(Patient)), 'Acuity Score'),
+            EddSoon: CountRows(
+                Filter(
+                    rows,
+                    !IsBlank(Patient),
+                    !IsBlank(EDD),
+                    EDD >= Today(),
+                    EDD <= DateAdd(Today(), 3)
+                )
+            )
+        }
+    )
+)
+
+===== Physiotherapy_Screen : screen OnVisible =====
+// Call flow and parse JSON
+Set(
+    varTeamBriefJson,
+    GetTeamBriefFiles.Run().filesjson
+);
+Clear(colTeamBriefFiles);
+If(
+    !IsBlank(varTeamBriefJson),
+    ForAll(
+        ParseJSON(varTeamBriefJson) As fileRow,
+        Collect(
+            colTeamBriefFiles,
+            {
+                Id:        Text(fileRow.ItemInternalId),
+                Name:      Text(fileRow.'{Name}'),
+                FileName:  Text(fileRow.'{FilenameWithExtension}'),
+                // Folder path only, e.g. "Shared Documents/Team Brief/" or ".../Team Brief/Archive/"
+                Path:      Text(fileRow.'{Path}'),
+                // Full path including file/folder name, e.g. ".../Team Brief/Archive/" or ".../file.pdf"
+                FullPath:  Text(fileRow.'{FullPath}'),
+                Link:      Text(fileRow.'{Link}'),
+                // True for folders, false for files
+                IsFolder:  fileRow.'{IsFolder}'
+            }
+        )
+    )
+);
+// Start in the Team Brief root folder
+Set(varCurrentFolderPath, "Shared Documents/Team Brief/");
+Set(varDirectorOverride, false);
+Set(varDiscipline, "Physio");
+Set(
+    varTeamNotesRecord,
+    LookUp(Discipline_Team_Notes, Title = varDiscipline)
+);
+Set(varUserEmail, Lower(User().Email));
+// Who am I? (decides Manage Staff and notes editing)
+If(
+    IsBlank(varMeDirectory),
+    Set(
+        varMeDirectory,
+        LookUp(ClinicianDirectory, Lower(Person.Email) = varUserEmail)
+    )
+);
+Set(
+    varMeProfile,
+    Office365Users.UserProfileV2(varUserEmail)
+);
+Set(
+    varMeSP,
+    {
+        '@odata.type': "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+        Claims: "i:0#.f|membership|" & varUserEmail,
+        DisplayName: Coalesce(varMeProfile.displayName, User().FullName, varUserEmail),
+        Email: varUserEmail,
+        Department: Coalesce(varMeProfile.department, ""),
+        JobTitle: Coalesce(varMeProfile.jobTitle, ""),
+        Picture: ""
+    }
+)
+
+===== M4_Allocate : screen OnVisible =====
+// Patients on all four wards (one shape for every ward)
+// loaded once and shared by Allocate and Audit; refreshed when older than 10 minutes
+If(
+    IsEmpty(colPatients) || IsBlank(varPatientsLoaded) || DateDiff(varPatientsLoaded, Now(), TimeUnit.Minutes) >= 10,
+    ClearCollect(
+        colPatients,
+        ForAll(
+            Filter(Ward_4A_Shared, !IsBlank(Patient)) As r,
+            {
+                ID: r.ID,
+                Ward: "4A",
+                Bed: r.Bed,
+                Name: r.Patient,
+                URN: r.URN,
+                DOB: r.DOB,
+                PT_Users: r.PT_Users,
+                Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
+                DisplayText: r.Patient & "  ·  4A  ·  URN " & r.URN
+            }
+        )
+    );
+    Collect(
+        colPatients,
+        ForAll(
+            Filter(Ward_4B_Shared, !IsBlank(Patient)) As r,
+            {
+                ID: r.ID,
+                Ward: "4B",
+                Bed: r.Bed,
+                Name: r.Patient,
+                URN: r.URN,
+                DOB: r.DOB,
+                PT_Users: r.PT_Users,
+                Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
+                DisplayText: r.Patient & "  ·  4B  ·  URN " & r.URN
+            }
+        )
+    );
+    Collect(
+        colPatients,
+        ForAll(
+            Filter(Ward_5A_Shared, !IsBlank(Patient)) As r,
+            {
+                ID: r.ID,
+                Ward: "5A",
+                Bed: r.Bed,
+                Name: r.Patient,
+                URN: r.URN,
+                DOB: r.DOB,
+                PT_Users: r.PT_Users,
+                Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
+                DisplayText: r.Patient & "  ·  5A  ·  URN " & r.URN
+            }
+        )
+    );
+    Collect(
+        colPatients,
+        ForAll(
+            Filter(Ward_6A_Shared, !IsBlank(Patient)) As r,
+            {
+                ID: r.ID,
+                Ward: "6A",
+                Bed: r.Bed,
+                Name: r.Patient,
+                URN: r.URN,
+                DOB: r.DOB,
+                PT_Users: r.PT_Users,
+                Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
+                DisplayText: r.Patient & "  ·  6A  ·  URN " & r.URN
+            }
+        )
+    );
+    Set(varPatientsLoaded, Now())
+);
+
+// Start on "My patients" when you have any
+Set(alView, If(IsEmpty(Filter(colPatients, Mine)), "All", "Mine"));
+Set(alShowForm, false);
+Set(alPatient, Blank());
+Set(alItem, LookUp(Equipment_Inventory_SharePoint, ID = varItemID));
+Reset(txtSearch_Al)
+
+===== M8_Audit : screen OnVisible =====
+// Patients on all four wards (one shape for every ward)
+// loaded once and shared by Allocate and Audit; refreshed when older than 10 minutes
+If(
+    IsEmpty(colPatients) || IsBlank(varPatientsLoaded) || DateDiff(varPatientsLoaded, Now(), TimeUnit.Minutes) >= 10,
+    ClearCollect(
+        colPatients,
+        ForAll(
+            Filter(Ward_4A_Shared, !IsBlank(Patient)) As r,
+            {
+                ID: r.ID,
+                Ward: "4A",
+                Bed: r.Bed,
+                Name: r.Patient,
+                URN: r.URN,
+                DOB: r.DOB,
+                PT_Users: r.PT_Users,
+                Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
+                DisplayText: r.Patient & "  ·  4A  ·  URN " & r.URN
+            }
+        )
+    );
+    Collect(
+        colPatients,
+        ForAll(
+            Filter(Ward_4B_Shared, !IsBlank(Patient)) As r,
+            {
+                ID: r.ID,
+                Ward: "4B",
+                Bed: r.Bed,
+                Name: r.Patient,
+                URN: r.URN,
+                DOB: r.DOB,
+                PT_Users: r.PT_Users,
+                Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
+                DisplayText: r.Patient & "  ·  4B  ·  URN " & r.URN
+            }
+        )
+    );
+    Collect(
+        colPatients,
+        ForAll(
+            Filter(Ward_5A_Shared, !IsBlank(Patient)) As r,
+            {
+                ID: r.ID,
+                Ward: "5A",
+                Bed: r.Bed,
+                Name: r.Patient,
+                URN: r.URN,
+                DOB: r.DOB,
+                PT_Users: r.PT_Users,
+                Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
+                DisplayText: r.Patient & "  ·  5A  ·  URN " & r.URN
+            }
+        )
+    );
+    Collect(
+        colPatients,
+        ForAll(
+            Filter(Ward_6A_Shared, !IsBlank(Patient)) As r,
+            {
+                ID: r.ID,
+                Ward: "6A",
+                Bed: r.Bed,
+                Name: r.Patient,
+                URN: r.URN,
+                DOB: r.DOB,
+                PT_Users: r.PT_Users,
+                Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
+                DisplayText: r.Patient & "  ·  6A  ·  URN " & r.URN
+            }
+        )
+    );
+    Set(varPatientsLoaded, Now())
+);
+
+// allocated items nobody has audited in the last 60 days, longest out first
+ClearCollect(
+    colAuRecent,
+    ShowColumns(Filter(Equipment_Audits, AuditDateTime >= DateAdd(Today(), -60, TimeUnit.Days)), Barcode)
+);
+ClearCollect(
+    colAuNext,
+    FirstN(
+        Sort(
+            Filter(Equipment_Inventory_SharePoint, Status.Value = "Allocated" && IsBlank(LookUp(colAuRecent, Barcode = Title))),
+            'Date Signed Out',
+            SortOrder.Ascending
+        ),
+        5
+    )
+);
+
+Set(auItem, Blank());
+Select(btnResetChecks_Au)
