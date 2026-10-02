@@ -393,4 +393,4 @@ The stand-alone Training Register is now part of the dashboard. Home bottom bar 
 2. **App > Formulas:** paste the new bottom block of `desktop/Desktop_App_Formulas.txt` (`MeEmail`, `MeName`, `CanManageTraining`). If you already have names with those spellings, delete the old ones first.
 3. **Paste** `Training_Hub` and `Training_Sessions` (any order), then `Home_Main` (replace the old one: rename it `OLD_Home_Main` first, paste, then delete the old).
 
-Rebuild from source: `sh tools/build_desktop.sh` (the two training screens are drawn in `desktop/as_pasted/`; `tools/patch_training.py` adds the Home button).
+Rebuild from source: `sh tools/build_desktop.sh` (the two training screens are drawn in `desktop/as_pasted/`). `desktop/Home_Main.pa.yaml` is your own Home (already scaled) plus the Training pill; it is kept by hand and is not rebuilt by the script.
