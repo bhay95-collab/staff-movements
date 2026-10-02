@@ -197,6 +197,7 @@ Screens:
                           SortByColumns(Ward_4A_Shared, "field_1", SortOrder.Ascending),
                           {
                               ID: ID,
+                              Modified: Modified,
                               Patient: Patient,
                               URN: URN,
                               DOB: DOB,
@@ -234,6 +235,7 @@ Screens:
                           SortByColumns(Ward_4B_Shared, "field_1", SortOrder.Ascending),
                           {
                               ID: ID,
+                              Modified: Modified,
                               Patient: Patient,
                               URN: URN,
                               DOB: DOB,
@@ -271,6 +273,7 @@ Screens:
                           SortByColumns(Ward_5A_Shared, "field_1", SortOrder.Ascending),
                           {
                               ID: ID,
+                              Modified: Modified,
                               Patient: Patient,
                               URN: URN,
                               DOB: DOB,
@@ -308,6 +311,7 @@ Screens:
                           SortByColumns(Ward_6A_Shared, "field_1", SortOrder.Ascending),
                           {
                               ID: ID,
+                              Modified: Modified,
                               Patient: Patient,
                               URN: URN,
                               DOB: DOB,
@@ -403,9 +407,12 @@ Screens:
               // --------------------------------------
               // 0b) Who am I? (optional)
               // --------------------------------------
-              Set(
-                  varMeDirectory,
-                  LookUp(ClinicianDirectory, Lower(Person.Email) = Lower(User().Email))
+              If(
+                  IsBlank(varMeDirectory),
+                  Set(
+                      varMeDirectory,
+                      LookUp(ClinicianDirectory, Lower(Person.Email) = Lower(User().Email))
+                  )
               );
               // Chart collections are rebuilt from the fresh data
               Select(btnRebuildCharts_Ward)
@@ -915,7 +922,18 @@ Screens:
                                   Switch(
                                       varWard,
                                       "4A",
-                                          With(
+                                          If(
+                                              !IsBlank(w.ID) && !IsBlank(w.Modified) && LookUp(Ward_4A_Shared, ID = w.ID).Modified > w.Modified,
+                                              Collect(
+                                                  colWardSaveErrors,
+                                                  {
+                                                      LocalID: w.ID,
+                                                      SavedID: w.ID,
+                                                      Patient: w.Patient,
+                                                      Message: "Someone else changed this patient after you opened the ward. Press Discard to reload, then make your change again."
+                                                  }
+                                              ),
+                                              With(
                                               {
                                                   spRow:
                                                       Patch(
@@ -962,11 +980,23 @@ Screens:
                                                       }
                                                   ),
                                                   // Success -> store the real SharePoint ID (new rows) and clear IsDirty
-                                                  Patch(colWard, w, { ID: spRow.ID, IsDirty: false })
+                                                  Patch(colWard, w, { ID: spRow.ID, IsDirty: false, Modified: spRow.Modified })
                                               )
+                                          )
                                           ),
                                       "4B",
-                                          With(
+                                          If(
+                                              !IsBlank(w.ID) && !IsBlank(w.Modified) && LookUp(Ward_4B_Shared, ID = w.ID).Modified > w.Modified,
+                                              Collect(
+                                                  colWardSaveErrors,
+                                                  {
+                                                      LocalID: w.ID,
+                                                      SavedID: w.ID,
+                                                      Patient: w.Patient,
+                                                      Message: "Someone else changed this patient after you opened the ward. Press Discard to reload, then make your change again."
+                                                  }
+                                              ),
+                                              With(
                                               {
                                                   spRow:
                                                       Patch(
@@ -1013,11 +1043,23 @@ Screens:
                                                       }
                                                   ),
                                                   // Success -> store the real SharePoint ID (new rows) and clear IsDirty
-                                                  Patch(colWard, w, { ID: spRow.ID, IsDirty: false })
+                                                  Patch(colWard, w, { ID: spRow.ID, IsDirty: false, Modified: spRow.Modified })
                                               )
+                                          )
                                           ),
                                       "5A",
-                                          With(
+                                          If(
+                                              !IsBlank(w.ID) && !IsBlank(w.Modified) && LookUp(Ward_5A_Shared, ID = w.ID).Modified > w.Modified,
+                                              Collect(
+                                                  colWardSaveErrors,
+                                                  {
+                                                      LocalID: w.ID,
+                                                      SavedID: w.ID,
+                                                      Patient: w.Patient,
+                                                      Message: "Someone else changed this patient after you opened the ward. Press Discard to reload, then make your change again."
+                                                  }
+                                              ),
+                                              With(
                                               {
                                                   spRow:
                                                       Patch(
@@ -1064,10 +1106,22 @@ Screens:
                                                       }
                                                   ),
                                                   // Success -> store the real SharePoint ID (new rows) and clear IsDirty
-                                                  Patch(colWard, w, { ID: spRow.ID, IsDirty: false })
+                                                  Patch(colWard, w, { ID: spRow.ID, IsDirty: false, Modified: spRow.Modified })
                                               )
+                                          )
                                           ),
-                                      With(
+                                      If(
+                                          !IsBlank(w.ID) && !IsBlank(w.Modified) && LookUp(Ward_6A_Shared, ID = w.ID).Modified > w.Modified,
+                                          Collect(
+                                              colWardSaveErrors,
+                                              {
+                                                  LocalID: w.ID,
+                                                  SavedID: w.ID,
+                                                  Patient: w.Patient,
+                                                  Message: "Someone else changed this patient after you opened the ward. Press Discard to reload, then make your change again."
+                                              }
+                                          ),
+                                          With(
                                           {
                                               spRow:
                                                   Patch(
@@ -1114,8 +1168,9 @@ Screens:
                                                   }
                                               ),
                                               // Success -> store the real SharePoint ID (new rows) and clear IsDirty
-                                              Patch(colWard, w, { ID: spRow.ID, IsDirty: false })
+                                              Patch(colWard, w, { ID: spRow.ID, IsDirty: false, Modified: spRow.Modified })
                                           )
+                                      )
                                       )
                                   )
                               );

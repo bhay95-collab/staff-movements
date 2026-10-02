@@ -4,73 +4,78 @@ Screens:
       Fill: =C_Bg
       OnVisible: |-
         =// Patients on all four wards (one shape for every ward)
-        ClearCollect(
-            colPatients,
-            ForAll(
-                Filter(Ward_4A_Shared, !IsBlank(Patient)) As r,
-                {
-                    ID: r.ID,
-                    Ward: "4A",
-                    Bed: r.Bed,
-                    Name: r.Patient,
-                    URN: r.URN,
-                    DOB: r.DOB,
-                    PT_Users: r.PT_Users,
-                    Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
-                    DisplayText: r.Patient & "  ·  4A  ·  URN " & r.URN
-                }
-            )
-        );
-        Collect(
-            colPatients,
-            ForAll(
-                Filter(Ward_4B_Shared, !IsBlank(Patient)) As r,
-                {
-                    ID: r.ID,
-                    Ward: "4B",
-                    Bed: r.Bed,
-                    Name: r.Patient,
-                    URN: r.URN,
-                    DOB: r.DOB,
-                    PT_Users: r.PT_Users,
-                    Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
-                    DisplayText: r.Patient & "  ·  4B  ·  URN " & r.URN
-                }
-            )
-        );
-        Collect(
-            colPatients,
-            ForAll(
-                Filter(Ward_5A_Shared, !IsBlank(Patient)) As r,
-                {
-                    ID: r.ID,
-                    Ward: "5A",
-                    Bed: r.Bed,
-                    Name: r.Patient,
-                    URN: r.URN,
-                    DOB: r.DOB,
-                    PT_Users: r.PT_Users,
-                    Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
-                    DisplayText: r.Patient & "  ·  5A  ·  URN " & r.URN
-                }
-            )
-        );
-        Collect(
-            colPatients,
-            ForAll(
-                Filter(Ward_6A_Shared, !IsBlank(Patient)) As r,
-                {
-                    ID: r.ID,
-                    Ward: "6A",
-                    Bed: r.Bed,
-                    Name: r.Patient,
-                    URN: r.URN,
-                    DOB: r.DOB,
-                    PT_Users: r.PT_Users,
-                    Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
-                    DisplayText: r.Patient & "  ·  6A  ·  URN " & r.URN
-                }
-            )
+        // loaded once and shared by Allocate and Audit; refreshed when older than 10 minutes
+        If(
+            IsEmpty(colPatients) || IsBlank(varPatientsLoaded) || DateDiff(varPatientsLoaded, Now(), TimeUnit.Minutes) >= 10,
+            ClearCollect(
+                colPatients,
+                ForAll(
+                    Filter(Ward_4A_Shared, !IsBlank(Patient)) As r,
+                    {
+                        ID: r.ID,
+                        Ward: "4A",
+                        Bed: r.Bed,
+                        Name: r.Patient,
+                        URN: r.URN,
+                        DOB: r.DOB,
+                        PT_Users: r.PT_Users,
+                        Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
+                        DisplayText: r.Patient & "  ·  4A  ·  URN " & r.URN
+                    }
+                )
+            );
+            Collect(
+                colPatients,
+                ForAll(
+                    Filter(Ward_4B_Shared, !IsBlank(Patient)) As r,
+                    {
+                        ID: r.ID,
+                        Ward: "4B",
+                        Bed: r.Bed,
+                        Name: r.Patient,
+                        URN: r.URN,
+                        DOB: r.DOB,
+                        PT_Users: r.PT_Users,
+                        Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
+                        DisplayText: r.Patient & "  ·  4B  ·  URN " & r.URN
+                    }
+                )
+            );
+            Collect(
+                colPatients,
+                ForAll(
+                    Filter(Ward_5A_Shared, !IsBlank(Patient)) As r,
+                    {
+                        ID: r.ID,
+                        Ward: "5A",
+                        Bed: r.Bed,
+                        Name: r.Patient,
+                        URN: r.URN,
+                        DOB: r.DOB,
+                        PT_Users: r.PT_Users,
+                        Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
+                        DisplayText: r.Patient & "  ·  5A  ·  URN " & r.URN
+                    }
+                )
+            );
+            Collect(
+                colPatients,
+                ForAll(
+                    Filter(Ward_6A_Shared, !IsBlank(Patient)) As r,
+                    {
+                        ID: r.ID,
+                        Ward: "6A",
+                        Bed: r.Bed,
+                        Name: r.Patient,
+                        URN: r.URN,
+                        DOB: r.DOB,
+                        PT_Users: r.PT_Users,
+                        Mine: !IsBlank(LookUp(Switch(MyDiscipline, "OT", r.OT_Users, "SP", r.SP_Users, r.PT_Users), Lower(Email) = MeEmail)),
+                        DisplayText: r.Patient & "  ·  6A  ·  URN " & r.URN
+                    }
+                )
+            );
+            Set(varPatientsLoaded, Now())
         );
 
         // allocated items nobody has audited in the last 60 days, longest out first

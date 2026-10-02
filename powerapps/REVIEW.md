@@ -16,17 +16,18 @@ The old generator pipeline is retired: `powerapps/archive/desktop_as_pasted/` an
 | 2 | Training hub (desktop + mobile) | Waitlist filter used `Lower()` on the column, which SharePoint cannot filter (not delegable) | `WaitlistUserEmail = MeEmail` (SharePoint equals ignores case) |
 | 3 | Patient detail allocate/return, Equipment_Main discharge return, mobile Item return | Status was checked on a stale copy of the item, so a double tap or a second person could allocate / return twice and write duplicate log rows | The item is re-read from SharePoint before the check |
 | 4 | Mobile Item return | Success toast and log rows even if SharePoint refused the update | Stops after a failed inventory update |
+| 5 | Desktop allocate / return (Patient_Detail btnAlloc_PD, btnReturnGo_PD, Equipment_Main btnNfReturn_Eq, All_Allocated btnNfReturn_Al) | No `Errors()` check, so log rows and success message happened even if the inventory update failed | Stops with an error message after a failed inventory update |
+| 6 | `varMeDirectory` lookup in Directory_Admin_New, Equipment_Main, Home_Main, Physiotherapy_Screen OnVisible, Ward_All Load | Same SharePoint lookup repeated on every screen open | Only looked up when `varMeDirectory` is blank |
+| 7 | Ward board Save | Overwrote whole rows, last save won silently | Load keeps `Modified`; Save refuses a patient changed by someone else since the ward was loaded and shows a message (Discard reloads) |
+| 8 | Mobile Allocate and Audit | Rebuilt the patient list on every open | Cached for 10 minutes (`varPatientsLoaded`) |
+| 9 | Physiotherapy_Screen Data Dashboard button | Navigated to itself, so `Physio_Data_New` was unreachable | Navigates to `Physio_Data_New` |
+| 10 | Usage log growth (5000 item limit) | Log only grows | New flow `flows/Usage_Log_Cleanup.zip`: when the list reaches 4999 items, archives the oldest 1000 to CSV then deletes them |
 
-## Recommended, not applied yet
-1. **Desktop allocate / return have no `Errors()` check** (Patient_Detail btnAlloc_PD and btnReturnGo_PD, Equipment_Main btnNfReturn_Eq, All_Allocated btnNfReturn_Al). If the inventory update fails the log rows and the success message still happen. Same guard as mobile Item.
-2. **The allocate / return logic exists in five places** (3 desktop screens, 2 mobile). Any fix has to be made five times. Consider one flow, or a Power Fx user-defined function, as the single copy.
-3. **Ward board Save overwrites whole rows** (25 columns per dirty row). Two clinicians editing the same patient: last save wins. Patch only the columns that changed, or compare the item's Modified date before saving.
-4. **`LookUp(ClinicianDirectory, ...)` repeats in 8 screens' OnVisible.** Add `MeDirectory = LookUp(ClinicianDirectory, Lower(Person.Email) = MeEmail);` to the desktop formulas (mobile already has it) and drop the repeated `Set(varMeDirectory, ...)` calls.
-5. **Mobile Allocate and Audit each rebuild the patient list** (4 SharePoint reads and a ForAll) every time the screen opens. Build it once (Home or start) and refresh when older than a few minutes.
-6. **Hard-coded people in the flows**: coordinator email addresses and the names "Catherine / Erin / Kyte / Nova" (weekly reminder flows). Move them to a SharePoint list so staff changes don't need flow edits.
-7. **SharePoint indexes**: index `EpisodeKey`, `EquipmentItemID`, `EventDateTime` (usage log), `SessionID`, `BookingStatus`, `WaitlistStatus` (training lists). The usage log and bookings only grow; without indexes the 5000-item list view limit will start breaking filters.
-8. **`DateDiff(..., "Days")`** appears 8 times (string unit). Works, but use `TimeUnit.Days`.
-9. **Screen `Physio_Data_New` is never navigated to** by any button. Link it or delete it (it runs a 2,600-character OnVisible when opened).
-10. **Variables not set anywhere in the screens**: `varChartPalette`, `colDiagnosisMap`, `colStaffRatios`. They are probably set in App.OnStart, which was not in the export. Please include the App OnStart next time so it can be reviewed.
-11. **Waitlist notification flow**: a later cancellation notifies the first waiting person again, even if they were already notified and haven't booked. The 48-hour escalation flow then moves down the list. Acceptable, but worth knowing.
-12. **Stale `_1` names**: harmless, but to avoid them when replacing a screen, delete the old screen first (after saving its code) instead of renaming it, because control names are shared across the whole app.
+## Still recommended
+1. **The allocate / return logic exists in five places** (3 desktop screens, 2 mobile). Any fix has to be made five times. Consider one flow, or a Power Fx user-defined function, as the single copy.
+2. **Hard-coded people in the flows**: coordinator email addresses and the names "Catherine / Erin / Kyte / Nova" (weekly reminder flows). Left as is by choice.
+3. **SharePoint indexes**: index `EpisodeKey`, `EquipmentItemID`, `EventDateTime` (usage log), `SessionID`, `BookingStatus`, `WaitlistStatus` (training lists). The cleanup flow also filters on `ID`/`Created`, which are always indexed.
+4. **`DateDiff(..., "Days")`** appears 8 times (string unit). Works, but use `TimeUnit.Days`.
+5. **Variables not set anywhere in the screens**: `varChartPalette`, `colDiagnosisMap`, `colStaffRatios`. Probably App.OnStart, which was not in the export. Please include it next time.
+6. **Waitlist notification flow**: a later cancellation notifies the first waiting person again, even if they were already notified and haven't booked. The 48-hour escalation flow then moves down the list. Acceptable, but worth knowing.
+7. **Stale `_1` names**: to avoid them when replacing a screen, delete the old screen first (after saving its code) instead of renaming it.

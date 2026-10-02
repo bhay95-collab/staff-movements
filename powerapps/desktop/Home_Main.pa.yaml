@@ -9,9 +9,12 @@ Screens:
         Refresh(Home_Colors_Shared);
         ClearCollect(HomeColorCollection, Home_Colors_Shared);
         // Who am I? (decides whether the acuity number is shown)
-        Set(
-            varMeDirectory,
-            LookUp(ClinicianDirectory, Lower(Person.Email) = Lower(User().Email))
+        If(
+            IsBlank(varMeDirectory),
+            Set(
+                varMeDirectory,
+                LookUp(ClinicianDirectory, Lower(Person.Email) = Lower(User().Email))
+            )
         );
         // At-a-glance numbers per ward: beds, patients, total acuity, EDD within 3 days
         ClearCollect(

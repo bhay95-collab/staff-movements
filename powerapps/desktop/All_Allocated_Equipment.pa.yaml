@@ -1164,6 +1164,11 @@ Screens:
                                                         TotalDaysSignedOut: newTotalDays
                                                     }
                                                 );
+                                                // stop here if SharePoint refused the update, so no log rows are written
+                                                If(
+                                                    !IsEmpty(Errors(Equipment_Inventory_SharePoint)),
+                                                    Notify("Could not return the equipment. Please try again.", NotificationType.Error),
+
                                                 // ===================================================
                                                 // 2. CREATE SIGN-IN LOG ENTRY
                                                 // ===================================================
@@ -1387,7 +1392,7 @@ Screens:
                                                     varSelectedPatient,
                                                     Blank()
                                                 )
-                                            )
+                                                ))
                                         )
                                     )
                                 )

@@ -1507,6 +1507,11 @@ Screens:
                                           CurrentEpisodeKey: episodeKey
                                       }
                                   );
+                                  // stop here if SharePoint refused the update, so no log rows are written
+                                  If(
+                                      !IsEmpty(Errors(Equipment_Inventory_SharePoint)),
+                                      Notify("Could not allocate the equipment. Please try again.", NotificationType.Error),
+
                                   Patch(
                                       Equipment_Usage_Log,
                                       Defaults(Equipment_Usage_Log),
@@ -1564,7 +1569,7 @@ Screens:
                                   Set(varSelectedItem, Blank());
                                   Set(varSearchCode_1, "");
                                   Reset(TextInput_SearchCode_1)
-                              )
+                                  ))
                           )
                         PaddingBottom: =5
                         PaddingLeft: =12
@@ -1691,6 +1696,11 @@ Screens:
                                               TotalDaysSignedOut: newTotalDays
                                           }
                                       );
+                                      // stop here if SharePoint refused the update, so no log rows are written
+                                      If(
+                                          !IsEmpty(Errors(Equipment_Inventory_SharePoint)),
+                                          Notify("Could not return the equipment. Please try again.", NotificationType.Error),
+
                                       Patch(
                                           Equipment_Usage_Log,
                                           Defaults(Equipment_Usage_Log),
@@ -1789,7 +1799,7 @@ Screens:
                                       Set(varSelectedItem, Blank());
                                       Set(varSearchCode_1, "");
                                       Reset(TextInput_SearchCode_1)
-                                  )
+                                      ))
                               )
                           )
                         PaddingBottom: =5

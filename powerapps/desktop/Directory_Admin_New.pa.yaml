@@ -4,9 +4,12 @@ Screens:
       Fill: =RGBA(235, 242, 248, 1)
       ImagePosition: =ImagePosition.Fill
       OnVisible: |-
-        =Set(
-            varMeDirectory,
-            LookUp(ClinicianDirectory, Lower(Person.Email) = Lower(User().Email))
+        =If(
+            IsBlank(varMeDirectory),
+            Set(
+                varMeDirectory,
+                LookUp(ClinicianDirectory, Lower(Person.Email) = Lower(User().Email))
+            )
         );
         If(
             IsBlank(varMeDirectory),

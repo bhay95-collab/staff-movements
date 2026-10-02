@@ -41,9 +41,12 @@ Screens:
         );
         Set(varUserEmail, Lower(User().Email));
         // Who am I? (decides Manage Staff and notes editing)
-        Set(
-            varMeDirectory,
-            LookUp(ClinicianDirectory, Lower(Person.Email) = varUserEmail)
+        If(
+            IsBlank(varMeDirectory),
+            Set(
+                varMeDirectory,
+                LookUp(ClinicianDirectory, Lower(Person.Email) = varUserEmail)
+            )
         );
         Set(
             varMeProfile,
@@ -249,7 +252,7 @@ Screens:
                           ClearCollect(col5A_PieData, ForAll(colPieDiagnoses As d, { City: d.Diag, Area: CountRows(Filter(colAllWardData, WardCode = "5A" && field_3.Value = d.Diag)) }));
                           ClearCollect(col6A_PieData, ForAll(colPieDiagnoses As d, { City: d.Diag, Area: CountRows(Filter(colAllWardData, WardCode = "6A" && field_3.Value = d.Diag)) }));
                           // 4) Navigate to the data screen
-                          Navigate(Physiotherapy_Screen, ScreenTransition.Fade)
+                          Navigate(Physio_Data_New, ScreenTransition.Fade)
                         PaddingBottom: =5
                         PaddingLeft: =12
                         PaddingRight: =12
