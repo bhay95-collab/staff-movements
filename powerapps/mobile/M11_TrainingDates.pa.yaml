@@ -1218,193 +1218,80 @@ Screens:
                   OnSelect: =Set(trShowAdd, false)
             - conSheet_Ad:
                 Control: GroupContainer@1.5.0
-                Variant: AutoLayout
+                Variant: ManualLayout
                 Properties:
                   Fill: =C_White
-                  LayoutDirection: =LayoutDirection.Vertical
-                  LayoutAlignItems: =LayoutAlignItems.Stretch
-                  LayoutJustifyContent: =LayoutJustifyContent.Start
-                  LayoutGap: =Round(13 * UI, 0)
-                  PaddingTop: =Round(25 * UI, 0)
-                  PaddingRight: =Round(25 * UI, 0)
-                  PaddingBottom: =Round(30 * UI, 0)
-                  PaddingLeft: =Round(25 * UI, 0)
-                  DropShadow: =DropShadow.None
-                  RadiusBottomLeft: =0
-                  RadiusBottomRight: =0
+                  Height: =Min(Parent.Height - Round(50 * UI, 0), Round(550 * UI, 0))
+                  Width: =Min(Parent.Width, SheetW)
+                  X: =(Parent.Width - Min(Parent.Width, SheetW)) / 2
+                  Y: =If(App.Width >= 720, (Parent.Height - Self.Height) / 2, Parent.Height - Self.Height)
+                  RadiusBottomLeft: =If(App.Width >= 720, 22, 0)
+                  RadiusBottomRight: =If(App.Width >= 720, 22, 0)
                   RadiusTopLeft: =Round(28 * UI, 0)
                   RadiusTopRight: =Round(28 * UI, 0)
-                  LayoutOverflowY: =LayoutOverflow.Scroll
-                  X: =(Parent.Width - SheetW) / 2
-                  Width: =SheetW
-                  Height: =Min(Parent.Height - Round(50 * UI, 0), Round(800 * UI, 0))
-                  Y: =Parent.Height - Min(Parent.Height - Round(50 * UI, 0), Round(800 * UI, 0))
+                  DropShadow: =DropShadow.None
                 Children:
+                  - conHandle_Ad:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        Fill: =RGBA(14, 42, 70, 0.18)
+                        Height: =Round(6 * UI, 0)
+                        Width: =Round(50 * UI, 0)
+                        X: =(Parent.Width - Round(50 * UI, 0)) / 2
+                        Y: =Round(10 * UI, 0)
+                        RadiusBottomLeft: =Round(4 * UI, 0)
+                        RadiusBottomRight: =Round(4 * UI, 0)
+                        RadiusTopLeft: =Round(4 * UI, 0)
+                        RadiusTopRight: =Round(4 * UI, 0)
+                        DropShadow: =DropShadow.None
                   - lblSheetT_Ad:
                       Control: Label@2.5.1
                       Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(40 * UI, 0)
-                        FillPortions: =0
                         Font: =AppFont
                         Color: =C_Ink
                         Size: =Round(22 * UI, 0)
                         FontWeight: =FontWeight.Bold
-                        Height: =Round(40 * UI, 0)
+                        Height: =Round(38 * UI, 0)
                         Text: ="Add a training date"
-                        Width: =SheetW - Round(50 * UI, 0)
-                        X: =0
-                        Y: =0
+                        Width: =Parent.Width - Round(50 * UI, 0)
+                        X: =Round(25 * UI, 0)
+                        Y: =Round(25 * UI, 0)
                         Wrap: =false
-                  - fldType_Ad:
+                  - conSheetBody_Ad:
                       Control: GroupContainer@1.5.0
-                      Variant: ManualLayout
+                      Variant: AutoLayout
                       Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(80 * UI, 0)
-                        FillPortions: =0
                         Fill: =RGBA(0, 0, 0, 0)
-                        Height: =Round(80 * UI, 0)
-                        Width: =SheetW - Round(50 * UI, 0)
-                        X: =0
-                        Y: =0
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutJustifyContent: =LayoutJustifyContent.Start
+                        LayoutGap: =Round(13 * UI, 0)
+                        PaddingTop: =Round(5 * UI, 0)
+                        PaddingRight: =Round(25 * UI, 0)
+                        PaddingBottom: =Round(15 * UI, 0)
+                        PaddingLeft: =Round(25 * UI, 0)
+                        DropShadow: =DropShadow.None
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
-                        DropShadow: =DropShadow.None
-                      Children:
-                        - capType_Ad:
-                            Control: Label@2.5.1
-                            Properties:
-                              Font: =AppFont
-                              Color: =C_Muted
-                              Size: =Round(14 * UI, 0)
-                              FontWeight: =FontWeight.Bold
-                              Height: =Round(23 * UI, 0)
-                              Text: ="TRAINING"
-                              Width: =Parent.Width
-                              X: =0
-                              Y: =0
-                              Wrap: =false
-                        - boxType_Ad:
-                            Control: GroupContainer@1.5.0
-                            Variant: ManualLayout
-                            Properties:
-                              Fill: =C_White
-                              Height: =Round(55 * UI, 0)
-                              Width: =Parent.Width
-                              X: =0
-                              Y: =Round(25 * UI, 0)
-                              RadiusBottomLeft: =Round(13 * UI, 0)
-                              RadiusBottomRight: =Round(13 * UI, 0)
-                              RadiusTopLeft: =Round(13 * UI, 0)
-                              RadiusTopRight: =Round(13 * UI, 0)
-                              BorderColor: =RGBA(14, 42, 70, 0.22)
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
-                              DropShadow: =DropShadow.None
-                            Children:
-                              - ddType_Tds:
-                                  Control: Classic/DropDown@2.3.1
-                                  Properties:
-                                    BorderStyle: =BorderStyle.None
-                                    ChevronBackground: =C_Accent
-                                    ChevronFill: =C_White
-                                    Color: =C_Ink
-                                    Default: =trType
-                                    Font: =AppFont
-                                    Height: =Parent.Height
-                                    Items: =["Basic Life Support", "Manual Handling"]
-                                    Items.Value: =Value
-                                    Size: =Round(18 * UI, 0)
-                                    Width: =Parent.Width
-                                    X: =0
-                                    Y: =0
-                  - fldDate_Ad:
-                      Control: GroupContainer@1.5.0
-                      Variant: ManualLayout
-                      Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(80 * UI, 0)
-                        FillPortions: =0
-                        Fill: =RGBA(0, 0, 0, 0)
-                        Height: =Round(80 * UI, 0)
-                        Width: =SheetW - Round(50 * UI, 0)
+                        LayoutOverflowY: =LayoutOverflow.Scroll
                         X: =0
-                        Y: =0
-                        RadiusBottomLeft: =0
-                        RadiusBottomRight: =0
-                        RadiusTopLeft: =0
-                        RadiusTopRight: =0
-                        DropShadow: =DropShadow.None
+                        Y: =Round(65 * UI, 0)
+                        Width: =Parent.Width
+                        Height: =Parent.Height - Round(65 * UI, 0) - Round(95 * UI, 0)
                       Children:
-                        - capDate_Ad:
-                            Control: Label@2.5.1
-                            Properties:
-                              Font: =AppFont
-                              Color: =C_Muted
-                              Size: =Round(14 * UI, 0)
-                              FontWeight: =FontWeight.Bold
-                              Height: =Round(23 * UI, 0)
-                              Text: ="DATE"
-                              Width: =Parent.Width
-                              X: =0
-                              Y: =0
-                              Wrap: =false
-                        - boxDate_Ad:
+                        - fldType_Ad:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Fill: =C_White
-                              Height: =Round(55 * UI, 0)
-                              Width: =Parent.Width
-                              X: =0
-                              Y: =Round(25 * UI, 0)
-                              RadiusBottomLeft: =Round(13 * UI, 0)
-                              RadiusBottomRight: =Round(13 * UI, 0)
-                              RadiusTopLeft: =Round(13 * UI, 0)
-                              RadiusTopRight: =Round(13 * UI, 0)
-                              BorderColor: =RGBA(14, 42, 70, 0.22)
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
-                              DropShadow: =DropShadow.None
-                            Children:
-                              - dpDate_Tds:
-                                  Control: Classic/DatePicker@2.6.0
-                                  Properties:
-                                    BorderStyle: =BorderStyle.None
-                                    Color: =C_Ink
-                                    DefaultDate: =Today()
-                                    Font: =AppFont
-                                    Height: =Parent.Height
-                                    Size: =Round(18 * UI, 0)
-                                    Width: =Parent.Width
-                  - rowTime_Td:
-                      Control: GroupContainer@1.5.0
-                      Variant: ManualLayout
-                      Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(80 * UI, 0)
-                        FillPortions: =0
-                        Fill: =RGBA(0, 0, 0, 0)
-                        Height: =Round(80 * UI, 0)
-                        Width: =SheetW - Round(50 * UI, 0)
-                        X: =0
-                        Y: =0
-                        RadiusBottomLeft: =0
-                        RadiusBottomRight: =0
-                        RadiusTopLeft: =0
-                        RadiusTopRight: =0
-                        DropShadow: =DropShadow.None
-                      Children:
-                        - fldHour_Td:
-                            Control: GroupContainer@1.5.0
-                            Variant: ManualLayout
-                            Properties:
+                              AlignInContainer: =AlignInContainer.SetByContainer
+                              LayoutMinHeight: =Round(80 * UI, 0)
+                              FillPortions: =0
                               Fill: =RGBA(0, 0, 0, 0)
                               Height: =Round(80 * UI, 0)
-                              Width: =(SheetW - Round(65 * UI, 0)) / 2
+                              Width: =SheetW - Round(50 * UI, 0)
                               X: =0
                               Y: =0
                               RadiusBottomLeft: =0
@@ -1413,7 +1300,7 @@ Screens:
                               RadiusTopRight: =0
                               DropShadow: =DropShadow.None
                             Children:
-                              - capHour_Td:
+                              - capType_Ad:
                                   Control: Label@2.5.1
                                   Properties:
                                     Font: =AppFont
@@ -1421,12 +1308,12 @@ Screens:
                                     Size: =Round(14 * UI, 0)
                                     FontWeight: =FontWeight.Bold
                                     Height: =Round(23 * UI, 0)
-                                    Text: ="HOUR"
+                                    Text: ="TRAINING"
                                     Width: =Parent.Width
                                     X: =0
                                     Y: =0
                                     Wrap: =false
-                              - boxHour_Td:
+                              - boxType_Ad:
                                   Control: GroupContainer@1.5.0
                                   Variant: ManualLayout
                                   Properties:
@@ -1444,30 +1331,33 @@ Screens:
                                     BorderThickness: =1
                                     DropShadow: =DropShadow.None
                                   Children:
-                                    - ddHour_Tds:
+                                    - ddType_Tds:
                                         Control: Classic/DropDown@2.3.1
                                         Properties:
                                           BorderStyle: =BorderStyle.None
                                           ChevronBackground: =C_Accent
                                           ChevronFill: =C_White
                                           Color: =C_Ink
-                                          Default: ="09"
+                                          Default: =trType
                                           Font: =AppFont
                                           Height: =Parent.Height
-                                          Items: =["07","08","09","10","11","12","13","14","15","16","17","18"]
+                                          Items: =["Basic Life Support", "Manual Handling"]
                                           Items.Value: =Value
                                           Size: =Round(18 * UI, 0)
                                           Width: =Parent.Width
                                           X: =0
                                           Y: =0
-                        - fldMin_Td:
+                        - fldDate_Ad:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
+                              AlignInContainer: =AlignInContainer.SetByContainer
+                              LayoutMinHeight: =Round(80 * UI, 0)
+                              FillPortions: =0
                               Fill: =RGBA(0, 0, 0, 0)
                               Height: =Round(80 * UI, 0)
-                              Width: =(SheetW - Round(65 * UI, 0)) / 2
-                              X: =(SheetW - Round(65 * UI, 0)) / 2 + Round(15 * UI, 0)
+                              Width: =SheetW - Round(50 * UI, 0)
+                              X: =0
                               Y: =0
                               RadiusBottomLeft: =0
                               RadiusBottomRight: =0
@@ -1475,7 +1365,7 @@ Screens:
                               RadiusTopRight: =0
                               DropShadow: =DropShadow.None
                             Children:
-                              - capMin_Td:
+                              - capDate_Ad:
                                   Control: Label@2.5.1
                                   Properties:
                                     Font: =AppFont
@@ -1483,12 +1373,12 @@ Screens:
                                     Size: =Round(14 * UI, 0)
                                     FontWeight: =FontWeight.Bold
                                     Height: =Round(23 * UI, 0)
-                                    Text: ="MINUTE"
+                                    Text: ="DATE"
                                     Width: =Parent.Width
                                     X: =0
                                     Y: =0
                                     Wrap: =false
-                              - boxMin_Td:
+                              - boxDate_Ad:
                                   Control: GroupContainer@1.5.0
                                   Variant: ManualLayout
                                   Properties:
@@ -1506,165 +1396,330 @@ Screens:
                                     BorderThickness: =1
                                     DropShadow: =DropShadow.None
                                   Children:
-                                    - ddMin_Tds:
-                                        Control: Classic/DropDown@2.3.1
+                                    - dpDate_Tds:
+                                        Control: Classic/DatePicker@2.6.0
                                         Properties:
                                           BorderStyle: =BorderStyle.None
-                                          ChevronBackground: =C_Accent
-                                          ChevronFill: =C_White
                                           Color: =C_Ink
-                                          Default: ="00"
+                                          DefaultDate: =Today()
                                           Font: =AppFont
                                           Height: =Parent.Height
-                                          Items: =["00", "15", "30", "45"]
-                                          Items.Value: =Value
                                           Size: =Round(18 * UI, 0)
                                           Width: =Parent.Width
-                                          X: =0
-                                          Y: =0
-                  - fldLoc_Ad:
-                      Control: GroupContainer@1.5.0
-                      Variant: ManualLayout
-                      Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(80 * UI, 0)
-                        FillPortions: =0
-                        Fill: =RGBA(0, 0, 0, 0)
-                        Height: =Round(80 * UI, 0)
-                        Width: =SheetW - Round(50 * UI, 0)
-                        X: =0
-                        Y: =0
-                        RadiusBottomLeft: =0
-                        RadiusBottomRight: =0
-                        RadiusTopLeft: =0
-                        RadiusTopRight: =0
-                        DropShadow: =DropShadow.None
-                      Children:
-                        - capLoc_Ad:
-                            Control: Label@2.5.1
-                            Properties:
-                              Font: =AppFont
-                              Color: =C_Muted
-                              Size: =Round(14 * UI, 0)
-                              FontWeight: =FontWeight.Bold
-                              Height: =Round(23 * UI, 0)
-                              Text: ="LOCATION"
-                              Width: =Parent.Width
-                              X: =0
-                              Y: =0
-                              Wrap: =false
-                        - boxLoc_Ad:
+                        - rowTime_Td:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Fill: =C_White
-                              Height: =Round(55 * UI, 0)
-                              Width: =Parent.Width
+                              AlignInContainer: =AlignInContainer.SetByContainer
+                              LayoutMinHeight: =Round(80 * UI, 0)
+                              FillPortions: =0
+                              Fill: =RGBA(0, 0, 0, 0)
+                              Height: =Round(80 * UI, 0)
+                              Width: =SheetW - Round(50 * UI, 0)
                               X: =0
-                              Y: =Round(25 * UI, 0)
-                              RadiusBottomLeft: =Round(13 * UI, 0)
-                              RadiusBottomRight: =Round(13 * UI, 0)
-                              RadiusTopLeft: =Round(13 * UI, 0)
-                              RadiusTopRight: =Round(13 * UI, 0)
-                              BorderColor: =RGBA(14, 42, 70, 0.22)
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
+                              Y: =0
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
                               DropShadow: =DropShadow.None
                             Children:
-                              - txtLoc_Tds:
-                                  Control: Classic/TextInput@2.3.2
+                              - fldHour_Td:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
                                   Properties:
-                                    BorderStyle: =BorderStyle.None
-                                    Color: =C_Ink
-                                    Default: =""
                                     Fill: =RGBA(0, 0, 0, 0)
-                                    Font: =AppFont
-                                    Height: =Parent.Height
-                                    HintText: ="Room or building"
-                                    Size: =Round(18 * UI, 0)
-                                    Width: =Parent.Width - Round(10 * UI, 0)
-                                    X: =Round(5 * UI, 0)
+                                    Height: =Round(80 * UI, 0)
+                                    Width: =(SheetW - Round(65 * UI, 0)) / 2
+                                    X: =0
                                     Y: =0
-                  - conBtnsAd_Td:
+                                    RadiusBottomLeft: =0
+                                    RadiusBottomRight: =0
+                                    RadiusTopLeft: =0
+                                    RadiusTopRight: =0
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - capHour_Td:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Font: =AppFont
+                                          Color: =C_Muted
+                                          Size: =Round(14 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Round(23 * UI, 0)
+                                          Text: ="HOUR"
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =0
+                                          Wrap: =false
+                                    - boxHour_Td:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: ManualLayout
+                                        Properties:
+                                          Fill: =C_White
+                                          Height: =Round(55 * UI, 0)
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =Round(25 * UI, 0)
+                                          RadiusBottomLeft: =Round(13 * UI, 0)
+                                          RadiusBottomRight: =Round(13 * UI, 0)
+                                          RadiusTopLeft: =Round(13 * UI, 0)
+                                          RadiusTopRight: =Round(13 * UI, 0)
+                                          BorderColor: =RGBA(14, 42, 70, 0.22)
+                                          BorderStyle: =BorderStyle.Solid
+                                          BorderThickness: =1
+                                          DropShadow: =DropShadow.None
+                                        Children:
+                                          - ddHour_Tds:
+                                              Control: Classic/DropDown@2.3.1
+                                              Properties:
+                                                BorderStyle: =BorderStyle.None
+                                                ChevronBackground: =C_Accent
+                                                ChevronFill: =C_White
+                                                Color: =C_Ink
+                                                Default: ="09"
+                                                Font: =AppFont
+                                                Height: =Parent.Height
+                                                Items: =["07","08","09","10","11","12","13","14","15","16","17","18"]
+                                                Items.Value: =Value
+                                                Size: =Round(18 * UI, 0)
+                                                Width: =Parent.Width
+                                                X: =0
+                                                Y: =0
+                              - fldMin_Td:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =RGBA(0, 0, 0, 0)
+                                    Height: =Round(80 * UI, 0)
+                                    Width: =(SheetW - Round(65 * UI, 0)) / 2
+                                    X: =(SheetW - Round(65 * UI, 0)) / 2 + Round(15 * UI, 0)
+                                    Y: =0
+                                    RadiusBottomLeft: =0
+                                    RadiusBottomRight: =0
+                                    RadiusTopLeft: =0
+                                    RadiusTopRight: =0
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - capMin_Td:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Font: =AppFont
+                                          Color: =C_Muted
+                                          Size: =Round(14 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Round(23 * UI, 0)
+                                          Text: ="MINUTE"
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =0
+                                          Wrap: =false
+                                    - boxMin_Td:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: ManualLayout
+                                        Properties:
+                                          Fill: =C_White
+                                          Height: =Round(55 * UI, 0)
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =Round(25 * UI, 0)
+                                          RadiusBottomLeft: =Round(13 * UI, 0)
+                                          RadiusBottomRight: =Round(13 * UI, 0)
+                                          RadiusTopLeft: =Round(13 * UI, 0)
+                                          RadiusTopRight: =Round(13 * UI, 0)
+                                          BorderColor: =RGBA(14, 42, 70, 0.22)
+                                          BorderStyle: =BorderStyle.Solid
+                                          BorderThickness: =1
+                                          DropShadow: =DropShadow.None
+                                        Children:
+                                          - ddMin_Tds:
+                                              Control: Classic/DropDown@2.3.1
+                                              Properties:
+                                                BorderStyle: =BorderStyle.None
+                                                ChevronBackground: =C_Accent
+                                                ChevronFill: =C_White
+                                                Color: =C_Ink
+                                                Default: ="00"
+                                                Font: =AppFont
+                                                Height: =Parent.Height
+                                                Items: =["00", "15", "30", "45"]
+                                                Items.Value: =Value
+                                                Size: =Round(18 * UI, 0)
+                                                Width: =Parent.Width
+                                                X: =0
+                                                Y: =0
+                        - fldLoc_Ad:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              AlignInContainer: =AlignInContainer.SetByContainer
+                              LayoutMinHeight: =Round(80 * UI, 0)
+                              FillPortions: =0
+                              Fill: =RGBA(0, 0, 0, 0)
+                              Height: =Round(80 * UI, 0)
+                              Width: =SheetW - Round(50 * UI, 0)
+                              X: =0
+                              Y: =0
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - capLoc_Ad:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =AppFont
+                                    Color: =C_Muted
+                                    Size: =Round(14 * UI, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Round(23 * UI, 0)
+                                    Text: ="LOCATION"
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =0
+                                    Wrap: =false
+                              - boxLoc_Ad:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_White
+                                    Height: =Round(55 * UI, 0)
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =Round(25 * UI, 0)
+                                    RadiusBottomLeft: =Round(13 * UI, 0)
+                                    RadiusBottomRight: =Round(13 * UI, 0)
+                                    RadiusTopLeft: =Round(13 * UI, 0)
+                                    RadiusTopRight: =Round(13 * UI, 0)
+                                    BorderColor: =RGBA(14, 42, 70, 0.22)
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - txtLoc_Tds:
+                                        Control: Classic/TextInput@2.3.2
+                                        Properties:
+                                          BorderStyle: =BorderStyle.None
+                                          Color: =C_Ink
+                                          Default: =""
+                                          Fill: =RGBA(0, 0, 0, 0)
+                                          Font: =AppFont
+                                          Height: =Parent.Height
+                                          HintText: ="Room or building"
+                                          Size: =Round(18 * UI, 0)
+                                          Width: =Parent.Width - Round(10 * UI, 0)
+                                          X: =Round(5 * UI, 0)
+                                          Y: =0
+                  - conSheetFoot_Ad:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(60 * UI, 0)
-                        FillPortions: =0
-                        Fill: =RGBA(0, 0, 0, 0)
-                        Height: =Round(60 * UI, 0)
-                        Width: =SheetW - Round(50 * UI, 0)
+                        Fill: =C_White
+                        Height: =Round(95 * UI, 0)
+                        Width: =Parent.Width
                         X: =0
-                        Y: =0
+                        Y: =Parent.Height - Round(95 * UI, 0)
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
                         DropShadow: =DropShadow.None
                       Children:
-                        - conLAd_Td:
+                        - lineFoot_Ad:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Fill: =C_White
-                              Height: =Round(60 * UI, 0)
-                              Width: =(SheetW - Round(65 * UI, 0)) / 2
+                              Fill: =C_Line
+                              Height: =1
+                              Width: =Parent.Width
                               X: =0
                               Y: =0
-                              RadiusBottomLeft: =Round(30 * UI, 0)
-                              RadiusBottomRight: =Round(30 * UI, 0)
-                              RadiusTopLeft: =Round(30 * UI, 0)
-                              RadiusTopRight: =Round(30 * UI, 0)
-                              BorderColor: =C_Line
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
                               DropShadow: =DropShadow.None
-                            Children:
-                              - btnLAd_Td:
-                                  Control: Button@0.0.45
-                                  Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =Round(30 * UI, 0)
-                                    Font: =Font.'Segoe UI'
-                                    FontColor: =C_Ink2
-                                    FontSize: =Round(18 * UI, 0)
-                                    FontWeight: =FontWeight.Bold
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    Text: ="Cancel"
-                                    OnSelect: =Set(trShowAdd, false)
-                        - conRAd_Td:
+                        - conBtnsAd_Td:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Fill: =C_Accent
+                              AlignInContainer: =AlignInContainer.SetByContainer
+                              LayoutMinHeight: =Round(60 * UI, 0)
+                              FillPortions: =0
+                              Fill: =RGBA(0, 0, 0, 0)
                               Height: =Round(60 * UI, 0)
-                              Width: =(SheetW - Round(65 * UI, 0)) / 2
-                              X: =(SheetW - Round(65 * UI, 0)) / 2 + Round(15 * UI, 0)
-                              Y: =0
-                              RadiusBottomLeft: =Round(30 * UI, 0)
-                              RadiusBottomRight: =Round(30 * UI, 0)
-                              RadiusTopLeft: =Round(30 * UI, 0)
-                              RadiusTopRight: =Round(30 * UI, 0)
-                              BorderColor: =C_Accent
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
+                              Width: =SheetW - Round(50 * UI, 0)
+                              X: =Round(25 * UI, 0)
+                              Y: =Round(18 * UI, 0)
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
                               DropShadow: =DropShadow.None
                             Children:
-                              - btnRAd_Td:
-                                  Control: Button@0.0.45
+                              - conLAd_Td:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =Round(30 * UI, 0)
-                                    Font: =Font.'Segoe UI'
-                                    FontColor: =C_White
-                                    FontSize: =Round(18 * UI, 0)
-                                    FontWeight: =FontWeight.Bold
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    Text: ="Save date"
-                                    OnSelect: =Select(btnDoAdd_Tds)
+                                    Fill: =C_White
+                                    Height: =Round(60 * UI, 0)
+                                    Width: =(SheetW - Round(65 * UI, 0)) / 2
+                                    X: =0
+                                    Y: =0
+                                    RadiusBottomLeft: =Round(30 * UI, 0)
+                                    RadiusBottomRight: =Round(30 * UI, 0)
+                                    RadiusTopLeft: =Round(30 * UI, 0)
+                                    RadiusTopRight: =Round(30 * UI, 0)
+                                    BorderColor: =C_Line
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - btnLAd_Td:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                          BorderRadius: =Round(30 * UI, 0)
+                                          Font: =Font.'Segoe UI'
+                                          FontColor: =C_Ink2
+                                          FontSize: =Round(18 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Width: =Parent.Width
+                                          Text: ="Cancel"
+                                          OnSelect: =Set(trShowAdd, false)
+                              - conRAd_Td:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_Accent
+                                    Height: =Round(60 * UI, 0)
+                                    Width: =(SheetW - Round(65 * UI, 0)) / 2
+                                    X: =(SheetW - Round(65 * UI, 0)) / 2 + Round(15 * UI, 0)
+                                    Y: =0
+                                    RadiusBottomLeft: =Round(30 * UI, 0)
+                                    RadiusBottomRight: =Round(30 * UI, 0)
+                                    RadiusTopLeft: =Round(30 * UI, 0)
+                                    RadiusTopRight: =Round(30 * UI, 0)
+                                    BorderColor: =C_Accent
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - btnRAd_Td:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                          BorderRadius: =Round(30 * UI, 0)
+                                          Font: =Font.'Segoe UI'
+                                          FontColor: =C_White
+                                          FontSize: =Round(18 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Width: =Parent.Width
+                                          Text: ="Save date"
+                                          OnSelect: =Select(btnDoAdd_Tds)
       - conOverlay_Cf:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
@@ -1694,144 +1749,199 @@ Screens:
                   OnSelect: =Set(trShowConfirm, false)
             - conSheet_Cf:
                 Control: GroupContainer@1.5.0
-                Variant: AutoLayout
+                Variant: ManualLayout
                 Properties:
                   Fill: =C_White
-                  LayoutDirection: =LayoutDirection.Vertical
-                  LayoutAlignItems: =LayoutAlignItems.Stretch
-                  LayoutJustifyContent: =LayoutJustifyContent.Start
-                  LayoutGap: =Round(13 * UI, 0)
-                  PaddingTop: =Round(25 * UI, 0)
-                  PaddingRight: =Round(25 * UI, 0)
-                  PaddingBottom: =Round(30 * UI, 0)
-                  PaddingLeft: =Round(25 * UI, 0)
-                  DropShadow: =DropShadow.None
-                  RadiusBottomLeft: =0
-                  RadiusBottomRight: =0
+                  Height: =Min(Parent.Height - Round(50 * UI, 0), Round(288 * UI, 0))
+                  Width: =Min(Parent.Width, SheetW)
+                  X: =(Parent.Width - Min(Parent.Width, SheetW)) / 2
+                  Y: =If(App.Width >= 720, (Parent.Height - Self.Height) / 2, Parent.Height - Self.Height)
+                  RadiusBottomLeft: =If(App.Width >= 720, 22, 0)
+                  RadiusBottomRight: =If(App.Width >= 720, 22, 0)
                   RadiusTopLeft: =Round(28 * UI, 0)
                   RadiusTopRight: =Round(28 * UI, 0)
-                  LayoutOverflowY: =LayoutOverflow.Scroll
-                  X: =(Parent.Width - SheetW) / 2
-                  Width: =SheetW
-                  Height: =Min(Parent.Height - Round(50 * UI, 0), Round(375 * UI, 0))
-                  Y: =Parent.Height - Min(Parent.Height - Round(50 * UI, 0), Round(375 * UI, 0))
+                  DropShadow: =DropShadow.None
                 Children:
+                  - conHandle_Cf:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        Fill: =RGBA(14, 42, 70, 0.18)
+                        Height: =Round(6 * UI, 0)
+                        Width: =Round(50 * UI, 0)
+                        X: =(Parent.Width - Round(50 * UI, 0)) / 2
+                        Y: =Round(10 * UI, 0)
+                        RadiusBottomLeft: =Round(4 * UI, 0)
+                        RadiusBottomRight: =Round(4 * UI, 0)
+                        RadiusTopLeft: =Round(4 * UI, 0)
+                        RadiusTopRight: =Round(4 * UI, 0)
+                        DropShadow: =DropShadow.None
                   - lblSheetT_Cf:
                       Control: Label@2.5.1
                       Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(40 * UI, 0)
-                        FillPortions: =0
                         Font: =AppFont
                         Color: =C_Ink
                         Size: =Round(22 * UI, 0)
                         FontWeight: =FontWeight.Bold
-                        Height: =Round(40 * UI, 0)
+                        Height: =Round(38 * UI, 0)
                         Text: =trCfTitle
-                        Width: =SheetW - Round(50 * UI, 0)
-                        X: =0
-                        Y: =0
+                        Width: =Parent.Width - Round(50 * UI, 0)
+                        X: =Round(25 * UI, 0)
+                        Y: =Round(25 * UI, 0)
                         Wrap: =false
-                  - lblCfBody_Td:
-                      Control: Label@2.5.1
+                  - conSheetBody_Cf:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
                       Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(100 * UI, 0)
-                        FillPortions: =0
-                        Font: =AppFont
-                        Color: =C_Ink2
-                        Size: =Round(17 * UI, 0)
-                        Height: =Round(100 * UI, 0)
-                        Text: =trCfBody
-                        Width: =SheetW - Round(50 * UI, 0)
+                        Fill: =RGBA(0, 0, 0, 0)
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutJustifyContent: =LayoutJustifyContent.Start
+                        LayoutGap: =Round(13 * UI, 0)
+                        PaddingTop: =Round(5 * UI, 0)
+                        PaddingRight: =Round(25 * UI, 0)
+                        PaddingBottom: =Round(15 * UI, 0)
+                        PaddingLeft: =Round(25 * UI, 0)
+                        DropShadow: =DropShadow.None
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        LayoutOverflowY: =LayoutOverflow.Scroll
                         X: =0
-                        Y: =0
-                  - conBtnsCf_Td:
+                        Y: =Round(65 * UI, 0)
+                        Width: =Parent.Width
+                        Height: =Parent.Height - Round(65 * UI, 0) - Round(95 * UI, 0)
+                      Children:
+                        - lblCfBody_Td:
+                            Control: Label@2.5.1
+                            Properties:
+                              AlignInContainer: =AlignInContainer.SetByContainer
+                              LayoutMinHeight: =Round(100 * UI, 0)
+                              FillPortions: =0
+                              Font: =AppFont
+                              Color: =C_Ink2
+                              Size: =Round(17 * UI, 0)
+                              Height: =Round(100 * UI, 0)
+                              Text: =trCfBody
+                              Width: =SheetW - Round(50 * UI, 0)
+                              X: =0
+                              Y: =0
+                  - conSheetFoot_Cf:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(60 * UI, 0)
-                        FillPortions: =0
-                        Fill: =RGBA(0, 0, 0, 0)
-                        Height: =Round(60 * UI, 0)
-                        Width: =SheetW - Round(50 * UI, 0)
+                        Fill: =C_White
+                        Height: =Round(95 * UI, 0)
+                        Width: =Parent.Width
                         X: =0
-                        Y: =0
+                        Y: =Parent.Height - Round(95 * UI, 0)
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
                         DropShadow: =DropShadow.None
                       Children:
-                        - conLCf_Td:
+                        - lineFoot_Cf:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Fill: =C_White
-                              Height: =Round(60 * UI, 0)
-                              Width: =(SheetW - Round(65 * UI, 0)) / 2
+                              Fill: =C_Line
+                              Height: =1
+                              Width: =Parent.Width
                               X: =0
                               Y: =0
-                              RadiusBottomLeft: =Round(30 * UI, 0)
-                              RadiusBottomRight: =Round(30 * UI, 0)
-                              RadiusTopLeft: =Round(30 * UI, 0)
-                              RadiusTopRight: =Round(30 * UI, 0)
-                              BorderColor: =C_Line
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
                               DropShadow: =DropShadow.None
-                            Children:
-                              - btnLCf_Td:
-                                  Control: Button@0.0.45
-                                  Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =Round(30 * UI, 0)
-                                    Font: =Font.'Segoe UI'
-                                    FontColor: =C_Ink2
-                                    FontSize: =Round(18 * UI, 0)
-                                    FontWeight: =FontWeight.Bold
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    Text: ="Keep it"
-                                    OnSelect: =Set(trShowConfirm, false)
-                        - conRCf_Td:
+                        - conBtnsCf_Td:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Fill: =C_Danger
+                              AlignInContainer: =AlignInContainer.SetByContainer
+                              LayoutMinHeight: =Round(60 * UI, 0)
+                              FillPortions: =0
+                              Fill: =RGBA(0, 0, 0, 0)
                               Height: =Round(60 * UI, 0)
-                              Width: =(SheetW - Round(65 * UI, 0)) / 2
-                              X: =(SheetW - Round(65 * UI, 0)) / 2 + Round(15 * UI, 0)
-                              Y: =0
-                              RadiusBottomLeft: =Round(30 * UI, 0)
-                              RadiusBottomRight: =Round(30 * UI, 0)
-                              RadiusTopLeft: =Round(30 * UI, 0)
-                              RadiusTopRight: =Round(30 * UI, 0)
-                              BorderColor: =C_Danger
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
+                              Width: =SheetW - Round(50 * UI, 0)
+                              X: =Round(25 * UI, 0)
+                              Y: =Round(18 * UI, 0)
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
                               DropShadow: =DropShadow.None
                             Children:
-                              - btnRCf_Td:
-                                  Control: Button@0.0.45
+                              - conLCf_Td:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =Round(30 * UI, 0)
-                                    Font: =Font.'Segoe UI'
-                                    FontColor: =C_White
-                                    FontSize: =Round(18 * UI, 0)
-                                    FontWeight: =FontWeight.Bold
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    Text: =trCfBtn
-                                    OnSelect: |-
-                                      =Switch(
-                                          trCfAction,
-                                          "CancelMine", Select(btnDoCancel_Tds),
-                                          "RemoveAttendee", Select(btnDoRemove_Tds),
-                                          "DeleteDate", Select(btnDoDelete_Tds)
-                                      )
+                                    Fill: =C_White
+                                    Height: =Round(60 * UI, 0)
+                                    Width: =(SheetW - Round(65 * UI, 0)) / 2
+                                    X: =0
+                                    Y: =0
+                                    RadiusBottomLeft: =Round(30 * UI, 0)
+                                    RadiusBottomRight: =Round(30 * UI, 0)
+                                    RadiusTopLeft: =Round(30 * UI, 0)
+                                    RadiusTopRight: =Round(30 * UI, 0)
+                                    BorderColor: =C_Line
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - btnLCf_Td:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                          BorderRadius: =Round(30 * UI, 0)
+                                          Font: =Font.'Segoe UI'
+                                          FontColor: =C_Ink2
+                                          FontSize: =Round(18 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Width: =Parent.Width
+                                          Text: ="Keep it"
+                                          OnSelect: =Set(trShowConfirm, false)
+                              - conRCf_Td:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_Danger
+                                    Height: =Round(60 * UI, 0)
+                                    Width: =(SheetW - Round(65 * UI, 0)) / 2
+                                    X: =(SheetW - Round(65 * UI, 0)) / 2 + Round(15 * UI, 0)
+                                    Y: =0
+                                    RadiusBottomLeft: =Round(30 * UI, 0)
+                                    RadiusBottomRight: =Round(30 * UI, 0)
+                                    RadiusTopLeft: =Round(30 * UI, 0)
+                                    RadiusTopRight: =Round(30 * UI, 0)
+                                    BorderColor: =C_Danger
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - btnRCf_Td:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                          BorderRadius: =Round(30 * UI, 0)
+                                          Font: =Font.'Segoe UI'
+                                          FontColor: =C_White
+                                          FontSize: =Round(18 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Width: =Parent.Width
+                                          Text: =trCfBtn
+                                          OnSelect: |-
+                                            =Switch(
+                                                trCfAction,
+                                                "CancelMine", Select(btnDoCancel_Tds),
+                                                "RemoveAttendee", Select(btnDoRemove_Tds),
+                                                "DeleteDate", Select(btnDoDelete_Tds)
+                                            )
       - conOverlay_Wl:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
@@ -1861,180 +1971,235 @@ Screens:
                   OnSelect: =Set(trShowWait, false)
             - conSheet_Wl:
                 Control: GroupContainer@1.5.0
-                Variant: AutoLayout
+                Variant: ManualLayout
                 Properties:
                   Fill: =C_White
-                  LayoutDirection: =LayoutDirection.Vertical
-                  LayoutAlignItems: =LayoutAlignItems.Stretch
-                  LayoutJustifyContent: =LayoutJustifyContent.Start
-                  LayoutGap: =Round(13 * UI, 0)
-                  PaddingTop: =Round(25 * UI, 0)
-                  PaddingRight: =Round(25 * UI, 0)
-                  PaddingBottom: =Round(30 * UI, 0)
-                  PaddingLeft: =Round(25 * UI, 0)
-                  DropShadow: =DropShadow.None
-                  RadiusBottomLeft: =0
-                  RadiusBottomRight: =0
+                  Height: =Min(Parent.Height - Round(50 * UI, 0), Round(488 * UI, 0))
+                  Width: =Min(Parent.Width, SheetW)
+                  X: =(Parent.Width - Min(Parent.Width, SheetW)) / 2
+                  Y: =If(App.Width >= 720, (Parent.Height - Self.Height) / 2, Parent.Height - Self.Height)
+                  RadiusBottomLeft: =If(App.Width >= 720, 22, 0)
+                  RadiusBottomRight: =If(App.Width >= 720, 22, 0)
                   RadiusTopLeft: =Round(28 * UI, 0)
                   RadiusTopRight: =Round(28 * UI, 0)
-                  LayoutOverflowY: =LayoutOverflow.Scroll
-                  X: =(Parent.Width - SheetW) / 2
-                  Width: =SheetW
-                  Height: =Min(Parent.Height - Round(50 * UI, 0), Round(600 * UI, 0))
-                  Y: =Parent.Height - Min(Parent.Height - Round(50 * UI, 0), Round(600 * UI, 0))
+                  DropShadow: =DropShadow.None
                 Children:
+                  - conHandle_Wl:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        Fill: =RGBA(14, 42, 70, 0.18)
+                        Height: =Round(6 * UI, 0)
+                        Width: =Round(50 * UI, 0)
+                        X: =(Parent.Width - Round(50 * UI, 0)) / 2
+                        Y: =Round(10 * UI, 0)
+                        RadiusBottomLeft: =Round(4 * UI, 0)
+                        RadiusBottomRight: =Round(4 * UI, 0)
+                        RadiusTopLeft: =Round(4 * UI, 0)
+                        RadiusTopRight: =Round(4 * UI, 0)
+                        DropShadow: =DropShadow.None
                   - lblSheetT_Wl:
                       Control: Label@2.5.1
                       Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(40 * UI, 0)
-                        FillPortions: =0
                         Font: =AppFont
                         Color: =C_Ink
                         Size: =Round(22 * UI, 0)
                         FontWeight: =FontWeight.Bold
-                        Height: =Round(40 * UI, 0)
+                        Height: =Round(38 * UI, 0)
                         Text: ="Waitlist (" & trSel.WaitCount & ")"
-                        Width: =SheetW - Round(50 * UI, 0)
-                        X: =0
-                        Y: =0
+                        Width: =Parent.Width - Round(50 * UI, 0)
+                        X: =Round(25 * UI, 0)
+                        Y: =Round(25 * UI, 0)
                         Wrap: =false
-                  - galWait_Td:
-                      Control: Gallery@2.15.0
-                      Variant: Vertical
+                  - conSheetBody_Wl:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
                       Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(300 * UI, 0)
-                        Height: =Round(300 * UI, 0)
-                        FillPortions: =0
-                        Items: =SortByColumns(Filter(colTrWait, SessionID = trSel.SesKey), "AddedOn", SortOrder.Ascending)
-                        TemplatePadding: =0
-                        TemplateSize: =Round(75 * UI, 0)
-                        Width: =SheetW - Round(50 * UI, 0)
+                        Fill: =RGBA(0, 0, 0, 0)
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutJustifyContent: =LayoutJustifyContent.Start
+                        LayoutGap: =Round(13 * UI, 0)
+                        PaddingTop: =Round(5 * UI, 0)
+                        PaddingRight: =Round(25 * UI, 0)
+                        PaddingBottom: =Round(15 * UI, 0)
+                        PaddingLeft: =Round(25 * UI, 0)
+                        DropShadow: =DropShadow.None
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        LayoutOverflowY: =LayoutOverflow.Scroll
+                        X: =0
+                        Y: =Round(65 * UI, 0)
+                        Width: =Parent.Width
+                        Height: =Parent.Height - Round(65 * UI, 0) - Round(95 * UI, 0)
                       Children:
-                        - conWl_Td:
-                            Control: GroupContainer@1.5.0
-                            Variant: ManualLayout
+                        - galWait_Td:
+                            Control: Gallery@2.15.0
+                            Variant: Vertical
                             Properties:
-                              Fill: =C_Bg2
-                              Height: =Round(65 * UI, 0)
-                              Width: =Parent.TemplateWidth - Round(5 * UI, 0)
-                              X: =Round(3 * UI, 0)
-                              Y: =Round(5 * UI, 0)
-                              RadiusBottomLeft: =Round(18 * UI, 0)
-                              RadiusBottomRight: =Round(18 * UI, 0)
-                              RadiusTopLeft: =Round(18 * UI, 0)
-                              RadiusTopRight: =Round(18 * UI, 0)
-                              BorderColor: =C_Line
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
-                              DropShadow: =DropShadow.None
+                              AlignInContainer: =AlignInContainer.SetByContainer
+                              LayoutMinHeight: =Round(300 * UI, 0)
+                              Height: =Round(300 * UI, 0)
+                              FillPortions: =0
+                              Items: =SortByColumns(Filter(colTrWait, SessionID = trSel.SesKey), "AddedOn", SortOrder.Ascending)
+                              TemplatePadding: =0
+                              TemplateSize: =Round(75 * UI, 0)
+                              Width: =SheetW - Round(50 * UI, 0)
                             Children:
-                              - lblWlName_Td:
-                                  Control: Label@2.5.1
+                              - conWl_Td:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
                                   Properties:
-                                    Font: =AppFont
-                                    Color: =C_Ink
-                                    Size: =Round(17 * UI, 0)
-                                    FontWeight: =FontWeight.Bold
-                                    Height: =Round(28 * UI, 0)
-                                    Text: =ThisItem.WaitlistUserName
-                                    Width: =Parent.Width - Round(35 * UI, 0)
-                                    X: =Round(18 * UI, 0)
-                                    Y: =Round(8 * UI, 0)
-                                    Wrap: =false
-                              - lblWlSub_Td:
-                                  Control: Label@2.5.1
-                                  Properties:
-                                    Font: =AppFont
-                                    Color: =C_Muted
-                                    Size: =Round(15 * UI, 0)
-                                    Height: =Round(23 * UI, 0)
-                                    Text: =ThisItem.WaitlistUserEmail & "  ·  " & Text(ThisItem.AddedOn, "d mmm h:mm AM/PM")
-                                    Width: =Parent.Width - Round(35 * UI, 0)
-                                    X: =Round(18 * UI, 0)
-                                    Y: =Round(35 * UI, 0)
-                                    Wrap: =false
-                  - conBtnsWl_Td:
+                                    Fill: =C_Bg2
+                                    Height: =Round(65 * UI, 0)
+                                    Width: =Parent.TemplateWidth - Round(5 * UI, 0)
+                                    X: =Round(3 * UI, 0)
+                                    Y: =Round(5 * UI, 0)
+                                    RadiusBottomLeft: =Round(18 * UI, 0)
+                                    RadiusBottomRight: =Round(18 * UI, 0)
+                                    RadiusTopLeft: =Round(18 * UI, 0)
+                                    RadiusTopRight: =Round(18 * UI, 0)
+                                    BorderColor: =C_Line
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - lblWlName_Td:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Font: =AppFont
+                                          Color: =C_Ink
+                                          Size: =Round(17 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Round(28 * UI, 0)
+                                          Text: =ThisItem.WaitlistUserName
+                                          Width: =Parent.Width - Round(35 * UI, 0)
+                                          X: =Round(18 * UI, 0)
+                                          Y: =Round(8 * UI, 0)
+                                          Wrap: =false
+                                    - lblWlSub_Td:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Font: =AppFont
+                                          Color: =C_Muted
+                                          Size: =Round(15 * UI, 0)
+                                          Height: =Round(23 * UI, 0)
+                                          Text: =ThisItem.WaitlistUserEmail & "  ·  " & Text(ThisItem.AddedOn, "d mmm h:mm AM/PM")
+                                          Width: =Parent.Width - Round(35 * UI, 0)
+                                          X: =Round(18 * UI, 0)
+                                          Y: =Round(35 * UI, 0)
+                                          Wrap: =false
+                  - conSheetFoot_Wl:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(60 * UI, 0)
-                        FillPortions: =0
-                        Fill: =RGBA(0, 0, 0, 0)
-                        Height: =Round(60 * UI, 0)
-                        Width: =SheetW - Round(50 * UI, 0)
+                        Fill: =C_White
+                        Height: =Round(95 * UI, 0)
+                        Width: =Parent.Width
                         X: =0
-                        Y: =0
+                        Y: =Parent.Height - Round(95 * UI, 0)
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
                         DropShadow: =DropShadow.None
                       Children:
-                        - conLWl_Td:
+                        - lineFoot_Wl:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Fill: =C_White
-                              Height: =Round(60 * UI, 0)
-                              Width: =(SheetW - Round(65 * UI, 0)) / 2
+                              Fill: =C_Line
+                              Height: =1
+                              Width: =Parent.Width
                               X: =0
                               Y: =0
-                              RadiusBottomLeft: =Round(30 * UI, 0)
-                              RadiusBottomRight: =Round(30 * UI, 0)
-                              RadiusTopLeft: =Round(30 * UI, 0)
-                              RadiusTopRight: =Round(30 * UI, 0)
-                              BorderColor: =C_Line
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
                               DropShadow: =DropShadow.None
-                            Children:
-                              - btnLWl_Td:
-                                  Control: Button@0.0.45
-                                  Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =Round(30 * UI, 0)
-                                    Font: =Font.'Segoe UI'
-                                    FontColor: =C_Ink2
-                                    FontSize: =Round(18 * UI, 0)
-                                    FontWeight: =FontWeight.Bold
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    Text: ="Close"
-                                    OnSelect: =Set(trShowWait, false)
-                        - conRWl_Td:
+                        - conBtnsWl_Td:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Fill: =C_Accent
+                              AlignInContainer: =AlignInContainer.SetByContainer
+                              LayoutMinHeight: =Round(60 * UI, 0)
+                              FillPortions: =0
+                              Fill: =RGBA(0, 0, 0, 0)
                               Height: =Round(60 * UI, 0)
-                              Width: =(SheetW - Round(65 * UI, 0)) / 2
-                              X: =(SheetW - Round(65 * UI, 0)) / 2 + Round(15 * UI, 0)
-                              Y: =0
-                              RadiusBottomLeft: =Round(30 * UI, 0)
-                              RadiusBottomRight: =Round(30 * UI, 0)
-                              RadiusTopLeft: =Round(30 * UI, 0)
-                              RadiusTopRight: =Round(30 * UI, 0)
-                              BorderColor: =C_Accent
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
+                              Width: =SheetW - Round(50 * UI, 0)
+                              X: =Round(25 * UI, 0)
+                              Y: =Round(18 * UI, 0)
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
                               DropShadow: =DropShadow.None
                             Children:
-                              - btnRWl_Td:
-                                  Control: Button@0.0.45
+                              - conLWl_Td:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =Round(30 * UI, 0)
-                                    Font: =Font.'Segoe UI'
-                                    FontColor: =C_White
-                                    FontSize: =Round(18 * UI, 0)
-                                    FontWeight: =FontWeight.Bold
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    Text: ="Email waitlist"
-                                    OnSelect: =Select(btnDoSendWait_Tds)
+                                    Fill: =C_White
+                                    Height: =Round(60 * UI, 0)
+                                    Width: =(SheetW - Round(65 * UI, 0)) / 2
+                                    X: =0
+                                    Y: =0
+                                    RadiusBottomLeft: =Round(30 * UI, 0)
+                                    RadiusBottomRight: =Round(30 * UI, 0)
+                                    RadiusTopLeft: =Round(30 * UI, 0)
+                                    RadiusTopRight: =Round(30 * UI, 0)
+                                    BorderColor: =C_Line
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - btnLWl_Td:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                          BorderRadius: =Round(30 * UI, 0)
+                                          Font: =Font.'Segoe UI'
+                                          FontColor: =C_Ink2
+                                          FontSize: =Round(18 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Width: =Parent.Width
+                                          Text: ="Close"
+                                          OnSelect: =Set(trShowWait, false)
+                              - conRWl_Td:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_Accent
+                                    Height: =Round(60 * UI, 0)
+                                    Width: =(SheetW - Round(65 * UI, 0)) / 2
+                                    X: =(SheetW - Round(65 * UI, 0)) / 2 + Round(15 * UI, 0)
+                                    Y: =0
+                                    RadiusBottomLeft: =Round(30 * UI, 0)
+                                    RadiusBottomRight: =Round(30 * UI, 0)
+                                    RadiusTopLeft: =Round(30 * UI, 0)
+                                    RadiusTopRight: =Round(30 * UI, 0)
+                                    BorderColor: =C_Accent
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - btnRWl_Td:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                          BorderRadius: =Round(30 * UI, 0)
+                                          Font: =Font.'Segoe UI'
+                                          FontColor: =C_White
+                                          FontSize: =Round(18 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Width: =Parent.Width
+                                          Text: ="Email waitlist"
+                                          OnSelect: =Select(btnDoSendWait_Tds)
       - conOverlay_Em:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
@@ -2064,248 +2229,303 @@ Screens:
                   OnSelect: =Set(trShowEmail, false)
             - conSheet_Em:
                 Control: GroupContainer@1.5.0
-                Variant: AutoLayout
+                Variant: ManualLayout
                 Properties:
                   Fill: =C_White
-                  LayoutDirection: =LayoutDirection.Vertical
-                  LayoutAlignItems: =LayoutAlignItems.Stretch
-                  LayoutJustifyContent: =LayoutJustifyContent.Start
-                  LayoutGap: =Round(13 * UI, 0)
-                  PaddingTop: =Round(25 * UI, 0)
-                  PaddingRight: =Round(25 * UI, 0)
-                  PaddingBottom: =Round(30 * UI, 0)
-                  PaddingLeft: =Round(25 * UI, 0)
-                  DropShadow: =DropShadow.None
-                  RadiusBottomLeft: =0
-                  RadiusBottomRight: =0
+                  Height: =Min(Parent.Height - Round(50 * UI, 0), Round(563 * UI, 0))
+                  Width: =Min(Parent.Width, SheetW)
+                  X: =(Parent.Width - Min(Parent.Width, SheetW)) / 2
+                  Y: =If(App.Width >= 720, (Parent.Height - Self.Height) / 2, Parent.Height - Self.Height)
+                  RadiusBottomLeft: =If(App.Width >= 720, 22, 0)
+                  RadiusBottomRight: =If(App.Width >= 720, 22, 0)
                   RadiusTopLeft: =Round(28 * UI, 0)
                   RadiusTopRight: =Round(28 * UI, 0)
-                  LayoutOverflowY: =LayoutOverflow.Scroll
-                  X: =(Parent.Width - SheetW) / 2
-                  Width: =SheetW
-                  Height: =Min(Parent.Height - Round(50 * UI, 0), Round(750 * UI, 0))
-                  Y: =Parent.Height - Min(Parent.Height - Round(50 * UI, 0), Round(750 * UI, 0))
+                  DropShadow: =DropShadow.None
                 Children:
+                  - conHandle_Em:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        Fill: =RGBA(14, 42, 70, 0.18)
+                        Height: =Round(6 * UI, 0)
+                        Width: =Round(50 * UI, 0)
+                        X: =(Parent.Width - Round(50 * UI, 0)) / 2
+                        Y: =Round(10 * UI, 0)
+                        RadiusBottomLeft: =Round(4 * UI, 0)
+                        RadiusBottomRight: =Round(4 * UI, 0)
+                        RadiusTopLeft: =Round(4 * UI, 0)
+                        RadiusTopRight: =Round(4 * UI, 0)
+                        DropShadow: =DropShadow.None
                   - lblSheetT_Em:
                       Control: Label@2.5.1
                       Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(40 * UI, 0)
-                        FillPortions: =0
                         Font: =AppFont
                         Color: =C_Ink
                         Size: =Round(22 * UI, 0)
                         FontWeight: =FontWeight.Bold
-                        Height: =Round(40 * UI, 0)
+                        Height: =Round(38 * UI, 0)
                         Text: ="Email attendees"
-                        Width: =SheetW - Round(50 * UI, 0)
-                        X: =0
-                        Y: =0
+                        Width: =Parent.Width - Round(50 * UI, 0)
+                        X: =Round(25 * UI, 0)
+                        Y: =Round(25 * UI, 0)
                         Wrap: =false
-                  - fldSub_Em:
+                  - conSheetBody_Em:
                       Control: GroupContainer@1.5.0
-                      Variant: ManualLayout
+                      Variant: AutoLayout
                       Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(80 * UI, 0)
-                        FillPortions: =0
                         Fill: =RGBA(0, 0, 0, 0)
-                        Height: =Round(80 * UI, 0)
-                        Width: =SheetW - Round(50 * UI, 0)
-                        X: =0
-                        Y: =0
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutJustifyContent: =LayoutJustifyContent.Start
+                        LayoutGap: =Round(13 * UI, 0)
+                        PaddingTop: =Round(5 * UI, 0)
+                        PaddingRight: =Round(25 * UI, 0)
+                        PaddingBottom: =Round(15 * UI, 0)
+                        PaddingLeft: =Round(25 * UI, 0)
+                        DropShadow: =DropShadow.None
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
-                        DropShadow: =DropShadow.None
+                        LayoutOverflowY: =LayoutOverflow.Scroll
+                        X: =0
+                        Y: =Round(65 * UI, 0)
+                        Width: =Parent.Width
+                        Height: =Parent.Height - Round(65 * UI, 0) - Round(95 * UI, 0)
                       Children:
-                        - capSub_Em:
-                            Control: Label@2.5.1
-                            Properties:
-                              Font: =AppFont
-                              Color: =C_Muted
-                              Size: =Round(14 * UI, 0)
-                              FontWeight: =FontWeight.Bold
-                              Height: =Round(23 * UI, 0)
-                              Text: ="SUBJECT"
-                              Width: =Parent.Width
-                              X: =0
-                              Y: =0
-                              Wrap: =false
-                        - boxSub_Em:
+                        - fldSub_Em:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Fill: =C_White
-                              Height: =Round(55 * UI, 0)
-                              Width: =Parent.Width
+                              AlignInContainer: =AlignInContainer.SetByContainer
+                              LayoutMinHeight: =Round(80 * UI, 0)
+                              FillPortions: =0
+                              Fill: =RGBA(0, 0, 0, 0)
+                              Height: =Round(80 * UI, 0)
+                              Width: =SheetW - Round(50 * UI, 0)
                               X: =0
-                              Y: =Round(25 * UI, 0)
-                              RadiusBottomLeft: =Round(13 * UI, 0)
-                              RadiusBottomRight: =Round(13 * UI, 0)
-                              RadiusTopLeft: =Round(13 * UI, 0)
-                              RadiusTopRight: =Round(13 * UI, 0)
-                              BorderColor: =RGBA(14, 42, 70, 0.22)
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
+                              Y: =0
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
                               DropShadow: =DropShadow.None
                             Children:
-                              - txtEmailSubject_Tds:
-                                  Control: Classic/TextInput@2.3.2
+                              - capSub_Em:
+                                  Control: Label@2.5.1
                                   Properties:
-                                    BorderStyle: =BorderStyle.None
-                                    Color: =C_Ink
-                                    Default: =trType & " training - " & Text(trSel.SessionDate, "dd/mm/yyyy h:mm AM/PM")
-                                    Fill: =RGBA(0, 0, 0, 0)
                                     Font: =AppFont
-                                    Height: =Parent.Height
-                                    HintText: ="Subject"
-                                    Size: =Round(18 * UI, 0)
-                                    Width: =Parent.Width - Round(10 * UI, 0)
-                                    X: =Round(5 * UI, 0)
+                                    Color: =C_Muted
+                                    Size: =Round(14 * UI, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Round(23 * UI, 0)
+                                    Text: ="SUBJECT"
+                                    Width: =Parent.Width
+                                    X: =0
                                     Y: =0
-                  - fldBody_Td:
-                      Control: GroupContainer@1.5.0
-                      Variant: ManualLayout
-                      Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(275 * UI, 0)
-                        FillPortions: =0
-                        Fill: =RGBA(0, 0, 0, 0)
-                        Height: =Round(275 * UI, 0)
-                        Width: =SheetW - Round(50 * UI, 0)
-                        X: =0
-                        Y: =0
-                        RadiusBottomLeft: =0
-                        RadiusBottomRight: =0
-                        RadiusTopLeft: =0
-                        RadiusTopRight: =0
-                        DropShadow: =DropShadow.None
-                      Children:
-                        - capBody_Td:
-                            Control: Label@2.5.1
-                            Properties:
-                              Font: =AppFont
-                              Color: =C_Muted
-                              Size: =Round(14 * UI, 0)
-                              FontWeight: =FontWeight.Bold
-                              Height: =Round(23 * UI, 0)
-                              Text: ="YOUR MESSAGE (session details are added for you)"
-                              Width: =Parent.Width
-                              X: =0
-                              Y: =0
-                              Wrap: =false
-                        - boxBody_Td:
+                                    Wrap: =false
+                              - boxSub_Em:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_White
+                                    Height: =Round(55 * UI, 0)
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =Round(25 * UI, 0)
+                                    RadiusBottomLeft: =Round(13 * UI, 0)
+                                    RadiusBottomRight: =Round(13 * UI, 0)
+                                    RadiusTopLeft: =Round(13 * UI, 0)
+                                    RadiusTopRight: =Round(13 * UI, 0)
+                                    BorderColor: =RGBA(14, 42, 70, 0.22)
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - txtEmailSubject_Tds:
+                                        Control: Classic/TextInput@2.3.2
+                                        Properties:
+                                          BorderStyle: =BorderStyle.None
+                                          Color: =C_Ink
+                                          Default: =trType & " training - " & Text(trSel.SessionDate, "dd/mm/yyyy h:mm AM/PM")
+                                          Fill: =RGBA(0, 0, 0, 0)
+                                          Font: =AppFont
+                                          Height: =Parent.Height
+                                          HintText: ="Subject"
+                                          Size: =Round(18 * UI, 0)
+                                          Width: =Parent.Width - Round(10 * UI, 0)
+                                          X: =Round(5 * UI, 0)
+                                          Y: =0
+                        - fldBody_Td:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Fill: =C_White
-                              Height: =Round(245 * UI, 0)
-                              Width: =Parent.Width
+                              AlignInContainer: =AlignInContainer.SetByContainer
+                              LayoutMinHeight: =Round(275 * UI, 0)
+                              FillPortions: =0
+                              Fill: =RGBA(0, 0, 0, 0)
+                              Height: =Round(275 * UI, 0)
+                              Width: =SheetW - Round(50 * UI, 0)
                               X: =0
-                              Y: =Round(25 * UI, 0)
-                              RadiusBottomLeft: =Round(13 * UI, 0)
-                              RadiusBottomRight: =Round(13 * UI, 0)
-                              RadiusTopLeft: =Round(13 * UI, 0)
-                              RadiusTopRight: =Round(13 * UI, 0)
-                              BorderColor: =RGBA(14, 42, 70, 0.22)
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
+                              Y: =0
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
                               DropShadow: =DropShadow.None
                             Children:
-                              - txtEmailBody_Tds:
-                                  Control: Classic/TextInput@2.3.2
+                              - capBody_Td:
+                                  Control: Label@2.5.1
                                   Properties:
-                                    BorderStyle: =BorderStyle.None
-                                    Color: =C_Ink
-                                    Default: ="Hi all," & Char(10) & Char(10) & Char(10) & Char(10) & "Regards," & Char(10) & MeName
-                                    Fill: =RGBA(0, 0, 0, 0)
                                     Font: =AppFont
-                                    Height: =Parent.Height
-                                    HintText: ="Message"
-                                    Size: =Round(18 * UI, 0)
-                                    Width: =Parent.Width - Round(10 * UI, 0)
-                                    X: =Round(5 * UI, 0)
+                                    Color: =C_Muted
+                                    Size: =Round(14 * UI, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Round(23 * UI, 0)
+                                    Text: ="YOUR MESSAGE  ·  SESSION DETAILS ADDED"
+                                    Width: =Parent.Width
+                                    X: =0
                                     Y: =0
-                                    Mode: =TextMode.MultiLine
-                  - conBtnsEm_Td:
+                                    Wrap: =false
+                              - boxBody_Td:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_White
+                                    Height: =Round(245 * UI, 0)
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =Round(25 * UI, 0)
+                                    RadiusBottomLeft: =Round(13 * UI, 0)
+                                    RadiusBottomRight: =Round(13 * UI, 0)
+                                    RadiusTopLeft: =Round(13 * UI, 0)
+                                    RadiusTopRight: =Round(13 * UI, 0)
+                                    BorderColor: =RGBA(14, 42, 70, 0.22)
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - txtEmailBody_Tds:
+                                        Control: Classic/TextInput@2.3.2
+                                        Properties:
+                                          BorderStyle: =BorderStyle.None
+                                          Color: =C_Ink
+                                          Default: ="Hi all," & Char(10) & Char(10) & Char(10) & Char(10) & "Regards," & Char(10) & MeName
+                                          Fill: =RGBA(0, 0, 0, 0)
+                                          Font: =AppFont
+                                          Height: =Parent.Height
+                                          HintText: ="Message"
+                                          Size: =Round(18 * UI, 0)
+                                          Width: =Parent.Width - Round(10 * UI, 0)
+                                          X: =Round(5 * UI, 0)
+                                          Y: =0
+                                          Mode: =TextMode.MultiLine
+                  - conSheetFoot_Em:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(60 * UI, 0)
-                        FillPortions: =0
-                        Fill: =RGBA(0, 0, 0, 0)
-                        Height: =Round(60 * UI, 0)
-                        Width: =SheetW - Round(50 * UI, 0)
+                        Fill: =C_White
+                        Height: =Round(95 * UI, 0)
+                        Width: =Parent.Width
                         X: =0
-                        Y: =0
+                        Y: =Parent.Height - Round(95 * UI, 0)
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
                         DropShadow: =DropShadow.None
                       Children:
-                        - conLEm_Td:
+                        - lineFoot_Em:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Fill: =C_White
-                              Height: =Round(60 * UI, 0)
-                              Width: =(SheetW - Round(65 * UI, 0)) / 2
+                              Fill: =C_Line
+                              Height: =1
+                              Width: =Parent.Width
                               X: =0
                               Y: =0
-                              RadiusBottomLeft: =Round(30 * UI, 0)
-                              RadiusBottomRight: =Round(30 * UI, 0)
-                              RadiusTopLeft: =Round(30 * UI, 0)
-                              RadiusTopRight: =Round(30 * UI, 0)
-                              BorderColor: =C_Line
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
                               DropShadow: =DropShadow.None
-                            Children:
-                              - btnLEm_Td:
-                                  Control: Button@0.0.45
-                                  Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =Round(30 * UI, 0)
-                                    Font: =Font.'Segoe UI'
-                                    FontColor: =C_Ink2
-                                    FontSize: =Round(18 * UI, 0)
-                                    FontWeight: =FontWeight.Bold
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    Text: ="Cancel"
-                                    OnSelect: =Set(trShowEmail, false)
-                        - conREm_Td:
+                        - conBtnsEm_Td:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Fill: =C_Accent
+                              AlignInContainer: =AlignInContainer.SetByContainer
+                              LayoutMinHeight: =Round(60 * UI, 0)
+                              FillPortions: =0
+                              Fill: =RGBA(0, 0, 0, 0)
                               Height: =Round(60 * UI, 0)
-                              Width: =(SheetW - Round(65 * UI, 0)) / 2
-                              X: =(SheetW - Round(65 * UI, 0)) / 2 + Round(15 * UI, 0)
-                              Y: =0
-                              RadiusBottomLeft: =Round(30 * UI, 0)
-                              RadiusBottomRight: =Round(30 * UI, 0)
-                              RadiusTopLeft: =Round(30 * UI, 0)
-                              RadiusTopRight: =Round(30 * UI, 0)
-                              BorderColor: =C_Accent
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
+                              Width: =SheetW - Round(50 * UI, 0)
+                              X: =Round(25 * UI, 0)
+                              Y: =Round(18 * UI, 0)
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
                               DropShadow: =DropShadow.None
                             Children:
-                              - btnREm_Td:
-                                  Control: Button@0.0.45
+                              - conLEm_Td:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =Round(30 * UI, 0)
-                                    Font: =Font.'Segoe UI'
-                                    FontColor: =C_White
-                                    FontSize: =Round(18 * UI, 0)
-                                    FontWeight: =FontWeight.Bold
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    Text: ="Send email"
-                                    OnSelect: =Select(btnDoSend_Tds)
+                                    Fill: =C_White
+                                    Height: =Round(60 * UI, 0)
+                                    Width: =(SheetW - Round(65 * UI, 0)) / 2
+                                    X: =0
+                                    Y: =0
+                                    RadiusBottomLeft: =Round(30 * UI, 0)
+                                    RadiusBottomRight: =Round(30 * UI, 0)
+                                    RadiusTopLeft: =Round(30 * UI, 0)
+                                    RadiusTopRight: =Round(30 * UI, 0)
+                                    BorderColor: =C_Line
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - btnLEm_Td:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                          BorderRadius: =Round(30 * UI, 0)
+                                          Font: =Font.'Segoe UI'
+                                          FontColor: =C_Ink2
+                                          FontSize: =Round(18 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Width: =Parent.Width
+                                          Text: ="Cancel"
+                                          OnSelect: =Set(trShowEmail, false)
+                              - conREm_Td:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_Accent
+                                    Height: =Round(60 * UI, 0)
+                                    Width: =(SheetW - Round(65 * UI, 0)) / 2
+                                    X: =(SheetW - Round(65 * UI, 0)) / 2 + Round(15 * UI, 0)
+                                    Y: =0
+                                    RadiusBottomLeft: =Round(30 * UI, 0)
+                                    RadiusBottomRight: =Round(30 * UI, 0)
+                                    RadiusTopLeft: =Round(30 * UI, 0)
+                                    RadiusTopRight: =Round(30 * UI, 0)
+                                    BorderColor: =C_Accent
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - btnREm_Td:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                          BorderRadius: =Round(30 * UI, 0)
+                                          Font: =Font.'Segoe UI'
+                                          FontColor: =C_White
+                                          FontSize: =Round(18 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Width: =Parent.Width
+                                          Text: ="Send email"
+                                          OnSelect: =Select(btnDoSend_Tds)

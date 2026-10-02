@@ -700,311 +700,366 @@ Screens:
                   OnSelect: =Set(itShowReturn, false)
             - conSheet_It:
                 Control: GroupContainer@1.5.0
-                Variant: AutoLayout
+                Variant: ManualLayout
                 Properties:
                   Fill: =C_White
-                  LayoutDirection: =LayoutDirection.Vertical
-                  LayoutAlignItems: =LayoutAlignItems.Stretch
-                  LayoutJustifyContent: =LayoutJustifyContent.Start
-                  LayoutGap: =Round(13 * UI, 0)
-                  PaddingTop: =Round(25 * UI, 0)
-                  PaddingRight: =Round(25 * UI, 0)
-                  PaddingBottom: =Round(30 * UI, 0)
-                  PaddingLeft: =Round(25 * UI, 0)
-                  DropShadow: =DropShadow.None
-                  RadiusBottomLeft: =0
-                  RadiusBottomRight: =0
+                  Height: =Min(Parent.Height - Round(50 * UI, 0), Round(363 * UI, 0))
+                  Width: =Min(Parent.Width, SheetW)
+                  X: =(Parent.Width - Min(Parent.Width, SheetW)) / 2
+                  Y: =If(App.Width >= 720, (Parent.Height - Self.Height) / 2, Parent.Height - Self.Height)
+                  RadiusBottomLeft: =If(App.Width >= 720, 22, 0)
+                  RadiusBottomRight: =If(App.Width >= 720, 22, 0)
                   RadiusTopLeft: =Round(28 * UI, 0)
                   RadiusTopRight: =Round(28 * UI, 0)
-                  LayoutOverflowY: =LayoutOverflow.Scroll
-                  X: =(Parent.Width - SheetW) / 2
-                  Width: =SheetW
-                  Height: =Min(Parent.Height - Round(50 * UI, 0), Round(425 * UI, 0))
-                  Y: =Parent.Height - Min(Parent.Height - Round(50 * UI, 0), Round(425 * UI, 0))
+                  DropShadow: =DropShadow.None
                 Children:
+                  - conHandle_It:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        Fill: =RGBA(14, 42, 70, 0.18)
+                        Height: =Round(6 * UI, 0)
+                        Width: =Round(50 * UI, 0)
+                        X: =(Parent.Width - Round(50 * UI, 0)) / 2
+                        Y: =Round(10 * UI, 0)
+                        RadiusBottomLeft: =Round(4 * UI, 0)
+                        RadiusBottomRight: =Round(4 * UI, 0)
+                        RadiusTopLeft: =Round(4 * UI, 0)
+                        RadiusTopRight: =Round(4 * UI, 0)
+                        DropShadow: =DropShadow.None
                   - lblSheetT_It:
                       Control: Label@2.5.1
                       Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(40 * UI, 0)
-                        FillPortions: =0
                         Font: =AppFont
                         Color: =C_Ink
                         Size: =Round(22 * UI, 0)
                         FontWeight: =FontWeight.Bold
-                        Height: =Round(40 * UI, 0)
+                        Height: =Round(38 * UI, 0)
                         Text: ="Return " & itItem.Title & "?"
-                        Width: =SheetW - Round(50 * UI, 0)
-                        X: =0
-                        Y: =0
+                        Width: =Parent.Width - Round(50 * UI, 0)
+                        X: =Round(25 * UI, 0)
+                        Y: =Round(25 * UI, 0)
                         Wrap: =false
-                  - fldLoc_It:
+                  - conSheetBody_It:
                       Control: GroupContainer@1.5.0
-                      Variant: ManualLayout
+                      Variant: AutoLayout
                       Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(80 * UI, 0)
-                        FillPortions: =0
                         Fill: =RGBA(0, 0, 0, 0)
-                        Height: =Round(80 * UI, 0)
-                        Width: =SheetW - Round(50 * UI, 0)
-                        X: =0
-                        Y: =0
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutJustifyContent: =LayoutJustifyContent.Start
+                        LayoutGap: =Round(13 * UI, 0)
+                        PaddingTop: =Round(5 * UI, 0)
+                        PaddingRight: =Round(25 * UI, 0)
+                        PaddingBottom: =Round(15 * UI, 0)
+                        PaddingLeft: =Round(25 * UI, 0)
+                        DropShadow: =DropShadow.None
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
-                        DropShadow: =DropShadow.None
+                        LayoutOverflowY: =LayoutOverflow.Scroll
+                        X: =0
+                        Y: =Round(65 * UI, 0)
+                        Width: =Parent.Width
+                        Height: =Parent.Height - Round(65 * UI, 0) - Round(95 * UI, 0)
                       Children:
-                        - capLoc_It:
-                            Control: Label@2.5.1
-                            Properties:
-                              Font: =AppFont
-                              Color: =C_Muted
-                              Size: =Round(14 * UI, 0)
-                              FontWeight: =FontWeight.Bold
-                              Height: =Round(23 * UI, 0)
-                              Text: ="WHERE IS IT GOING BACK TO?"
-                              Width: =Parent.Width
-                              X: =0
-                              Y: =0
-                              Wrap: =false
-                        - boxLoc_It:
+                        - fldLoc_It:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Fill: =C_White
-                              Height: =Round(55 * UI, 0)
-                              Width: =Parent.Width
+                              AlignInContainer: =AlignInContainer.SetByContainer
+                              LayoutMinHeight: =Round(80 * UI, 0)
+                              FillPortions: =0
+                              Fill: =RGBA(0, 0, 0, 0)
+                              Height: =Round(80 * UI, 0)
+                              Width: =SheetW - Round(50 * UI, 0)
                               X: =0
-                              Y: =Round(25 * UI, 0)
-                              RadiusBottomLeft: =Round(13 * UI, 0)
-                              RadiusBottomRight: =Round(13 * UI, 0)
-                              RadiusTopLeft: =Round(13 * UI, 0)
-                              RadiusTopRight: =Round(13 * UI, 0)
-                              BorderColor: =RGBA(14, 42, 70, 0.22)
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
+                              Y: =0
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
                               DropShadow: =DropShadow.None
                             Children:
-                              - ddRetLoc_It:
-                                  Control: Classic/DropDown@2.3.1
+                              - capLoc_It:
+                                  Control: Label@2.5.1
                                   Properties:
-                                    BorderStyle: =BorderStyle.None
-                                    ChevronBackground: =C_Accent
-                                    ChevronFill: =C_White
-                                    Color: =C_Ink
-                                    Default: =Coalesce(itItem.Location.Value, "")
                                     Font: =AppFont
-                                    Height: =Parent.Height
-                                    Items: =Choices(Equipment_Inventory_SharePoint.Location)
-                                    Items.Value: =Value
-                                    Size: =Round(18 * UI, 0)
+                                    Color: =C_Muted
+                                    Size: =Round(14 * UI, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Round(23 * UI, 0)
+                                    Text: ="WHERE IS IT GOING BACK TO?"
                                     Width: =Parent.Width
                                     X: =0
                                     Y: =0
-                  - lblRetBody_It:
-                      Control: Label@2.5.1
-                      Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(75 * UI, 0)
-                        FillPortions: =0
-                        Font: =AppFont
-                        Color: =C_Ink2
-                        Size: =Round(17 * UI, 0)
-                        Height: =Round(75 * UI, 0)
-                        Text: ="It will be marked Available and signed in by you." & Char(10) & "Out for " & DateDiff(itItem.'Date Signed Out', Today(), TimeUnit.Days) & " days with " & Coalesce(itItem.'Patient Name', "the patient") & ". Confirm it has been cleaned."
-                        Width: =SheetW - Round(50 * UI, 0)
-                        X: =0
-                        Y: =0
-                  - conRetBtns_It:
+                                    Wrap: =false
+                              - boxLoc_It:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_White
+                                    Height: =Round(55 * UI, 0)
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =Round(25 * UI, 0)
+                                    RadiusBottomLeft: =Round(13 * UI, 0)
+                                    RadiusBottomRight: =Round(13 * UI, 0)
+                                    RadiusTopLeft: =Round(13 * UI, 0)
+                                    RadiusTopRight: =Round(13 * UI, 0)
+                                    BorderColor: =RGBA(14, 42, 70, 0.22)
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - ddRetLoc_It:
+                                        Control: Classic/DropDown@2.3.1
+                                        Properties:
+                                          BorderStyle: =BorderStyle.None
+                                          ChevronBackground: =C_Accent
+                                          ChevronFill: =C_White
+                                          Color: =C_Ink
+                                          Default: =Coalesce(itItem.Location.Value, "")
+                                          Font: =AppFont
+                                          Height: =Parent.Height
+                                          Items: =Choices(Equipment_Inventory_SharePoint.Location)
+                                          Items.Value: =Value
+                                          Size: =Round(18 * UI, 0)
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =0
+                        - lblRetBody_It:
+                            Control: Label@2.5.1
+                            Properties:
+                              AlignInContainer: =AlignInContainer.SetByContainer
+                              LayoutMinHeight: =Round(75 * UI, 0)
+                              FillPortions: =0
+                              Font: =AppFont
+                              Color: =C_Ink2
+                              Size: =Round(17 * UI, 0)
+                              Height: =Round(75 * UI, 0)
+                              Text: ="It will be marked Available and signed in by you." & Char(10) & "Out for " & DateDiff(itItem.'Date Signed Out', Today(), TimeUnit.Days) & " days with " & Coalesce(itItem.'Patient Name', "the patient") & ". Confirm it has been cleaned."
+                              Width: =SheetW - Round(50 * UI, 0)
+                              X: =0
+                              Y: =0
+                  - conSheetFoot_It:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(60 * UI, 0)
-                        FillPortions: =0
-                        Fill: =RGBA(0, 0, 0, 0)
-                        Height: =Round(60 * UI, 0)
-                        Width: =SheetW - Round(50 * UI, 0)
+                        Fill: =C_White
+                        Height: =Round(95 * UI, 0)
+                        Width: =Parent.Width
                         X: =0
-                        Y: =0
+                        Y: =Parent.Height - Round(95 * UI, 0)
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
                         DropShadow: =DropShadow.None
                       Children:
-                        - conRetNo_It:
+                        - lineFoot_It:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Fill: =C_White
-                              Height: =Round(60 * UI, 0)
-                              Width: =(SheetW - Round(65 * UI, 0)) / 2
+                              Fill: =C_Line
+                              Height: =1
+                              Width: =Parent.Width
                               X: =0
                               Y: =0
-                              RadiusBottomLeft: =Round(30 * UI, 0)
-                              RadiusBottomRight: =Round(30 * UI, 0)
-                              RadiusTopLeft: =Round(30 * UI, 0)
-                              RadiusTopRight: =Round(30 * UI, 0)
-                              BorderColor: =C_Line
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
                               DropShadow: =DropShadow.None
-                            Children:
-                              - btnRetNo_It:
-                                  Control: Button@0.0.45
-                                  Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =Round(30 * UI, 0)
-                                    Font: =Font.'Segoe UI'
-                                    FontColor: =C_Ink2
-                                    FontSize: =Round(18 * UI, 0)
-                                    FontWeight: =FontWeight.Bold
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    Text: ="Cancel"
-                                    OnSelect: =Set(itShowReturn, false)
-                        - conRetGo_It:
+                        - conRetBtns_It:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              Fill: =C_Accent
+                              AlignInContainer: =AlignInContainer.SetByContainer
+                              LayoutMinHeight: =Round(60 * UI, 0)
+                              FillPortions: =0
+                              Fill: =RGBA(0, 0, 0, 0)
                               Height: =Round(60 * UI, 0)
-                              Width: =(SheetW - Round(65 * UI, 0)) / 2
-                              X: =(SheetW - Round(65 * UI, 0)) / 2 + Round(15 * UI, 0)
-                              Y: =0
-                              RadiusBottomLeft: =Round(30 * UI, 0)
-                              RadiusBottomRight: =Round(30 * UI, 0)
-                              RadiusTopLeft: =Round(30 * UI, 0)
-                              RadiusTopRight: =Round(30 * UI, 0)
-                              BorderColor: =C_Accent
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
+                              Width: =SheetW - Round(50 * UI, 0)
+                              X: =Round(25 * UI, 0)
+                              Y: =Round(18 * UI, 0)
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
                               DropShadow: =DropShadow.None
                             Children:
-                              - btnRetGo_It:
-                                  Control: Button@0.0.45
+                              - conRetNo_It:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =Round(30 * UI, 0)
-                                    Font: =Font.'Segoe UI'
-                                    FontColor: =C_White
-                                    FontSize: =Round(18 * UI, 0)
-                                    FontWeight: =FontWeight.Bold
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    Text: ="Return"
-                                    OnSelect: |-
-                                      =If(
-                                          IsBlank(itItem) || Coalesce(itItem.Status.Value, "") <> "Allocated" || IsBlank(itItem.'Date Signed Out'),
-                                          Notify("This item is not signed out, so it cannot be returned.", NotificationType.Error),
-                                          With(
-                                              {
-                                                  returnDate: Today(),
-                                                  actionTime: Now(),
-                                                  episodeKey: Coalesce(
-                                                      itItem.CurrentEpisodeKey,
-                                                      "LEGACY-RETURN-" & Text(itItem.ID) & "-" & Text(Now(), "yyyymmddhhmmss") & "-" & Left(Text(GUID()), 8)
-                                                  ),
-                                                  daysThisEpisode: Max(0, DateDiff(itItem.'Date Signed Out', Today(), TimeUnit.Days)),
-                                                  newLoc: Coalesce(ddRetLoc_It.Selected.Value, itItem.Location.Value, "")
-                                              },
-                                              With(
-                                                  { newTotalDays: Coalesce(itItem.TotalDaysSignedOut, 0) + daysThisEpisode },
+                                    Fill: =C_White
+                                    Height: =Round(60 * UI, 0)
+                                    Width: =(SheetW - Round(65 * UI, 0)) / 2
+                                    X: =0
+                                    Y: =0
+                                    RadiusBottomLeft: =Round(30 * UI, 0)
+                                    RadiusBottomRight: =Round(30 * UI, 0)
+                                    RadiusTopLeft: =Round(30 * UI, 0)
+                                    RadiusTopRight: =Round(30 * UI, 0)
+                                    BorderColor: =C_Line
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - btnRetNo_It:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                          BorderRadius: =Round(30 * UI, 0)
+                                          Font: =Font.'Segoe UI'
+                                          FontColor: =C_Ink2
+                                          FontSize: =Round(18 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Width: =Parent.Width
+                                          Text: ="Cancel"
+                                          OnSelect: =Set(itShowReturn, false)
+                              - conRetGo_It:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_Accent
+                                    Height: =Round(60 * UI, 0)
+                                    Width: =(SheetW - Round(65 * UI, 0)) / 2
+                                    X: =(SheetW - Round(65 * UI, 0)) / 2 + Round(15 * UI, 0)
+                                    Y: =0
+                                    RadiusBottomLeft: =Round(30 * UI, 0)
+                                    RadiusBottomRight: =Round(30 * UI, 0)
+                                    RadiusTopLeft: =Round(30 * UI, 0)
+                                    RadiusTopRight: =Round(30 * UI, 0)
+                                    BorderColor: =C_Accent
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - btnRetGo_It:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                          BorderRadius: =Round(30 * UI, 0)
+                                          Font: =Font.'Segoe UI'
+                                          FontColor: =C_White
+                                          FontSize: =Round(18 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Width: =Parent.Width
+                                          Text: ="Return"
+                                          OnSelect: |-
+                                            =If(
+                                                IsBlank(itItem) || Coalesce(itItem.Status.Value, "") <> "Allocated" || IsBlank(itItem.'Date Signed Out'),
+                                                Notify("This item is not signed out, so it cannot be returned.", NotificationType.Error),
+                                                With(
+                                                    {
+                                                        returnDate: Today(),
+                                                        actionTime: Now(),
+                                                        episodeKey: Coalesce(
+                                                            itItem.CurrentEpisodeKey,
+                                                            "LEGACY-RETURN-" & Text(itItem.ID) & "-" & Text(Now(), "yyyymmddhhmmss") & "-" & Left(Text(GUID()), 8)
+                                                        ),
+                                                        daysThisEpisode: Max(0, DateDiff(itItem.'Date Signed Out', Today(), TimeUnit.Days)),
+                                                        newLoc: Coalesce(ddRetLoc_It.Selected.Value, itItem.Location.Value, "")
+                                                    },
+                                                    With(
+                                                        { newTotalDays: Coalesce(itItem.TotalDaysSignedOut, 0) + daysThisEpisode },
 
-                                                  // 1) inventory -> Available
-                                                  Patch(
-                                                      Equipment_Inventory_SharePoint,
-                                                      itItem,
-                                                      {
-                                                          Status: { Value: "Available" },
-                                                          'Patient Name': "",
-                                                          URN: "",
-                                                          Physiotherapist: "",
-                                                          DOB: Blank(),
-                                                          'Date Returned': returnDate,
-                                                          Ward: Blank(),
-                                                          Location: If(IsBlank(newLoc), itItem.Location, { Value: newLoc }),
-                                                          'Signed In By': MeName,
-                                                          CurrentEpisodeKey: Blank(),
-                                                          TotalDaysSignedOut: newTotalDays
-                                                      }
-                                                  );
+                                                        // 1) inventory -> Available
+                                                        Patch(
+                                                            Equipment_Inventory_SharePoint,
+                                                            itItem,
+                                                            {
+                                                                Status: { Value: "Available" },
+                                                                'Patient Name': "",
+                                                                URN: "",
+                                                                Physiotherapist: "",
+                                                                DOB: Blank(),
+                                                                'Date Returned': returnDate,
+                                                                Ward: Blank(),
+                                                                Location: If(IsBlank(newLoc), itItem.Location, { Value: newLoc }),
+                                                                'Signed In By': MeName,
+                                                                CurrentEpisodeKey: Blank(),
+                                                                TotalDaysSignedOut: newTotalDays
+                                                            }
+                                                        );
 
-                                                  // 2) usage log: sign-in row
-                                                  Patch(
-                                                      Equipment_Usage_Log,
-                                                      Defaults(Equipment_Usage_Log),
-                                                      {
-                                                          Title: episodeKey & " - Sign In",
-                                                          EpisodeKey: episodeKey,
-                                                          EventType: { Value: "Sign In" },
-                                                          EpisodeStatus: { Value: If(IsBlank(itItem.CurrentEpisodeKey), "Legacy unmatched", "Closed") },
-                                                          EventDateTime: actionTime,
-                                                          EquipmentItemID: itItem.ID,
-                                                          EquipmentTitle: itItem.Title,
-                                                          Category: Coalesce(itItem.Category.Value, ""),
-                                                          Brand: Coalesce(itItem.Brand, ""),
-                                                          Model: Coalesce(itItem.Model, ""),
-                                                          Width: Coalesce(itItem.Width.Value, ""),
-                                                          Depth: Coalesce(itItem.Depth.Value, ""),
-                                                          Height: Coalesce(itItem.Height.Value, ""),
-                                                          SWL: Coalesce(itItem.SWL, ""),
-                                                          WheelchairType: Coalesce(itItem.'Wheelchair Type'.Value, ""),
-                                                          LocationAtEvent: newLoc,
-                                                          Ward: Coalesce(itItem.Ward.Value, ""),
-                                                          PatientName: Coalesce(itItem.'Patient Name', ""),
-                                                          URN: Coalesce(itItem.URN, ""),
-                                                          DOB: itItem.DOB,
-                                                          Physiotherapist: Coalesce(itItem.Physiotherapist, ""),
-                                                          DateSignedOut: itItem.'Date Signed Out',
-                                                          DateReturned: returnDate,
-                                                          DaysSignedOutThisEpisode: daysThisEpisode,
-                                                          TotalDaysSignedOutAfterEvent: newTotalDays,
-                                                          Over100DaysAfterEvent: newTotalDays > 100,
-                                                          ServiceRequired: newTotalDays > 100,
-                                                          IsHighRiskEquipment: Coalesce(itItem.IsHighRiskEquipment, false),
-                                                          OutOfService: Coalesce(itItem.OutOfService, false),
-                                                          IsActive: Coalesce(itItem.IsActive, true),
-                                                          StatusAfterEvent: "Available",
-                                                          ActionedByName: MeName,
-                                                          ActionedByEmail: User().Email,
-                                                          SourceApp: { Value: "Mobile" },
-                                                          Notes: If(IsBlank(itItem.CurrentEpisodeKey), "Return completed without an existing CurrentEpisodeKey. This is likely a pre-log allocation.", "")
-                                                      }
-                                                  );
+                                                        // 2) usage log: sign-in row
+                                                        Patch(
+                                                            Equipment_Usage_Log,
+                                                            Defaults(Equipment_Usage_Log),
+                                                            {
+                                                                Title: episodeKey & " - Sign In",
+                                                                EpisodeKey: episodeKey,
+                                                                EventType: { Value: "Sign In" },
+                                                                EpisodeStatus: { Value: If(IsBlank(itItem.CurrentEpisodeKey), "Legacy unmatched", "Closed") },
+                                                                EventDateTime: actionTime,
+                                                                EquipmentItemID: itItem.ID,
+                                                                EquipmentTitle: itItem.Title,
+                                                                Category: Coalesce(itItem.Category.Value, ""),
+                                                                Brand: Coalesce(itItem.Brand, ""),
+                                                                Model: Coalesce(itItem.Model, ""),
+                                                                Width: Coalesce(itItem.Width.Value, ""),
+                                                                Depth: Coalesce(itItem.Depth.Value, ""),
+                                                                Height: Coalesce(itItem.Height.Value, ""),
+                                                                SWL: Coalesce(itItem.SWL, ""),
+                                                                WheelchairType: Coalesce(itItem.'Wheelchair Type'.Value, ""),
+                                                                LocationAtEvent: newLoc,
+                                                                Ward: Coalesce(itItem.Ward.Value, ""),
+                                                                PatientName: Coalesce(itItem.'Patient Name', ""),
+                                                                URN: Coalesce(itItem.URN, ""),
+                                                                DOB: itItem.DOB,
+                                                                Physiotherapist: Coalesce(itItem.Physiotherapist, ""),
+                                                                DateSignedOut: itItem.'Date Signed Out',
+                                                                DateReturned: returnDate,
+                                                                DaysSignedOutThisEpisode: daysThisEpisode,
+                                                                TotalDaysSignedOutAfterEvent: newTotalDays,
+                                                                Over100DaysAfterEvent: newTotalDays > 100,
+                                                                ServiceRequired: newTotalDays > 100,
+                                                                IsHighRiskEquipment: Coalesce(itItem.IsHighRiskEquipment, false),
+                                                                OutOfService: Coalesce(itItem.OutOfService, false),
+                                                                IsActive: Coalesce(itItem.IsActive, true),
+                                                                StatusAfterEvent: "Available",
+                                                                ActionedByName: MeName,
+                                                                ActionedByEmail: User().Email,
+                                                                SourceApp: { Value: "Mobile" },
+                                                                Notes: If(IsBlank(itItem.CurrentEpisodeKey), "Return completed without an existing CurrentEpisodeKey. This is likely a pre-log allocation.", "")
+                                                            }
+                                                        );
 
-                                                  // 3) close the matching sign-out row
-                                                  With(
-                                                      { signOutRow: LookUp(Equipment_Usage_Log, EpisodeKey = episodeKey && EventType.Value = "Sign Out") },
-                                                      If(
-                                                          !IsBlank(signOutRow.ID),
-                                                          Patch(
-                                                              Equipment_Usage_Log,
-                                                              signOutRow,
-                                                              {
-                                                                  EpisodeStatus: { Value: "Closed" },
-                                                                  DateReturned: returnDate,
-                                                                  DaysSignedOutThisEpisode: daysThisEpisode,
-                                                                  TotalDaysSignedOutAfterEvent: newTotalDays,
-                                                                  Over100DaysAfterEvent: newTotalDays > 100,
-                                                                  ServiceRequired: newTotalDays > 100
-                                                              }
-                                                          )
-                                                      )
-                                                  );
+                                                        // 3) close the matching sign-out row
+                                                        With(
+                                                            { signOutRow: LookUp(Equipment_Usage_Log, EpisodeKey = episodeKey && EventType.Value = "Sign Out") },
+                                                            If(
+                                                                !IsBlank(signOutRow.ID),
+                                                                Patch(
+                                                                    Equipment_Usage_Log,
+                                                                    signOutRow,
+                                                                    {
+                                                                        EpisodeStatus: { Value: "Closed" },
+                                                                        DateReturned: returnDate,
+                                                                        DaysSignedOutThisEpisode: daysThisEpisode,
+                                                                        TotalDaysSignedOutAfterEvent: newTotalDays,
+                                                                        Over100DaysAfterEvent: newTotalDays > 100,
+                                                                        ServiceRequired: newTotalDays > 100
+                                                                    }
+                                                                )
+                                                            )
+                                                        );
 
-                                                  Notify("Equipment returned.", NotificationType.Success);
-                                                  If(
-                                                      newTotalDays > 100,
-                                                      Notify("Used for over 100 days this year: needs a Full Service. Set it aside and contact CA.", NotificationType.Warning)
-                                                  );
+                                                        Notify("Equipment returned.", NotificationType.Success);
+                                                        If(
+                                                            newTotalDays > 100,
+                                                            Notify("Used for over 100 days this year: needs a Full Service. Set it aside and contact CA.", NotificationType.Warning)
+                                                        );
 
-                                                  // show the item again, now Available
-                                                  Set(itShowReturn, false);
-                                                  Set(itItem, LookUp(Equipment_Inventory_SharePoint, ID = varItemID))
-                                              )
-                                          )
-                                      )
+                                                        // show the item again, now Available
+                                                        Set(itShowReturn, false);
+                                                        Set(itItem, LookUp(Equipment_Inventory_SharePoint, ID = varItemID))
+                                                    )
+                                                )
+                                            )
