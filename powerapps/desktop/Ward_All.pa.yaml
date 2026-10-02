@@ -4110,19 +4110,23 @@ Screens:
                                     If(
                                         IsBlank(s) || IsBlank(t) || s.ID = t.ID,
                                         Notify("Pick a bed to move to.", NotificationType.Warning),
-                                        // the two beds trade numbers (an empty bed just takes the old number)
-                                        Patch(colWard, t, { Bed: s.Bed, IsDirty: true });
-                                        Patch(colWard, s, { Bed: t.Bed, IsDirty: true });
-                                        Set(wdSelID, s.ID);
-                                        Set(wdShowMove, false);
-                                        Set(wdMoveTargetID, Blank());
-                                        Notify(
-                                            If(
-                                                IsBlank(Trim(t.Patient)),
-                                                s.Patient & " moved to bed " & t.Bed & ". Press Save to keep the change.",
-                                                s.Patient & " and " & t.Patient & " swapped beds. Press Save to keep the change."
-                                            ),
-                                            NotificationType.Success
+                                        // read both beds first: after the first Patch the record t would already show the new number
+                                        With(
+                                            { sID: s.ID, tID: t.ID, sBed: s.Bed, tBed: t.Bed, sName: s.Patient, tName: t.Patient },
+                                            // the two beds trade numbers (an empty bed just takes the old number)
+                                            Patch(colWard, LookUp(colWard, ID = tID), { Bed: sBed, IsDirty: true });
+                                            Patch(colWard, LookUp(colWard, ID = sID), { Bed: tBed, IsDirty: true });
+                                            Set(wdSelID, sID);
+                                            Set(wdShowMove, false);
+                                            Set(wdMoveTargetID, Blank());
+                                            Notify(
+                                                If(
+                                                    IsBlank(Trim(tName)),
+                                                    sName & " moved to bed " & tBed & ". Press Save to keep the change.",
+                                                    sName & " and " & tName & " swapped beds. Press Save to keep the change."
+                                                ),
+                                                NotificationType.Success
+                                            )
                                         )
                                     )
                                 )
