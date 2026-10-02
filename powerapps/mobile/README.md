@@ -15,6 +15,8 @@ The old mobile app had **19 fixed-size screens**. This rebuild has **8 responsiv
 | Dashboard_Wheelchair_Type, Dashboard_Screen | **Availability** (Wheelchairs / Cushions / Backrests tabs, wheelchair type tabs, bar per width, tap a width to see the items) | `M7_Availability.pa.yaml` |
 | scrAudit | **Audit** (numbered steps, one scroll, fixed Submit bar) | `M8_Audit.pa.yaml` |
 | Servicing | **Servicing** (managers only: scan, send for service, take back) | `M9_Servicing.pa.yaml` |
+| (new) Training Register | **Training** (hub: book a course, my bookings) | `M10_Training.pa.yaml` |
+| (new) Training Register | **TrainingDates** (dates, who is booked, book / leave, manager tools) | `M11_TrainingDates.pa.yaml` |
 | App OnStart | **App Formulas** (colours, font, header art, who am I) | `App_Formulas.txt` |
 
 ## Bugs fixed on the way
@@ -108,3 +110,18 @@ Every screen was drawn in a layout simulator at 390x780 and 360x640 (and with it
 - My equipment: three-line cards were 8px too short; taller now.
 - All list cards: inset 2px so their borders are no longer clipped by the list edge.
 - Allocate sheet: sized to its content (was a tall empty sheet).
+
+
+## Training (new): screens M10 and M11
+The Training Register now lives inside this app. Home has a **Training** tile.
+
+**Data and flows to add to this app first** (Data icon > Add data):
+- SharePoint lists `TrainingSessions`, `TrainingBookings`, `TrainingWaitlist`, `TrainingAppPermissions`
+- Power Automate flows `TrainingBookingConfirmationEmail` and `TrainingWaitlistNotification` (Power Automate icon > Add flow)
+- `Office365Outlook` (already there)
+
+**Formulas:** re-paste the whole of `App_Formulas.txt` (adds `CanManageTraining`).
+
+**Paste order:** M10 `Training`, M11 `TrainingDates`, then re-paste `M1_Home` last (the new tile points at `Training`). Delete or rename the old Home first.
+
+**Managers** (Director, Team Leader, HP4 in `TrainingAppPermissions`) get: + Add a date, tap a booked place to remove someone, Waitlist, Email attendees, Delete date.

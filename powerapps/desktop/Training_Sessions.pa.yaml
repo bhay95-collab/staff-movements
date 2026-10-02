@@ -1,0 +1,2010 @@
+Screens:
+  Training_Sessions:
+    Properties:
+      Fill: =RGBA(235, 242, 248, 1)
+      ImagePosition: =ImagePosition.Fill
+      OnVisible: |-
+        =Set(trShowAdd, false);
+        Set(trShowWait, false);
+        Set(trShowEmail, false);
+        Set(trShowConfirm, false);
+        If(IsBlank(trType), Set(trType, "Basic Life Support"));
+        Select(btnLoad_Trs)
+    Children:
+      - btnLoad_Trs:
+          Control: Button@0.0.45
+          Properties:
+            FontSize: =Round(14 * SF, 0)
+            Height: =10 * SY
+            Width: =10 * SX
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =// everything on this screen is read once here, then worked out on the device
+              Set(trLoading, true);
+              Refresh(TrainingSessions);
+              Refresh(TrainingBookings);
+              Refresh(TrainingWaitlist);
+              ClearCollect(
+                  colTrBookings,
+                  Filter(
+                      TrainingBookings,
+                      BookingStatus.Value = "Booked" && TrainingType = trType && SessionDate >= Today()
+                  )
+              );
+              ClearCollect(colTrWait, Filter(TrainingWaitlist, WaitlistStatus.Value = "Waiting"));
+              ClearCollect(
+                  colTrSessions,
+                  AddColumns(
+                      AddColumns(
+                          AddColumns(
+                              SortByColumns(
+                                  Filter(
+                                      TrainingSessions,
+                                      IsActive = true && TrainingType.Value = trType && SessionDate >= Today()
+                                  ),
+                                  "SessionDate",
+                                  SortOrder.Ascending
+                              ),
+                              SesKey, Text(ID),
+                              Cap, Coalesce(Capacity, If(trType = "Manual Handling", 8, 6))
+                          ),
+                          Booked, CountRows(Filter(colTrBookings, SessionID = SesKey)),
+                          MyBookingID, LookUp(colTrBookings, SessionID = SesKey && Lower(BookedUserEmail) = MeEmail).ID,
+                          MyWaitID, LookUp(colTrWait, SessionID = SesKey && Lower(WaitlistUserEmail) = MeEmail).ID,
+                          MyWaitOn, LookUp(colTrWait, SessionID = SesKey && Lower(WaitlistUserEmail) = MeEmail).AddedOn,
+                          WaitCount, CountRows(Filter(colTrWait, SessionID = SesKey))
+                      ),
+                      Free, Cap - Booked,
+                      MyWaitPos, If(IsBlank(MyWaitOn), 0, CountRows(Filter(colTrWait, SessionID = SesKey && AddedOn <= MyWaitOn)))
+                  )
+              );
+
+              // keep the chosen date selected (with fresh numbers), or open the one asked for from Home
+              If(
+                  !IsBlank(trOpen),
+                  Set(trSel, LookUp(colTrSessions, ID = trOpen));
+                  Set(trOpen, Blank()),
+
+                  !IsBlank(trSel),
+                  Set(trSel, LookUp(colTrSessions, ID = trSel.ID))
+              );
+              // on wide screens the right-hand side is never empty
+              If(IsBlank(trSel), Set(trSel, First(colTrSessions)));
+              Set(trLoading, false);
+              Select(btnSlots_Trs)
+      - btnSlots_Trs:
+          Control: Button@0.0.45
+          Properties:
+            FontSize: =Round(14 * SF, 0)
+            Height: =10 * SY
+            Width: =10 * SX
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =ClearCollect(
+                  colTrSlots,
+                  ForAll(
+                      Sequence(Coalesce(trSel.Cap, 0)) As n,
+                      {
+                          SlotNo: n.Value,
+                          Booking: LookUp(
+                              colTrBookings,
+                              SessionID = Coalesce(trSel.SesKey, "") && SlotNumber = n.Value
+                          )
+                      }
+                  )
+              )
+      - btnDoBook_Trs:
+          Control: Button@0.0.45
+          Properties:
+            FontSize: =Round(14 * SF, 0)
+            Height: =10 * SY
+            Width: =10 * SX
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =With(
+                  { s: trSel },
+                  Refresh(TrainingBookings);
+                  With(
+                      { bookedNow: Filter(TrainingBookings, SessionID = s.SesKey && BookingStatus.Value = "Booked") },
+                      If(
+                          !IsBlank(LookUp(bookedNow, Lower(BookedUserEmail) = MeEmail)),
+                          Notify("You are already booked into this session.", NotificationType.Warning);
+                          Select(btnLoad_Trs),
+
+                          CountRows(bookedNow) >= s.Cap,
+                          Notify("Sorry, that session has just filled up.", NotificationType.Warning);
+                          Select(btnLoad_Trs),
+
+                          With(
+                              {
+                                  slot: First(
+                                      Filter(
+                                          ForAll(Sequence(s.Cap) As n, { SlotNo: n.Value }),
+                                          IsBlank(LookUp(bookedNow, SlotNumber = SlotNo))
+                                      )
+                                  ).SlotNo
+                              },
+                              With(
+                                  {
+                                      rec: Patch(
+                                          TrainingBookings,
+                                          Defaults(TrainingBookings),
+                                          {
+                                              Title: trType & " - " & MeName,
+                                              SessionID: s.SesKey,
+                                              TrainingType: trType,
+                                              SessionDate: s.SessionDate,
+                                              SlotNumber: slot,
+                                              BookedUserName: MeName,
+                                              BookedUserEmail: MeEmail,
+                                              BookingStatus: { Value: "Booked" },
+                                              BookedOn: Now()
+                                          }
+                                      )
+                                  },
+                                  If(
+                                      !IsEmpty(Errors(TrainingBookings)),
+                                      Notify("Could not book. Please try again.", NotificationType.Error),
+
+                                      // two people can take the same slot at the same moment: the earlier booking keeps it
+                                      Refresh(TrainingBookings);
+                                      If(
+                                          rec.ID > Min(
+                                              Filter(TrainingBookings, SessionID = s.SesKey && SlotNumber = slot && BookingStatus.Value = "Booked"),
+                                              ID
+                                          ),
+                                          Patch(TrainingBookings, LookUp(TrainingBookings, ID = rec.ID), { BookingStatus: { Value: "Cancelled" } });
+                                          Notify("Someone else just took that place. Please try again.", NotificationType.Warning),
+
+                                          If(
+                                              !IsBlank(s.MyWaitID),
+                                              Patch(TrainingWaitlist, LookUp(TrainingWaitlist, ID = s.MyWaitID), { WaitlistStatus: { Value: "Removed" } })
+                                          );
+                                          IfError(
+                                              TrainingBookingConfirmationEmail.Run("Booked", MeName, MeEmail, s.SesKey, trType, ""),
+                                              Notify("You are booked, but the confirmation email could not be sent.", NotificationType.Warning)
+                                          );
+                                          Notify("You are booked into this session.", NotificationType.Success)
+                                      );
+                                      Select(btnLoad_Trs)
+                                  )
+                              )
+                          )
+                      )
+                  )
+              )
+      - btnDoCancel_Trs:
+          Control: Button@0.0.45
+          Properties:
+            FontSize: =Round(14 * SF, 0)
+            Height: =10 * SY
+            Width: =10 * SX
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =With(
+                  { s: trSel },
+                  With(
+                      { b: LookUp(TrainingBookings, ID = s.MyBookingID) },
+                      If(
+                          IsBlank(b),
+                          Notify("That booking could not be found.", NotificationType.Warning);
+                          Set(trShowConfirm, false);
+                          Select(btnLoad_Trs),
+
+                          Patch(TrainingBookings, b, { BookingStatus: { Value: "Cancelled" } });
+                          If(
+                              !IsEmpty(Errors(TrainingBookings)),
+                              Notify("Could not remove the booking. Please try again.", NotificationType.Error),
+
+                              IfError(
+                                  TrainingBookingConfirmationEmail.Run("Cancelled", b.BookedUserName, b.BookedUserEmail, s.SesKey, trType, Text(b.ID)),
+                                  Notify("The booking was removed, but the email could not be sent.", NotificationType.Warning)
+                              );
+                              IfError(TrainingWaitlistNotification.Run(s.SesKey, trType), Blank());
+                              Set(trShowConfirm, false);
+                              Notify("Your booking has been removed.", NotificationType.Success);
+                              Select(btnLoad_Trs)
+                          )
+                      )
+                  )
+              )
+      - btnDoRemove_Trs:
+          Control: Button@0.0.45
+          Properties:
+            FontSize: =Round(14 * SF, 0)
+            Height: =10 * SY
+            Width: =10 * SX
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =With(
+                  { s: trSel },
+                  With(
+                      { b: LookUp(TrainingBookings, ID = trSlot.ID) },
+                      If(
+                          IsBlank(b),
+                          Notify("That booking could not be found.", NotificationType.Warning);
+                          Set(trShowConfirm, false);
+                          Select(btnLoad_Trs),
+
+                          Patch(TrainingBookings, b, { BookingStatus: { Value: "Cancelled" } });
+                          If(
+                              !IsEmpty(Errors(TrainingBookings)),
+                              Notify("Could not remove the booking. Please try again.", NotificationType.Error),
+
+                              IfError(
+                                  TrainingBookingConfirmationEmail.Run("Cancelled", b.BookedUserName, b.BookedUserEmail, s.SesKey, trType, Text(b.ID)),
+                                  Notify("The booking was removed, but the email could not be sent.", NotificationType.Warning)
+                              );
+                              IfError(TrainingWaitlistNotification.Run(s.SesKey, trType), Blank());
+                              Set(trShowConfirm, false);
+                              Notify("The booking has been removed.", NotificationType.Success);
+                              Select(btnLoad_Trs)
+                          )
+                      )
+                  )
+              )
+      - btnDoDelete_Trs:
+          Control: Button@0.0.45
+          Properties:
+            FontSize: =Round(14 * SF, 0)
+            Height: =10 * SY
+            Width: =10 * SX
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =With(
+                  { s: trSel },
+                  Refresh(TrainingBookings);
+                  Refresh(TrainingWaitlist);
+                  If(
+                      CountRows(Filter(TrainingBookings, SessionID = s.SesKey && BookingStatus.Value = "Booked")) > 0 ||
+                      CountRows(Filter(TrainingWaitlist, SessionID = s.SesKey && WaitlistStatus.Value = "Waiting")) > 0,
+                      Notify("This date cannot be deleted while people are booked or waiting. Remove them first.", NotificationType.Warning);
+                      Set(trShowConfirm, false),
+
+                      // the date is hidden, not erased, so the history is kept
+                      Patch(TrainingSessions, LookUp(TrainingSessions, ID = s.ID), { IsActive: false });
+                      If(
+                          !IsEmpty(Errors(TrainingSessions)),
+                          Notify("Could not delete the date. Please try again.", NotificationType.Error),
+                          Set(trShowConfirm, false);
+                          Set(trSel, Blank());
+                          Notify("Training date deleted.", NotificationType.Success);
+                          Select(btnLoad_Trs)
+                      )
+                  )
+              )
+      - btnDoJoin_Trs:
+          Control: Button@0.0.45
+          Properties:
+            FontSize: =Round(14 * SF, 0)
+            Height: =10 * SY
+            Width: =10 * SX
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =With(
+                  { s: trSel },
+                  If(
+                      !IsBlank(s.MyWaitID) || !IsBlank(s.MyBookingID),
+                      Blank(),
+                      Patch(
+                          TrainingWaitlist,
+                          Defaults(TrainingWaitlist),
+                          {
+                              Title: trType & " - " & MeName,
+                              SessionID: s.SesKey,
+                              WaitlistUserName: MeName,
+                              WaitlistUserEmail: MeEmail,
+                              WaitlistStatus: { Value: "Waiting" },
+                              AddedOn: Now()
+                          }
+                      );
+                      If(
+                          !IsEmpty(Errors(TrainingWaitlist)),
+                          Notify("Could not join the waitlist. Please try again.", NotificationType.Error),
+                          Notify("You are on the waitlist. You will get an email if a place opens.", NotificationType.Success);
+                          Select(btnLoad_Trs)
+                      )
+                  )
+              )
+      - btnDoLeave_Trs:
+          Control: Button@0.0.45
+          Properties:
+            FontSize: =Round(14 * SF, 0)
+            Height: =10 * SY
+            Width: =10 * SX
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =With(
+                  { s: trSel },
+                  Patch(TrainingWaitlist, LookUp(TrainingWaitlist, ID = s.MyWaitID), { WaitlistStatus: { Value: "Removed" } });
+                  If(
+                      !IsEmpty(Errors(TrainingWaitlist)),
+                      Notify("Could not leave the waitlist. Please try again.", NotificationType.Error),
+                      IfError(
+                          TrainingBookingConfirmationEmail.Run("WaitlistRemoved", MeName, MeEmail, s.SesKey, trType, ""),
+                          Blank()
+                      );
+                      Notify("You have been removed from the waitlist.", NotificationType.Success);
+                      Select(btnLoad_Trs)
+                  )
+              )
+      - btnDoAdd_Trs:
+          Control: Button@0.0.45
+          Properties:
+            FontSize: =Round(14 * SF, 0)
+            Height: =10 * SY
+            Width: =10 * SX
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =With(
+                  {
+                      t: ddType_Trs.Selected.Value,
+                      d: dpDate_Trs.SelectedDate,
+                      loc: Trim(txtLoc_Trs.Text)
+                  },
+                  With(
+                      { when: d + Time(Value(ddHour_Trs.Selected.Value), Value(ddMin_Trs.Selected.Value), 0) },
+                      If(
+                          IsBlank(t),
+                          Notify("Please select a training type.", NotificationType.Warning),
+
+                          IsBlank(d),
+                          Notify("Please select a date.", NotificationType.Warning),
+
+                          IsBlank(loc),
+                          Notify("Please enter a location.", NotificationType.Warning),
+
+                          when < Now(),
+                          Notify("That date and time has already passed.", NotificationType.Warning),
+
+                          !IsBlank(LookUp(TrainingSessions, TrainingType.Value = t && SessionDate = when && IsActive = true)),
+                          Notify("A session already exists for that date and time.", NotificationType.Warning),
+
+                          Patch(
+                              TrainingSessions,
+                              Defaults(TrainingSessions),
+                              {
+                                  Title: t & " - " & Text(when, "dd/mm/yyyy hh:mm"),
+                                  TrainingType: { Value: t },
+                                  SessionDate: when,
+                                  Location: loc,
+                                  Capacity: If(t = "Manual Handling", 8, 6),
+                                  IsActive: true
+                              }
+                          );
+                          If(
+                              !IsEmpty(Errors(TrainingSessions)),
+                              Notify("Could not save the date. Please try again.", NotificationType.Error),
+                              Set(trShowAdd, false);
+                              Set(trType, t);
+                              Set(trSel, Blank());
+                              Notify("Training date added.", NotificationType.Success);
+                              Select(btnLoad_Trs)
+                          )
+                      )
+                  )
+              )
+      - btnDoSend_Trs:
+          Control: Button@0.0.45
+          Properties:
+            FontSize: =Round(14 * SF, 0)
+            Height: =10 * SY
+            Width: =10 * SX
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =With(
+                  { to: Concat(Filter(colTrBookings, SessionID = trSel.SesKey), BookedUserEmail, ";") },
+                  If(
+                      IsBlank(to),
+                      Notify("Nobody is booked into this date yet.", NotificationType.Warning),
+                      IfError(
+                          Office365Outlook.SendEmailV2(
+                              to,
+                              Trim(txtEmailSubject_Trs.Text),
+                              Substitute(Substitute(txtEmailBody_Trs.Text, Char(13), ""), Char(10), "<br>"),
+                              { IsHtml: true }
+                          );
+                          Set(trShowEmail, false);
+                          Notify("Email sent to the booked attendees.", NotificationType.Success),
+                          Notify("The email could not be sent. Please try again.", NotificationType.Error)
+                      )
+                  )
+              )
+      - btnDoSendWait_Trs:
+          Control: Button@0.0.45
+          Properties:
+            FontSize: =Round(14 * SF, 0)
+            Height: =10 * SY
+            Width: =10 * SX
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =With(
+                  { to: Concat(Filter(colTrWait, SessionID = trSel.SesKey), WaitlistUserEmail, ";") },
+                  If(
+                      IsBlank(to),
+                      Notify("There are no waitlist users to email.", NotificationType.Warning),
+                      IfError(
+                          Office365Outlook.SendEmailV2(
+                              to,
+                              trType & " training: a place may be available (" & Text(trSel.SessionDate, "dd/mm/yyyy h:mm AM/PM") & ")",
+                              "Hi all,<br><br>You are on the waitlist for " & trType & " training on " &
+                              Text(trSel.SessionDate, "dddd d mmmm") & " at " & Text(trSel.SessionDate, "h:mm AM/PM") & ".<br>" &
+                              "A place may be available. If you would like it, please open the Training Register app and book a place.<br><br>" &
+                              "Thanks,<br>" & MeName,
+                              { IsHtml: true }
+                          );
+                          Notify("Email sent to the waitlist.", NotificationType.Success),
+                          Notify("The email could not be sent. Please try again.", NotificationType.Error)
+                      )
+                  )
+              )
+      - Trs_Title:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Regular
+            Fill: =RGBA(7, 95, 115, 1)
+            Height: =70 * SY
+            Width: =1333 * SX
+            X: =18 * SX
+            Y: =12 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+          Children:
+            - imgHeaderGradient_Trs:
+                Control: Image@2.2.3
+                Properties:
+                  Height: =Parent.Height
+                  Image: ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' width='1333' height='70' viewBox='0 0 1333 70' preserveAspectRatio='none'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001D46'/><stop offset='0.48' stop-color='#075F73'/><stop offset='1' stop-color='#00838A'/></linearGradient><linearGradient id='b' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001B36' stop-opacity='0.46'/><stop offset='0.45' stop-color='#002036' stop-opacity='0.18'/><stop offset='1' stop-color='#002036' stop-opacity='0.06'/></linearGradient></defs><rect width='1333' height='70' rx='18' fill='url(#a)'/><rect width='1333' height='70' rx='18' fill='url(#b)'/></svg>")
+                  ImagePosition: =ImagePosition.Fill
+                  Width: =Parent.Width
+            - lblTitle_TrsHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  Height: =36 * SY
+                  Size: =Round(28 * SF, 0)
+                  Text: ="trType & " training""
+                  VerticalAlign: =VerticalAlign.Middle
+                  Weight: ='TextCanvas.Weight'.Bold
+                  Width: =700 * SX
+                  X: =76 * SX
+                  Y: =8 * SY
+            - lblSub_TrsHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 0.88)
+                  Height: =20 * SY
+                  Size: =Round(12 * SF, 0)
+                  Text: =If(trLoading, "Loading dates...", CountRows(colTrSessions) & If(CountRows(colTrSessions) = 1, " upcoming date", " upcoming dates"))
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =800 * SX
+                  X: =76 * SX
+                  Y: =42 * SY
+            - btnBack_Trs:
+                Control: Button@0.0.45
+                Properties:
+                  Width: =96 * SX
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontSize: =Round(50 * SF, 0)
+                  Height: =70 * SY
+                  Icon: ="ChevronLeft"
+                  Text: =""
+                  X: =1 * SX
+                  OnSelect: =Back(ScreenTransition.Fade)
+            - conReload_Trs:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40 * SY
+                  Width: =140 * SX
+                  X: =1177 * SX
+                  Y: =15 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                Children:
+                  - btnReload_Trs:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =Round(13 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
+                        Width: =140 * SX
+                        Text: ="Reload"
+                        OnSelect: =Select(btnLoad_Trs)
+                        Icon: ="ArrowClockwise"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+            - conAdd_Trs:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40 * SY
+                  Width: =140 * SX
+                  X: =1017 * SX
+                  Y: =15 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  BorderColor: =RGBA(255, 255, 255, 1)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                  Visible: =CanManageTraining
+                Children:
+                  - btnAdd_Trs:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(26, 90, 153, 1)
+                        FontSize: =Round(13 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
+                        Width: =140 * SX
+                        Text: ="+ Add date"
+                        OnSelect: |-
+                          =Set(trShowAdd, true);
+                          Reset(ddType_Trs);
+                          Reset(dpDate_Trs);
+                          Reset(ddHour_Trs);
+                          Reset(ddMin_Trs);
+                          Reset(txtLoc_Trs)
+      - Trs_CardDates:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Light
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =658 * SY
+            Width: =440 * SX
+            X: =18 * SX
+            Y: =95 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+          Children:
+            - conTyBls_Trs:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Fill: =If(trType = "Basic Life Support", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =34 * SY
+                  Width: =202 * SX
+                  X: =14 * SX
+                  Y: =14 * SY
+                  RadiusBottomLeft: =17 * SR
+                  RadiusBottomRight: =17 * SR
+                  RadiusTopLeft: =17 * SR
+                  RadiusTopRight: =17 * SR
+                  BorderColor: =If(trType = "Basic Life Support", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                Children:
+                  - btnTyBls_Trs:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =17 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(trType = "Basic Life Support", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =Round(13 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =34 * SY
+                        Width: =202 * SX
+                        Text: ="Basic Life Support"
+                        OnSelect: |-
+                          =Set(trType, "Basic Life Support");
+                          Set(trSel, Blank());
+                          Select(btnLoad_Trs)
+            - conTyMh_Trs:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Fill: =If(trType = "Manual Handling", RGBA(26, 90, 153, 1), RGBA(244, 249, 252, 1))
+                  Height: =34 * SY
+                  Width: =202 * SX
+                  X: =224 * SX
+                  Y: =14 * SY
+                  RadiusBottomLeft: =17 * SR
+                  RadiusBottomRight: =17 * SR
+                  RadiusTopLeft: =17 * SR
+                  RadiusTopRight: =17 * SR
+                  BorderColor: =If(trType = "Manual Handling", RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                Children:
+                  - btnTyMh_Trs:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =17 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =If(trType = "Manual Handling", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
+                        FontSize: =Round(13 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =34 * SY
+                        Width: =202 * SX
+                        Text: ="Manual Handling"
+                        OnSelect: |-
+                          =Set(trType, "Manual Handling");
+                          Set(trSel, Blank());
+                          Select(btnLoad_Trs)
+            - capDates_Trs:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =Round(11 * SF, 0)
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Text: ="UPCOMING DATES"
+                  Width: =300 * SX
+                  X: =20 * SX
+                  Y: =62 * SY
+            - galDates_Trs:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =566 * SY
+                  Items: =colTrSessions
+                  TemplatePadding: =0
+                  TemplateSize: =84 * SY
+                  Width: =440 * SX
+                  X: =0
+                  Y: =84 * SY
+                Children:
+                  - conDate_Trs:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =If((!IsBlank(trSel) && ThisItem.ID = trSel.ID), RGBA(26, 90, 153, 0.08), RGBA(255, 255, 255, 1))
+                        Height: =72 * SY
+                        Width: =Parent.TemplateWidth - 16 * SX
+                        X: =8 * SX
+                        Y: =3 * SY
+                        RadiusBottomLeft: =12 * SR
+                        RadiusBottomRight: =12 * SR
+                        RadiusTopLeft: =12 * SR
+                        RadiusTopRight: =12 * SR
+                        BorderColor: =If((!IsBlank(trSel) && ThisItem.ID = trSel.ID), RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                      Children:
+                        - conDateBox_Trs:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =If((!IsBlank(trSel) && ThisItem.ID = trSel.ID), RGBA(26, 90, 153, 1), RGBA(26, 90, 153, 0.08))
+                              Height: =56 * SY
+                              Width: =52 * SX
+                              X: =12 * SX
+                              Y: =8 * SY
+                              RadiusBottomLeft: =12 * SR
+                              RadiusBottomRight: =12 * SR
+                              RadiusTopLeft: =12 * SR
+                              RadiusTopRight: =12 * SR
+                            Children:
+                              - lblDowDateBox_Trs:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =Font.'Segoe UI'
+                                    Color: =If((!IsBlank(trSel) && ThisItem.ID = trSel.ID), RGBA(255, 255, 255, 1), RGBA(140, 155, 174, 1))
+                                    Size: =Round(11 * SF, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =16 * SY
+                                    Text: =Upper(Text(ThisItem.SessionDate, "ddd"))
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =6 * SY
+                                    Align: =Align.Center
+                                    Wrap: =false
+                              - lblDayDateBox_Trs:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =Font.'Segoe UI'
+                                    Color: =If((!IsBlank(trSel) && ThisItem.ID = trSel.ID), RGBA(255, 255, 255, 1), RGBA(26, 90, 153, 1))
+                                    Size: =Round(20 * SF, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =30 * SY
+                                    Text: =Text(ThisItem.SessionDate, "d")
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =21 * SY
+                                    Align: =Align.Center
+                                    Wrap: =false
+                        - lblDateT_Trs:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(14, 28, 42, 1)
+                              Size: =Round(15 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =24 * SY
+                              Text: =Text(ThisItem.SessionDate, "ddd d mmm yyyy")
+                              Width: =Parent.Width - 180 * SX
+                              X: =76 * SX
+                              Y: =10 * SY
+                              Wrap: =false
+                        - lblDateS_Trs:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(140, 155, 174, 1)
+                              Size: =Round(12 * SF, 0)
+                              Height: =20 * SY
+                              Text: =Text(ThisItem.SessionDate, "h:mm AM/PM") & "  ·  " & Coalesce(ThisItem.Location, "Location to be confirmed")
+                              Width: =Parent.Width - 180 * SX
+                              X: =76 * SX
+                              Y: =38 * SY
+                              Wrap: =false
+                        - conChip_Trs:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =If(!IsBlank(ThisItem.MyBookingID), RGBA(232, 246, 240, 1), ThisItem.Free <= 0, RGBA(255, 246, 229, 1), RGBA(26, 90, 153, 0.08))
+                              Height: =28 * SY
+                              Width: =82 * SX
+                              X: =Parent.Width - 94 * SX
+                              Y: =22 * SY
+                              RadiusBottomLeft: =14 * SR
+                              RadiusBottomRight: =14 * SR
+                              RadiusTopLeft: =14 * SR
+                              RadiusTopRight: =14 * SR
+                            Children:
+                              - lblChip_Trs:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =Font.'Segoe UI'
+                                    Color: =If(!IsBlank(ThisItem.MyBookingID), RGBA(12, 122, 82, 1), ThisItem.Free <= 0, RGBA(200, 120, 0, 1), RGBA(26, 90, 153, 1))
+                                    Size: =Round(12 * SF, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Text: =If(!IsBlank(ThisItem.MyBookingID), "Booked", ThisItem.Free <= 0, If(!IsBlank(ThisItem.MyWaitID), "Waitlisted", "Full"), ThisItem.Free & " left")
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =0
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Wrap: =false
+                        - btnDate_Trs:
+                            Control: Button@0.0.45
+                            Properties:
+                              FontSize: =Round(14 * SF, 0)
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderStyle: =BorderStyle.None
+                              Height: =Parent.Height
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Text: =""
+                              OnSelect: |-
+                                =Set(trSel, ThisItem);
+                                Select(btnSlots_Trs)
+            - lblDatesEmpty_Trs:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =Round(14 * SF, 0)
+                  Height: =60 * SY
+                  Text: |-
+                    =If(trLoading, "Loading dates...", "No upcoming dates." & If(CanManageTraining, "
+                    Use + Add date to schedule one.", "
+                    Please check back soon."))
+                  Width: =392 * SX
+                  X: =24 * SX
+                  Y: =200 * SY
+                  Align: =Align.Center
+                  Visible: =IsEmpty(colTrSessions)
+      - Trs_CardDetail:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Light
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =658 * SY
+            Width: =881 * SX
+            X: =470 * SX
+            Y: =95 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+          Children:
+            - lblPick_Trs:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =Round(15 * SF, 0)
+                  Height: =40 * SY
+                  Text: ="Choose a date on the left to see who is booked in."
+                  Width: =801 * SX
+                  X: =40 * SX
+                  Y: =140 * SY
+                  Align: =Align.Center
+                  Visible: =IsBlank(trSel)
+            - conDetailBody_Trs:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Height: =658 * SY
+                  Width: =881 * SX
+                  X: =0
+                  Y: =0
+                  RadiusBottomLeft: =10 * SR
+                  RadiusBottomRight: =10 * SR
+                  RadiusTopLeft: =10 * SR
+                  RadiusTopRight: =10 * SR
+                  Visible: =!IsBlank(trSel)
+                Children:
+                  - lblDetT_Trs:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
+                        Size: =Round(22 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =32 * SY
+                        Text: =Text(trSel.SessionDate, "dddd d mmmm yyyy")
+                        Width: =520 * SX
+                        X: =24 * SX
+                        Y: =18 * SY
+                        Wrap: =false
+                  - lblDetS_Trs:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(58, 80, 104, 1)
+                        Size: =Round(14 * SF, 0)
+                        Height: =22 * SY
+                        Text: =Text(trSel.SessionDate, "h:mm AM/PM") & "  ·  " & Coalesce(trSel.Location, "Location to be confirmed")
+                        Width: =520 * SX
+                        X: =24 * SX
+                        Y: =52 * SY
+                        Wrap: =false
+                  - lblStatus_Trs:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =If(!IsBlank(trSel.MyBookingID), RGBA(12, 122, 82, 1), trSel.Free <= 0 || !IsBlank(trSel.MyWaitID), RGBA(200, 120, 0, 1), RGBA(26, 90, 153, 1))
+                        Size: =Round(14 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =22 * SY
+                        Text: =If(!IsBlank(trSel.MyBookingID), "You are booked in (slot " & LookUp(colTrSlots, Lower(Coalesce(Booking.BookedUserEmail, "")) = MeEmail).SlotNo & ")", trSel.Free > 0 && !IsBlank(trSel.MyWaitID), "A place is free. Book now before it goes.", !IsBlank(trSel.MyWaitID), "You are on the waitlist (" & trSel.MyWaitPos & " of " & trSel.WaitCount & ")", trSel.Free <= 0, "Full. Join the waitlist and you will be emailed if a place opens.", trSel.Free & If(trSel.Free = 1, " place left", " places left") & " of " & trSel.Cap)
+                        Width: =520 * SX
+                        X: =24 * SX
+                        Y: =82 * SY
+                        Wrap: =false
+                  - conPrimary_Trs:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =If(!IsBlank(trSel.MyBookingID), RGBA(255, 255, 255, 1), trSel.Free > 0, RGBA(26, 90, 153, 1), !IsBlank(trSel.MyWaitID), RGBA(255, 255, 255, 1), RGBA(26, 90, 153, 1))
+                        Height: =52 * SY
+                        Width: =300 * SX
+                        X: =557 * SX
+                        Y: =22 * SY
+                        RadiusBottomLeft: =26 * SR
+                        RadiusBottomRight: =26 * SR
+                        RadiusTopLeft: =26 * SR
+                        RadiusTopRight: =26 * SR
+                        BorderColor: =If(!IsBlank(trSel.MyBookingID), RGBA(180, 26, 26, 1), trSel.Free > 0, RGBA(26, 90, 153, 1), !IsBlank(trSel.MyWaitID), RGBA(200, 120, 0, 1), RGBA(26, 90, 153, 1))
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                      Children:
+                        - btnPrimary_Trs:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =26 * SR
+                              Font: =Font.'Segoe UI'
+                              FontColor: =If(!IsBlank(trSel.MyBookingID), RGBA(180, 26, 26, 1), trSel.Free > 0, RGBA(255, 255, 255, 1), !IsBlank(trSel.MyWaitID), RGBA(200, 120, 0, 1), RGBA(255, 255, 255, 1))
+                              FontSize: =Round(16 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =52 * SY
+                              Width: =300 * SX
+                              Text: =If(!IsBlank(trSel.MyBookingID), "Remove my booking", trSel.Free > 0, "Book a place", !IsBlank(trSel.MyWaitID), "Leave the waitlist", "Join the waitlist")
+                              OnSelect: |-
+                                =With(
+                                    { s: trSel },
+                                    If(
+                                        !IsBlank(s.MyBookingID),
+                                        Set(trCfAction, "CancelMine");
+                                        Set(trCfTitle, "Remove your booking?");
+                                        Set(trCfBody, "You will give up your place on " & Text(s.SessionDate, "dddd d mmmm") & " at " & Text(s.SessionDate, "h:mm AM/PM") & ". Anyone on the waitlist will be told.");
+                                        Set(trCfBtn, "Remove my booking");
+                                        Set(trShowConfirm, true),
+
+                                        s.Free > 0,
+                                        Select(btnDoBook_Trs),
+
+                                        !IsBlank(s.MyWaitID),
+                                        Select(btnDoLeave_Trs),
+
+                                        Select(btnDoJoin_Trs)
+                                    )
+                                )
+                  - lineTop_Trs:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(14, 42, 70, 0.12)
+                        Height: =1 * SY
+                        Width: =833 * SX
+                        X: =24 * SX
+                        Y: =120 * SY
+                        RadiusBottomLeft: =10 * SR
+                        RadiusBottomRight: =10 * SR
+                        RadiusTopLeft: =10 * SR
+                        RadiusTopRight: =10 * SR
+                  - lblSlotsCap_Trs:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =Round(11 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =18 * SY
+                        Text: ="ATTENDEES  ·  " & trSel.Booked & " OF " & trSel.Cap
+                        Width: =400 * SX
+                        X: =24 * SX
+                        Y: =136 * SY
+                        Wrap: =false
+                  - galSlots_Trs:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        Height: =440 * SY
+                        Items: =colTrSlots
+                        TemplatePadding: =0
+                        TemplateSize: =64 * SY
+                        WrapCount: =3
+                        Width: =841 * SX
+                        X: =20 * SX
+                        Y: =160 * SY
+                      Children:
+                        - conSlot_Trs:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =If(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail, RGBA(26, 90, 153, 0.08), RGBA(255, 255, 255, 1))
+                              Height: =56 * SY
+                              Width: =Parent.TemplateWidth - 12 * SX
+                              X: =6 * SX
+                              Y: =4 * SY
+                              RadiusBottomLeft: =12 * SR
+                              RadiusBottomRight: =12 * SR
+                              RadiusTopLeft: =12 * SR
+                              RadiusTopRight: =12 * SR
+                              BorderColor: =If(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail, RGBA(26, 90, 153, 1), RGBA(14, 42, 70, 0.12))
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                            Children:
+                              - lblSlotNo_Trs:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =Font.'Segoe UI'
+                                    Color: =RGBA(140, 155, 174, 1)
+                                    Size: =Round(15 * SF, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Text: =Text(ThisItem.SlotNo)
+                                    Width: =28 * SX
+                                    X: =16 * SX
+                                    Y: =0
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Wrap: =false
+                              - lblSlotName_Trs:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =Font.'Segoe UI'
+                                    Color: =If(IsBlank(ThisItem.Booking), RGBA(140, 155, 174, 1), RGBA(14, 28, 42, 1))
+                                    Size: =Round(14 * SF, 0)
+                                    FontWeight: =If(IsBlank(ThisItem.Booking), FontWeight.Normal, FontWeight.Semibold)
+                                    Height: =Parent.Height
+                                    Text: =If(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail, ThisItem.Booking.BookedUserName & "  (you)", IsBlank(ThisItem.Booking), "Available", ThisItem.Booking.BookedUserName)
+                                    Width: =Parent.Width - 60 * SX
+                                    X: =48 * SX
+                                    Y: =0
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Wrap: =false
+                              - btnSlot_Trs:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    FontSize: =Round(14 * SF, 0)
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderStyle: =BorderStyle.None
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =0
+                                    Text: =""
+                                    OnSelect: |-
+                                      =Set(trSlot, ThisItem.Booking);
+                                      Set(trCfAction, "RemoveAttendee");
+                                      Set(trCfTitle, "Remove this person?");
+                                      Set(trCfBody, ThisItem.Booking.BookedUserName & " will be removed from slot " & ThisItem.SlotNo & " and emailed.");
+                                      Set(trCfBtn, "Remove");
+                                      Set(trShowConfirm, true)
+                                    Visible: =CanManageTraining && !IsBlank(ThisItem.Booking) && !(Lower(Coalesce(ThisItem.Booking.BookedUserEmail, "")) = MeEmail)
+                  - conMgrRow_Trs:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =56 * SY
+                        Width: =881 * SX
+                        X: =0
+                        Y: =594 * SY
+                        RadiusBottomLeft: =10 * SR
+                        RadiusBottomRight: =10 * SR
+                        RadiusTopLeft: =10 * SR
+                        RadiusTopRight: =10 * SR
+                        Visible: =CanManageTraining
+                      Children:
+                        - lineMgr_Trs:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =RGBA(14, 42, 70, 0.12)
+                              Height: =1 * SY
+                              Width: =833 * SX
+                              X: =24 * SX
+                              Y: =0
+                              RadiusBottomLeft: =10 * SR
+                              RadiusBottomRight: =10 * SR
+                              RadiusTopLeft: =10 * SR
+                              RadiusTopRight: =10 * SR
+                        - btnMgr1_Trs:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =10 * SR
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(26, 90, 153, 1)
+                              FontSize: =Round(14 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =44 * SY
+                              OnSelect: =Set(trShowWait, true)
+                              Text: ="Waitlist (" & trSel.WaitCount & ")"
+                              Width: =270 * SX
+                              X: =24 * SX
+                              Y: =8 * SY
+                        - btnMgr2_Trs:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =10 * SR
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(26, 90, 153, 1)
+                              FontSize: =Round(14 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =44 * SY
+                              OnSelect: |-
+                                =Set(trShowEmail, true);
+                                Reset(txtEmailSubject_Trs);
+                                Reset(txtEmailBody_Trs)
+                              Text: ="Email attendees"
+                              Width: =270 * SX
+                              X: =305 * SX
+                              Y: =8 * SY
+                        - btnMgr3_Trs:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =10 * SR
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(180, 26, 26, 1)
+                              FontSize: =Round(14 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =44 * SY
+                              OnSelect: |-
+                                =Set(trCfAction, "DeleteDate");
+                                Set(trCfTitle, "Delete this date?");
+                                Set(trCfBody, "The date will be removed from the list. This can only be done when nobody is booked or waiting.");
+                                Set(trCfBtn, "Delete date");
+                                Set(trShowConfirm, true)
+                              Text: ="Delete date"
+                              Width: =270 * SX
+                              X: =586 * SX
+                              Y: =8 * SY
+      - TrsAd_Popup:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(14, 28, 42, 0.45)
+            Height: =768 * SY
+            Visible: =trShowAdd
+            Width: =1366 * SX
+            X: =0
+            Y: =0
+          Children:
+            - btnScrim_TrsAd:
+                Control: Button@0.0.45
+                Properties:
+                  FontSize: =Round(14 * SF, 0)
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  BorderStyle: =BorderStyle.None
+                  Height: =Parent.Height
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+                  Text: =""
+                  OnSelect: =Set(trShowAdd, false)
+            - TrsAd_PopupCard:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =330 * SY
+                  Width: =560 * SX
+                  X: =403 * SX
+                  Y: =219 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                Children:
+                  - lblT_TrsAd:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
+                        Size: =Round(20 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =28 * SY
+                        Text: =Add a training date
+                        Width: =512 * SX
+                        X: =24 * SX
+                        Y: =18 * SY
+                        Wrap: =false
+                  - capType_Trs:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =Round(11 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Text: ="TRAINING"
+                        Width: =250 * SX
+                        X: =24 * SX
+                        Y: =62 * SY
+                  - boxType_Trs:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =40 * SY
+                        Width: =250 * SX
+                        X: =24 * SX
+                        Y: =82 * SY
+                        RadiusBottomLeft: =10 * SR
+                        RadiusBottomRight: =10 * SR
+                        RadiusTopLeft: =10 * SR
+                        RadiusTopRight: =10 * SR
+                        BorderColor: =RGBA(14, 42, 70, 0.22)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                      Children:
+                        - ddType_Trs:
+                            Control: Classic/DropDown@2.3.1
+                            Properties:
+                              BorderStyle: =BorderStyle.None
+                              ChevronBackground: =RGBA(26, 90, 153, 1)
+                              ChevronFill: =RGBA(255, 255, 255, 1)
+                              ChevronHoverBackground: =RGBA(18, 64, 112, 1)
+                              Color: =RGBA(14, 28, 42, 1)
+                              Default: =trType
+                              Font: =Font.'Segoe UI'
+                              Height: =40 * SY
+                              Items: =["Basic Life Support", "Manual Handling"]
+                              Items.Value: =Value
+                              Size: =Round(14 * SF, 0)
+                              Width: =250 * SX
+                  - capDate_Trs:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =Round(11 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Text: ="DATE"
+                        Width: =250 * SX
+                        X: =286 * SX
+                        Y: =62 * SY
+                  - boxDate_Trs:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =40 * SY
+                        Width: =250 * SX
+                        X: =286 * SX
+                        Y: =82 * SY
+                        RadiusBottomLeft: =10 * SR
+                        RadiusBottomRight: =10 * SR
+                        RadiusTopLeft: =10 * SR
+                        RadiusTopRight: =10 * SR
+                        BorderColor: =RGBA(14, 42, 70, 0.22)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                      Children:
+                        - dpDate_Trs:
+                            Control: Classic/DatePicker@2.6.0
+                            Properties:
+                              BorderStyle: =BorderStyle.None
+                              Color: =RGBA(14, 28, 42, 1)
+                              DefaultDate: =Today()
+                              Font: =Font.'Segoe UI'
+                              Height: =40 * SY
+                              Size: =Round(14 * SF, 0)
+                              Width: =250 * SX
+                  - capHour_Trs:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =Round(11 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Text: ="HOUR"
+                        Width: =120 * SX
+                        X: =24 * SX
+                        Y: =134 * SY
+                  - boxHour_Trs:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =40 * SY
+                        Width: =120 * SX
+                        X: =24 * SX
+                        Y: =154 * SY
+                        RadiusBottomLeft: =10 * SR
+                        RadiusBottomRight: =10 * SR
+                        RadiusTopLeft: =10 * SR
+                        RadiusTopRight: =10 * SR
+                        BorderColor: =RGBA(14, 42, 70, 0.22)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                      Children:
+                        - ddHour_Trs:
+                            Control: Classic/DropDown@2.3.1
+                            Properties:
+                              BorderStyle: =BorderStyle.None
+                              ChevronBackground: =RGBA(26, 90, 153, 1)
+                              ChevronFill: =RGBA(255, 255, 255, 1)
+                              ChevronHoverBackground: =RGBA(18, 64, 112, 1)
+                              Color: =RGBA(14, 28, 42, 1)
+                              Default: ="09"
+                              Font: =Font.'Segoe UI'
+                              Height: =40 * SY
+                              Items: =["07","08","09","10","11","12","13","14","15","16","17","18"]
+                              Items.Value: =Value
+                              Size: =Round(14 * SF, 0)
+                              Width: =120 * SX
+                  - capMin_Trs:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =Round(11 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Text: ="MINUTE"
+                        Width: =120 * SX
+                        X: =156 * SX
+                        Y: =134 * SY
+                  - boxMin_Trs:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =40 * SY
+                        Width: =120 * SX
+                        X: =156 * SX
+                        Y: =154 * SY
+                        RadiusBottomLeft: =10 * SR
+                        RadiusBottomRight: =10 * SR
+                        RadiusTopLeft: =10 * SR
+                        RadiusTopRight: =10 * SR
+                        BorderColor: =RGBA(14, 42, 70, 0.22)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                      Children:
+                        - ddMin_Trs:
+                            Control: Classic/DropDown@2.3.1
+                            Properties:
+                              BorderStyle: =BorderStyle.None
+                              ChevronBackground: =RGBA(26, 90, 153, 1)
+                              ChevronFill: =RGBA(255, 255, 255, 1)
+                              ChevronHoverBackground: =RGBA(18, 64, 112, 1)
+                              Color: =RGBA(14, 28, 42, 1)
+                              Default: ="00"
+                              Font: =Font.'Segoe UI'
+                              Height: =40 * SY
+                              Items: =["00", "15", "30", "45"]
+                              Items.Value: =Value
+                              Size: =Round(14 * SF, 0)
+                              Width: =120 * SX
+                  - capLoc_Trs:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =Round(11 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Text: ="LOCATION"
+                        Width: =248 * SX
+                        X: =288 * SX
+                        Y: =134 * SY
+                  - boxLoc_Trs:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =40 * SY
+                        Width: =248 * SX
+                        X: =288 * SX
+                        Y: =154 * SY
+                        RadiusBottomLeft: =10 * SR
+                        RadiusBottomRight: =10 * SR
+                        RadiusTopLeft: =10 * SR
+                        RadiusTopRight: =10 * SR
+                        BorderColor: =RGBA(14, 42, 70, 0.22)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                      Children:
+                        - txtLoc_Trs:
+                            Control: Classic/TextInput@2.3.2
+                            Properties:
+                              BorderStyle: =BorderStyle.None
+                              Color: =RGBA(14, 28, 42, 1)
+                              Default: =""
+                              Font: =Font.'Segoe UI'
+                              Height: =40 * SY
+                              HintText: ="Room or building"
+                              Size: =Round(14 * SF, 0)
+                              Width: =248 * SX
+                  - lblAddHint_Trs:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =Round(12 * SF, 0)
+                        Height: =20 * SY
+                        Text: |-
+                          ="Places are set for you: 6 for Basic Life Support, 8 for Manual Handling."
+                        Width: =512 * SX
+                        X: =24 * SX
+                        Y: =214 * SY
+                        Wrap: =false
+                  - conL_TrsAd:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =44 * SY
+                        Width: =250 * SX
+                        X: =24 * SX
+                        Y: =266 * SY
+                        RadiusBottomLeft: =22 * SR
+                        RadiusBottomRight: =22 * SR
+                        RadiusTopLeft: =22 * SR
+                        RadiusTopRight: =22 * SR
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                      Children:
+                        - btnL_TrsAd:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =22 * SR
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(58, 80, 104, 1)
+                              FontSize: =Round(15 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =44 * SY
+                              Width: =250 * SX
+                              Text: ="Cancel"
+                              OnSelect: =Set(trShowAdd, false)
+                  - conR_TrsAd:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(26, 90, 153, 1)
+                        Height: =44 * SY
+                        Width: =250 * SX
+                        X: =286 * SX
+                        Y: =266 * SY
+                        RadiusBottomLeft: =22 * SR
+                        RadiusBottomRight: =22 * SR
+                        RadiusTopLeft: =22 * SR
+                        RadiusTopRight: =22 * SR
+                        BorderColor: =RGBA(26, 90, 153, 1)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                      Children:
+                        - btnR_TrsAd:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =22 * SR
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(255, 255, 255, 1)
+                              FontSize: =Round(15 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =44 * SY
+                              Width: =250 * SX
+                              Text: ="Save date"
+                              OnSelect: =Select(btnDoAdd_Trs)
+      - TrsCf_Popup:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(14, 28, 42, 0.45)
+            Height: =768 * SY
+            Visible: =trShowConfirm
+            Width: =1366 * SX
+            X: =0
+            Y: =0
+          Children:
+            - btnScrim_TrsCf:
+                Control: Button@0.0.45
+                Properties:
+                  FontSize: =Round(14 * SF, 0)
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  BorderStyle: =BorderStyle.None
+                  Height: =Parent.Height
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+                  Text: =""
+                  OnSelect: =Set(trShowConfirm, false)
+            - TrsCf_PopupCard:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =250 * SY
+                  Width: =520 * SX
+                  X: =423 * SX
+                  Y: =259 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                Children:
+                  - lblT_TrsCf:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
+                        Size: =Round(20 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =28 * SY
+                        Text: =trCfTitle
+                        Width: =472 * SX
+                        X: =24 * SX
+                        Y: =18 * SY
+                        Wrap: =false
+                  - lblCfBody_Trs:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(58, 80, 104, 1)
+                        Size: =Round(14 * SF, 0)
+                        Height: =80 * SY
+                        Text: =trCfBody
+                        Width: =472 * SX
+                        X: =24 * SX
+                        Y: =60 * SY
+                  - conL_TrsCf:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =44 * SY
+                        Width: =230 * SX
+                        X: =24 * SX
+                        Y: =186 * SY
+                        RadiusBottomLeft: =22 * SR
+                        RadiusBottomRight: =22 * SR
+                        RadiusTopLeft: =22 * SR
+                        RadiusTopRight: =22 * SR
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                      Children:
+                        - btnL_TrsCf:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =22 * SR
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(58, 80, 104, 1)
+                              FontSize: =Round(15 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =44 * SY
+                              Width: =230 * SX
+                              Text: ="Keep it"
+                              OnSelect: =Set(trShowConfirm, false)
+                  - conR_TrsCf:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(180, 26, 26, 1)
+                        Height: =44 * SY
+                        Width: =230 * SX
+                        X: =266 * SX
+                        Y: =186 * SY
+                        RadiusBottomLeft: =22 * SR
+                        RadiusBottomRight: =22 * SR
+                        RadiusTopLeft: =22 * SR
+                        RadiusTopRight: =22 * SR
+                        BorderColor: =RGBA(180, 26, 26, 1)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                      Children:
+                        - btnR_TrsCf:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =22 * SR
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(255, 255, 255, 1)
+                              FontSize: =Round(15 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =44 * SY
+                              Width: =230 * SX
+                              Text: ="trCfBtn"
+                              OnSelect: |-
+                                =Switch(
+                                    trCfAction,
+                                    "CancelMine", Select(btnDoCancel_Trs),
+                                    "RemoveAttendee", Select(btnDoRemove_Trs),
+                                    "DeleteDate", Select(btnDoDelete_Trs)
+                                )
+      - TrsWl_Popup:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(14, 28, 42, 0.45)
+            Height: =768 * SY
+            Visible: =trShowWait
+            Width: =1366 * SX
+            X: =0
+            Y: =0
+          Children:
+            - btnScrim_TrsWl:
+                Control: Button@0.0.45
+                Properties:
+                  FontSize: =Round(14 * SF, 0)
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  BorderStyle: =BorderStyle.None
+                  Height: =Parent.Height
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+                  Text: =""
+                  OnSelect: =Set(trShowWait, false)
+            - TrsWl_PopupCard:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =470 * SY
+                  Width: =560 * SX
+                  X: =403 * SX
+                  Y: =149 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                Children:
+                  - lblT_TrsWl:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
+                        Size: =Round(20 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =28 * SY
+                        Text: ="Waitlist (" & trSel.WaitCount & ")"
+                        Width: =512 * SX
+                        X: =24 * SX
+                        Y: =18 * SY
+                        Wrap: =false
+                  - galWait_Trs:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        Height: =332 * SY
+                        Items: =SortByColumns(Filter(colTrWait, SessionID = trSel.SesKey), "AddedOn", SortOrder.Ascending)
+                        TemplatePadding: =0
+                        TemplateSize: =60 * SY
+                        Width: =512 * SX
+                        X: =24 * SX
+                        Y: =60 * SY
+                      Children:
+                        - conWl_Trs:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =RGBA(244, 249, 252, 1)
+                              Height: =52 * SY
+                              Width: =Parent.TemplateWidth - 12 * SX
+                              X: =6 * SX
+                              Y: =3 * SY
+                              RadiusBottomLeft: =12 * SR
+                              RadiusBottomRight: =12 * SR
+                              RadiusTopLeft: =12 * SR
+                              RadiusTopRight: =12 * SR
+                              BorderColor: =RGBA(14, 42, 70, 0.12)
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                            Children:
+                              - lblWlName_Trs:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =Font.'Segoe UI'
+                                    Color: =RGBA(14, 28, 42, 1)
+                                    Size: =Round(14 * SF, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =22 * SY
+                                    Text: =ThisItem.WaitlistUserName
+                                    Width: =300 * SX
+                                    X: =14 * SX
+                                    Y: =6 * SY
+                                    Wrap: =false
+                              - lblWlSub_Trs:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =Font.'Segoe UI'
+                                    Color: =RGBA(140, 155, 174, 1)
+                                    Size: =Round(12 * SF, 0)
+                                    Height: =18 * SY
+                                    Text: =ThisItem.WaitlistUserEmail & "  ·  " & Text(ThisItem.AddedOn, "d mmm h:mm AM/PM")
+                                    Width: =460 * SX
+                                    X: =14 * SX
+                                    Y: =28 * SY
+                                    Wrap: =false
+                  - lblWaitEmpty_Trs:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =Round(14 * SF, 0)
+                        Height: =24 * SY
+                        Text: ="Nobody is on the waitlist."
+                        Width: =512 * SX
+                        X: =24 * SX
+                        Y: =200 * SY
+                        Align: =Align.Center
+                        Visible: =IsEmpty(galWait_Trs.AllItems)
+                  - conL_TrsWl:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =44 * SY
+                        Width: =250 * SX
+                        X: =24 * SX
+                        Y: =406 * SY
+                        RadiusBottomLeft: =22 * SR
+                        RadiusBottomRight: =22 * SR
+                        RadiusTopLeft: =22 * SR
+                        RadiusTopRight: =22 * SR
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                      Children:
+                        - btnL_TrsWl:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =22 * SR
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(58, 80, 104, 1)
+                              FontSize: =Round(15 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =44 * SY
+                              Width: =250 * SX
+                              Text: ="Close"
+                              OnSelect: =Set(trShowWait, false)
+                  - conR_TrsWl:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(26, 90, 153, 1)
+                        Height: =44 * SY
+                        Width: =250 * SX
+                        X: =286 * SX
+                        Y: =406 * SY
+                        RadiusBottomLeft: =22 * SR
+                        RadiusBottomRight: =22 * SR
+                        RadiusTopLeft: =22 * SR
+                        RadiusTopRight: =22 * SR
+                        BorderColor: =RGBA(26, 90, 153, 1)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                      Children:
+                        - btnR_TrsWl:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =22 * SR
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(255, 255, 255, 1)
+                              FontSize: =Round(15 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =44 * SY
+                              Width: =250 * SX
+                              Text: ="Email waitlist"
+                              OnSelect: =Select(btnDoSendWait_Trs)
+      - TrsEm_Popup:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(14, 28, 42, 0.45)
+            Height: =768 * SY
+            Visible: =trShowEmail
+            Width: =1366 * SX
+            X: =0
+            Y: =0
+          Children:
+            - btnScrim_TrsEm:
+                Control: Button@0.0.45
+                Properties:
+                  FontSize: =Round(14 * SF, 0)
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  BorderStyle: =BorderStyle.None
+                  Height: =Parent.Height
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+                  Text: =""
+                  OnSelect: =Set(trShowEmail, false)
+            - TrsEm_PopupCard:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =500 * SY
+                  Width: =600 * SX
+                  X: =383 * SX
+                  Y: =134 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                Children:
+                  - lblT_TrsEm:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
+                        Size: =Round(20 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =28 * SY
+                        Text: =Email attendees
+                        Width: =552 * SX
+                        X: =24 * SX
+                        Y: =18 * SY
+                        Wrap: =false
+                  - capSub_Trs:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =Round(11 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Text: ="SUBJECT"
+                        Width: =552 * SX
+                        X: =24 * SX
+                        Y: =62 * SY
+                  - boxSub_Trs:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =40 * SY
+                        Width: =552 * SX
+                        X: =24 * SX
+                        Y: =82 * SY
+                        RadiusBottomLeft: =10 * SR
+                        RadiusBottomRight: =10 * SR
+                        RadiusTopLeft: =10 * SR
+                        RadiusTopRight: =10 * SR
+                        BorderColor: =RGBA(14, 42, 70, 0.22)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                      Children:
+                        - txtEmailSubject_Trs:
+                            Control: Classic/TextInput@2.3.2
+                            Properties:
+                              BorderStyle: =BorderStyle.None
+                              Color: =RGBA(14, 28, 42, 1)
+                              Default: =trType & " training - " & Text(trSel.SessionDate, "dd/mm/yyyy h:mm AM/PM")
+                              Font: =Font.'Segoe UI'
+                              Height: =40 * SY
+                              HintText: ="Subject"
+                              Size: =Round(14 * SF, 0)
+                              Width: =552 * SX
+                  - capBody_Trs:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =Round(11 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =16 * SY
+                        Text: ="MESSAGE TO EVERYONE BOOKED"
+                        Width: =552 * SX
+                        X: =24 * SX
+                        Y: =134 * SY
+                  - boxBody_Trs:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =230 * SY
+                        Width: =552 * SX
+                        X: =24 * SX
+                        Y: =154 * SY
+                        RadiusBottomLeft: =10 * SR
+                        RadiusBottomRight: =10 * SR
+                        RadiusTopLeft: =10 * SR
+                        RadiusTopRight: =10 * SR
+                        BorderColor: =RGBA(14, 42, 70, 0.22)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                      Children:
+                        - txtEmailBody_Trs:
+                            Control: Classic/TextInput@2.3.2
+                            Properties:
+                              BorderStyle: =BorderStyle.None
+                              Color: =RGBA(14, 28, 42, 1)
+                              Default: ="Hi all," & Char(10) & Char(10) & "You are booked into " & trType & " training on " & Text(trSel.SessionDate, "dddd d mmmm") & " at " & Text(trSel.SessionDate, "h:mm AM/PM") & "." & Char(10) & "The session will be at " & Coalesce(trSel.Location, "the usual location") & "." & Char(10) & Char(10) & "If you have any questions please reach out." & Char(10) & Char(10) & "Regards," & Char(10) & MeName
+                              Font: =Font.'Segoe UI'
+                              Height: =230 * SY
+                              HintText: ="Message"
+                              Size: =Round(14 * SF, 0)
+                              Width: =552 * SX
+                              Mode: =TextMode.MultiLine
+                  - conL_TrsEm:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =44 * SY
+                        Width: =270 * SX
+                        X: =24 * SX
+                        Y: =436 * SY
+                        RadiusBottomLeft: =22 * SR
+                        RadiusBottomRight: =22 * SR
+                        RadiusTopLeft: =22 * SR
+                        RadiusTopRight: =22 * SR
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                      Children:
+                        - btnL_TrsEm:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =22 * SR
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(58, 80, 104, 1)
+                              FontSize: =Round(15 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =44 * SY
+                              Width: =270 * SX
+                              Text: ="Cancel"
+                              OnSelect: =Set(trShowEmail, false)
+                  - conR_TrsEm:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(26, 90, 153, 1)
+                        Height: =44 * SY
+                        Width: =270 * SX
+                        X: =306 * SX
+                        Y: =436 * SY
+                        RadiusBottomLeft: =22 * SR
+                        RadiusBottomRight: =22 * SR
+                        RadiusTopLeft: =22 * SR
+                        RadiusTopRight: =22 * SR
+                        BorderColor: =RGBA(26, 90, 153, 1)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                      Children:
+                        - btnR_TrsEm:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderRadius: =22 * SR
+                              Font: =Font.'Segoe UI'
+                              FontColor: =RGBA(255, 255, 255, 1)
+                              FontSize: =Round(15 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =44 * SY
+                              Width: =270 * SX
+                              Text: ="Send email"
+                              OnSelect: =Select(btnDoSend_Trs)

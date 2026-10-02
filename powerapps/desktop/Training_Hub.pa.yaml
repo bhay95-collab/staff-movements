@@ -1,0 +1,1051 @@
+Screens:
+  Training_Hub:
+    Properties:
+      Fill: =RGBA(235, 242, 248, 1)
+      ImagePosition: =ImagePosition.Fill
+      OnVisible: =Select(btnLoad_Trh)
+    Children:
+      - btnLoad_Trh:
+          Control: Button@0.0.45
+          Properties:
+            FontSize: =Round(14 * SF, 0)
+            Height: =10 * SY
+            Width: =10 * SX
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =Set(trLoading, true);
+              Refresh(TrainingSessions);
+              Refresh(TrainingBookings);
+              Refresh(TrainingWaitlist);
+              ClearCollect(
+                  colThBookings,
+                  Filter(TrainingBookings, BookingStatus.Value = "Booked" && SessionDate >= Today())
+              );
+              ClearCollect(
+                  colThWait,
+                  Filter(TrainingWaitlist, WaitlistStatus.Value = "Waiting" && Lower(WaitlistUserEmail) = MeEmail)
+              );
+              ClearCollect(
+                  colThSessions,
+                  AddColumns(
+                      AddColumns(
+                          SortByColumns(
+                              Filter(TrainingSessions, IsActive = true && SessionDate >= Today()),
+                              "SessionDate",
+                              SortOrder.Ascending
+                          ),
+                          SesKey, Text(ID),
+                          TypeText, TrainingType.Value,
+                          CapV, Coalesce(Capacity, If(TrainingType.Value = "Manual Handling", 8, 6))
+                      ),
+                      Booked, CountRows(Filter(colThBookings, SessionID = SesKey)),
+                      Free, CapV - CountRows(Filter(colThBookings, SessionID = SesKey)),
+                      MyBookingID, LookUp(colThBookings, SessionID = SesKey && Lower(BookedUserEmail) = MeEmail).ID,
+                      OnWait, CountRows(Filter(colThWait, SessionID = SesKey)) > 0
+                  )
+              );
+              ClearCollect(
+                  colThMine,
+                  SortByColumns(
+                      Filter(colThBookings, Lower(BookedUserEmail) = MeEmail),
+                      "SessionDate",
+                      SortOrder.Ascending
+                  )
+              );
+              Set(trLoading, false)
+      - Trh_Title:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Regular
+            Fill: =RGBA(7, 95, 115, 1)
+            Height: =70 * SY
+            Width: =1333 * SX
+            X: =18 * SX
+            Y: =12 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+          Children:
+            - imgHeaderGradient_Trh:
+                Control: Image@2.2.3
+                Properties:
+                  Height: =Parent.Height
+                  Image: ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' width='1333' height='70' viewBox='0 0 1333 70' preserveAspectRatio='none'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001D46'/><stop offset='0.48' stop-color='#075F73'/><stop offset='1' stop-color='#00838A'/></linearGradient><linearGradient id='b' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#001B36' stop-opacity='0.46'/><stop offset='0.45' stop-color='#002036' stop-opacity='0.18'/><stop offset='1' stop-color='#002036' stop-opacity='0.06'/></linearGradient></defs><rect width='1333' height='70' rx='18' fill='url(#a)'/><rect width='1333' height='70' rx='18' fill='url(#b)'/></svg>")
+                  ImagePosition: =ImagePosition.Fill
+                  Width: =Parent.Width
+            - lblTitle_TrhHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  Height: =36 * SY
+                  Size: =Round(28 * SF, 0)
+                  Text: ="Training"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Weight: ='TextCanvas.Weight'.Bold
+                  Width: =700 * SX
+                  X: =76 * SX
+                  Y: =8 * SY
+            - lblSub_TrhHdr:
+                Control: Text@0.0.51
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  FontColor: =RGBA(255, 255, 255, 0.88)
+                  Height: =20 * SY
+                  Size: =Round(12 * SF, 0)
+                  Text: =If(trLoading, "Loading training...", CountRows(colThMine) & If(CountRows(colThMine) = 1, " booking", " bookings") & " coming up  ·  " & CountRows(colThSessions) & " dates scheduled")
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =800 * SX
+                  X: =76 * SX
+                  Y: =42 * SY
+            - btnBack_Trh:
+                Control: Button@0.0.45
+                Properties:
+                  Width: =96 * SX
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontSize: =Round(50 * SF, 0)
+                  Height: =70 * SY
+                  Icon: ="ChevronLeft"
+                  Text: =""
+                  X: =1 * SX
+                  OnSelect: =Back(ScreenTransition.Fade)
+            - conReload_Trh:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =40 * SY
+                  Width: =140 * SX
+                  X: =1177 * SX
+                  Y: =15 * SY
+                  RadiusBottomLeft: =20 * SR
+                  RadiusBottomRight: =20 * SR
+                  RadiusTopLeft: =20 * SR
+                  RadiusTopRight: =20 * SR
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                Children:
+                  - btnReload_Trh:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderRadius: =20 * SR
+                        Font: =Font.'Segoe UI'
+                        FontColor: =RGBA(58, 80, 104, 1)
+                        FontSize: =Round(13 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
+                        Width: =140 * SX
+                        Text: ="Reload"
+                        OnSelect: =Select(btnLoad_Trh)
+                        Icon: ="ArrowClockwise"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        Layout: ='ButtonCanvas.Layout'.IconBefore
+      - Trh_Kpi_Mine:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Light
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            Width: =324 * SX
+            X: =18 * SX
+            Y: =95 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+          Children:
+            - lblKpiT_Mine_Trh:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =Round(11 * SF, 0)
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Text: ="MY BOOKINGS"
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
+            - lblKpiV_Mine_Trh:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(26, 90, 153, 1)
+                  Size: =Round(30 * SF, 0)
+                  FontWeight: =FontWeight.Bold
+                  Height: =38 * SY
+                  Text: =Text(CountRows(colThMine))
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
+            - lblKpiS_Mine_Trh:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =Round(11 * SF, 0)
+                  Height: =16 * SY
+                  Text: ="Places you have booked"
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
+      - Trh_Kpi_Wait:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Light
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            Width: =324 * SX
+            X: =354 * SX
+            Y: =95 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+          Children:
+            - lblKpiT_Wait_Trh:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =Round(11 * SF, 0)
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Text: ="ON A WAITLIST"
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
+            - lblKpiV_Wait_Trh:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =If(CountRows(colThWait) > 0, RGBA(200, 120, 0, 1), RGBA(14, 28, 42, 1))
+                  Size: =Round(30 * SF, 0)
+                  FontWeight: =FontWeight.Bold
+                  Height: =38 * SY
+                  Text: =Text(CountRows(colThWait))
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
+            - lblKpiS_Wait_Trh:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =Round(11 * SF, 0)
+                  Height: =16 * SY
+                  Text: ="Waiting for a place"
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
+      - Trh_Kpi_Bls:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Light
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            Width: =324 * SX
+            X: =690 * SX
+            Y: =95 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+          Children:
+            - lblKpiT_Bls_Trh:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =Round(11 * SF, 0)
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Text: ="BASIC LIFE SUPPORT"
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
+            - lblKpiV_Bls_Trh:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =If(IsBlank(First(Filter(colThSessions, TypeText = "Basic Life Support"))), RGBA(140, 155, 174, 1), First(Filter(colThSessions, TypeText = "Basic Life Support")).Free > 0, RGBA(12, 122, 82, 1), RGBA(180, 26, 26, 1))
+                  Size: =Round(30 * SF, 0)
+                  FontWeight: =FontWeight.Bold
+                  Height: =38 * SY
+                  Text: =Coalesce(Text(First(Filter(colThSessions, TypeText = "Basic Life Support")).Free), "—")
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
+            - lblKpiS_Bls_Trh:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =Round(11 * SF, 0)
+                  Height: =16 * SY
+                  Text: ="Places left on the next date"
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
+      - Trh_Kpi_Mh:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Light
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =92 * SY
+            Width: =324 * SX
+            X: =1026 * SX
+            Y: =95 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+          Children:
+            - lblKpiT_Mh_Trh:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =Round(11 * SF, 0)
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Text: ="MANUAL HANDLING"
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =10 * SY
+            - lblKpiV_Mh_Trh:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =If(IsBlank(First(Filter(colThSessions, TypeText = "Manual Handling"))), RGBA(140, 155, 174, 1), First(Filter(colThSessions, TypeText = "Manual Handling")).Free > 0, RGBA(12, 122, 82, 1), RGBA(180, 26, 26, 1))
+                  Size: =Round(30 * SF, 0)
+                  FontWeight: =FontWeight.Bold
+                  Height: =38 * SY
+                  Text: =Coalesce(Text(First(Filter(colThSessions, TypeText = "Manual Handling")).Free), "—")
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =27 * SY
+            - lblKpiS_Mh_Trh:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =Round(11 * SF, 0)
+                  Height: =16 * SY
+                  Text: ="Places left on the next date"
+                  Width: =304 * SX
+                  X: =16 * SX
+                  Y: =68 * SY
+      - Trh_CardBook:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Light
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =554 * SY
+            Width: =660 * SX
+            X: =18 * SX
+            Y: =199 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+          Children:
+            - lblBookH_Trh:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =Round(18 * SF, 0)
+                  FontWeight: =FontWeight.Bold
+                  Height: =28 * SY
+                  Text: ="Book a training"
+                  Width: =400 * SX
+                  X: =20 * SX
+                  Y: =14 * SY
+                  Wrap: =false
+            - lblBookHint_Trh:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =Round(12 * SF, 0)
+                  Height: =20 * SY
+                  Text: ="Choose a course, then pick a date"
+                  Width: =280 * SX
+                  X: =360 * SX
+                  Y: =18 * SY
+                  Align: =Align.Right
+                  Wrap: =false
+            - conTypeBls_Trh:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(244, 249, 252, 1)
+                  Height: =84 * SY
+                  Width: =632 * SX
+                  X: =14 * SX
+                  Y: =54 * SY
+                  RadiusBottomLeft: =16 * SR
+                  RadiusBottomRight: =16 * SR
+                  RadiusTopLeft: =16 * SR
+                  RadiusTopRight: =16 * SR
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                Children:
+                  - conTypeIcBls_Trh:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(26, 90, 153, 1)
+                        Height: =52 * SY
+                        Width: =52 * SX
+                        X: =16 * SX
+                        Y: =16 * SY
+                        RadiusBottomLeft: =26 * SR
+                        RadiusBottomRight: =26 * SR
+                        RadiusTopLeft: =26 * SR
+                        RadiusTopRight: =26 * SR
+                      Children:
+                        - icoTypeBls_Trh:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              FontColor: =RGBA(255, 255, 255, 1)
+                              FontSize: =Round(22 * SF, 0)
+                              Height: =52 * SY
+                              Icon: ="Heart"
+                              IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                              Layout: ='ButtonCanvas.Layout'.IconOnly
+                              Text: =""
+                              Width: =52 * SX
+                              OnSelect: =false
+                  - lblTypeTBls_Trh:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
+                        Size: =Round(18 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =28 * SY
+                        Text: ="Basic Life Support"
+                        Width: =380 * SX
+                        X: =84 * SX
+                        Y: =14 * SY
+                        Wrap: =false
+                  - lblTypeSBls_Trh:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =Round(13 * SF, 0)
+                        Height: =22 * SY
+                        Text: |-
+                          =If(IsBlank(First(Filter(colThSessions, TypeText = "Basic Life Support"))), "No dates scheduled yet", "Next: " & Text(First(Filter(colThSessions, TypeText = "Basic Life Support")).SessionDate, "ddd d mmm") & "  ·  " & Text(First(Filter(colThSessions, TypeText = "Basic Life Support")).SessionDate, "h:mm AM/PM") & "  ·  " & Coalesce(First(Filter(colThSessions, TypeText = "Basic Life Support")).Location, "Location to be confirmed"))
+                        Width: =404 * SX
+                        X: =84 * SX
+                        Y: =44 * SY
+                        Wrap: =false
+                  - conTypeChipBls_Trh:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =If(!IsBlank(First(Filter(colThSessions, TypeText = "Basic Life Support")).MyBookingID), RGBA(232, 246, 240, 1), First(Filter(colThSessions, TypeText = "Basic Life Support")).Free <= 0, RGBA(255, 246, 229, 1), RGBA(26, 90, 153, 0.08))
+                        Height: =28 * SY
+                        Width: =90 * SX
+                        X: =502 * SX
+                        Y: =28 * SY
+                        RadiusBottomLeft: =14 * SR
+                        RadiusBottomRight: =14 * SR
+                        RadiusTopLeft: =14 * SR
+                        RadiusTopRight: =14 * SR
+                        Visible: =!IsBlank(First(Filter(colThSessions, TypeText = "Basic Life Support")))
+                      Children:
+                        - lblTypeChipBls_Trh:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =If(!IsBlank(First(Filter(colThSessions, TypeText = "Basic Life Support")).MyBookingID), RGBA(12, 122, 82, 1), First(Filter(colThSessions, TypeText = "Basic Life Support")).Free <= 0, RGBA(200, 120, 0, 1), RGBA(26, 90, 153, 1))
+                              Size: =Round(12 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =Parent.Height
+                              Text: =If(!IsBlank(First(Filter(colThSessions, TypeText = "Basic Life Support")).MyBookingID), "Booked", First(Filter(colThSessions, TypeText = "Basic Life Support")).Free <= 0, If(First(Filter(colThSessions, TypeText = "Basic Life Support")).OnWait, "Waitlisted", "Full"), First(Filter(colThSessions, TypeText = "Basic Life Support")).Free & " left")
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Align: =Align.Center
+                              VerticalAlign: =VerticalAlign.Middle
+                              Wrap: =false
+                  - lblTypeGoBls_Trh:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =Round(28 * SF, 0)
+                        Height: =44 * SY
+                        Text: ="›"
+                        Width: =20 * SX
+                        X: =600 * SX
+                        Y: =18 * SY
+                        Align: =Align.Center
+                        VerticalAlign: =VerticalAlign.Middle
+                        Wrap: =false
+                  - btnTypeBls_Trh:
+                      Control: Button@0.0.45
+                      Properties:
+                        FontSize: =Round(14 * SF, 0)
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderStyle: =BorderStyle.None
+                        Height: =Parent.Height
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        Text: =""
+                        OnSelect: |-
+                          =Set(trType, "Basic Life Support");
+                          Set(trSel, Blank());
+                          Navigate(Training_Sessions, ScreenTransition.Cover)
+            - conTypeMh_Trh:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(244, 249, 252, 1)
+                  Height: =84 * SY
+                  Width: =632 * SX
+                  X: =14 * SX
+                  Y: =150 * SY
+                  RadiusBottomLeft: =16 * SR
+                  RadiusBottomRight: =16 * SR
+                  RadiusTopLeft: =16 * SR
+                  RadiusTopRight: =16 * SR
+                  BorderColor: =RGBA(14, 42, 70, 0.12)
+                  BorderStyle: =BorderStyle.Solid
+                  BorderThickness: =1
+                Children:
+                  - conTypeIcMh_Trh:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(26, 90, 153, 1)
+                        Height: =52 * SY
+                        Width: =52 * SX
+                        X: =16 * SX
+                        Y: =16 * SY
+                        RadiusBottomLeft: =26 * SR
+                        RadiusBottomRight: =26 * SR
+                        RadiusTopLeft: =26 * SR
+                        RadiusTopRight: =26 * SR
+                      Children:
+                        - icoTypeMh_Trh:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              FontColor: =RGBA(255, 255, 255, 1)
+                              FontSize: =Round(22 * SF, 0)
+                              Height: =52 * SY
+                              Icon: ="People"
+                              IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                              Layout: ='ButtonCanvas.Layout'.IconOnly
+                              Text: =""
+                              Width: =52 * SX
+                              OnSelect: =false
+                  - lblTypeTMh_Trh:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(14, 28, 42, 1)
+                        Size: =Round(18 * SF, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =28 * SY
+                        Text: ="Manual Handling"
+                        Width: =380 * SX
+                        X: =84 * SX
+                        Y: =14 * SY
+                        Wrap: =false
+                  - lblTypeSMh_Trh:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =Round(13 * SF, 0)
+                        Height: =22 * SY
+                        Text: |-
+                          =If(IsBlank(First(Filter(colThSessions, TypeText = "Manual Handling"))), "No dates scheduled yet", "Next: " & Text(First(Filter(colThSessions, TypeText = "Manual Handling")).SessionDate, "ddd d mmm") & "  ·  " & Text(First(Filter(colThSessions, TypeText = "Manual Handling")).SessionDate, "h:mm AM/PM") & "  ·  " & Coalesce(First(Filter(colThSessions, TypeText = "Manual Handling")).Location, "Location to be confirmed"))
+                        Width: =404 * SX
+                        X: =84 * SX
+                        Y: =44 * SY
+                        Wrap: =false
+                  - conTypeChipMh_Trh:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =If(!IsBlank(First(Filter(colThSessions, TypeText = "Manual Handling")).MyBookingID), RGBA(232, 246, 240, 1), First(Filter(colThSessions, TypeText = "Manual Handling")).Free <= 0, RGBA(255, 246, 229, 1), RGBA(26, 90, 153, 0.08))
+                        Height: =28 * SY
+                        Width: =90 * SX
+                        X: =502 * SX
+                        Y: =28 * SY
+                        RadiusBottomLeft: =14 * SR
+                        RadiusBottomRight: =14 * SR
+                        RadiusTopLeft: =14 * SR
+                        RadiusTopRight: =14 * SR
+                        Visible: =!IsBlank(First(Filter(colThSessions, TypeText = "Manual Handling")))
+                      Children:
+                        - lblTypeChipMh_Trh:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =If(!IsBlank(First(Filter(colThSessions, TypeText = "Manual Handling")).MyBookingID), RGBA(12, 122, 82, 1), First(Filter(colThSessions, TypeText = "Manual Handling")).Free <= 0, RGBA(200, 120, 0, 1), RGBA(26, 90, 153, 1))
+                              Size: =Round(12 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =Parent.Height
+                              Text: =If(!IsBlank(First(Filter(colThSessions, TypeText = "Manual Handling")).MyBookingID), "Booked", First(Filter(colThSessions, TypeText = "Manual Handling")).Free <= 0, If(First(Filter(colThSessions, TypeText = "Manual Handling")).OnWait, "Waitlisted", "Full"), First(Filter(colThSessions, TypeText = "Manual Handling")).Free & " left")
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Align: =Align.Center
+                              VerticalAlign: =VerticalAlign.Middle
+                              Wrap: =false
+                  - lblTypeGoMh_Trh:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =Font.'Segoe UI'
+                        Color: =RGBA(140, 155, 174, 1)
+                        Size: =Round(28 * SF, 0)
+                        Height: =44 * SY
+                        Text: ="›"
+                        Width: =20 * SX
+                        X: =600 * SX
+                        Y: =18 * SY
+                        Align: =Align.Center
+                        VerticalAlign: =VerticalAlign.Middle
+                        Wrap: =false
+                  - btnTypeMh_Trh:
+                      Control: Button@0.0.45
+                      Properties:
+                        FontSize: =Round(14 * SF, 0)
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        BorderStyle: =BorderStyle.None
+                        Height: =Parent.Height
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                        Text: =""
+                        OnSelect: |-
+                          =Set(trType, "Manual Handling");
+                          Set(trSel, Blank());
+                          Navigate(Training_Sessions, ScreenTransition.Cover)
+            - capUp_Trh:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =Round(11 * SF, 0)
+                  FontWeight: =FontWeight.Bold
+                  Height: =16 * SY
+                  Text: ="COMING UP"
+                  Width: =300 * SX
+                  X: =20 * SX
+                  Y: =254 * SY
+            - galUp_Trh:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =272 * SY
+                  Items: =colThSessions
+                  TemplatePadding: =0
+                  TemplateSize: =64 * SY
+                  Width: =652 * SX
+                  X: =4 * SX
+                  Y: =276 * SY
+                Children:
+                  - conUp_Trh:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =58 * SY
+                        Width: =Parent.TemplateWidth - 12 * SX
+                        X: =6 * SX
+                        Y: =3 * SY
+                        RadiusBottomLeft: =12 * SR
+                        RadiusBottomRight: =12 * SR
+                        RadiusTopLeft: =12 * SR
+                        RadiusTopRight: =12 * SR
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                      Children:
+                        - conUpBox_Trh:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =If(false, RGBA(26, 90, 153, 1), RGBA(26, 90, 153, 0.08))
+                              Height: =50 * SY
+                              Width: =44 * SX
+                              X: =10 * SX
+                              Y: =3 * SY
+                              RadiusBottomLeft: =12 * SR
+                              RadiusBottomRight: =12 * SR
+                              RadiusTopLeft: =12 * SR
+                              RadiusTopRight: =12 * SR
+                            Children:
+                              - lblDowUpBox_Trh:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =Font.'Segoe UI'
+                                    Color: =If(false, RGBA(255, 255, 255, 1), RGBA(140, 155, 174, 1))
+                                    Size: =Round(11 * SF, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =16 * SY
+                                    Text: =Upper(Text(ThisItem.SessionDate, "ddd"))
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =6 * SY
+                                    Align: =Align.Center
+                                    Wrap: =false
+                              - lblDayUpBox_Trh:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =Font.'Segoe UI'
+                                    Color: =If(false, RGBA(255, 255, 255, 1), RGBA(26, 90, 153, 1))
+                                    Size: =Round(20 * SF, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =30 * SY
+                                    Text: =Text(ThisItem.SessionDate, "d")
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =21 * SY
+                                    Align: =Align.Center
+                                    Wrap: =false
+                        - lblUpT_Trh:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(14, 28, 42, 1)
+                              Size: =Round(14 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =22 * SY
+                              Text: =ThisItem.TypeText
+                              Width: =280 * SX
+                              X: =66 * SX
+                              Y: =8 * SY
+                              Wrap: =false
+                        - lblUpS_Trh:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(140, 155, 174, 1)
+                              Size: =Round(12 * SF, 0)
+                              Height: =18 * SY
+                              Text: =Text(ThisItem.SessionDate, "ddd d mmm  ·  h:mm AM/PM")
+                              Width: =340 * SX
+                              X: =66 * SX
+                              Y: =30 * SY
+                              Wrap: =false
+                        - conUpChip_Trh:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =If(!IsBlank(ThisItem.MyBookingID), RGBA(232, 246, 240, 1), ThisItem.Free <= 0, RGBA(255, 246, 229, 1), RGBA(26, 90, 153, 0.08))
+                              Height: =26 * SY
+                              Width: =86 * SX
+                              X: =Parent.Width - 100 * SX
+                              Y: =15 * SY
+                              RadiusBottomLeft: =13 * SR
+                              RadiusBottomRight: =13 * SR
+                              RadiusTopLeft: =13 * SR
+                              RadiusTopRight: =13 * SR
+                            Children:
+                              - lblUpChip_Trh:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =Font.'Segoe UI'
+                                    Color: =If(!IsBlank(ThisItem.MyBookingID), RGBA(12, 122, 82, 1), ThisItem.Free <= 0, RGBA(200, 120, 0, 1), RGBA(26, 90, 153, 1))
+                                    Size: =Round(12 * SF, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Text: =If(!IsBlank(ThisItem.MyBookingID), "Booked", ThisItem.Free <= 0, If(ThisItem.OnWait, "Waitlisted", "Full"), ThisItem.Free & " left")
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =0
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Wrap: =false
+                        - btnUp_Trh:
+                            Control: Button@0.0.45
+                            Properties:
+                              FontSize: =Round(14 * SF, 0)
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderStyle: =BorderStyle.None
+                              Height: =Parent.Height
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Text: =""
+                              OnSelect: |-
+                                =Set(trType, ThisItem.TypeText);
+                                Set(trOpen, ThisItem.ID);
+                                Navigate(Training_Sessions, ScreenTransition.Cover)
+            - lblUpEmpty_Trh:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =Round(14 * SF, 0)
+                  Height: =24 * SY
+                  Text: ="No dates are scheduled yet."
+                  Width: =660 * SX
+                  X: =0
+                  Y: =380 * SY
+                  Align: =Align.Center
+                  Visible: =IsEmpty(galUp_Trh.AllItems)
+      - Trh_CardMine:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Light
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =554 * SY
+            Width: =661 * SX
+            X: =690 * SX
+            Y: =199 * SY
+            RadiusBottomLeft: =18 * SR
+            RadiusBottomRight: =18 * SR
+            RadiusTopLeft: =18 * SR
+            RadiusTopRight: =18 * SR
+            BorderColor: =RGBA(14, 42, 70, 0.12)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+          Children:
+            - lblMineH_Trh:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(14, 28, 42, 1)
+                  Size: =Round(18 * SF, 0)
+                  FontWeight: =FontWeight.Bold
+                  Height: =28 * SY
+                  Text: ="My upcoming bookings"
+                  Width: =400 * SX
+                  X: =20 * SX
+                  Y: =14 * SY
+                  Wrap: =false
+            - lblMineHint_Trh:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =Round(12 * SF, 0)
+                  Height: =20 * SY
+                  Text: ="Tap one to see who else is booked"
+                  Width: =261 * SX
+                  X: =380 * SX
+                  Y: =18 * SY
+                  Align: =Align.Right
+                  Wrap: =false
+            - galMine_Trh:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Height: =494 * SY
+                  Items: =colThMine
+                  TemplatePadding: =0
+                  TemplateSize: =80 * SY
+                  Width: =661 * SX
+                  X: =0
+                  Y: =54 * SY
+                Children:
+                  - conMine_Trh:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(244, 249, 252, 1)
+                        Height: =72 * SY
+                        Width: =Parent.TemplateWidth - 16 * SX
+                        X: =8 * SX
+                        Y: =3 * SY
+                        RadiusBottomLeft: =12 * SR
+                        RadiusBottomRight: =12 * SR
+                        RadiusTopLeft: =12 * SR
+                        RadiusTopRight: =12 * SR
+                        BorderColor: =RGBA(14, 42, 70, 0.12)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                      Children:
+                        - conMineBox_Trh:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =If(false, RGBA(26, 90, 153, 1), RGBA(26, 90, 153, 0.08))
+                              Height: =56 * SY
+                              Width: =52 * SX
+                              X: =12 * SX
+                              Y: =8 * SY
+                              RadiusBottomLeft: =12 * SR
+                              RadiusBottomRight: =12 * SR
+                              RadiusTopLeft: =12 * SR
+                              RadiusTopRight: =12 * SR
+                            Children:
+                              - lblDowMineBox_Trh:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =Font.'Segoe UI'
+                                    Color: =If(false, RGBA(255, 255, 255, 1), RGBA(140, 155, 174, 1))
+                                    Size: =Round(11 * SF, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =16 * SY
+                                    Text: =Upper(Text(ThisItem.SessionDate, "ddd"))
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =6 * SY
+                                    Align: =Align.Center
+                                    Wrap: =false
+                              - lblDayMineBox_Trh:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =Font.'Segoe UI'
+                                    Color: =If(false, RGBA(255, 255, 255, 1), RGBA(26, 90, 153, 1))
+                                    Size: =Round(20 * SF, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =30 * SY
+                                    Text: =Text(ThisItem.SessionDate, "d")
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =21 * SY
+                                    Align: =Align.Center
+                                    Wrap: =false
+                        - lblMineT_Trh:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(14, 28, 42, 1)
+                              Size: =Round(15 * SF, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =24 * SY
+                              Text: =ThisItem.TrainingType
+                              Width: =330 * SX
+                              X: =78 * SX
+                              Y: =10 * SY
+                              Wrap: =false
+                        - lblMineS_Trh:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(58, 80, 104, 1)
+                              Size: =Round(12 * SF, 0)
+                              Height: =20 * SY
+                              Text: =Text(ThisItem.SessionDate, "dddd d mmmm  ·  h:mm AM/PM")
+                              Width: =400 * SX
+                              X: =78 * SX
+                              Y: =36 * SY
+                              Wrap: =false
+                        - lblMineL_Trh:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =Font.'Segoe UI'
+                              Color: =RGBA(140, 155, 174, 1)
+                              Size: =Round(11 * SF, 0)
+                              Height: =16 * SY
+                              Text: =Coalesce(LookUp(colThSessions, SesKey = ThisItem.SessionID).Location, "Location to be confirmed")
+                              Width: =400 * SX
+                              X: =78 * SX
+                              Y: =54 * SY
+                              Wrap: =false
+                        - conMineChip_Trh:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =RGBA(232, 246, 240, 1)
+                              Height: =28 * SY
+                              Width: =80 * SX
+                              X: =Parent.Width - 96 * SX
+                              Y: =22 * SY
+                              RadiusBottomLeft: =14 * SR
+                              RadiusBottomRight: =14 * SR
+                              RadiusTopLeft: =14 * SR
+                              RadiusTopRight: =14 * SR
+                            Children:
+                              - lblMineChip_Trh:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =Font.'Segoe UI'
+                                    Color: =RGBA(12, 122, 82, 1)
+                                    Size: =Round(12 * SF, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Parent.Height
+                                    Text: ="Slot " & ThisItem.SlotNumber
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =0
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Wrap: =false
+                        - btnMine_Trh:
+                            Control: Button@0.0.45
+                            Properties:
+                              FontSize: =Round(14 * SF, 0)
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderStyle: =BorderStyle.None
+                              Height: =Parent.Height
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Text: =""
+                              OnSelect: |-
+                                =Set(trType, ThisItem.TrainingType);
+                                Set(trOpen, LookUp(colThSessions, SesKey = ThisItem.SessionID).ID);
+                                Navigate(Training_Sessions, ScreenTransition.Cover)
+            - lblMineEmpty_Trh:
+                Control: Label@2.5.1
+                Properties:
+                  Font: =Font.'Segoe UI'
+                  Color: =RGBA(140, 155, 174, 1)
+                  Size: =Round(14 * SF, 0)
+                  Height: =60 * SY
+                  Text: |-
+                    ="You have no bookings coming up.
+                    Choose a course on the left to book a place."
+                  Width: =581 * SX
+                  X: =40 * SX
+                  Y: =190 * SY
+                  Align: =Align.Center
+                  Visible: =IsEmpty(galMine_Trh.AllItems)

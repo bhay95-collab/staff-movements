@@ -1,0 +1,640 @@
+Screens:
+  Training:
+    Properties:
+      Fill: =C_Bg
+      OnVisible: =Select(btnLoad_Tm)
+    Children:
+      - btnLoad_Tm:
+          Control: Button@0.0.45
+          Properties:
+            Height: =1
+            Width: =1
+            X: =0
+            Y: =0
+            Text: =""
+            Visible: =false
+            OnSelect: |-
+              =Set(trLoading, true);
+              Refresh(TrainingSessions);
+              Refresh(TrainingBookings);
+              Refresh(TrainingWaitlist);
+              ClearCollect(
+                  colThBookings,
+                  Filter(TrainingBookings, BookingStatus.Value = "Booked" && SessionDate >= Today())
+              );
+              ClearCollect(
+                  colThWait,
+                  Filter(TrainingWaitlist, WaitlistStatus.Value = "Waiting" && Lower(WaitlistUserEmail) = MeEmail)
+              );
+              ClearCollect(
+                  colThSessions,
+                  AddColumns(
+                      AddColumns(
+                          SortByColumns(
+                              Filter(TrainingSessions, IsActive = true && SessionDate >= Today()),
+                              "SessionDate",
+                              SortOrder.Ascending
+                          ),
+                          SesKey, Text(ID),
+                          TypeText, TrainingType.Value,
+                          CapV, Coalesce(Capacity, If(TrainingType.Value = "Manual Handling", 8, 6))
+                      ),
+                      Booked, CountRows(Filter(colThBookings, SessionID = SesKey)),
+                      Free, CapV - CountRows(Filter(colThBookings, SessionID = SesKey)),
+                      MyBookingID, LookUp(colThBookings, SessionID = SesKey && Lower(BookedUserEmail) = MeEmail).ID,
+                      OnWait, CountRows(Filter(colThWait, SessionID = SesKey)) > 0
+                  )
+              );
+              ClearCollect(
+                  colThMine,
+                  SortByColumns(
+                      Filter(colThBookings, Lower(BookedUserEmail) = MeEmail),
+                      "SessionDate",
+                      SortOrder.Ascending
+                  )
+              );
+              Set(trLoading, false)
+      - conRoot_Tm:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            Fill: =C_Bg
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+            LayoutJustifyContent: =LayoutJustifyContent.Start
+            LayoutGap: =0
+            PaddingTop: =0
+            PaddingRight: =0
+            PaddingBottom: =0
+            PaddingLeft: =0
+            DropShadow: =DropShadow.None
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =Parent.Height
+          Children:
+            - conHdr_Tm:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  AlignInContainer: =AlignInContainer.SetByContainer
+                  LayoutMinHeight: =Round(95 * UI, 0)
+                  FillPortions: =0
+                  Fill: =RGBA(7, 95, 115, 1)
+                  Height: =Round(95 * UI, 0)
+                  Width: =App.Width
+                  X: =0
+                  Y: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  DropShadow: =DropShadow.None
+                Children:
+                  - imgHdr_Tm:
+                      Control: Image@2.2.3
+                      Properties:
+                        Height: =Parent.Height
+                        Image: =HeaderImage
+                        ImagePosition: =ImagePosition.Fill
+                        Width: =Parent.Width
+                        X: =0
+                        Y: =0
+                  - btnBack_Tm:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        FontColor: =C_White
+                        FontSize: =Round(32 * UI, 0)
+                        Height: =Round(60 * UI, 0)
+                        Icon: ="ChevronLeft"
+                        Text: =""
+                        Width: =Round(60 * UI, 0)
+                        X: =Gutter + Round(5 * UI, 0)
+                        Y: =Round(18 * UI, 0)
+                        OnSelect: =Back(ScreenTransition.UnCoverRight)
+                  - lblHdrT_Tm:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =AppFont
+                        Color: =C_White
+                        Size: =Round(24 * UI, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =Round(35 * UI, 0)
+                        Text: ="Training"
+                        Width: =PageW - Round(85 * UI, 0)
+                        X: =Gutter + Round(65 * UI, 0)
+                        Y: =Round(20 * UI, 0)
+                        Wrap: =false
+                  - lblHdrS_Tm:
+                      Control: Label@2.5.1
+                      Properties:
+                        Font: =AppFont
+                        Color: =RGBA(255, 255, 255, 0.85)
+                        Size: =Round(15 * UI, 0)
+                        Height: =Round(25 * UI, 0)
+                        Text: =If(trLoading, "Loading...", CountRows(colThMine) & If(CountRows(colThMine) = 1, " booking", " bookings") & " coming up")
+                        Width: =PageW - Round(85 * UI, 0)
+                        X: =Gutter + Round(65 * UI, 0)
+                        Y: =Round(53 * UI, 0)
+                        Wrap: =false
+            - conBody_Tm:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  AlignInContainer: =AlignInContainer.SetByContainer
+                  LayoutMinHeight: =Round(250 * UI, 0)
+                  FillPortions: =1
+                  Width: =App.Width
+                  Fill: =RGBA(0, 0, 0, 0)
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutJustifyContent: =LayoutJustifyContent.Start
+                  LayoutGap: =Round(15 * UI, 0)
+                  PaddingTop: =Round(15 * UI, 0)
+                  PaddingRight: =Gutter + Round(20 * UI, 0)
+                  PaddingBottom: =Round(30 * UI, 0)
+                  PaddingLeft: =Gutter + Round(20 * UI, 0)
+                  DropShadow: =DropShadow.None
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                Children:
+                  - capBook_Tm:
+                      Control: Label@2.5.1
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(23 * UI, 0)
+                        FillPortions: =0
+                        Font: =AppFont
+                        Color: =C_Muted
+                        Size: =Round(14 * UI, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =Round(23 * UI, 0)
+                        Text: ="BOOK A TRAINING"
+                        Width: =PageW - Round(40 * UI, 0)
+                        X: =0
+                        Y: =0
+                        Wrap: =false
+                  - conTypeBls_Tm:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(120 * UI, 0)
+                        FillPortions: =0
+                        Fill: =C_White
+                        Height: =Round(120 * UI, 0)
+                        Width: =PageW - Round(40 * UI, 0)
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =Round(23 * UI, 0)
+                        RadiusBottomRight: =Round(23 * UI, 0)
+                        RadiusTopLeft: =Round(23 * UI, 0)
+                        RadiusTopRight: =Round(23 * UI, 0)
+                        BorderColor: =C_Line
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.Light
+                      Children:
+                        - conTypeIcBls_Tm:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_AccentSoft
+                              Height: =Round(65 * UI, 0)
+                              Width: =Round(65 * UI, 0)
+                              X: =Round(20 * UI, 0)
+                              Y: =Round(28 * UI, 0)
+                              RadiusBottomLeft: =Round(33 * UI, 0)
+                              RadiusBottomRight: =Round(33 * UI, 0)
+                              RadiusTopLeft: =Round(33 * UI, 0)
+                              RadiusTopRight: =Round(33 * UI, 0)
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - icoTypeBls_Tm:
+                                  Control: ModernIcon@1.1.1
+                                  Properties:
+                                    Height: =Round(33 * UI, 0)
+                                    Icon: ="Heart"
+                                    IconColor: =C_Accent
+                                    Width: =Round(33 * UI, 0)
+                                    X: =Round(16 * UI, 0)
+                                    Y: =Round(16 * UI, 0)
+                        - lblTypeTBls_Tm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =Round(21 * UI, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =Round(33 * UI, 0)
+                              Text: ="Basic Life Support"
+                              Width: =Parent.Width - Round(158 * UI, 0)
+                              X: =Round(103 * UI, 0)
+                              Y: =Round(15 * UI, 0)
+                              Wrap: =false
+                        - lblTypeNBls_Tm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink2
+                              Size: =Round(16 * UI, 0)
+                              Height: =Round(25 * UI, 0)
+                              Text: |-
+                                =If(IsBlank(First(Filter(colThSessions, TypeText = "Basic Life Support"))), "No dates scheduled yet", "Next: " & Text(First(Filter(colThSessions, TypeText = "Basic Life Support")).SessionDate, "ddd d mmm · h:mm AM/PM"))
+                              Width: =Parent.Width - Round(158 * UI, 0)
+                              X: =Round(103 * UI, 0)
+                              Y: =Round(50 * UI, 0)
+                              Wrap: =false
+                        - lblTypeFBls_Tm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =If(IsBlank(First(Filter(colThSessions, TypeText = "Basic Life Support"))), C_Muted, !IsBlank(First(Filter(colThSessions, TypeText = "Basic Life Support")).MyBookingID), C_Good, First(Filter(colThSessions, TypeText = "Basic Life Support")).Free <= 0, C_Amber, C_Accent)
+                              Size: =Round(15 * UI, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =Round(25 * UI, 0)
+                              Text: =If(IsBlank(First(Filter(colThSessions, TypeText = "Basic Life Support"))), "", !IsBlank(First(Filter(colThSessions, TypeText = "Basic Life Support")).MyBookingID), "You are booked in", First(Filter(colThSessions, TypeText = "Basic Life Support")).Free <= 0, If(First(Filter(colThSessions, TypeText = "Basic Life Support")).OnWait, "On the waitlist", "Full  ·  join the waitlist"), First(Filter(colThSessions, TypeText = "Basic Life Support")).Free & If(First(Filter(colThSessions, TypeText = "Basic Life Support")).Free = 1, " place left", " places left"))
+                              Width: =Parent.Width - Round(158 * UI, 0)
+                              X: =Round(103 * UI, 0)
+                              Y: =Round(80 * UI, 0)
+                              Wrap: =false
+                        - icoTypeGoBls_Tm:
+                            Control: ModernIcon@1.1.1
+                            Properties:
+                              Height: =Round(25 * UI, 0)
+                              Icon: ="ChevronRight"
+                              IconColor: =C_Muted
+                              Width: =Round(25 * UI, 0)
+                              X: =Parent.Width - Round(48 * UI, 0)
+                              Y: =Round(48 * UI, 0)
+                        - btnTypeBls_Tm:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderStyle: =BorderStyle.None
+                              Height: =Parent.Height
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Text: =""
+                              OnSelect: |-
+                                =Set(trType, "Basic Life Support");
+                                Set(trSel, Blank());
+                                Navigate(TrainingDates, ScreenTransition.Cover)
+                  - conTypeMh_Tm:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(120 * UI, 0)
+                        FillPortions: =0
+                        Fill: =C_White
+                        Height: =Round(120 * UI, 0)
+                        Width: =PageW - Round(40 * UI, 0)
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =Round(23 * UI, 0)
+                        RadiusBottomRight: =Round(23 * UI, 0)
+                        RadiusTopLeft: =Round(23 * UI, 0)
+                        RadiusTopRight: =Round(23 * UI, 0)
+                        BorderColor: =C_Line
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.Light
+                      Children:
+                        - conTypeIcMh_Tm:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_AccentSoft
+                              Height: =Round(65 * UI, 0)
+                              Width: =Round(65 * UI, 0)
+                              X: =Round(20 * UI, 0)
+                              Y: =Round(28 * UI, 0)
+                              RadiusBottomLeft: =Round(33 * UI, 0)
+                              RadiusBottomRight: =Round(33 * UI, 0)
+                              RadiusTopLeft: =Round(33 * UI, 0)
+                              RadiusTopRight: =Round(33 * UI, 0)
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - icoTypeMh_Tm:
+                                  Control: ModernIcon@1.1.1
+                                  Properties:
+                                    Height: =Round(33 * UI, 0)
+                                    Icon: ="People"
+                                    IconColor: =C_Accent
+                                    Width: =Round(33 * UI, 0)
+                                    X: =Round(16 * UI, 0)
+                                    Y: =Round(16 * UI, 0)
+                        - lblTypeTMh_Tm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink
+                              Size: =Round(21 * UI, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =Round(33 * UI, 0)
+                              Text: ="Manual Handling"
+                              Width: =Parent.Width - Round(158 * UI, 0)
+                              X: =Round(103 * UI, 0)
+                              Y: =Round(15 * UI, 0)
+                              Wrap: =false
+                        - lblTypeNMh_Tm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Ink2
+                              Size: =Round(16 * UI, 0)
+                              Height: =Round(25 * UI, 0)
+                              Text: |-
+                                =If(IsBlank(First(Filter(colThSessions, TypeText = "Manual Handling"))), "No dates scheduled yet", "Next: " & Text(First(Filter(colThSessions, TypeText = "Manual Handling")).SessionDate, "ddd d mmm · h:mm AM/PM"))
+                              Width: =Parent.Width - Round(158 * UI, 0)
+                              X: =Round(103 * UI, 0)
+                              Y: =Round(50 * UI, 0)
+                              Wrap: =false
+                        - lblTypeFMh_Tm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =If(IsBlank(First(Filter(colThSessions, TypeText = "Manual Handling"))), C_Muted, !IsBlank(First(Filter(colThSessions, TypeText = "Manual Handling")).MyBookingID), C_Good, First(Filter(colThSessions, TypeText = "Manual Handling")).Free <= 0, C_Amber, C_Accent)
+                              Size: =Round(15 * UI, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =Round(25 * UI, 0)
+                              Text: =If(IsBlank(First(Filter(colThSessions, TypeText = "Manual Handling"))), "", !IsBlank(First(Filter(colThSessions, TypeText = "Manual Handling")).MyBookingID), "You are booked in", First(Filter(colThSessions, TypeText = "Manual Handling")).Free <= 0, If(First(Filter(colThSessions, TypeText = "Manual Handling")).OnWait, "On the waitlist", "Full  ·  join the waitlist"), First(Filter(colThSessions, TypeText = "Manual Handling")).Free & If(First(Filter(colThSessions, TypeText = "Manual Handling")).Free = 1, " place left", " places left"))
+                              Width: =Parent.Width - Round(158 * UI, 0)
+                              X: =Round(103 * UI, 0)
+                              Y: =Round(80 * UI, 0)
+                              Wrap: =false
+                        - icoTypeGoMh_Tm:
+                            Control: ModernIcon@1.1.1
+                            Properties:
+                              Height: =Round(25 * UI, 0)
+                              Icon: ="ChevronRight"
+                              IconColor: =C_Muted
+                              Width: =Round(25 * UI, 0)
+                              X: =Parent.Width - Round(48 * UI, 0)
+                              Y: =Round(48 * UI, 0)
+                        - btnTypeMh_Tm:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              BorderStyle: =BorderStyle.None
+                              Height: =Parent.Height
+                              Width: =Parent.Width
+                              X: =0
+                              Y: =0
+                              Text: =""
+                              OnSelect: |-
+                                =Set(trType, "Manual Handling");
+                                Set(trSel, Blank());
+                                Navigate(TrainingDates, ScreenTransition.Cover)
+                  - conWait_Tm:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(80 * UI, 0)
+                        FillPortions: =0
+                        Fill: =C_AmberBg
+                        Height: =Round(80 * UI, 0)
+                        Width: =PageW - Round(40 * UI, 0)
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =Round(20 * UI, 0)
+                        RadiusBottomRight: =Round(20 * UI, 0)
+                        RadiusTopLeft: =Round(20 * UI, 0)
+                        RadiusTopRight: =Round(20 * UI, 0)
+                        BorderColor: =RGBA(178, 105, 0, 0.35)
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Visible: =!IsEmpty(colThWait)
+                      Children:
+                        - lblWaitT_Tm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Amber
+                              Size: =Round(18 * UI, 0)
+                              FontWeight: =FontWeight.Bold
+                              Height: =Round(28 * UI, 0)
+                              Text: =CountRows(colThWait) & If(CountRows(colThWait) = 1, " waitlist", " waitlists") & " you are on"
+                              Width: =Parent.Width - Round(40 * UI, 0)
+                              X: =Round(20 * UI, 0)
+                              Y: =Round(13 * UI, 0)
+                              Wrap: =false
+                        - lblWaitS_Tm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Amber
+                              Size: =Round(15 * UI, 0)
+                              Height: =Round(23 * UI, 0)
+                              Text: ="You will be emailed if a place opens."
+                              Width: =Parent.Width - Round(40 * UI, 0)
+                              X: =Round(20 * UI, 0)
+                              Y: =Round(43 * UI, 0)
+                              Wrap: =false
+                  - capMine_Tm:
+                      Control: Label@2.5.1
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(23 * UI, 0)
+                        FillPortions: =0
+                        Font: =AppFont
+                        Color: =C_Muted
+                        Size: =Round(14 * UI, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =Round(23 * UI, 0)
+                        Text: ="MY UPCOMING BOOKINGS"
+                        Width: =PageW - Round(40 * UI, 0)
+                        X: =0
+                        Y: =0
+                        Wrap: =false
+                  - galMine_Tm:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =0
+                        Height: =CountRows(colThMine) * Round(100 * UI, 0)
+                        FillPortions: =0
+                        Items: =colThMine
+                        TemplatePadding: =0
+                        TemplateSize: =Round(100 * UI, 0)
+                        Width: =PageW - Round(40 * UI, 0)
+                        Visible: =!IsEmpty(colThMine)
+                        ShowScrollbar: =false
+                      Children:
+                        - conMine_Tm:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =C_White
+                              Height: =Round(95 * UI, 0)
+                              Width: =Parent.TemplateWidth - Round(5 * UI, 0)
+                              X: =Round(3 * UI, 0)
+                              Y: =Round(5 * UI, 0)
+                              RadiusBottomLeft: =Round(18 * UI, 0)
+                              RadiusBottomRight: =Round(18 * UI, 0)
+                              RadiusTopLeft: =Round(18 * UI, 0)
+                              RadiusTopRight: =Round(18 * UI, 0)
+                              BorderColor: =C_Line
+                              BorderStyle: =BorderStyle.Solid
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                            Children:
+                              - conMineDate_Tm:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_AccentSoft
+                                    Height: =Round(70 * UI, 0)
+                                    Width: =Round(65 * UI, 0)
+                                    X: =Round(15 * UI, 0)
+                                    Y: =Round(13 * UI, 0)
+                                    RadiusBottomLeft: =Round(15 * UI, 0)
+                                    RadiusBottomRight: =Round(15 * UI, 0)
+                                    RadiusTopLeft: =Round(15 * UI, 0)
+                                    RadiusTopRight: =Round(15 * UI, 0)
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - lblMineDow_Tm:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Font: =AppFont
+                                          Color: =C_Muted
+                                          Size: =Round(14 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Round(20 * UI, 0)
+                                          Text: =Upper(Text(ThisItem.SessionDate, "ddd"))
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =Round(8 * UI, 0)
+                                          Align: =Align.Center
+                                          Wrap: =false
+                                    - lblMineDay_Tm:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Font: =AppFont
+                                          Color: =C_Accent
+                                          Size: =Round(24 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Round(38 * UI, 0)
+                                          Text: =Text(ThisItem.SessionDate, "d")
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =Round(25 * UI, 0)
+                                          Align: =Align.Center
+                                          Wrap: =false
+                              - lblMineT_Tm:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =AppFont
+                                    Color: =C_Ink
+                                    Size: =Round(18 * UI, 0)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =Round(30 * UI, 0)
+                                    Text: =ThisItem.TrainingType
+                                    Width: =Parent.Width - Round(200 * UI, 0)
+                                    X: =Round(95 * UI, 0)
+                                    Y: =Round(10 * UI, 0)
+                                    Wrap: =false
+                              - lblMineS_Tm:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Font: =AppFont
+                                    Color: =C_Muted
+                                    Size: =Round(15 * UI, 0)
+                                    Height: =Round(25 * UI, 0)
+                                    Text: =Text(ThisItem.SessionDate, "h:mm AM/PM") & "  ·  " & Coalesce(LookUp(colThSessions, SesKey = ThisItem.SessionID).Location, "Location to be confirmed")
+                                    Width: =Parent.Width - Round(200 * UI, 0)
+                                    X: =Round(95 * UI, 0)
+                                    Y: =Round(43 * UI, 0)
+                                    Wrap: =false
+                              - conMineSlot_Tm:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    Fill: =C_GoodBg
+                                    Height: =Round(38 * UI, 0)
+                                    Width: =Round(90 * UI, 0)
+                                    X: =Parent.Width - Round(105 * UI, 0)
+                                    Y: =Round(28 * UI, 0)
+                                    RadiusBottomLeft: =Round(19 * UI, 0)
+                                    RadiusBottomRight: =Round(19 * UI, 0)
+                                    RadiusTopLeft: =Round(19 * UI, 0)
+                                    RadiusTopRight: =Round(19 * UI, 0)
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - lblMineSlot_Tm:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Font: =AppFont
+                                          Color: =C_Good
+                                          Size: =Round(15 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Parent.Height
+                                          Text: ="Slot " & ThisItem.SlotNumber
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =0
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Wrap: =false
+                              - btnMine_Tm:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    BorderStyle: =BorderStyle.None
+                                    Height: =Parent.Height
+                                    Width: =Parent.Width
+                                    X: =0
+                                    Y: =0
+                                    Text: =""
+                                    OnSelect: |-
+                                      =Set(trType, ThisItem.TrainingType);
+                                      Set(trOpen, LookUp(colThSessions, SesKey = ThisItem.SessionID).ID);
+                                      Navigate(TrainingDates, ScreenTransition.Cover)
+                  - conMineEmpty_Tm:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(80 * UI, 0)
+                        FillPortions: =0
+                        Fill: =C_White
+                        Height: =Round(80 * UI, 0)
+                        Width: =PageW - Round(40 * UI, 0)
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =Round(20 * UI, 0)
+                        RadiusBottomRight: =Round(20 * UI, 0)
+                        RadiusTopLeft: =Round(20 * UI, 0)
+                        RadiusTopRight: =Round(20 * UI, 0)
+                        BorderColor: =C_Line
+                        BorderStyle: =BorderStyle.Solid
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Visible: =IsEmpty(colThMine)
+                      Children:
+                        - lblMineEmpty_Tm:
+                            Control: Label@2.5.1
+                            Properties:
+                              Font: =AppFont
+                              Color: =C_Muted
+                              Size: =Round(16 * UI, 0)
+                              Height: =Round(80 * UI, 0)
+                              Text: ="You have no upcoming bookings. Choose a training above to book a place."
+                              Width: =Parent.Width - Round(40 * UI, 0)
+                              X: =Round(20 * UI, 0)
+                              Y: =0
+                              VerticalAlign: =VerticalAlign.Middle

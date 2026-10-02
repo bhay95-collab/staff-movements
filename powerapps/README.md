@@ -379,3 +379,18 @@ Studio leaves any property that still has its default value out of the code it g
 
 ## App icon
 `powerapps/icon/` has the app icon (white wheelchair on the app's teal/navy gradient): `STARS_Equipment_icon_512.png` (upload this one), `_1024.png` and `_192.png`, plus `STARS_Equipment_icon.svg`. Studio: **Settings → General → App icon → Upload**, pick the 512 PNG, save and publish. Do the same in the mobile app. Square, full-bleed, and the symbol stays inside the middle 70% so round and rounded-square masks never clip it.
+
+
+# Training inside the desktop app (Training_Hub, Training_Sessions)
+The stand-alone Training Register is now part of the dashboard. Home bottom bar has a **Training** button (between Team Info and Manager tools).
+
+- `Training_Hub.pa.yaml`: 4 tiles (my bookings, waitlists, places left on the next Basic Life Support and Manual Handling dates), choose a course, coming-up dates, my upcoming bookings.
+- `Training_Sessions.pa.yaml`: dates list (left) and the chosen date (right): status, one main button (Book / Remove my booking / Join or Leave the waitlist), who is booked in. Managers also get + Add date, Waitlist, Email attendees and Delete date.
+- Logic is the same as the stand-alone app and the mobile app (booking checks capacity, clashes keep the earlier booking, emails go through the two flows).
+
+## Set up (once)
+1. **Data** (left cylinder icon > Add data): `TrainingSessions`, `TrainingBookings`, `TrainingWaitlist`, `TrainingAppPermissions`, plus flows `TrainingBookingConfirmationEmail` and `TrainingWaitlistNotification` (Power Automate icon > Add flow).
+2. **App > Formulas:** paste the new bottom block of `desktop/Desktop_App_Formulas.txt` (`MeEmail`, `MeName`, `CanManageTraining`). If you already have names with those spellings, delete the old ones first.
+3. **Paste** `Training_Hub` and `Training_Sessions` (any order), then `Home_Main` (replace the old one: rename it `OLD_Home_Main` first, paste, then delete the old).
+
+Rebuild from source: `sh tools/build_desktop.sh` (the two training screens are drawn in `desktop/as_pasted/`; `tools/patch_training.py` adds the Home button).

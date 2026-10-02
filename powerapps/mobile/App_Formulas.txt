@@ -38,3 +38,6 @@ MeEmail = Lower(User().Email);
 MeName = User().FullName;
 MeDirectory = LookUp(ClinicianDirectory, Lower(Person.Email) = MeEmail);
 MyDiscipline = Coalesce(MeDirectory.Discipline.Value, "Physio");
+
+// ---- Training: who can add dates, remove people and email attendees (set in the TrainingAppPermissions list)
+CanManageTraining = Coalesce(LookUp(TrainingAppPermissions, Lower(Person.Email) = MeEmail).Access.Value, "User") in ["Director", "Team Leader", "HP4"];
