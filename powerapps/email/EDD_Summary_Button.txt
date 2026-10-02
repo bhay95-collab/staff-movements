@@ -1,0 +1,79 @@
+// EDD Summary button > OnSelect  (Ward_All).  Needs EmailHead and EmailFoot from Email_Formulas.txt.
+ClearCollect(
+    colWardEDD,
+    Filter(
+        colWard,
+        !IsBlank(Patient),
+        !IsBlank(EDD),
+        EDD >= Today(),
+        EDD <= DateAdd(Today(), 7)
+    )
+);
+If(
+    CountRows(colWardEDD) > 0,
+    Set(
+        varEmailBody,
+        Substitute(Substitute(EmailHead, "{{TITLE}}", "EDD Summary"), "{{SUB}}", "Ward " & varWard & "&nbsp;&nbsp;|&nbsp;&nbsp;Next 7 days") &
+
+        // greeting
+        "<tr><td style='padding:28px 32px 8px 32px;font-size:15px;line-height:22px;color:#3A5068;'>" &
+            "Hi " & First(Split(User().FullName, " ")).Value & ",<br><br>" &
+            "<b style='color:#0E1C2A;'>" & CountRows(colWardEDD) & If(CountRows(colWardEDD) = 1, " patient has", " patients have") & "</b> an estimated discharge date in the next 7 days. " &
+            "The earliest are listed first." &
+        "</td></tr>" &
+
+        // table
+        "<tr><td style='padding:16px 32px 8px 32px;'>" &
+        "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='border-collapse:separate;border-spacing:0;width:100%;font-size:14px;border:1px solid #E3EAF1;border-radius:14px;overflow:hidden;'>" &
+            "<tr bgcolor='#F2F6FA' style='background-color:#F2F6FA;'>" &
+                "<th align='left' style='padding:10px 12px;font-size:11px;letter-spacing:1px;color:#8C9BAE;border-bottom:2px solid #1A5A99;border-radius:14px 0 0 0;'>PATIENT</th>" &
+                "<th align='left' style='padding:10px 12px;font-size:11px;letter-spacing:1px;color:#8C9BAE;border-bottom:2px solid #1A5A99;'>URN</th>" &
+                "<th align='left' style='padding:10px 12px;font-size:11px;letter-spacing:1px;color:#8C9BAE;border-bottom:2px solid #1A5A99;'>DOB</th>" &
+                "<th align='left' style='padding:10px 12px;font-size:11px;letter-spacing:1px;color:#8C9BAE;border-bottom:2px solid #1A5A99;'>EDD</th>" &
+                "<th align='left' style='padding:10px 12px;font-size:11px;letter-spacing:1px;color:#8C9BAE;border-bottom:2px solid #1A5A99;border-radius:0 14px 0 0;'>PHYSIO</th>" &
+            "</tr>" &
+            Concat(
+                SortByColumns(colWardEDD, "EDD", SortOrder.Ascending),
+                With(
+                    {
+                        ptNames: If(
+                            IsBlank(PT_Users) || CountRows(PT_Users) = 0,
+                            "<span style='color:#8C9BAE;'>Not allocated</span>",
+                            Concat(PT_Users, Coalesce(DisplayName, Email), ", ")
+                        ),
+                        daysTo: DateDiff(Today(), EDD, TimeUnit.Days)
+                    },
+                    With(
+                        {
+                            chipBg: If(daysTo <= 1, "#FDECEC", daysTo <= 3, "#FFF3DC", "#E8F1FA"),
+                            chipFg: If(daysTo <= 1, "#B41A1A", daysTo <= 3, "#8A5300", "#1A5A99"),
+                            chipTxt: Switch(daysTo, 0, "Today", 1, "Tomorrow", "In " & daysTo & " days")
+                        },
+                        "<tr>" &
+                            "<td style='padding:12px;border-top:1px solid #E3EAF1;font-weight:600;color:#0E1C2A;'>" & Coalesce(Text(Patient), "") & "</td>" &
+                            "<td style='padding:12px;border-top:1px solid #E3EAF1;color:#3A5068;'>" & Coalesce(Text(URN), "") & "</td>" &
+                            "<td style='padding:12px;border-top:1px solid #E3EAF1;color:#3A5068;'>" & If(IsBlank(DOB), "", Text(DateValue(DOB), "dd/mm/yyyy")) & "</td>" &
+                            "<td style='padding:12px;border-top:1px solid #E3EAF1;color:#0E1C2A;'>" & Text(EDD, "dd/mm/yyyy") &
+                                "<br><span style='display:inline-block;margin-top:4px;padding:3px 12px;border-radius:12px;font-size:11px;font-weight:700;background-color:" & chipBg & ";color:" & chipFg & ";'>" & chipTxt & "</span></td>" &
+                            "<td style='padding:12px;border-top:1px solid #E3EAF1;color:#3A5068;'>" & ptNames & "</td>" &
+                        "</tr>"
+                    )
+                )
+            ) &
+        "</table>" &
+        "</td></tr>" &
+
+        // sign-off
+        "<tr><td style='padding:20px 32px 28px 32px;font-size:15px;line-height:22px;color:#3A5068;'>Thanks,<br><b style='color:#0E1C2A;'>" & User().FullName & "</b></td></tr>" &
+
+        Substitute(EmailFoot, "{{NOTE}}", "This email contains patient information. Please handle it in line with your privacy policy.")
+    );
+    Office365Outlook.SendEmailV2(
+        User().Email,
+        "EDD Summary: Ward " & varWard & " (next 7 days)",
+        varEmailBody,
+        { IsHtml: true }
+    );
+    Notify("Email Sent", NotificationType.Success),
+    Notify("No patients with EDD in the next 7 days.", NotificationType.Information)
+)
