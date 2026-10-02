@@ -28,6 +28,6 @@ The old generator pipeline is retired: `powerapps/archive/desktop_as_pasted/` an
 2. **Hard-coded people in the flows**: coordinator email addresses and the names "Catherine / Erin / Kyte / Nova" (weekly reminder flows). Left as is by choice.
 3. **SharePoint indexes**: index `EpisodeKey`, `EquipmentItemID`, `EventDateTime` (usage log), `SessionID`, `BookingStatus`, `WaitlistStatus` (training lists). The cleanup flow also filters on `ID`/`Created`, which are always indexed.
 4. **`DateDiff(..., "Days")`** appears 8 times (string unit). Works, but use `TimeUnit.Days`.
-5. **Variables not set anywhere in the screens**: `varChartPalette`, `colDiagnosisMap`, `colStaffRatios`. Probably App.OnStart, which was not in the export. Please include it next time.
+5. **App OnStart reviewed** (`desktop/App_OnStart.txt`): `varChartPalette`, `colDiagnosisMap`, `colStaffRatios` confirmed there. Cleaned version drops 14 unused CA-scheduling variables/collections, makes the 6-week equipment filter delegable, and sets `varMeDirectory` once.
 6. **Waitlist notification flow**: a later cancellation notifies the first waiting person again, even if they were already notified and haven't booked. The 48-hour escalation flow then moves down the list. Acceptable, but worth knowing.
 7. **Stale `_1` names**: to avoid them when replacing a screen, delete the old screen first (after saving its code) instead of renaming it.

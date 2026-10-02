@@ -1,0 +1,110 @@
+// =====================================================================
+// APP OnStart  (paste the whole thing into App > OnStart)
+// Desktop Physio Dashboard
+// =====================================================================
+
+
+// ---------------------------------------------------------------------
+// 1) WHO AM I (looked up once; every screen reads varMeDirectory)
+// ---------------------------------------------------------------------
+Set(
+    varMeDirectory,
+    LookUp(ClinicianDirectory, Lower(Person.Email) = Lower(User().Email))
+);
+
+
+// ---------------------------------------------------------------------
+// 2) USED BY THE REDESIGNED SCREENS
+// ---------------------------------------------------------------------
+
+// Old equipment warning: equipment signed out for over 6 weeks
+// (date compare instead of DateDiff so SharePoint does the filtering)
+Set(
+    colOldAllocations,
+    Filter(
+        Equipment_Inventory_SharePoint,
+        Status.Value = "Allocated",
+        Physiotherapist = User().FullName,
+        'Date Signed Out' < DateAdd(Today(), -42, TimeUnit.Days)
+    )
+);
+
+If(
+    CountRows(colOldAllocations) > 0,
+    Notify(
+        "You have equipment signed out for over 6 weeks. Please review:" &
+        Concat(colOldAllocations, Char(10) & 'Patient Name' & " - " & Title),
+        NotificationType.Warning
+    )
+);
+
+// Chart colours (Ward screen)
+Set(
+    varChartPalette,
+    [
+        RGBA(166, 199, 130, 1),
+        RGBA(35, 100, 153, 1),
+        RGBA(0, 144, 153, 1),
+        RGBA(0, 200, 210, 1),
+        RGBA(112, 188, 166, 1)
+    ]
+);
+
+// Selected patient (Ward, Equipment, Patient detail, Allocated)
+Set(varSelectedPatient, Blank());
+
+// Typed empty collection for the email popup (Patient detail)
+ClearCollect(colEmailRecipients, { Email: "" });
+Clear(colEmailRecipients);
+
+
+// ---------------------------------------------------------------------
+// 3) DATA DASHBOARD: staffing ratios (FTE per 10 patients)
+//    Blank = "consult" (no fixed ratio)
+// ---------------------------------------------------------------------
+ClearCollect(
+    colStaffRatios,
+    Table(
+        { Impairment: "Amputation",                     OT: 1,   PT: 1.5,  AHA: 0.5, SP: Blank(), ClinPsych: 0.5, NeuroPsych: Blank(), SW: 0.6, Diet: 0.4 },
+        { Impairment: "Stroke / Neurology",             OT: 1.5, PT: 1.5,  AHA: 0.5, SP: 1.5,     ClinPsych: 0.5, NeuroPsych: 0.5,     SW: 1.0, Diet: 0.5 },
+        { Impairment: "Orthopaedic",                    OT: 0.8, PT: 1.25, AHA: 0.5, SP: 0.1,     ClinPsych: 0.2, NeuroPsych: Blank(), SW: 0.5, Diet: 0.4 },
+        { Impairment: "Major Trauma",                   OT: 1.2, PT: 1.5,  AHA: 0.5, SP: 0.2,     ClinPsych: 0.4, NeuroPsych: 0.5,     SW: 1.0, Diet: 0.6 },
+        { Impairment: "Spinal Cord Dysfunction",        OT: 2,   PT: 2,    AHA: 0.5, SP: 0.25,    ClinPsych: 0.5, NeuroPsych: 0.3,     SW: 1.2, Diet: 0.4 },
+        { Impairment: "Traumatic Brain Injury",         OT: 1.5, PT: 1.5,  AHA: 0.5, SP: 1.5,     ClinPsych: 0.8, NeuroPsych: 0.8,     SW: 1.2, Diet: 0.5 },
+        { Impairment: "Reconditioning and Restorative", OT: 1.2, PT: 1.25, AHA: 0.5, SP: 0.2,     ClinPsych: 0.4, NeuroPsych: 0.2,     SW: 1.0, Diet: 0.5 }
+    )
+);
+
+// Diagnosis label (as shown on the ward pie charts) -> impairment above.
+// Every pie label must be here or that diagnosis gets no staffing:
+// Ortho, Recon, TBI, Amp, SCI, Trauma, Stroke, Neuro
+ClearCollect(
+    colDiagnosisMap,
+    Table(
+        { DiagnosisLabel: "Amp", Impairment: "Amputation" },
+        { DiagnosisLabel: "Amputation", Impairment: "Amputation" },
+
+        { DiagnosisLabel: "Stroke", Impairment: "Stroke / Neurology" },
+        { DiagnosisLabel: "Neuro", Impairment: "Stroke / Neurology" },
+        { DiagnosisLabel: "Neurology", Impairment: "Stroke / Neurology" },
+        { DiagnosisLabel: "Stroke / Neurology", Impairment: "Stroke / Neurology" },
+
+        { DiagnosisLabel: "Ortho", Impairment: "Orthopaedic" },
+        { DiagnosisLabel: "Orthopaedic", Impairment: "Orthopaedic" },
+
+        { DiagnosisLabel: "Trauma", Impairment: "Major Trauma" },
+        { DiagnosisLabel: "Major Trauma", Impairment: "Major Trauma" },
+
+        { DiagnosisLabel: "SCI", Impairment: "Spinal Cord Dysfunction" },
+        { DiagnosisLabel: "Spinal", Impairment: "Spinal Cord Dysfunction" },
+        { DiagnosisLabel: "Spinal Cord Dysfunction", Impairment: "Spinal Cord Dysfunction" },
+
+        { DiagnosisLabel: "TBI", Impairment: "Traumatic Brain Injury" },
+        { DiagnosisLabel: "Brain Injury", Impairment: "Traumatic Brain Injury" },
+        { DiagnosisLabel: "Traumatic Brain Injury", Impairment: "Traumatic Brain Injury" },
+
+        { DiagnosisLabel: "Recon", Impairment: "Reconditioning and Restorative" },
+        { DiagnosisLabel: "Reconditioning", Impairment: "Reconditioning and Restorative" },
+        { DiagnosisLabel: "Reconditioning and Restorative", Impairment: "Reconditioning and Restorative" }
+    )
+)
