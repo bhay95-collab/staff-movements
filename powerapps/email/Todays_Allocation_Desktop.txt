@@ -1,0 +1,58 @@
+// "Email today's allocation" button > OnSelect  (Equipment_Main).  Needs EmailHead and EmailFoot (App > Formulas).
+If(
+    IsEmpty(colGroupedEquipment),
+    Notify("Nothing allocated today to email.", NotificationType.Information),
+    Set(
+        varEmailBody,
+        Substitute(
+            Substitute(EmailHead, "{{TITLE}}", "Equipment you allocated today"),
+            "{{SUB}}",
+            Text(Today(), "dddd d mmmm yyyy") & "&nbsp;&nbsp;|&nbsp;&nbsp;" & CountRows(colGroupedEquipment) & If(CountRows(colGroupedEquipment) = 1, " item", " items")
+        ) &
+    
+        // greeting
+        "<tr><td style='padding:28px 32px 8px 32px;font-size:15px;line-height:22px;color:#3A5068;'>" &
+            "Hi " & First(Split(User().FullName, " ")).Value & ",<br><br>" &
+            "Here is the equipment you allocated today." &
+        "</td></tr>" &
+    
+        // list (one row per item, sorted by patient)
+        "<tr><td style='padding:16px 32px 8px 32px;'>" &
+        "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='border-collapse:separate;border-spacing:0;width:100%;font-size:14px;border:1px solid #E3EAF1;border-radius:14px;overflow:hidden;'>" &
+            "<tr bgcolor='#F2F6FA' style='background-color:#F2F6FA;'>" &
+                "<th align='left' style='padding:10px 12px;font-size:11px;letter-spacing:1px;color:#8C9BAE;border-bottom:2px solid #1A5A99;border-radius:14px 0 0 0;'>PATIENT</th>" &
+                "<th align='left' style='padding:10px 12px;font-size:11px;letter-spacing:1px;color:#8C9BAE;border-bottom:2px solid #1A5A99;border-radius:0 14px 0 0;'>EQUIPMENT</th>" &
+            "</tr>" &
+            Concat(
+                SortByColumns(colGroupedEquipment, "Patient Name", SortOrder.Ascending),
+                "<tr>" &
+                    "<td style='padding:12px;border-top:1px solid #E3EAF1;'><b style='color:#0E1C2A;'>" & 'Patient Name' & "</b><br>" &
+                        "<span style='font-size:12px;color:#8C9BAE;'>URN " & If(IsBlank(URN), "—", Text(URN)) & "&nbsp;&nbsp;|&nbsp;&nbsp;Ward " & If(IsBlank(Ward.Value), "—", Ward.Value) & "</span></td>" &
+                    "<td style='padding:12px;border-top:1px solid #E3EAF1;'><b style='color:#0E1C2A;'>" & Title & "</b><br>" &
+                        "<span style='font-size:12px;color:#8C9BAE;'>" & Category.Value & "&nbsp;&nbsp;|&nbsp;&nbsp;" & Trim(Brand & " " & Model) & "</span></td>" &
+                "</tr>"
+            ) &
+        "</table>" &
+        "</td></tr>" &
+    
+        // reminder box
+        "<tr><td style='padding:12px 32px 8px 32px;'>" &
+        "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='border-collapse:separate;border-spacing:0;'><tr>" &
+            "<td bgcolor='#E8F1FA' style='background-color:#E8F1FA;border-radius:12px;padding:14px 18px;font-size:14px;line-height:20px;color:#1A5A99;'>" &
+                "<b>Reminder:</b> please add these to your patients' Interactive View in ieMR." &
+            "</td></tr></table>" &
+        "</td></tr>" &
+    
+        // sign-off
+        "<tr><td style='padding:20px 32px 28px 32px;font-size:15px;line-height:22px;color:#3A5068;'>Thanks,<br><b style='color:#0E1C2A;'>" & User().FullName & "</b></td></tr>" &
+    
+        Substitute(EmailFoot, "{{NOTE}}", "This email contains patient information. Please handle it in line with your privacy policy.")
+    );
+    Office365Outlook.SendEmailV2(
+        User().Email,
+        "Equipment you allocated today (" & Text(Today(), "d mmm yyyy") & ")",
+        varEmailBody,
+        { IsHtml: true }
+    );
+    Notify("Email Sent", NotificationType.Success)
+)
