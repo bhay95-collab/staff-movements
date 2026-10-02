@@ -740,7 +740,7 @@ Screens:
                                     Color: =C_Muted
                                     Size: =Round(15 * UI, 0)
                                     Height: =Round(23 * UI, 0)
-                                    Text: ="URN " & Coalesce(ThisItem.URN, "—") & "  ·  Ward " & ThisItem.Ward & "  ·  Bed " & Coalesce(ThisItem.Bed, "—")
+                                    Text: ="URN " & Coalesce(ThisItem.URN, "—") & "  ·  Ward " & ThisItem.Ward & "  ·  Bed " & If(IsBlank(ThisItem.Bed), "—", Text(ThisItem.Bed))
                                     Width: =Parent.Width - Round(35 * UI, 0)
                                     X: =Round(18 * UI, 0)
                                     Y: =Round(30 * UI, 0)
@@ -815,7 +815,7 @@ Screens:
                               Color: =C_Muted
                               Size: =Round(15 * UI, 0)
                               Height: =Round(25 * UI, 0)
-                              Text: ="URN " & Coalesce(auPt.URN, "—") & "  ·  Ward " & auPt.Ward & "  ·  Bed " & Coalesce(auPt.Bed, "—")
+                              Text: ="URN " & Coalesce(auPt.URN, "—") & "  ·  Ward " & auPt.Ward & "  ·  Bed " & If(IsBlank(auPt.Bed), "—", Text(auPt.Bed))
                               Width: =Parent.Width - Round(138 * UI, 0)
                               X: =Round(20 * UI, 0)
                               Y: =Round(43 * UI, 0)
