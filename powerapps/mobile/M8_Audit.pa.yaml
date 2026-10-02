@@ -687,77 +687,109 @@ Screens:
                               Width: =Parent.Width - Round(55 * UI, 0)
                               X: =Round(50 * UI, 0)
                               Y: =0
-                  - galPt_Au:
-                      Control: Gallery@2.15.0
-                      Variant: Vertical
+                  - lblPtCount_Au:
+                      Control: Label@2.5.1
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        LayoutMinHeight: =Round(25 * UI, 0)
+                        FillPortions: =0
+                        Font: =AppFont
+                        Color: =C_Muted
+                        Size: =Round(15 * UI, 0)
+                        FontWeight: =FontWeight.Bold
+                        Height: =Round(25 * UI, 0)
+                        Text: =CountRows(FirstN(Filter(colPatients, Lower(Trim(txtPt_Au.Text)) in Lower(Name) || Lower(Trim(txtPt_Au.Text)) in Lower(Coalesce(URN, ""))), 6)) & If(CountRows(FirstN(Filter(colPatients, Lower(Trim(txtPt_Au.Text)) in Lower(Name) || Lower(Trim(txtPt_Au.Text)) in Lower(Coalesce(URN, ""))), 6)) = 1, " patient found. Tap to choose.", " patients found. Tap one to choose.")
+                        Width: =PageW - Round(40 * UI, 0)
+                        X: =Round(5 * UI, 0)
+                        Y: =0
+                        Visible: =IsBlank(auPt) && !IsBlank(Trim(txtPt_Au.Text)) && !IsEmpty(FirstN(Filter(colPatients, Lower(Trim(txtPt_Au.Text)) in Lower(Name) || Lower(Trim(txtPt_Au.Text)) in Lower(Coalesce(URN, ""))), 6))
+                  - conPtG_Au:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
                         LayoutMinHeight: =0
-                        Height: =CountRows(FirstN(Filter(colPatients, Lower(Trim(txtPt_Au.Text)) in Lower(Name) || Lower(Trim(txtPt_Au.Text)) in Lower(Coalesce(URN, ""))), 6)) * Round(65 * UI, 0)
                         FillPortions: =0
-                        Items: =FirstN(Filter(colPatients, Lower(Trim(txtPt_Au.Text)) in Lower(Name) || Lower(Trim(txtPt_Au.Text)) in Lower(Coalesce(URN, ""))), 6)
-                        TemplatePadding: =0
-                        TemplateSize: =Round(65 * UI, 0)
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Height: =CountRows(FirstN(Filter(colPatients, Lower(Trim(txtPt_Au.Text)) in Lower(Name) || Lower(Trim(txtPt_Au.Text)) in Lower(Coalesce(URN, ""))), 6)) * Round(65 * UI, 0)
                         Width: =PageW - Round(40 * UI, 0)
-                        ShowScrollbar: =false
+                        X: =0
+                        Y: =0
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        DropShadow: =DropShadow.None
                         Visible: =IsBlank(auPt) && !IsBlank(Trim(txtPt_Au.Text)) && !IsEmpty(FirstN(Filter(colPatients, Lower(Trim(txtPt_Au.Text)) in Lower(Name) || Lower(Trim(txtPt_Au.Text)) in Lower(Coalesce(URN, ""))), 6))
                       Children:
-                        - conPtR_Au:
-                            Control: GroupContainer@1.5.0
-                            Variant: ManualLayout
+                        - galPt_Au:
+                            Control: Gallery@2.15.0
+                            Variant: Vertical
                             Properties:
-                              Fill: =C_White
-                              Height: =Round(58 * UI, 0)
-                              Width: =Parent.TemplateWidth - Round(5 * UI, 0)
-                              X: =Round(3 * UI, 0)
-                              Y: =Round(5 * UI, 0)
-                              RadiusBottomLeft: =Round(18 * UI, 0)
-                              RadiusBottomRight: =Round(18 * UI, 0)
-                              RadiusTopLeft: =Round(18 * UI, 0)
-                              RadiusTopRight: =Round(18 * UI, 0)
-                              BorderColor: =C_Line
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
-                              DropShadow: =DropShadow.None
+                              Items: =FirstN(Filter(colPatients, Lower(Trim(txtPt_Au.Text)) in Lower(Name) || Lower(Trim(txtPt_Au.Text)) in Lower(Coalesce(URN, ""))), 6)
+                              TemplatePadding: =0
+                              TemplateSize: =Round(65 * UI, 0)
+                              Width: =Parent.Width
+                              Height: =Parent.Height
+                              X: =0
+                              Y: =0
                             Children:
-                              - lblPtN_Au:
-                                  Control: Label@2.5.1
+                              - conPtR_Au:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
                                   Properties:
-                                    Font: =AppFont
-                                    Color: =C_Ink
-                                    Size: =Round(17 * UI, 0)
-                                    FontWeight: =FontWeight.Bold
-                                    Height: =Round(28 * UI, 0)
-                                    Text: =ThisItem.Name
-                                    Width: =Parent.Width - Round(35 * UI, 0)
-                                    X: =Round(18 * UI, 0)
+                                    Fill: =C_Bg2
+                                    Height: =Round(58 * UI, 0)
+                                    Width: =Parent.TemplateWidth - Round(5 * UI, 0)
+                                    X: =Round(3 * UI, 0)
                                     Y: =Round(5 * UI, 0)
-                                    Wrap: =false
-                              - lblPtS_Au:
-                                  Control: Label@2.5.1
-                                  Properties:
-                                    Font: =AppFont
-                                    Color: =C_Muted
-                                    Size: =Round(15 * UI, 0)
-                                    Height: =Round(23 * UI, 0)
-                                    Text: ="URN " & Coalesce(ThisItem.URN, "—") & "  ·  Ward " & ThisItem.Ward & "  ·  Bed " & If(IsBlank(ThisItem.Bed), "—", Text(ThisItem.Bed))
-                                    Width: =Parent.Width - Round(35 * UI, 0)
-                                    X: =Round(18 * UI, 0)
-                                    Y: =Round(30 * UI, 0)
-                                    Wrap: =false
-                              - btnPtR_Au:
-                                  Control: Button@0.0.45
-                                  Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderStyle: =BorderStyle.None
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    X: =0
-                                    Y: =0
-                                    Text: =""
-                                    OnSelect: |-
-                                      =Set(auPt, ThisItem);
-                                      Reset(txtPt_Au)
+                                    RadiusBottomLeft: =Round(18 * UI, 0)
+                                    RadiusBottomRight: =Round(18 * UI, 0)
+                                    RadiusTopLeft: =Round(18 * UI, 0)
+                                    RadiusTopRight: =Round(18 * UI, 0)
+                                    BorderColor: =C_Line
+                                    BorderStyle: =BorderStyle.Solid
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                  Children:
+                                    - lblPtN_Au:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Font: =AppFont
+                                          Color: =C_Ink
+                                          Size: =Round(17 * UI, 0)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =Round(28 * UI, 0)
+                                          Text: =ThisItem.Name
+                                          Width: =Parent.Width - Round(35 * UI, 0)
+                                          X: =Round(18 * UI, 0)
+                                          Y: =Round(5 * UI, 0)
+                                          Wrap: =false
+                                    - lblPtS_Au:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Font: =AppFont
+                                          Color: =C_Muted
+                                          Size: =Round(15 * UI, 0)
+                                          Height: =Round(23 * UI, 0)
+                                          Text: ="URN " & Coalesce(ThisItem.URN, "—") & "  ·  Ward " & ThisItem.Ward & "  ·  Bed " & If(IsBlank(ThisItem.Bed), "—", Text(ThisItem.Bed))
+                                          Width: =Parent.Width - Round(35 * UI, 0)
+                                          X: =Round(18 * UI, 0)
+                                          Y: =Round(30 * UI, 0)
+                                          Wrap: =false
+                                    - btnPtR_Au:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                          BorderStyle: =BorderStyle.None
+                                          Height: =Parent.Height
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =0
+                                          Text: =""
+                                          OnSelect: |-
+                                            =Set(auPt, ThisItem);
+                                            Reset(txtPt_Au)
                   - lblPtNone_Au:
                       Control: Label@2.5.1
                       Properties:
