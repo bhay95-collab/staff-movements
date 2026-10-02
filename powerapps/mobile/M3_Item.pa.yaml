@@ -12,42 +12,32 @@ Screens:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
-            Fill: =C_Bg
-            LayoutDirection: =LayoutDirection.Vertical
-            LayoutAlignItems: =LayoutAlignItems.Stretch
-            LayoutJustifyContent: =LayoutJustifyContent.Start
-            LayoutGap: =0
-            PaddingTop: =0
-            PaddingRight: =0
-            PaddingBottom: =0
-            PaddingLeft: =0
             DropShadow: =DropShadow.None
+            Fill: =C_Bg
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+            LayoutDirection: =LayoutDirection.Vertical
             RadiusBottomLeft: =0
             RadiusBottomRight: =0
             RadiusTopLeft: =0
             RadiusTopRight: =0
-            X: =0
-            Y: =0
             Width: =Parent.Width
-            Height: =Parent.Height
           Children:
             - conHdr_It:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
                   AlignInContainer: =AlignInContainer.SetByContainer
-                  LayoutMinHeight: =Round(95 * UI, 0)
-                  FillPortions: =0
+                  DropShadow: =DropShadow.None
                   Fill: =RGBA(7, 95, 115, 1)
+                  FillPortions: =0
                   Height: =Round(95 * UI, 0)
-                  Width: =App.Width
-                  X: =0
-                  Y: =0
+                  LayoutMinHeight: =Round(95 * UI, 0)
                   RadiusBottomLeft: =0
                   RadiusBottomRight: =0
                   RadiusTopLeft: =0
                   RadiusTopRight: =0
-                  DropShadow: =DropShadow.None
+                  Width: =App.Width
                 Children:
                   - imgHdr_It:
                       Control: Image@2.2.3
@@ -56,362 +46,355 @@ Screens:
                         Image: =HeaderImage
                         ImagePosition: =ImagePosition.Fill
                         Width: =Parent.Width
-                        X: =0
-                        Y: =0
                   - btnBack_It:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        FontColor: =C_White
-                        FontSize: =Round(32 * UI, 0)
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =C_White
+                        FontWeight: =""
                         Height: =Round(60 * UI, 0)
                         Icon: ="ChevronLeft"
+                        OnSelect: =Back(ScreenTransition.UnCoverRight)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =4
+                        RadiusBottomRight: =4
+                        RadiusTopLeft: =4
+                        RadiusTopRight: =4
+                        Size: =Round(32 * UI, 0)
                         Text: =""
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =Round(60 * UI, 0)
                         X: =Gutter + Round(5 * UI, 0)
                         Y: =Round(18 * UI, 0)
-                        OnSelect: =Back(ScreenTransition.UnCoverRight)
                   - lblHdrT_It:
                       Control: Label@2.5.1
                       Properties:
-                        Font: =AppFont
                         Color: =C_White
-                        Size: =Round(24 * UI, 0)
+                        Font: =AppFont
                         FontWeight: =FontWeight.Bold
-                        Height: =Round(35 * UI, 0)
+                        Height: =Round(42 * UI, 0)
+                        Size: =Round(24 * UI, 0)
                         Text: =Coalesce(itItem.Title, "Equipment")
                         Width: =PageW - Round(85 * UI, 0)
-                        X: =Gutter + Round(65 * UI, 0)
-                        Y: =Round(20 * UI, 0)
                         Wrap: =false
+                        X: =Gutter + Round(65 * UI, 0)
+                        Y: =Round(12 * UI, 0)
                   - lblHdrS_It:
                       Control: Label@2.5.1
                       Properties:
-                        Font: =AppFont
                         Color: =RGBA(255, 255, 255, 0.85)
-                        Size: =Round(15 * UI, 0)
+                        Font: =AppFont
                         Height: =Round(25 * UI, 0)
+                        Size: =Round(15 * UI, 0)
                         Text: =Coalesce(itItem.Category.Value, "") & "  ·  " & Coalesce(itItem.Status.Value, "")
                         Width: =PageW - Round(85 * UI, 0)
+                        Wrap: =false
                         X: =Gutter + Round(65 * UI, 0)
                         Y: =Round(53 * UI, 0)
-                        Wrap: =false
             - conBody_It:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
                   AlignInContainer: =AlignInContainer.SetByContainer
-                  LayoutMinHeight: =Round(150 * UI, 0)
-                  FillPortions: =1
-                  Width: =App.Width
-                  Fill: =RGBA(0, 0, 0, 0)
-                  LayoutDirection: =LayoutDirection.Vertical
+                  DropShadow: =DropShadow.None
                   LayoutAlignItems: =LayoutAlignItems.Stretch
-                  LayoutJustifyContent: =LayoutJustifyContent.Start
+                  LayoutDirection: =LayoutDirection.Vertical
                   LayoutGap: =Round(15 * UI, 0)
-                  PaddingTop: =Round(20 * UI, 0)
-                  PaddingRight: =Gutter + Round(20 * UI, 0)
+                  LayoutMinHeight: =Round(150 * UI, 0)
+                  LayoutOverflowY: =LayoutOverflow.Scroll
                   PaddingBottom: =Round(20 * UI, 0)
                   PaddingLeft: =Gutter + Round(20 * UI, 0)
-                  DropShadow: =DropShadow.None
+                  PaddingRight: =Gutter + Round(20 * UI, 0)
+                  PaddingTop: =Round(20 * UI, 0)
                   RadiusBottomLeft: =0
                   RadiusBottomRight: =0
                   RadiusTopLeft: =0
                   RadiusTopRight: =0
-                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  Width: =App.Width
                 Children:
                   - conDetail_It:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(328 * UI, 0)
-                        FillPortions: =0
+                        BorderColor: =C_Line
+                        BorderThickness: =1
                         Fill: =C_White
+                        FillPortions: =0
                         Height: =Round(328 * UI, 0)
-                        Width: =PageW - Round(40 * UI, 0)
-                        X: =0
-                        Y: =0
+                        LayoutMinHeight: =Round(328 * UI, 0)
                         RadiusBottomLeft: =Round(23 * UI, 0)
                         RadiusBottomRight: =Round(23 * UI, 0)
                         RadiusTopLeft: =Round(23 * UI, 0)
                         RadiusTopRight: =Round(23 * UI, 0)
-                        BorderColor: =C_Line
-                        BorderStyle: =BorderStyle.Solid
-                        BorderThickness: =1
-                        DropShadow: =DropShadow.Light
+                        Width: =PageW - Round(40 * UI, 0)
                       Children:
                         - lblName_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Ink
-                              Size: =Round(24 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(35 * UI, 0)
+                              Size: =Round(24 * UI, 0)
                               Text: =Coalesce(Trim(itItem.Brand & " " & itItem.Model), itItem.Title)
                               Width: =Parent.Width - Round(40 * UI, 0)
+                              Wrap: =false
                               X: =Round(20 * UI, 0)
                               Y: =Round(18 * UI, 0)
-                              Wrap: =false
                         - conCat_It:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
+                              DropShadow: =DropShadow.None
                               Fill: =Switch(itItem.Category.Value, "Wheelchair", RGBA(166, 199, 130, 1), "Cushion", RGBA(0, 144, 153, 1), "Backrest", RGBA(0, 200, 210, 1), RGBA(210, 218, 227, 1))
                               Height: =Round(33 * UI, 0)
-                              Width: =Round(138 * UI, 0)
-                              X: =Round(20 * UI, 0)
-                              Y: =Round(60 * UI, 0)
                               RadiusBottomLeft: =Round(16 * UI, 0)
                               RadiusBottomRight: =Round(16 * UI, 0)
                               RadiusTopLeft: =Round(16 * UI, 0)
                               RadiusTopRight: =Round(16 * UI, 0)
-                              DropShadow: =DropShadow.None
+                              Width: =Round(138 * UI, 0)
+                              X: =Round(20 * UI, 0)
+                              Y: =Round(60 * UI, 0)
                             Children:
                               - lblCat_It:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Font: =AppFont
+                                    Align: =Align.Center
                                     Color: =C_Ink
-                                    Size: =Round(15 * UI, 0)
+                                    Font: =AppFont
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
+                                    Size: =Round(15 * UI, 0)
                                     Text: =Coalesce(itItem.Category.Value, "—")
                                     Width: =Parent.Width
-                                    X: =0
-                                    Y: =0
-                                    Align: =Align.Center
-                                    VerticalAlign: =VerticalAlign.Middle
                                     Wrap: =false
                         - conStatus_It:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
+                              DropShadow: =DropShadow.None
                               Fill: =Switch(Coalesce(itItem.Status.Value, ""), "Available", C_GoodBg, "Allocated", C_AccentSoft, C_DangerBg)
                               Height: =Round(33 * UI, 0)
-                              Width: =Round(145 * UI, 0)
-                              X: =Round(168 * UI, 0)
-                              Y: =Round(60 * UI, 0)
                               RadiusBottomLeft: =Round(16 * UI, 0)
                               RadiusBottomRight: =Round(16 * UI, 0)
                               RadiusTopLeft: =Round(16 * UI, 0)
                               RadiusTopRight: =Round(16 * UI, 0)
-                              DropShadow: =DropShadow.None
+                              Width: =Round(145 * UI, 0)
+                              X: =Round(168 * UI, 0)
+                              Y: =Round(60 * UI, 0)
                             Children:
                               - lblStatus_It:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Font: =AppFont
+                                    Align: =Align.Center
                                     Color: =Switch(Coalesce(itItem.Status.Value, ""), "Available", C_Good, "Allocated", C_Accent, C_Danger)
-                                    Size: =Round(15 * UI, 0)
+                                    Font: =AppFont
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
+                                    Size: =Round(15 * UI, 0)
                                     Text: =Coalesce(itItem.Status.Value, "Unknown")
                                     Width: =Parent.Width
-                                    X: =0
-                                    Y: =0
-                                    Align: =Align.Center
-                                    VerticalAlign: =VerticalAlign.Middle
                                     Wrap: =false
                         - capKType_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Muted
-                              Size: =Round(14 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(23 * UI, 0)
+                              Size: =Round(14 * UI, 0)
                               Text: ="TYPE"
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Round(20 * UI, 0)
                               Y: =Round(110 * UI, 0)
-                              Wrap: =false
                         - lblVType_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Ink
-                              Size: =Round(18 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(28 * UI, 0)
+                              Size: =Round(18 * UI, 0)
                               Text: =Coalesce(itItem.'Wheelchair Type'.Value, "—")
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Round(20 * UI, 0)
                               Y: =Round(130 * UI, 0)
-                              Wrap: =false
                         - capKWidth_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Muted
-                              Size: =Round(14 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(23 * UI, 0)
+                              Size: =Round(14 * UI, 0)
                               Text: ="WIDTH"
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Parent.Width / 2 + Round(5 * UI, 0)
                               Y: =Round(110 * UI, 0)
-                              Wrap: =false
                         - lblVWidth_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Ink
-                              Size: =Round(18 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(28 * UI, 0)
+                              Size: =Round(18 * UI, 0)
                               Text: =Coalesce(itItem.Width.Value, "—")
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Parent.Width / 2 + Round(5 * UI, 0)
                               Y: =Round(130 * UI, 0)
-                              Wrap: =false
                         - capKDepth_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Muted
-                              Size: =Round(14 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(23 * UI, 0)
+                              Size: =Round(14 * UI, 0)
                               Text: ="DEPTH"
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Round(20 * UI, 0)
                               Y: =Round(170 * UI, 0)
-                              Wrap: =false
                         - lblVDepth_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Ink
-                              Size: =Round(18 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(28 * UI, 0)
+                              Size: =Round(18 * UI, 0)
                               Text: =Coalesce(itItem.Depth.Value, "—")
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Round(20 * UI, 0)
                               Y: =Round(190 * UI, 0)
-                              Wrap: =false
                         - capKHeight_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Muted
-                              Size: =Round(14 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(23 * UI, 0)
+                              Size: =Round(14 * UI, 0)
                               Text: ="HEIGHT"
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Parent.Width / 2 + Round(5 * UI, 0)
                               Y: =Round(170 * UI, 0)
-                              Wrap: =false
                         - lblVHeight_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Ink
-                              Size: =Round(18 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(28 * UI, 0)
+                              Size: =Round(18 * UI, 0)
                               Text: =Coalesce(itItem.Height.Value, "—")
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Parent.Width / 2 + Round(5 * UI, 0)
                               Y: =Round(190 * UI, 0)
-                              Wrap: =false
                         - capKLoc_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Muted
-                              Size: =Round(14 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(23 * UI, 0)
+                              Size: =Round(14 * UI, 0)
                               Text: ="LOCATION"
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Round(20 * UI, 0)
                               Y: =Round(230 * UI, 0)
-                              Wrap: =false
                         - lblVLoc_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Ink
-                              Size: =Round(18 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(28 * UI, 0)
+                              Size: =Round(18 * UI, 0)
                               Text: =Coalesce(itItem.Location.Value, "—")
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Round(20 * UI, 0)
                               Y: =Round(250 * UI, 0)
-                              Wrap: =false
                         - capKSwl_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Muted
-                              Size: =Round(14 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(23 * UI, 0)
+                              Size: =Round(14 * UI, 0)
                               Text: ="SWL"
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Parent.Width / 2 + Round(5 * UI, 0)
                               Y: =Round(230 * UI, 0)
-                              Wrap: =false
                         - lblVSwl_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Ink
-                              Size: =Round(18 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(28 * UI, 0)
+                              Size: =Round(18 * UI, 0)
                               Text: =Coalesce(Text(itItem.SWL), "—")
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Parent.Width / 2 + Round(5 * UI, 0)
                               Y: =Round(250 * UI, 0)
-                              Wrap: =false
                         - lblDays_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Muted
-                              Size: =Round(15 * UI, 0)
+                              Font: =AppFont
                               Height: =Round(25 * UI, 0)
+                              Size: =Round(15 * UI, 0)
                               Text: ="In use " & Coalesce(itItem.TotalDaysSignedOut, 0) & " days this year"
                               Width: =Parent.Width - Round(40 * UI, 0)
+                              Wrap: =false
                               X: =Round(20 * UI, 0)
                               Y: =Round(288 * UI, 0)
-                              Wrap: =false
                   - conService_It:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(80 * UI, 0)
-                        FillPortions: =0
+                        BorderColor: =RGBA(180, 26, 26, 0.35)
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
                         Fill: =C_DangerBg
+                        FillPortions: =0
                         Height: =Round(80 * UI, 0)
-                        Width: =PageW - Round(40 * UI, 0)
-                        X: =0
-                        Y: =0
+                        LayoutMinHeight: =Round(80 * UI, 0)
                         RadiusBottomLeft: =Round(18 * UI, 0)
                         RadiusBottomRight: =Round(18 * UI, 0)
                         RadiusTopLeft: =Round(18 * UI, 0)
                         RadiusTopRight: =Round(18 * UI, 0)
-                        BorderColor: =RGBA(180, 26, 26, 0.35)
-                        BorderStyle: =BorderStyle.Solid
-                        BorderThickness: =1
-                        DropShadow: =DropShadow.None
                         Visible: =Coalesce(itItem.TotalDaysSignedOut, 0) > 100
+                        Width: =PageW - Round(40 * UI, 0)
                       Children:
                         - lblService_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Danger
-                              Size: =Round(16 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(60 * UI, 0)
+                              Size: =Round(16 * UI, 0)
                               Text: |-
                                 ="Over 100 days in use this year. Needs a Full Service: set it aside and contact CA."
                               Width: =Parent.Width - Round(35 * UI, 0)
@@ -422,396 +405,401 @@ Screens:
                       Variant: ManualLayout
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(60 * UI, 0)
-                        FillPortions: =0
+                        BorderColor: =C_Danger
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
                         Fill: =C_White
+                        FillPortions: =0
                         Height: =Round(60 * UI, 0)
-                        Width: =PageW - Round(40 * UI, 0)
-                        X: =0
-                        Y: =0
+                        LayoutMinHeight: =Round(60 * UI, 0)
                         RadiusBottomLeft: =Round(30 * UI, 0)
                         RadiusBottomRight: =Round(30 * UI, 0)
                         RadiusTopLeft: =Round(30 * UI, 0)
                         RadiusTopRight: =Round(30 * UI, 0)
-                        BorderColor: =C_Danger
-                        BorderStyle: =BorderStyle.Solid
-                        BorderThickness: =1
-                        DropShadow: =DropShadow.None
                         Visible: =Coalesce(itItem.TotalDaysSignedOut, 0) > 100 && Coalesce(itItem.Status.Value, "") = "Available" || Coalesce(itItem.Status.Value, "") = "In Service"
+                        Width: =PageW - Round(40 * UI, 0)
                       Children:
                         - btnSvcGo_It:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =Round(30 * UI, 0)
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =C_Danger
                               Font: =Font.'Segoe UI'
-                              FontColor: =C_Danger
-                              FontSize: =Round(18 * UI, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =Parent.Height
-                              Width: =Parent.Width
-                              Text: =If(Coalesce(itItem.Status.Value, "") = "In Service", "Return from service", "Record a service")
                               OnSelect: |-
                                 =Set(varServiceItemID, itItem.ID);
                                 Navigate(Servicing, ScreenTransition.Cover)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =Round(30 * UI, 0)
+                              RadiusBottomRight: =Round(30 * UI, 0)
+                              RadiusTopLeft: =Round(30 * UI, 0)
+                              RadiusTopRight: =Round(30 * UI, 0)
+                              Size: =Round(18 * UI, 0)
+                              Text: =If(Coalesce(itItem.Status.Value, "") = "In Service", "Return from service", "Record a service")
+                              VerticalAlign: =VerticalAlign.Middle
+                              Width: =Parent.Width
                   - conAlloc_It:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(245 * UI, 0)
-                        FillPortions: =0
+                        BorderColor: =C_Line
+                        BorderThickness: =1
                         Fill: =C_White
+                        FillPortions: =0
                         Height: =Round(245 * UI, 0)
-                        Width: =PageW - Round(40 * UI, 0)
-                        X: =0
-                        Y: =0
+                        LayoutMinHeight: =Round(245 * UI, 0)
                         RadiusBottomLeft: =Round(23 * UI, 0)
                         RadiusBottomRight: =Round(23 * UI, 0)
                         RadiusTopLeft: =Round(23 * UI, 0)
                         RadiusTopRight: =Round(23 * UI, 0)
-                        BorderColor: =C_Line
-                        BorderStyle: =BorderStyle.Solid
-                        BorderThickness: =1
-                        DropShadow: =DropShadow.Light
                         Visible: =Coalesce(itItem.Status.Value, "") = "Allocated"
+                        Width: =PageW - Round(40 * UI, 0)
                       Children:
                         - capAlloc_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Muted
-                              Size: =Round(14 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(23 * UI, 0)
+                              Size: =Round(14 * UI, 0)
                               Text: ="SIGNED OUT TO"
                               Width: =Parent.Width
+                              Wrap: =false
                               X: =Round(20 * UI, 0)
                               Y: =Round(18 * UI, 0)
-                              Wrap: =false
                         - lblPt_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Ink
-                              Size: =Round(24 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(35 * UI, 0)
+                              Size: =Round(24 * UI, 0)
                               Text: =Coalesce(itItem.'Patient Name', "—")
                               Width: =Parent.Width - Round(40 * UI, 0)
+                              Wrap: =false
                               X: =Round(20 * UI, 0)
                               Y: =Round(40 * UI, 0)
-                              Wrap: =false
                         - lblPtSub_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Muted
-                              Size: =Round(15 * UI, 0)
+                              Font: =AppFont
                               Height: =Round(25 * UI, 0)
+                              Size: =Round(15 * UI, 0)
                               Text: ="URN " & Coalesce(itItem.URN, "—") & If(IsBlank(itItem.DOB), "", "  ·  DOB " & Text(itItem.DOB, "dd/mm/yyyy"))
                               Width: =Parent.Width - Round(40 * UI, 0)
+                              Wrap: =false
                               X: =Round(20 * UI, 0)
                               Y: =Round(75 * UI, 0)
-                              Wrap: =false
                         - capKWard_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Muted
-                              Size: =Round(14 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(23 * UI, 0)
+                              Size: =Round(14 * UI, 0)
                               Text: ="WARD"
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Round(20 * UI, 0)
                               Y: =Round(113 * UI, 0)
-                              Wrap: =false
                         - lblVWard_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Ink
-                              Size: =Round(18 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(28 * UI, 0)
+                              Size: =Round(18 * UI, 0)
                               Text: =Coalesce(itItem.Ward.Value, "—")
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Round(20 * UI, 0)
                               Y: =Round(133 * UI, 0)
-                              Wrap: =false
                         - capKPhysio_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Muted
-                              Size: =Round(14 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(23 * UI, 0)
+                              Size: =Round(14 * UI, 0)
                               Text: ="PHYSIO"
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Parent.Width / 2 + Round(5 * UI, 0)
                               Y: =Round(113 * UI, 0)
-                              Wrap: =false
                         - lblVPhysio_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Ink
-                              Size: =Round(18 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(28 * UI, 0)
+                              Size: =Round(18 * UI, 0)
                               Text: =Coalesce(itItem.Physiotherapist, "—")
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Parent.Width / 2 + Round(5 * UI, 0)
                               Y: =Round(133 * UI, 0)
-                              Wrap: =false
                         - capKOut_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Muted
-                              Size: =Round(14 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(23 * UI, 0)
+                              Size: =Round(14 * UI, 0)
                               Text: ="SIGNED OUT"
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Round(20 * UI, 0)
                               Y: =Round(175 * UI, 0)
-                              Wrap: =false
                         - lblVOut_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Ink
-                              Size: =Round(18 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(28 * UI, 0)
+                              Size: =Round(18 * UI, 0)
                               Text: =Coalesce(Text(itItem.'Date Signed Out', "d mmm yyyy"), "—")
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Round(20 * UI, 0)
                               Y: =Round(195 * UI, 0)
-                              Wrap: =false
                         - capKDays_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Muted
-                              Size: =Round(14 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(23 * UI, 0)
+                              Size: =Round(14 * UI, 0)
                               Text: ="DAYS OUT"
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Parent.Width / 2 + Round(5 * UI, 0)
                               Y: =Round(175 * UI, 0)
-                              Wrap: =false
                         - lblVDays_It:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Ink
-                              Size: =Round(18 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(28 * UI, 0)
+                              Size: =Round(18 * UI, 0)
                               Text: =Coalesce(If(IsBlank(itItem.'Date Signed Out'), Blank(), DateDiff(itItem.'Date Signed Out', Today(), TimeUnit.Days) & If(DateDiff(itItem.'Date Signed Out', Today(), TimeUnit.Days) = 1, " day", " days")), "—")
                               Width: =Parent.Width / 2 - Round(25 * UI, 0)
+                              Wrap: =false
                               X: =Parent.Width / 2 + Round(5 * UI, 0)
                               Y: =Round(195 * UI, 0)
-                              Wrap: =false
             - conFoot_It:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
                   AlignInContainer: =AlignInContainer.SetByContainer
-                  LayoutMinHeight: =Round(100 * UI, 0)
-                  FillPortions: =0
+                  BorderColor: =C_Line
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
                   Fill: =C_White
+                  FillPortions: =0
                   Height: =Round(100 * UI, 0)
-                  Width: =App.Width
-                  X: =0
-                  Y: =0
+                  LayoutMinHeight: =Round(100 * UI, 0)
                   RadiusBottomLeft: =0
                   RadiusBottomRight: =0
                   RadiusTopLeft: =0
                   RadiusTopRight: =0
-                  BorderColor: =C_Line
-                  BorderStyle: =BorderStyle.Solid
-                  BorderThickness: =1
-                  DropShadow: =DropShadow.None
+                  Width: =App.Width
                 Children:
                   - conMain_It:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
+                        BorderColor: =If(Coalesce(itItem.Status.Value, "") = "Available" || Coalesce(itItem.Status.Value, "") = "Allocated", C_Accent, C_Muted)
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
                         Fill: =If(Coalesce(itItem.Status.Value, "") = "Available" || Coalesce(itItem.Status.Value, "") = "Allocated", C_Accent, C_Muted)
                         Height: =Round(60 * UI, 0)
-                        Width: =PageW - Round(40 * UI, 0)
-                        X: =Gutter + Round(20 * UI, 0)
-                        Y: =Round(20 * UI, 0)
                         RadiusBottomLeft: =Round(30 * UI, 0)
                         RadiusBottomRight: =Round(30 * UI, 0)
                         RadiusTopLeft: =Round(30 * UI, 0)
                         RadiusTopRight: =Round(30 * UI, 0)
-                        BorderColor: =If(Coalesce(itItem.Status.Value, "") = "Available" || Coalesce(itItem.Status.Value, "") = "Allocated", C_Accent, C_Muted)
-                        BorderStyle: =BorderStyle.Solid
-                        BorderThickness: =1
-                        DropShadow: =DropShadow.None
+                        Width: =PageW - Round(40 * UI, 0)
+                        X: =Gutter + Round(20 * UI, 0)
+                        Y: =Round(20 * UI, 0)
                       Children:
                         - btnMain_It:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =Round(30 * UI, 0)
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =C_White
+                              DisplayMode: =If(Coalesce(itItem.Status.Value, "") = "Available" || Coalesce(itItem.Status.Value, "") = "Allocated", DisplayMode.Edit, DisplayMode.Disabled)
                               Font: =Font.'Segoe UI'
-                              FontColor: =C_White
-                              FontSize: =Round(19 * UI, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =Parent.Height
-                              Width: =Parent.Width
-                              Text: =If(Coalesce(itItem.Status.Value, "") = "Available", "Allocate to a patient", Coalesce(itItem.Status.Value, "") = "Allocated", "Return equipment", "Not available  ·  " & Coalesce(itItem.Status.Value, ""))
                               OnSelect: =If(Coalesce(itItem.Status.Value, "") = "Available", Navigate(Allocate, ScreenTransition.Cover), Coalesce(itItem.Status.Value, "") = "Allocated", Set(itShowReturn, true))
-                              DisplayMode: =If(Coalesce(itItem.Status.Value, "") = "Available" || Coalesce(itItem.Status.Value, "") = "Allocated", DisplayMode.Edit, DisplayMode.Disabled)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =Round(30 * UI, 0)
+                              RadiusBottomRight: =Round(30 * UI, 0)
+                              RadiusTopLeft: =Round(30 * UI, 0)
+                              RadiusTopRight: =Round(30 * UI, 0)
+                              Size: =Round(19 * UI, 0)
+                              Text: =If(Coalesce(itItem.Status.Value, "") = "Available", "Allocate to a patient", Coalesce(itItem.Status.Value, "") = "Allocated", "Return equipment", "Not available  ·  " & Coalesce(itItem.Status.Value, ""))
+                              VerticalAlign: =VerticalAlign.Middle
+                              Width: =Parent.Width
       - conOverlay_It:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
+            DropShadow: =DropShadow.None
             Fill: =RGBA(14, 28, 42, 0.45)
             Height: =Parent.Height
-            Width: =Parent.Width
-            X: =0
-            Y: =0
             RadiusBottomLeft: =0
             RadiusBottomRight: =0
             RadiusTopLeft: =0
             RadiusTopRight: =0
-            DropShadow: =DropShadow.None
             Visible: =itShowReturn
+            Width: =Parent.Width
           Children:
             - btnScrim_It:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
                   BorderStyle: =BorderStyle.None
+                  FontWeight: =""
                   Height: =Parent.Height
-                  Width: =Parent.Width
-                  X: =0
-                  Y: =0
-                  Text: =""
                   OnSelect: =Set(itShowReturn, false)
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =0
+                  Text: =""
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =Parent.Width
             - conSheet_It:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  DropShadow: =DropShadow.None
                   Fill: =C_White
                   Height: =Min(Parent.Height - Round(50 * UI, 0), Round(363 * UI, 0))
-                  Width: =Min(Parent.Width, SheetW)
-                  X: =(Parent.Width - Min(Parent.Width, SheetW)) / 2
-                  Y: =If(App.Width >= 720, (Parent.Height - Self.Height) / 2, Parent.Height - Self.Height)
                   RadiusBottomLeft: =If(App.Width >= 720, 22, 0)
                   RadiusBottomRight: =If(App.Width >= 720, 22, 0)
                   RadiusTopLeft: =Round(28 * UI, 0)
                   RadiusTopRight: =Round(28 * UI, 0)
-                  DropShadow: =DropShadow.None
+                  Width: =Min(Parent.Width, SheetW)
+                  X: =(Parent.Width - Min(Parent.Width, SheetW)) / 2
+                  Y: =If(App.Width >= 720, (Parent.Height - Self.Height) / 2, Parent.Height - Self.Height)
                 Children:
                   - conHandle_It:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
+                        DropShadow: =DropShadow.None
                         Fill: =RGBA(14, 42, 70, 0.18)
                         Height: =Round(6 * UI, 0)
-                        Width: =Round(50 * UI, 0)
-                        X: =(Parent.Width - Round(50 * UI, 0)) / 2
-                        Y: =Round(10 * UI, 0)
                         RadiusBottomLeft: =Round(4 * UI, 0)
                         RadiusBottomRight: =Round(4 * UI, 0)
                         RadiusTopLeft: =Round(4 * UI, 0)
                         RadiusTopRight: =Round(4 * UI, 0)
-                        DropShadow: =DropShadow.None
+                        Width: =Round(50 * UI, 0)
+                        X: =(Parent.Width - Round(50 * UI, 0)) / 2
+                        Y: =Round(10 * UI, 0)
                   - lblSheetT_It:
                       Control: Label@2.5.1
                       Properties:
-                        Font: =AppFont
                         Color: =C_Ink
-                        Size: =Round(22 * UI, 0)
+                        Font: =AppFont
                         FontWeight: =FontWeight.Bold
                         Height: =Round(38 * UI, 0)
+                        Size: =Round(22 * UI, 0)
                         Text: ="Return " & itItem.Title & "?"
                         Width: =Parent.Width - Round(50 * UI, 0)
+                        Wrap: =false
                         X: =Round(25 * UI, 0)
                         Y: =Round(25 * UI, 0)
-                        Wrap: =false
                   - conSheetBody_It:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
-                        Fill: =RGBA(0, 0, 0, 0)
-                        LayoutDirection: =LayoutDirection.Vertical
+                        DropShadow: =DropShadow.None
+                        Height: =Parent.Height - Round(65 * UI, 0) - Round(95 * UI, 0)
                         LayoutAlignItems: =LayoutAlignItems.Stretch
-                        LayoutJustifyContent: =LayoutJustifyContent.Start
+                        LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =Round(13 * UI, 0)
-                        PaddingTop: =Round(5 * UI, 0)
-                        PaddingRight: =Round(25 * UI, 0)
+                        LayoutOverflowY: =LayoutOverflow.Scroll
                         PaddingBottom: =Round(15 * UI, 0)
                         PaddingLeft: =Round(25 * UI, 0)
-                        DropShadow: =DropShadow.None
+                        PaddingRight: =Round(25 * UI, 0)
+                        PaddingTop: =Round(5 * UI, 0)
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
-                        LayoutOverflowY: =LayoutOverflow.Scroll
-                        X: =0
-                        Y: =Round(65 * UI, 0)
                         Width: =Parent.Width
-                        Height: =Parent.Height - Round(65 * UI, 0) - Round(95 * UI, 0)
+                        Y: =Round(65 * UI, 0)
                       Children:
                         - fldLoc_It:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
                               AlignInContainer: =AlignInContainer.SetByContainer
-                              LayoutMinHeight: =Round(80 * UI, 0)
+                              DropShadow: =DropShadow.None
                               FillPortions: =0
-                              Fill: =RGBA(0, 0, 0, 0)
                               Height: =Round(80 * UI, 0)
-                              Width: =SheetW - Round(50 * UI, 0)
-                              X: =0
-                              Y: =0
+                              LayoutMinHeight: =Round(80 * UI, 0)
                               RadiusBottomLeft: =0
                               RadiusBottomRight: =0
                               RadiusTopLeft: =0
                               RadiusTopRight: =0
-                              DropShadow: =DropShadow.None
+                              Width: =SheetW - Round(50 * UI, 0)
                             Children:
                               - capLoc_It:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Font: =AppFont
                                     Color: =C_Muted
-                                    Size: =Round(14 * UI, 0)
+                                    Font: =AppFont
                                     FontWeight: =FontWeight.Bold
                                     Height: =Round(23 * UI, 0)
+                                    Size: =Round(14 * UI, 0)
                                     Text: ="WHERE IS IT GOING BACK TO?"
                                     Width: =Parent.Width
-                                    X: =0
-                                    Y: =0
                                     Wrap: =false
                               - boxLoc_It:
                                   Control: GroupContainer@1.5.0
                                   Variant: ManualLayout
                                   Properties:
+                                    BorderColor: =RGBA(14, 42, 70, 0.22)
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
                                     Fill: =C_White
                                     Height: =Round(55 * UI, 0)
-                                    Width: =Parent.Width
-                                    X: =0
-                                    Y: =Round(25 * UI, 0)
                                     RadiusBottomLeft: =Round(13 * UI, 0)
                                     RadiusBottomRight: =Round(13 * UI, 0)
                                     RadiusTopLeft: =Round(13 * UI, 0)
                                     RadiusTopRight: =Round(13 * UI, 0)
-                                    BorderColor: =RGBA(14, 42, 70, 0.22)
-                                    BorderStyle: =BorderStyle.Solid
-                                    BorderThickness: =1
-                                    DropShadow: =DropShadow.None
+                                    Width: =Parent.Width
+                                    Y: =Round(25 * UI, 0)
                                   Children:
                                     - ddRetLoc_It:
                                         Control: Classic/DropDown@2.3.1
@@ -827,133 +815,121 @@ Screens:
                                           Items.Value: =Value
                                           Size: =Round(18 * UI, 0)
                                           Width: =Parent.Width
-                                          X: =0
-                                          Y: =0
                         - lblRetBody_It:
                             Control: Label@2.5.1
                             Properties:
-                              AlignInContainer: =AlignInContainer.SetByContainer
-                              LayoutMinHeight: =Round(75 * UI, 0)
-                              FillPortions: =0
-                              Font: =AppFont
                               Color: =C_Ink2
-                              Size: =Round(17 * UI, 0)
+                              Font: =AppFont
                               Height: =Round(75 * UI, 0)
+                              LayoutMinHeight: =Round(75 * UI, 0)
+                              Size: =Round(17 * UI, 0)
                               Text: ="It will be marked Available and signed in by you." & Char(10) & "Out for " & DateDiff(itItem.'Date Signed Out', Today(), TimeUnit.Days) & " days with " & Coalesce(itItem.'Patient Name', "the patient") & ". Confirm it has been cleaned."
                               Width: =SheetW - Round(50 * UI, 0)
-                              X: =0
-                              Y: =0
                   - conSheetFoot_It:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
+                        DropShadow: =DropShadow.None
                         Fill: =C_White
                         Height: =Round(95 * UI, 0)
-                        Width: =Parent.Width
-                        X: =0
-                        Y: =Parent.Height - Round(95 * UI, 0)
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
-                        DropShadow: =DropShadow.None
+                        Width: =Parent.Width
+                        Y: =Parent.Height - Round(95 * UI, 0)
                       Children:
                         - lineFoot_It:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
+                              DropShadow: =DropShadow.None
                               Fill: =C_Line
                               Height: =1
-                              Width: =Parent.Width
-                              X: =0
-                              Y: =0
                               RadiusBottomLeft: =0
                               RadiusBottomRight: =0
                               RadiusTopLeft: =0
                               RadiusTopRight: =0
-                              DropShadow: =DropShadow.None
+                              Width: =Parent.Width
                         - conRetBtns_It:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
-                              AlignInContainer: =AlignInContainer.SetByContainer
-                              LayoutMinHeight: =Round(60 * UI, 0)
-                              FillPortions: =0
-                              Fill: =RGBA(0, 0, 0, 0)
+                              DropShadow: =DropShadow.None
                               Height: =Round(60 * UI, 0)
-                              Width: =SheetW - Round(50 * UI, 0)
-                              X: =Round(25 * UI, 0)
-                              Y: =Round(18 * UI, 0)
                               RadiusBottomLeft: =0
                               RadiusBottomRight: =0
                               RadiusTopLeft: =0
                               RadiusTopRight: =0
-                              DropShadow: =DropShadow.None
+                              Width: =SheetW - Round(50 * UI, 0)
+                              X: =Round(25 * UI, 0)
+                              Y: =Round(18 * UI, 0)
                             Children:
                               - conRetNo_It:
                                   Control: GroupContainer@1.5.0
                                   Variant: ManualLayout
                                   Properties:
+                                    BorderColor: =C_Line
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
                                     Fill: =C_White
                                     Height: =Round(60 * UI, 0)
-                                    Width: =(SheetW - Round(65 * UI, 0)) / 2
-                                    X: =0
-                                    Y: =0
                                     RadiusBottomLeft: =Round(30 * UI, 0)
                                     RadiusBottomRight: =Round(30 * UI, 0)
                                     RadiusTopLeft: =Round(30 * UI, 0)
                                     RadiusTopRight: =Round(30 * UI, 0)
-                                    BorderColor: =C_Line
-                                    BorderStyle: =BorderStyle.Solid
-                                    BorderThickness: =1
-                                    DropShadow: =DropShadow.None
+                                    Width: =(SheetW - Round(65 * UI, 0)) / 2
                                   Children:
                                     - btnRetNo_It:
-                                        Control: Button@0.0.45
+                                        Control: ModernButton@1.0.0
                                         Properties:
-                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                          BorderRadius: =Round(30 * UI, 0)
+                                          Align: =Align.Center
+                                          Appearance: =ButtonAppearance.Transparent
+                                          Color: =C_Ink2
                                           Font: =Font.'Segoe UI'
-                                          FontColor: =C_Ink2
-                                          FontSize: =Round(18 * UI, 0)
                                           FontWeight: =FontWeight.Bold
                                           Height: =Parent.Height
-                                          Width: =Parent.Width
-                                          Text: ="Cancel"
                                           OnSelect: =Set(itShowReturn, false)
+                                          PaddingBottom: =5
+                                          PaddingLeft: =12
+                                          PaddingRight: =12
+                                          PaddingTop: =5
+                                          RadiusBottomLeft: =Round(30 * UI, 0)
+                                          RadiusBottomRight: =Round(30 * UI, 0)
+                                          RadiusTopLeft: =Round(30 * UI, 0)
+                                          RadiusTopRight: =Round(30 * UI, 0)
+                                          Size: =Round(18 * UI, 0)
+                                          Text: ="Cancel"
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =Parent.Width
                               - conRetGo_It:
                                   Control: GroupContainer@1.5.0
                                   Variant: ManualLayout
                                   Properties:
+                                    BorderColor: =C_Accent
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
                                     Fill: =C_Accent
                                     Height: =Round(60 * UI, 0)
-                                    Width: =(SheetW - Round(65 * UI, 0)) / 2
-                                    X: =(SheetW - Round(65 * UI, 0)) / 2 + Round(15 * UI, 0)
-                                    Y: =0
                                     RadiusBottomLeft: =Round(30 * UI, 0)
                                     RadiusBottomRight: =Round(30 * UI, 0)
                                     RadiusTopLeft: =Round(30 * UI, 0)
                                     RadiusTopRight: =Round(30 * UI, 0)
-                                    BorderColor: =C_Accent
-                                    BorderStyle: =BorderStyle.Solid
-                                    BorderThickness: =1
-                                    DropShadow: =DropShadow.None
+                                    Width: =(SheetW - Round(65 * UI, 0)) / 2
+                                    X: =(SheetW - Round(65 * UI, 0)) / 2 + Round(15 * UI, 0)
                                   Children:
                                     - btnRetGo_It:
-                                        Control: Button@0.0.45
+                                        Control: ModernButton@1.0.0
                                         Properties:
-                                          Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                          BorderRadius: =Round(30 * UI, 0)
+                                          Align: =Align.Center
+                                          Appearance: =ButtonAppearance.Transparent
+                                          Color: =C_White
                                           Font: =Font.'Segoe UI'
-                                          FontColor: =C_White
-                                          FontSize: =Round(18 * UI, 0)
                                           FontWeight: =FontWeight.Bold
                                           Height: =Parent.Height
-                                          Width: =Parent.Width
-                                          Text: ="Return"
                                           OnSelect: |-
                                             =If(
-                                                IsBlank(itItem) || Coalesce(itItem.Status.Value, "") <> "Allocated" || IsBlank(itItem.'Date Signed Out'),
+                                                IsBlank(itItem) || Coalesce(LookUp(Equipment_Inventory_SharePoint, ID = itItem.ID).Status.Value, "") <> "Allocated" || IsBlank(itItem.'Date Signed Out'),
                                                 Notify("This item is not signed out, so it cannot be returned.", NotificationType.Error),
                                                 With(
                                                     {
@@ -988,78 +964,96 @@ Screens:
                                                             }
                                                         );
 
-                                                        // 2) usage log: sign-in row
-                                                        Patch(
-                                                            Equipment_Usage_Log,
-                                                            Defaults(Equipment_Usage_Log),
-                                                            {
-                                                                Title: episodeKey & " - Sign In",
-                                                                EpisodeKey: episodeKey,
-                                                                EventType: { Value: "Sign In" },
-                                                                EpisodeStatus: { Value: If(IsBlank(itItem.CurrentEpisodeKey), "Legacy unmatched", "Closed") },
-                                                                EventDateTime: actionTime,
-                                                                EquipmentItemID: itItem.ID,
-                                                                EquipmentTitle: itItem.Title,
-                                                                Category: Coalesce(itItem.Category.Value, ""),
-                                                                Brand: Coalesce(itItem.Brand, ""),
-                                                                Model: Coalesce(itItem.Model, ""),
-                                                                Width: Coalesce(itItem.Width.Value, ""),
-                                                                Depth: Coalesce(itItem.Depth.Value, ""),
-                                                                Height: Coalesce(itItem.Height.Value, ""),
-                                                                SWL: Coalesce(itItem.SWL, ""),
-                                                                WheelchairType: Coalesce(itItem.'Wheelchair Type'.Value, ""),
-                                                                LocationAtEvent: newLoc,
-                                                                Ward: Coalesce(itItem.Ward.Value, ""),
-                                                                PatientName: Coalesce(itItem.'Patient Name', ""),
-                                                                URN: Coalesce(itItem.URN, ""),
-                                                                DOB: itItem.DOB,
-                                                                Physiotherapist: Coalesce(itItem.Physiotherapist, ""),
-                                                                DateSignedOut: itItem.'Date Signed Out',
-                                                                DateReturned: returnDate,
-                                                                DaysSignedOutThisEpisode: daysThisEpisode,
-                                                                TotalDaysSignedOutAfterEvent: newTotalDays,
-                                                                Over100DaysAfterEvent: newTotalDays > 100,
-                                                                ServiceRequired: newTotalDays > 100,
-                                                                IsHighRiskEquipment: Coalesce(itItem.IsHighRiskEquipment, false),
-                                                                OutOfService: Coalesce(itItem.OutOfService, false),
-                                                                IsActive: Coalesce(itItem.IsActive, true),
-                                                                StatusAfterEvent: "Available",
-                                                                ActionedByName: MeName,
-                                                                ActionedByEmail: User().Email,
-                                                                SourceApp: { Value: "Mobile" },
-                                                                Notes: If(IsBlank(itItem.CurrentEpisodeKey), "Return completed without an existing CurrentEpisodeKey. This is likely a pre-log allocation.", "")
-                                                            }
-                                                        );
-
-                                                        // 3) close the matching sign-out row
-                                                        With(
-                                                            { signOutRow: LookUp(Equipment_Usage_Log, EpisodeKey = episodeKey && EventType.Value = "Sign Out") },
-                                                            If(
-                                                                !IsBlank(signOutRow.ID),
-                                                                Patch(
-                                                                    Equipment_Usage_Log,
-                                                                    signOutRow,
-                                                                    {
-                                                                        EpisodeStatus: { Value: "Closed" },
-                                                                        DateReturned: returnDate,
-                                                                        DaysSignedOutThisEpisode: daysThisEpisode,
-                                                                        TotalDaysSignedOutAfterEvent: newTotalDays,
-                                                                        Over100DaysAfterEvent: newTotalDays > 100,
-                                                                        ServiceRequired: newTotalDays > 100
-                                                                    }
-                                                                )
-                                                            )
-                                                        );
-
-                                                        Notify("Equipment returned.", NotificationType.Success);
+                                                        // stop here if SharePoint refused the change, so no log rows are written
                                                         If(
-                                                            newTotalDays > 100,
-                                                            Notify("Used for over 100 days this year: needs a Full Service. Set it aside and contact CA.", NotificationType.Warning)
-                                                        );
+                                                            !IsEmpty(Errors(Equipment_Inventory_SharePoint)),
+                                                            Notify("Could not return the item. Please try again.", NotificationType.Error),
 
-                                                        // show the item again, now Available
-                                                        Set(itShowReturn, false);
-                                                        Set(itItem, LookUp(Equipment_Inventory_SharePoint, ID = varItemID))
+                                                            // 2) usage log: sign-in row
+                                                            Patch(
+                                                                Equipment_Usage_Log,
+                                                                Defaults(Equipment_Usage_Log),
+                                                                {
+                                                                    Title: episodeKey & " - Sign In",
+                                                                    EpisodeKey: episodeKey,
+                                                                    EventType: { Value: "Sign In" },
+                                                                    EpisodeStatus: { Value: If(IsBlank(itItem.CurrentEpisodeKey), "Legacy unmatched", "Closed") },
+                                                                    EventDateTime: actionTime,
+                                                                    EquipmentItemID: itItem.ID,
+                                                                    EquipmentTitle: itItem.Title,
+                                                                    Category: Coalesce(itItem.Category.Value, ""),
+                                                                    Brand: Coalesce(itItem.Brand, ""),
+                                                                    Model: Coalesce(itItem.Model, ""),
+                                                                    Width: Coalesce(itItem.Width.Value, ""),
+                                                                    Depth: Coalesce(itItem.Depth.Value, ""),
+                                                                    Height: Coalesce(itItem.Height.Value, ""),
+                                                                    SWL: Coalesce(itItem.SWL, ""),
+                                                                    WheelchairType: Coalesce(itItem.'Wheelchair Type'.Value, ""),
+                                                                    LocationAtEvent: newLoc,
+                                                                    Ward: Coalesce(itItem.Ward.Value, ""),
+                                                                    PatientName: Coalesce(itItem.'Patient Name', ""),
+                                                                    URN: Coalesce(itItem.URN, ""),
+                                                                    DOB: itItem.DOB,
+                                                                    Physiotherapist: Coalesce(itItem.Physiotherapist, ""),
+                                                                    DateSignedOut: itItem.'Date Signed Out',
+                                                                    DateReturned: returnDate,
+                                                                    DaysSignedOutThisEpisode: daysThisEpisode,
+                                                                    TotalDaysSignedOutAfterEvent: newTotalDays,
+                                                                    Over100DaysAfterEvent: newTotalDays > 100,
+                                                                    ServiceRequired: newTotalDays > 100,
+                                                                    IsHighRiskEquipment: Coalesce(itItem.IsHighRiskEquipment, false),
+                                                                    OutOfService: Coalesce(itItem.OutOfService, false),
+                                                                    IsActive: Coalesce(itItem.IsActive, true),
+                                                                    StatusAfterEvent: "Available",
+                                                                    ActionedByName: MeName,
+                                                                    ActionedByEmail: User().Email,
+                                                                    SourceApp: { Value: "Mobile" },
+                                                                    Notes: If(IsBlank(itItem.CurrentEpisodeKey), "Return completed without an existing CurrentEpisodeKey. This is likely a pre-log allocation.", "")
+                                                                }
+                                                            );
+
+                                                            // 3) close the matching sign-out row
+                                                            With(
+                                                                { signOutRow: LookUp(Equipment_Usage_Log, EpisodeKey = episodeKey && EventType.Value = "Sign Out") },
+                                                                If(
+                                                                    !IsBlank(signOutRow.ID),
+                                                                    Patch(
+                                                                        Equipment_Usage_Log,
+                                                                        signOutRow,
+                                                                        {
+                                                                            EpisodeStatus: { Value: "Closed" },
+                                                                            DateReturned: returnDate,
+                                                                            DaysSignedOutThisEpisode: daysThisEpisode,
+                                                                            TotalDaysSignedOutAfterEvent: newTotalDays,
+                                                                            Over100DaysAfterEvent: newTotalDays > 100,
+                                                                            ServiceRequired: newTotalDays > 100
+                                                                        }
+                                                                    )
+                                                                )
+                                                            );
+
+                                                            Notify("Equipment returned.", NotificationType.Success);
+                                                            If(
+                                                                newTotalDays > 100,
+                                                                Notify("Used for over 100 days this year: needs a Full Service. Set it aside and contact CA.", NotificationType.Warning)
+                                                            );
+
+                                                            // show the item again, now Available
+                                                            Set(itShowReturn, false);
+                                                            Set(itItem, LookUp(Equipment_Inventory_SharePoint, ID = varItemID))
+                                                        )
                                                     )
                                                 )
                                             )
+                                          PaddingBottom: =5
+                                          PaddingLeft: =12
+                                          PaddingRight: =12
+                                          PaddingTop: =5
+                                          RadiusBottomLeft: =Round(30 * UI, 0)
+                                          RadiusBottomRight: =Round(30 * UI, 0)
+                                          RadiusTopLeft: =Round(30 * UI, 0)
+                                          RadiusTopRight: =Round(30 * UI, 0)
+                                          Size: =Round(18 * UI, 0)
+                                          Text: ="Return"
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =Parent.Width

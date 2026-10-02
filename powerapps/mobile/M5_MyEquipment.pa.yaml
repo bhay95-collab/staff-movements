@@ -13,42 +13,32 @@ Screens:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
-            Fill: =C_Bg
-            LayoutDirection: =LayoutDirection.Vertical
-            LayoutAlignItems: =LayoutAlignItems.Stretch
-            LayoutJustifyContent: =LayoutJustifyContent.Start
-            LayoutGap: =0
-            PaddingTop: =0
-            PaddingRight: =0
-            PaddingBottom: =0
-            PaddingLeft: =0
             DropShadow: =DropShadow.None
+            Fill: =C_Bg
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+            LayoutDirection: =LayoutDirection.Vertical
             RadiusBottomLeft: =0
             RadiusBottomRight: =0
             RadiusTopLeft: =0
             RadiusTopRight: =0
-            X: =0
-            Y: =0
             Width: =Parent.Width
-            Height: =Parent.Height
           Children:
             - conHdr_Me:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
                   AlignInContainer: =AlignInContainer.SetByContainer
-                  LayoutMinHeight: =Round(95 * UI, 0)
-                  FillPortions: =0
+                  DropShadow: =DropShadow.None
                   Fill: =RGBA(7, 95, 115, 1)
+                  FillPortions: =0
                   Height: =Round(95 * UI, 0)
-                  Width: =App.Width
-                  X: =0
-                  Y: =0
+                  LayoutMinHeight: =Round(95 * UI, 0)
                   RadiusBottomLeft: =0
                   RadiusBottomRight: =0
                   RadiusTopLeft: =0
                   RadiusTopRight: =0
-                  DropShadow: =DropShadow.None
+                  Width: =App.Width
                 Children:
                   - imgHdr_Me:
                       Control: Image@2.2.3
@@ -57,188 +47,211 @@ Screens:
                         Image: =HeaderImage
                         ImagePosition: =ImagePosition.Fill
                         Width: =Parent.Width
-                        X: =0
-                        Y: =0
                   - btnBack_Me:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        FontColor: =C_White
-                        FontSize: =Round(32 * UI, 0)
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =C_White
+                        FontWeight: =""
                         Height: =Round(60 * UI, 0)
                         Icon: ="ChevronLeft"
+                        OnSelect: =Back(ScreenTransition.UnCoverRight)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =4
+                        RadiusBottomRight: =4
+                        RadiusTopLeft: =4
+                        RadiusTopRight: =4
+                        Size: =Round(32 * UI, 0)
                         Text: =""
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =Round(60 * UI, 0)
                         X: =Gutter + Round(5 * UI, 0)
                         Y: =Round(18 * UI, 0)
-                        OnSelect: =Back(ScreenTransition.UnCoverRight)
                   - lblHdrT_Me:
                       Control: Label@2.5.1
                       Properties:
-                        Font: =AppFont
                         Color: =C_White
-                        Size: =Round(24 * UI, 0)
+                        Font: =AppFont
                         FontWeight: =FontWeight.Bold
-                        Height: =Round(35 * UI, 0)
-                        Text: ="My equipment"
+                        Height: =Round(42 * UI, 0)
+                        Size: =Round(24 * UI, 0)
+                        Text: ="My Equipment"
                         Width: =PageW - Round(85 * UI, 0)
-                        X: =Gutter + Round(65 * UI, 0)
-                        Y: =Round(20 * UI, 0)
                         Wrap: =false
+                        X: =Gutter + Round(65 * UI, 0)
+                        Y: =Round(12 * UI, 0)
                   - lblHdrS_Me:
                       Control: Label@2.5.1
                       Properties:
-                        Font: =AppFont
                         Color: =RGBA(255, 255, 255, 0.85)
-                        Size: =Round(15 * UI, 0)
+                        Font: =AppFont
                         Height: =Round(25 * UI, 0)
+                        Size: =Round(15 * UI, 0)
                         Text: ="Signed out by " & MeName
                         Width: =PageW - Round(85 * UI, 0)
+                        Wrap: =false
                         X: =Gutter + Round(65 * UI, 0)
                         Y: =Round(53 * UI, 0)
-                        Wrap: =false
             - conBody_Me:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
                   AlignInContainer: =AlignInContainer.SetByContainer
-                  LayoutMinHeight: =Round(250 * UI, 0)
-                  FillPortions: =1
-                  Width: =App.Width
-                  Fill: =RGBA(0, 0, 0, 0)
-                  LayoutDirection: =LayoutDirection.Vertical
+                  DropShadow: =DropShadow.None
                   LayoutAlignItems: =LayoutAlignItems.Stretch
-                  LayoutJustifyContent: =LayoutJustifyContent.Start
+                  LayoutDirection: =LayoutDirection.Vertical
                   LayoutGap: =Round(13 * UI, 0)
-                  PaddingTop: =Round(15 * UI, 0)
-                  PaddingRight: =Gutter + Round(20 * UI, 0)
+                  LayoutMinHeight: =Round(250 * UI, 0)
                   PaddingBottom: =Round(10 * UI, 0)
                   PaddingLeft: =Gutter + Round(20 * UI, 0)
-                  DropShadow: =DropShadow.None
+                  PaddingRight: =Gutter + Round(20 * UI, 0)
+                  PaddingTop: =Round(15 * UI, 0)
                   RadiusBottomLeft: =0
                   RadiusBottomRight: =0
                   RadiusTopLeft: =0
                   RadiusTopRight: =0
+                  Width: =App.Width
                 Children:
                   - conSegTab_Me:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(50 * UI, 0)
+                        DropShadow: =DropShadow.None
                         FillPortions: =0
-                        Fill: =RGBA(0, 0, 0, 0)
                         Height: =Round(50 * UI, 0)
-                        Width: =PageW - Round(40 * UI, 0)
-                        X: =0
-                        Y: =0
+                        LayoutMinHeight: =Round(50 * UI, 0)
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
-                        DropShadow: =DropShadow.None
+                        Width: =PageW - Round(40 * UI, 0)
                       Children:
                         - conSegTabAll_Me:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
+                              BorderColor: =If(meTab = "All", C_Accent, C_Line)
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
                               Fill: =If(meTab = "All", C_Accent, C_White)
                               Height: =Round(50 * UI, 0)
-                              Width: =(PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3
-                              X: =0 * ((PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0))
-                              Y: =0
                               RadiusBottomLeft: =Round(25 * UI, 0)
                               RadiusBottomRight: =Round(25 * UI, 0)
                               RadiusTopLeft: =Round(25 * UI, 0)
                               RadiusTopRight: =Round(25 * UI, 0)
-                              BorderColor: =If(meTab = "All", C_Accent, C_Line)
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
-                              DropShadow: =DropShadow.None
+                              Width: =(PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3
+                              X: =0 * ((PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0))
                             Children:
                               - btnSegTabAll_Me:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =Round(25 * UI, 0)
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =If(meTab = "All", C_White, C_Ink2)
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =If(meTab = "All", C_White, C_Ink2)
-                                    FontSize: =Round(16 * UI, 0)
                                     FontWeight: =FontWeight.Bold
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    Text: ="All  ·  " & CountRows(colMine)
+                                    Height: =63
                                     OnSelect: =Set(meTab, "All")
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =Round(25 * UI, 0)
+                                    RadiusBottomRight: =Round(25 * UI, 0)
+                                    RadiusTopLeft: =Round(25 * UI, 0)
+                                    RadiusTopRight: =Round(25 * UI, 0)
+                                    Size: =Round(16 * UI, 0)
+                                    Text: ="All  ·  " & CountRows(colMine)
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =188.33333333333334
                         - conSegTabToday_Me:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
+                              BorderColor: =If(meTab = "Today", C_Accent, C_Line)
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
                               Fill: =If(meTab = "Today", C_Accent, C_White)
                               Height: =Round(50 * UI, 0)
-                              Width: =(PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3
-                              X: =1 * ((PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0))
-                              Y: =0
                               RadiusBottomLeft: =Round(25 * UI, 0)
                               RadiusBottomRight: =Round(25 * UI, 0)
                               RadiusTopLeft: =Round(25 * UI, 0)
                               RadiusTopRight: =Round(25 * UI, 0)
-                              BorderColor: =If(meTab = "Today", C_Accent, C_Line)
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
-                              DropShadow: =DropShadow.None
+                              Width: =(PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3
+                              X: =1 * ((PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0))
                             Children:
                               - btnSegTabToday_Me:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =Round(25 * UI, 0)
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =If(meTab = "Today", C_White, C_Ink2)
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =If(meTab = "Today", C_White, C_Ink2)
-                                    FontSize: =Round(16 * UI, 0)
                                     FontWeight: =FontWeight.Bold
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    Text: ="Today  ·  " & CountRows(Filter(colMine, 'Date Signed Out' = Today()))
+                                    Height: =63
                                     OnSelect: =Set(meTab, "Today")
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =Round(25 * UI, 0)
+                                    RadiusBottomRight: =Round(25 * UI, 0)
+                                    RadiusTopLeft: =Round(25 * UI, 0)
+                                    RadiusTopRight: =Round(25 * UI, 0)
+                                    Size: =Round(16 * UI, 0)
+                                    Text: ="Today  ·  " & CountRows(Filter(colMine, 'Date Signed Out' = Today()))
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =188.33333333333334
                         - conSegTabOld_Me:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
+                              BorderColor: =If(meTab = "Old", C_Accent, C_Line)
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
                               Fill: =If(meTab = "Old", C_Accent, C_White)
                               Height: =Round(50 * UI, 0)
-                              Width: =(PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3
-                              X: =2 * ((PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0))
-                              Y: =0
                               RadiusBottomLeft: =Round(25 * UI, 0)
                               RadiusBottomRight: =Round(25 * UI, 0)
                               RadiusTopLeft: =Round(25 * UI, 0)
                               RadiusTopRight: =Round(25 * UI, 0)
-                              BorderColor: =If(meTab = "Old", C_Accent, C_Line)
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
-                              DropShadow: =DropShadow.None
+                              Width: =(PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3
+                              X: =2 * ((PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0))
                             Children:
                               - btnSegTabOld_Me:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =Round(25 * UI, 0)
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =If(meTab = "Old", C_White, C_Ink2)
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =If(meTab = "Old", C_White, C_Ink2)
-                                    FontSize: =Round(16 * UI, 0)
                                     FontWeight: =FontWeight.Bold
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    Text: ="6+ wks  ·  " & CountRows(Filter(colMine, 'Date Signed Out' <= DateAdd(Today(), -42)))
+                                    Height: =63
                                     OnSelect: =Set(meTab, "Old")
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =Round(25 * UI, 0)
+                                    RadiusBottomRight: =Round(25 * UI, 0)
+                                    RadiusTopLeft: =Round(25 * UI, 0)
+                                    RadiusTopRight: =Round(25 * UI, 0)
+                                    Size: =Round(16 * UI, 0)
+                                    Text: ="6+ wks  ·  " & CountRows(Filter(colMine, 'Date Signed Out' <= DateAdd(Today(), -42)))
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =188.33333333333334
                   - galMine_Me:
                       Control: Gallery@2.15.0
                       Variant: Vertical
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(150 * UI, 0)
-                        FillPortions: =1
                         Items: =Sort(Switch(meTab, "Today", Filter(colMine, 'Date Signed Out' = Today()), "Old", Filter(colMine, 'Date Signed Out' <= DateAdd(Today(), -42)), colMine), 'Date Signed Out', SortOrder.Descending)
+                        LayoutMinHeight: =Round(150 * UI, 0)
                         TemplatePadding: =0
                         TemplateSize: =Round(135 * UI, 0)
                         Width: =PageW - Round(40 * UI, 0)
@@ -247,215 +260,199 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
+                              BorderColor: =C_Line
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
                               Fill: =C_White
                               Height: =Round(125 * UI, 0)
-                              Width: =Parent.TemplateWidth - Round(5 * UI, 0)
-                              X: =Round(3 * UI, 0)
-                              Y: =Round(5 * UI, 0)
                               RadiusBottomLeft: =Round(18 * UI, 0)
                               RadiusBottomRight: =Round(18 * UI, 0)
                               RadiusTopLeft: =Round(18 * UI, 0)
                               RadiusTopRight: =Round(18 * UI, 0)
-                              BorderColor: =C_Line
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
-                              DropShadow: =DropShadow.None
+                              Width: =Parent.TemplateWidth - Round(5 * UI, 0)
+                              X: =1
+                              Y: =Round(5 * UI, 0)
                             Children:
                               - conRowBar_Me:
                                   Control: GroupContainer@1.5.0
                                   Variant: ManualLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     Fill: =Switch(ThisItem.Category.Value, "Wheelchair", RGBA(166, 199, 130, 1), "Cushion", RGBA(0, 144, 153, 1), "Backrest", RGBA(0, 200, 210, 1), RGBA(210, 218, 227, 1))
                                     Height: =Parent.Height
-                                    Width: =Round(8 * UI, 0)
-                                    X: =0
-                                    Y: =0
                                     RadiusBottomLeft: =Round(18 * UI, 0)
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =Round(18 * UI, 0)
                                     RadiusTopRight: =0
-                                    DropShadow: =DropShadow.None
+                                    Width: =Round(8 * UI, 0)
                               - lblRowT_Me:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Font: =AppFont
                                     Color: =C_Ink
-                                    Size: =Round(18 * UI, 0)
+                                    Font: =AppFont
                                     FontWeight: =FontWeight.Bold
                                     Height: =Round(30 * UI, 0)
+                                    Size: =Round(18 * UI, 0)
                                     Text: =Coalesce(Trim(ThisItem.Brand & " " & ThisItem.Model), ThisItem.Title)
                                     Width: =Parent.Width - Round(125 * UI, 0)
+                                    Wrap: =false
                                     X: =Round(23 * UI, 0)
                                     Y: =Round(10 * UI, 0)
-                                    Wrap: =false
                               - lblRow0_Me:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Font: =AppFont
                                     Color: =C_Muted
-                                    Size: =Round(15 * UI, 0)
+                                    Font: =AppFont
                                     Height: =Round(23 * UI, 0)
+                                    Size: =Round(15 * UI, 0)
                                     Text: =ThisItem.Title & "  ·  " & Coalesce(ThisItem.Category.Value, "")
                                     Width: =Parent.Width - Round(125 * UI, 0)
+                                    Wrap: =false
                                     X: =Round(23 * UI, 0)
                                     Y: =Round(40 * UI, 0)
-                                    Wrap: =false
                               - lblRow1_Me:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Font: =AppFont
                                     Color: =C_Ink2
-                                    Size: =Round(15 * UI, 0)
+                                    Font: =AppFont
                                     Height: =Round(23 * UI, 0)
+                                    Size: =Round(15 * UI, 0)
                                     Text: =ThisItem.'Patient Name' & "  ·  Ward " & Coalesce(ThisItem.Ward.Value, "—")
                                     Width: =Parent.Width - Round(125 * UI, 0)
+                                    Wrap: =false
                                     X: =Round(23 * UI, 0)
                                     Y: =Round(63 * UI, 0)
-                                    Wrap: =false
                               - lblRow2_Me:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Font: =AppFont
                                     Color: =C_Muted
-                                    Size: =Round(15 * UI, 0)
+                                    Font: =AppFont
                                     Height: =Round(23 * UI, 0)
+                                    Size: =Round(15 * UI, 0)
                                     Text: ="Signed out " & Text(ThisItem.'Date Signed Out', "d mmm yyyy")
                                     Width: =Parent.Width - Round(125 * UI, 0)
+                                    Wrap: =false
                                     X: =Round(23 * UI, 0)
                                     Y: =Round(85 * UI, 0)
-                                    Wrap: =false
                               - conDays_Me:
                                   Control: GroupContainer@1.5.0
                                   Variant: ManualLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     Fill: =If(DateDiff(ThisItem.'Date Signed Out', Today(), TimeUnit.Days) >= 42, C_DangerBg, C_Bg)
                                     Height: =Round(33 * UI, 0)
-                                    Width: =Round(75 * UI, 0)
-                                    X: =Parent.Width - Round(93 * UI, 0)
-                                    Y: =Round(13 * UI, 0)
                                     RadiusBottomLeft: =Round(16 * UI, 0)
                                     RadiusBottomRight: =Round(16 * UI, 0)
                                     RadiusTopLeft: =Round(16 * UI, 0)
                                     RadiusTopRight: =Round(16 * UI, 0)
-                                    DropShadow: =DropShadow.None
+                                    Width: =Round(75 * UI, 0)
+                                    X: =Parent.Width - Round(93 * UI, 0)
+                                    Y: =Round(13 * UI, 0)
                                   Children:
                                     - lblDays_Me:
                                         Control: Label@2.5.1
                                         Properties:
-                                          Font: =AppFont
+                                          Align: =Align.Center
                                           Color: =If(DateDiff(ThisItem.'Date Signed Out', Today(), TimeUnit.Days) >= 42, C_Danger, C_Ink2)
-                                          Size: =Round(15 * UI, 0)
+                                          Font: =AppFont
                                           FontWeight: =FontWeight.Bold
                                           Height: =Parent.Height
+                                          Size: =Round(15 * UI, 0)
                                           Text: =DateDiff(ThisItem.'Date Signed Out', Today(), TimeUnit.Days) & "d"
                                           Width: =Parent.Width
-                                          X: =0
-                                          Y: =0
-                                          Align: =Align.Center
-                                          VerticalAlign: =VerticalAlign.Middle
                                           Wrap: =false
                               - btnRow_Me:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
                                     BorderStyle: =BorderStyle.None
+                                    FontWeight: =""
                                     Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    X: =0
-                                    Y: =0
-                                    Text: =""
                                     OnSelect: |-
                                       =Set(varItemID, ThisItem.ID);
                                       Navigate(Item, ScreenTransition.Cover)
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =4
+                                    RadiusBottomRight: =4
+                                    RadiusTopLeft: =4
+                                    RadiusTopRight: =4
+                                    Size: =0
+                                    Text: =""
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =Parent.Width
                   - lblEmpty_Me:
                       Control: Label@2.5.1
                       Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(50 * UI, 0)
-                        FillPortions: =0
-                        Font: =AppFont
-                        Color: =C_Muted
-                        Size: =Round(16 * UI, 0)
-                        Height: =Round(50 * UI, 0)
-                        Text: =Switch(meTab, "Today", "Nothing allocated by you today.", "Old", "Nothing signed out for 6 weeks or more.", "You have no equipment signed out.")
-                        Width: =PageW - Round(40 * UI, 0)
-                        X: =0
-                        Y: =0
                         Align: =Align.Center
+                        Color: =C_Muted
+                        Font: =AppFont
+                        Height: =Round(50 * UI, 0)
+                        LayoutMinHeight: =Round(50 * UI, 0)
+                        Size: =Round(16 * UI, 0)
+                        Text: =Switch(meTab, "Today", "Nothing allocated by you today.", "Old", "Nothing signed out for 6 weeks or more.", "You have no equipment signed out.")
                         Visible: =IsEmpty(galMine_Me.AllItems)
+                        Width: =PageW - Round(40 * UI, 0)
             - conFoot_Me:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
                   AlignInContainer: =AlignInContainer.SetByContainer
-                  LayoutMinHeight: =Round(100 * UI, 0)
-                  FillPortions: =0
+                  BorderColor: =C_Line
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
                   Fill: =C_White
+                  FillPortions: =0
                   Height: =Round(100 * UI, 0)
-                  Width: =App.Width
-                  X: =0
-                  Y: =0
+                  LayoutMinHeight: =Round(100 * UI, 0)
                   RadiusBottomLeft: =0
                   RadiusBottomRight: =0
                   RadiusTopLeft: =0
                   RadiusTopRight: =0
-                  BorderColor: =C_Line
-                  BorderStyle: =BorderStyle.Solid
-                  BorderThickness: =1
-                  DropShadow: =DropShadow.None
                   Visible: =meTab = "Today" && !IsEmpty(Filter(colMine, 'Date Signed Out' = Today()))
+                  Width: =App.Width
                 Children:
                   - conEmail_Me:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
+                        BorderColor: =C_Accent
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
                         Fill: =C_Accent
                         Height: =Round(60 * UI, 0)
-                        Width: =PageW - Round(40 * UI, 0)
-                        X: =Gutter + Round(20 * UI, 0)
-                        Y: =Round(20 * UI, 0)
                         RadiusBottomLeft: =Round(30 * UI, 0)
                         RadiusBottomRight: =Round(30 * UI, 0)
                         RadiusTopLeft: =Round(30 * UI, 0)
                         RadiusTopRight: =Round(30 * UI, 0)
-                        BorderColor: =C_Accent
-                        BorderStyle: =BorderStyle.Solid
-                        BorderThickness: =1
-                        DropShadow: =DropShadow.None
+                        Width: =PageW - Round(40 * UI, 0)
+                        X: =Gutter + Round(20 * UI, 0)
+                        Y: =Round(20 * UI, 0)
                       Children:
                         - btnEmail_Me:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =Round(30 * UI, 0)
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =C_White
                               Font: =Font.'Segoe UI'
-                              FontColor: =C_White
-                              FontSize: =Round(18 * UI, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =Parent.Height
-                              Width: =Parent.Width
-                              Text: ="Email today's list to me"
-                              OnSelect: |-
-                                =With(
-                                    { rows: Sort(Filter(colMine, 'Date Signed Out' = Today()), 'Patient Name') },
-                                    If(
-                                        IsEmpty(rows),
-                                        Notify("You have not allocated anything today.", NotificationType.Information),
-                                        Office365Outlook.SendEmailV2(
-                                            User().Email,
-                                            "Equipment you allocated today (" & Text(Today(), "d mmm yyyy") & ")",
-                                            "<p>Equipment you allocated today:</p><ul>" &
-                                            Concat(
-                                                rows,
-                                                "<li><strong>" & 'Patient Name' & "</strong> (URN " & URN & ", Ward " & Ward.Value & "): " &
-                                                Category.Value & " " & Title & ", " & Brand & " " & Model & "</li>"
-                                            ) &
-                                            "</ul><p>Please add these to your patients' Interactive View in ieMR.</p>",
-                                            { IsHtml: true }
-                                        );
-                                        Notify("Email sent to " & User().Email & ".", NotificationType.Success)
-                                    )
-                                )
                               Icon: ="Mail"
-                              IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                              Layout: ='ButtonCanvas.Layout'.IconBefore
+                              IconStyle: =IconStyle.Filled
+                              OnSelect: "=// \"Email today's list to me\" button > OnSelect  (MyEquipment).  Needs EmailHead and EmailFoot (App > Formulas).\nWith(\n    { rows: Sort(Filter(colMine, 'Date Signed Out' = Today()), 'Patient Name') },\n    If(\n        IsEmpty(rows),\n        Notify(\"You have not allocated anything today.\", NotificationType.Information),\n        Set(\n            varEmailBody,\n            Substitute(\n                Substitute(EmailHead, \"{{TITLE}}\", \"Equipment you allocated today\"),\n                \"{{SUB}}\",\n                Text(Today(), \"dddd d mmmm yyyy\") & \"&nbsp;&nbsp;|&nbsp;&nbsp;\" & CountRows(rows) & If(CountRows(rows) = 1, \" item\", \" items\")\n            ) &\n        \n            // greeting\n            \"<tr><td style='padding:28px 32px 8px 32px;font-size:15px;line-height:22px;color:#3A5068;'>\" &\n                \"Hi \" & First(Split(User().FullName, \" \")).Value & \",<br><br>\" &\n                \"Here is the equipment you allocated today.\" &\n            \"</td></tr>\" &\n        \n            // list (one row per item, sorted by patient)\n            \"<tr><td style='padding:16px 32px 8px 32px;'>\" &\n            \"<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='border-collapse:separate;border-spacing:0;width:100%;font-size:14px;border:1px solid #E3EAF1;border-radius:14px;overflow:hidden;'>\" &\n                \"<tr bgcolor='#F2F6FA' style='background-color:#F2F6FA;'>\" &\n                    \"<th align='left' style='padding:10px 12px;font-size:11px;letter-spacing:1px;color:#8C9BAE;border-bottom:2px solid #1A5A99;border-radius:14px 0 0 0;'>PATIENT</th>\" &\n                    \"<th align='left' style='padding:10px 12px;font-size:11px;letter-spacing:1px;color:#8C9BAE;border-bottom:2px solid #1A5A99;border-radius:0 14px 0 0;'>EQUIPMENT</th>\" &\n                \"</tr>\" &\n                Concat(\n                    rows,\n                    \"<tr>\" &\n                        \"<td style='padding:12px;border-top:1px solid #E3EAF1;'><b style='color:#0E1C2A;'>\" & 'Patient Name' & \"</b><br>\" &\n                            \"<span style='font-size:12px;color:#8C9BAE;'>URN \" & If(IsBlank(URN), \"—\", Text(URN)) & \"&nbsp;&nbsp;|&nbsp;&nbsp;Ward \" & If(IsBlank(Ward.Value), \"—\", Ward.Value) & \"</span></td>\" &\n                        \"<td style='padding:12px;border-top:1px solid #E3EAF1;'><b style='color:#0E1C2A;'>\" & Title & \"</b><br>\" &\n                            \"<span style='font-size:12px;color:#8C9BAE;'>\" & Category.Value & \"&nbsp;&nbsp;|&nbsp;&nbsp;\" & Trim(Brand & \" \" & Model) & \"</span></td>\" &\n                    \"</tr>\"\n                ) &\n            \"</table>\" &\n            \"</td></tr>\" &\n        \n            // reminder box\n            \"<tr><td style='padding:12px 32px 8px 32px;'>\" &\n            \"<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='border-collapse:separate;border-spacing:0;'><tr>\" &\n                \"<td bgcolor='#E8F1FA' style='background-color:#E8F1FA;border-radius:12px;padding:14px 18px;font-size:14px;line-height:20px;color:#1A5A99;'>\" &\n                    \"<b>Reminder:</b> please add these to your patients' Interactive View in ieMR.\" &\n                \"</td></tr></table>\" &\n            \"</td></tr>\" &\n        \n            // sign-off\n            \"<tr><td style='padding:20px 32px 28px 32px;font-size:15px;line-height:22px;color:#3A5068;'>Thanks,<br><b style='color:#0E1C2A;'>\" & User().FullName & \"</b></td></tr>\" &\n        \n            Substitute(EmailFoot, \"{{NOTE}}\", \"This email contains patient information. Please handle it in line with your privacy policy.\")\n        );\n        Office365Outlook.SendEmailV2(\n            User().Email,\n            \"Equipment you allocated today (\" & Text(Today(), \"d mmm yyyy\") & \")\",\n            varEmailBody,\n            { IsHtml: true }\n        );\n        Notify(\"Email sent to \" & User().Email & \".\", NotificationType.Success)\n    )\n)"
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =Round(30 * UI, 0)
+                              RadiusBottomRight: =Round(30 * UI, 0)
+                              RadiusTopLeft: =Round(30 * UI, 0)
+                              RadiusTopRight: =Round(30 * UI, 0)
+                              Size: =Round(18 * UI, 0)
+                              Text: ="Email Today's List to Me"
+                              VerticalAlign: =VerticalAlign.Middle
+                              Width: =Parent.Width

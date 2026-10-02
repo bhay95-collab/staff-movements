@@ -39,41 +39,66 @@ Screens:
                   ImagePosition: =ImagePosition.Fill
                   Width: =Parent.Width
             - lblTitle_AlHdr:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
+                  Color: =RGBA(255, 255, 255, 1)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 1)
-                  Height: =36 * SY
+                  FontWeight: =FontWeight.Bold
+                  Height: =42 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(28 * SF, 0)
                   Text: ="Allocated Equipment"
-                  VerticalAlign: =VerticalAlign.Middle
-                  Weight: ='TextCanvas.Weight'.Bold
                   Width: =600 * SX
                   X: =76 * SX
-                  Y: =8 * SY
+                  Y: =5 * SY
             - lblSub_AlHdr:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
+                  Color: =RGBA(255, 255, 255, 0.88)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 0.88)
                   Height: =20 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(12 * SF, 0)
                   Text: =CountRows(Gallery_Allocated.AllItems) & " items shown  ·  tap a row to open the patient"
-                  VerticalAlign: =VerticalAlign.Middle
                   Width: =600 * SX
                   X: =76 * SX
                   Y: =42 * SY
             - btnBack_Al:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  Width: =96 * SX
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
-                  FontColor: =RGBA(255, 255, 255, 1)
-                  FontSize: =Round(50 * SF, 0)
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
+                  Color: =RGBA(255, 255, 255, 1)
+                  FontWeight: =""
                   Height: =70 * SY
                   Icon: ="ChevronLeft"
                   OnSelect: =Back(ScreenTransition.Fade)
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =Round(35 * SF, 0)
                   Text: =""
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =96 * SX
                   X: =1 * SX
       - Al_CardFilters:
           Control: GroupContainer@1.5.0
@@ -120,18 +145,16 @@ Screens:
                   Y: =14 * SY
                 Children:
                   - btnReset_Al:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =17 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =34 * SY
                         Icon: ="ArrowClockwise"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        IconStyle: =IconStyle.Filled
                         OnSelect: |-
                           =Reset(ddType_Al);
                           Reset(ddWCType_Al);
@@ -141,7 +164,17 @@ Screens:
                           Reset(txtCode_Al);
                           Reset(txtPatient_Al);
                           Reset(txtURN_Al)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =17 * SR
+                        RadiusBottomRight: =17 * SR
+                        RadiusTopLeft: =17 * SR
+                        RadiusTopRight: =17 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Reset"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =110 * SX
             - capCat_Al:
                 Control: Label@2.5.1
@@ -174,7 +207,6 @@ Screens:
                   - ddType_Al:
                       Control: Classic/DropDown@2.3.1
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         ChevronBackground: =RGBA(26, 90, 153, 1)
                         ChevronFill: =RGBA(255, 255, 255, 1)
@@ -182,6 +214,7 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: ="All"
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         Items: |-
                           =With(
                               {
@@ -242,7 +275,6 @@ Screens:
                   - ddWCType_Al:
                       Control: Classic/DropDown@2.3.1
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         ChevronBackground: =RGBA(26, 90, 153, 1)
                         ChevronFill: =RGBA(255, 255, 255, 1)
@@ -250,6 +282,7 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: ="All"
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         Items: |-
                           =With(
                               {
@@ -310,7 +343,6 @@ Screens:
                   - ddWidth_Al:
                       Control: Classic/DropDown@2.3.1
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         ChevronBackground: =RGBA(26, 90, 153, 1)
                         ChevronFill: =RGBA(255, 255, 255, 1)
@@ -318,6 +350,7 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: ="All"
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         Items: |-
                           =With(
                               {
@@ -378,7 +411,6 @@ Screens:
                   - ddDepth_Al:
                       Control: Classic/DropDown@2.3.1
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         ChevronBackground: =RGBA(26, 90, 153, 1)
                         ChevronFill: =RGBA(255, 255, 255, 1)
@@ -386,6 +418,7 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: ="All"
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         Items: |-
                           =With(
                               {
@@ -446,7 +479,6 @@ Screens:
                   - ddHeight_Al:
                       Control: Classic/DropDown@2.3.1
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         ChevronBackground: =RGBA(26, 90, 153, 1)
                         ChevronFill: =RGBA(255, 255, 255, 1)
@@ -454,6 +486,7 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: ="All"
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         Items: |-
                           =With(
                               {
@@ -514,11 +547,11 @@ Screens:
                   - txtCode_Al:
                       Control: Classic/TextInput@2.3.2
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         Color: =RGBA(14, 28, 42, 1)
                         Default: =""
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         HintText: ="Equipment code"
                         Size: =Round(14 * SF, 0)
                         Width: =360 * SX
@@ -553,12 +586,12 @@ Screens:
                   - txtPatient_Al:
                       Control: Classic/TextInput@2.3.2
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         Color: =RGBA(14, 28, 42, 1)
                         Default: =""
                         Font: =Font.'Segoe UI'
-                        HintText: ="Patient name"
+                        Height: =40 * SY
+                        HintText: ="Name"
                         Size: =Round(14 * SF, 0)
                         Width: =360 * SX
             - capUrn_Al:
@@ -592,20 +625,20 @@ Screens:
                   - txtURN_Al:
                       Control: Classic/TextInput@2.3.2
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         Color: =RGBA(14, 28, 42, 1)
                         Default: =""
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         HintText: ="URN"
                         Size: =Round(14 * SF, 0)
                         Width: =360 * SX
             - lblFilterHint_Al:
                 Control: Label@2.5.1
                 Properties:
-                  Height: =40 * SY
                   Color: =RGBA(140, 155, 174, 1)
                   Font: =Font.'Segoe UI'
+                  Height: =40 * SY
                   Size: =Round(12 * SF, 0)
                   Text: |-
                     ="Filters combine: only equipment matching every filter is listed."
@@ -796,11 +829,12 @@ Screens:
                               Width: =Parent.Width - 20 * SX
                               Y: =38 * SY
                         - btnRow_Al:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              FontSize: =Round(14 * SF, 0)
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
                               BorderStyle: =BorderStyle.None
+                              FontWeight: =""
                               Height: =Parent.Height
                               OnSelect: |-
                                 =// Find this equipment's patient on the four ward lists (Name + URN + DOB where the equipment record has them)
@@ -858,7 +892,17 @@ Screens:
                                         )
                                     )
                                 )
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =4
+                              RadiusBottomRight: =4
+                              RadiusTopLeft: =4
+                              RadiusTopRight: =4
+                              Size: =Round(14 * SF, 0)
                               Text: =""
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =Parent.Width
             - lblEmpty_Al:
                 Control: Label@2.5.1
@@ -899,11 +943,11 @@ Screens:
                   - lblNfTitle_Al:
                       Control: Label@2.5.1
                       Properties:
-                        Height: =40 * SY
                         Align: =Align.Center
                         Color: =RGBA(14, 28, 42, 1)
                         Font: =Font.'Segoe UI'
                         FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
                         Size: =Round(22 * SF, 0)
                         Text: ="Patient no longer found"
                         Width: =560 * SX
@@ -983,21 +1027,30 @@ Screens:
                         Y: =266 * SY
                       Children:
                         - btnNfLeave_Al:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =26 * SR
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =RGBA(58, 80, 104, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(58, 80, 104, 1)
-                              FontSize: =Round(17 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =52 * SY
-                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              Layout: =ButtonLayout.TextOnly
                               OnSelect: |-
                                 =Set(varShowDischargedEquipmentPopup, false);
                                 Set(varDischargedEquipment, Blank());
                                 Set(varSelectedPatient, Blank())
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =26 * SR
+                              RadiusBottomRight: =26 * SR
+                              RadiusTopLeft: =26 * SR
+                              RadiusTopRight: =26 * SR
+                              Size: =Round(17 * SF, 0)
                               Text: ="Leave allocated"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =220 * SX
                   - conNfReturn_Al:
                       Control: GroupContainer@1.5.0
@@ -1018,16 +1071,15 @@ Screens:
                         Y: =266 * SY
                       Children:
                         - btnNfReturn_Al:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =26 * SR
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =RGBA(255, 255, 255, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(255, 255, 255, 1)
-                              FontSize: =Round(17 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =52 * SY
-                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              Layout: =ButtonLayout.TextOnly
                               OnSelect: |-
                                 =With(
                                     {
@@ -1339,5 +1391,15 @@ Screens:
                                         )
                                     )
                                 )
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =26 * SR
+                              RadiusBottomRight: =26 * SR
+                              RadiusTopLeft: =26 * SR
+                              RadiusTopRight: =26 * SR
+                              Size: =Round(17 * SF, 0)
                               Text: ="Return equipment"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =220 * SX

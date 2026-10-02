@@ -93,7 +93,7 @@ Screens:
       - Rectangle_HomeVeil:
           Control: Rectangle@2.3.0
           Properties:
-            Fill: =RGBA(235, 242, 248, 0.7)
+            Fill: =RGBA(235, 242, 248, 0.6)
             Height: =Parent.Height
             Width: =Parent.Width
       - Home_Title:
@@ -124,7 +124,7 @@ Screens:
                   Color: =RGBA(255, 255, 255, 1)
                   Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
-                  Height: =44 * SY
+                  Height: =50 * SY
                   PaddingBottom: =0
                   PaddingLeft: =0
                   PaddingRight: =0
@@ -137,25 +137,7 @@ Screens:
                   Text: ="Physiotherapy Dashboard"
                   Width: =700 * SX
                   X: =28 * SX
-            - lblSub_HomeHdr:
-                Control: ModernText@1.0.0
-                Properties:
-                  Color: =RGBA(255, 255, 255, 0.88)
-                  Font: =Font.'Segoe UI'
-                  Height: =20 * SY
-                  PaddingBottom: =0
-                  PaddingLeft: =0
-                  PaddingRight: =0
-                  PaddingTop: =0
-                  RadiusBottomLeft: =0
-                  RadiusBottomRight: =0
-                  RadiusTopLeft: =0
-                  RadiusTopRight: =0
-                  Size: =Round(12 * SF, 0)
-                  Text: ="Set each area's status, or open a ward's patient list"
-                  Width: =700 * SX
-                  X: =28 * SX
-                  Y: =42 * SY
+                  Y: =10 * SY
             - lblUser_HomeHdr:
                 Control: Label@2.5.1
                 Properties:
@@ -163,6 +145,7 @@ Screens:
                   Color: =RGBA(255, 255, 255, 0.9)
                   Font: =Font.'Segoe UI'
                   Height: =70 * SY
+                  Size: =16
                   Text: =User().FullName
                   Width: =400 * SX
                   X: =903 * SX
@@ -231,6 +214,7 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
+                        DropShadow: =DropShadow.Semibold
                         Fill: =Switch(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")), "#98d046", RGBA(12, 122, 82, 1), "#ffbf00", RGBA(245, 176, 0, 1), "#ff0000", RGBA(180, 26, 26, 1), RGBA(140, 155, 174, 1))
                         Height: =28 * SY
                         RadiusBottomLeft: =14 * SR
@@ -352,7 +336,6 @@ Screens:
                       Properties:
                         BorderColor: =If(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")) = "#98d046", RGBA(12, 122, 82, 1), RGBA(14, 42, 70, 0.12))
                         BorderThickness: =1
-                        DropShadow: =DropShadow.None
                         Fill: =If(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")) = "#98d046", RGBA(12, 122, 82, 1), RGBA(255, 255, 255, 1))
                         Height: =36 * SY
                         RadiusBottomLeft: =18 * SR
@@ -402,7 +385,6 @@ Screens:
                       Properties:
                         BorderColor: =If(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")) = "#ffbf00", RGBA(245, 176, 0, 1), RGBA(14, 42, 70, 0.12))
                         BorderThickness: =1
-                        DropShadow: =DropShadow.None
                         Fill: =If(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")) = "#ffbf00", RGBA(245, 176, 0, 1), RGBA(255, 255, 255, 1))
                         Height: =36 * SY
                         RadiusBottomLeft: =18 * SR
@@ -452,7 +434,6 @@ Screens:
                       Properties:
                         BorderColor: =If(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")) = "#ff0000", RGBA(180, 26, 26, 1), RGBA(14, 42, 70, 0.12))
                         BorderThickness: =1
-                        DropShadow: =DropShadow.None
                         Fill: =If(Lower(Coalesce(LookUp(HomeColorCollection, Title = ThisItem.Key).ColorHex, "")) = "#ff0000", RGBA(180, 26, 26, 1), RGBA(255, 255, 255, 1))
                         Height: =36 * SY
                         RadiusBottomLeft: =18 * SR
@@ -512,7 +493,7 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
-                        DropShadow: =DropShadow.Regular
+                        DropShadow: =DropShadow.Semibold
                         Fill: =RGBA(26, 90, 153, 1)
                         Height: =44 * SY
                         RadiusBottomLeft: =22 * SR
@@ -569,7 +550,7 @@ Screens:
                 Properties:
                   BorderColor: =RGBA(14, 42, 70, 0.12)
                   BorderThickness: =1
-                  DropShadow: =DropShadow.Regular
+                  DropShadow: =DropShadow.Semilight
                   Fill: =RGBA(26, 90, 153, 1)
                   Height: =46 * SY
                   RadiusBottomLeft: =23 * SR
@@ -610,7 +591,7 @@ Screens:
                 Properties:
                   BorderColor: =RGBA(14, 42, 70, 0.12)
                   BorderThickness: =1
-                  DropShadow: =DropShadow.None
+                  DropShadow: =DropShadow.Semilight
                   Fill: =RGBA(255, 255, 255, 1)
                   Height: =46 * SY
                   RadiusBottomLeft: =23 * SR
@@ -651,7 +632,7 @@ Screens:
                 Properties:
                   BorderColor: =RGBA(14, 42, 70, 0.12)
                   BorderThickness: =1
-                  DropShadow: =DropShadow.None
+                  DropShadow: =DropShadow.Semilight
                   Fill: =RGBA(255, 255, 255, 1)
                   Height: =46 * SY
                   RadiusBottomLeft: =23 * SR
@@ -692,7 +673,7 @@ Screens:
                 Properties:
                   BorderColor: =RGBA(14, 42, 70, 0.12)
                   BorderThickness: =1
-                  DropShadow: =DropShadow.None
+                  DropShadow: =DropShadow.Semilight
                   Fill: =RGBA(255, 255, 255, 1)
                   Height: =46 * SY
                   RadiusBottomLeft: =23 * SR
@@ -733,7 +714,7 @@ Screens:
                 Properties:
                   BorderColor: =RGBA(14, 42, 70, 0.12)
                   BorderThickness: =1
-                  DropShadow: =DropShadow.None
+                  DropShadow: =DropShadow.Semilight
                   Fill: =RGBA(255, 255, 255, 1)
                   Height: =46 * SY
                   RadiusBottomLeft: =23 * SR
@@ -774,7 +755,6 @@ Screens:
                 Properties:
                   BorderColor: =RGBA(14, 42, 70, 0.12)
                   BorderThickness: =1
-                  DropShadow: =DropShadow.None
                   Fill: =RGBA(255, 255, 255, 1)
                   Height: =46 * SY
                   RadiusBottomLeft: =23 * SR

@@ -135,37 +135,51 @@ Screens:
                   ImagePosition: =ImagePosition.Fill
                   Width: =Parent.Width
             - lblTitle_PD:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
-                  Y: =8 * SY
+                  Color: =RGBA(255, 255, 255, 1)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontWeight: =FontWeight.Bold
                   Height: =44 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(28 * SF, 0)
                   Text: =varSelectedPatient.field_2
-                  VerticalAlign: =VerticalAlign.Middle
-                  Weight: ='TextCanvas.Weight'.Bold
                   Width: =600 * SX
                   X: =76 * SX
+                  Y: =5 * SY
             - lblSub_PD:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
+                  Color: =RGBA(255, 255, 255, 0.88)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 0.88)
                   Height: =20 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(12 * SF, 0)
                   Text: ="URN " & Coalesce(varSelectedPatient.URN, "-") & "  ·  DOB " & If(IsBlank(varSelectedPatient.DOB), "-", Text(DateValue(varSelectedPatient.DOB), "dd/mm/yyyy")) & "  ·  Ward " & Mid(varSelectedList, 6, 2) & "  ·  Bed " & If(IsBlank(pdBed), "-", Text(pdBed))
-                  VerticalAlign: =VerticalAlign.Middle
                   Width: =600 * SX
                   X: =76 * SX
                   Y: =42 * SY
             - btnBack_PD:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  Width: =96 * SX
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
-                  FontColor: =RGBA(255, 255, 255, 1)
-                  FontSize: =Round(50 * SF, 0)
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
+                  Color: =RGBA(255, 255, 255, 1)
+                  FontWeight: =""
                   Height: =70 * SY
                   Icon: ="ChevronLeft"
                   OnSelect: |-
@@ -177,7 +191,18 @@ Screens:
                         ),
                         Back(ScreenTransition.Fade)
                     )
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =Round(35 * SF, 0)
                   Text: =""
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =96 * SX
                   X: =1 * SX
             - conSave_PD:
                 Control: GroupContainer@1.5.0
@@ -196,19 +221,17 @@ Screens:
                   Y: =12 * SY
                 Children:
                   - btnSave_PD:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =23 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(255, 255, 255, 1)
                         DisplayMode: =If(pdSaving, DisplayMode.Disabled, DisplayMode.Edit)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(255, 255, 255, 1)
-                        FontSize: =Round(14 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =46 * SY
                         Icon: ="Save"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        IconStyle: =IconStyle.Filled
                         OnSelect: |-
                           =// Saves the four editable fields straight to this patient's ward list
                           Set(pdSaving, true);
@@ -332,7 +355,17 @@ Screens:
                                   )
                           );
                           Set(pdSaving, false)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =23 * SR
+                        RadiusBottomRight: =23 * SR
+                        RadiusTopLeft: =23 * SR
+                        RadiusTopRight: =23 * SR
+                        Size: =Round(14 * SF, 0)
                         Text: ="Save"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =100 * SX
             - conDiscard_PD:
                 Control: GroupContainer@1.5.0
@@ -351,25 +384,33 @@ Screens:
                   Y: =12 * SY
                 Children:
                   - btnDiscard_PD:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =23 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(180, 26, 26, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(180, 26, 26, 1)
-                        FontSize: =Round(14 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =46 * SY
                         Icon: ="DismissCircle"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        IconStyle: =IconStyle.Filled
                         OnSelect: |-
                           =Set(pdEDD, pdBaseEDD);
                           Set(pdMaint, pdBaseMaint);
                           Set(pdFalls, pdBaseFalls);
                           Set(pdContact, pdBaseContact);
                           Notify("Changes discarded.", NotificationType.Information)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =23 * SR
+                        RadiusBottomRight: =23 * SR
+                        RadiusTopLeft: =23 * SR
+                        RadiusTopRight: =23 * SR
+                        Size: =Round(14 * SF, 0)
                         Text: ="Discard"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =120 * SX
       - PD_CardPatient:
           Control: GroupContainer@1.5.0
@@ -555,8 +596,6 @@ Screens:
                   - dpEdd_PD:
                       Control: Classic/DatePicker@2.6.0
                       Properties:
-                        Height: =40 * SY
-                        Size: =Round(14 * SF, 0)
                         BorderStyle: =BorderStyle.None
                         Color: =RGBA(14, 28, 42, 1)
                         DefaultDate: =pdEDD
@@ -569,7 +608,9 @@ Screens:
                               RGBA(255, 255, 255, 1)
                           )
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         OnChange: =Set(pdEDD, Self.SelectedDate)
+                        Size: =Round(14 * SF, 0)
                         Width: =Parent.Width
             - conTgMaint_PD:
                 Control: GroupContainer@1.5.0
@@ -736,9 +777,9 @@ Screens:
             - lblSaveHint_PD:
                 Control: Label@2.5.1
                 Properties:
-                  Height: =40 * SY
                   Color: =RGBA(140, 155, 174, 1)
                   Font: =Font.'Segoe UI'
+                  Height: =40 * SY
                   Size: =Round(11 * SF, 0)
                   Text: ="Changes here are saved with the Save button at the top."
                   Width: =360 * SX
@@ -768,7 +809,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =28 * SY
                   Size: =Round(16 * SF, 0)
-                  Text: ="Allocated to this patient  ·  " & CountRows(Gallery_PtEquip.AllItems)
+                  Text: ="Allocated to this Patient  ·  " & CountRows(Gallery_PtEquip.AllItems)
                   Width: =400 * SX
                   X: =20 * SX
                   Y: =16 * SY
@@ -846,22 +887,33 @@ Screens:
                               X: =14 * SX
                               Y: =52 * SY
                         - btnSel_PD_RowPt:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              FontSize: =Round(14 * SF, 0)
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
                               BorderStyle: =BorderStyle.None
+                              FontWeight: =""
                               Height: =Parent.Height
                               OnSelect: =Set(varSelectedItem, ThisItem)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =4
+                              RadiusBottomRight: =4
+                              RadiusTopLeft: =4
+                              RadiusTopRight: =4
+                              Size: =Round(14 * SF, 0)
                               Text: =""
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =Parent.Width
             - lblEqEmpty_PD:
                 Control: Label@2.5.1
                 Properties:
-                  Size: =Round(13 * SF, 0)
                   Color: =RGBA(140, 155, 174, 1)
                   Font: =Font.'Segoe UI'
                   Height: =24 * SY
+                  Size: =Round(13 * SF, 0)
                   Text: ="No equipment allocated to this patient."
                   Visible: =IsEmpty(Gallery_PtEquip.AllItems)
                   Width: =400 * SX
@@ -875,7 +927,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =28 * SY
                   Size: =Round(16 * SF, 0)
-                  Text: ="Find equipment by barcode"
+                  Text: ="Find Equipment by Barcode"
                   Width: =400 * SX
                   X: =20 * SX
                   Y: =318 * SY
@@ -971,22 +1023,33 @@ Screens:
                               X: =14 * SX
                               Y: =52 * SY
                         - btnSel_PD_RowFind:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              FontSize: =Round(14 * SF, 0)
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
                               BorderStyle: =BorderStyle.None
+                              FontWeight: =""
                               Height: =Parent.Height
                               OnSelect: =Set(varSelectedItem, ThisItem)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =4
+                              RadiusBottomRight: =4
+                              RadiusTopLeft: =4
+                              RadiusTopRight: =4
+                              Size: =Round(14 * SF, 0)
                               Text: =""
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =Parent.Width
             - lblFindEmpty_PD:
                 Control: Label@2.5.1
                 Properties:
-                  Size: =Round(13 * SF, 0)
                   Color: =RGBA(140, 155, 174, 1)
                   Font: =Font.'Segoe UI'
                   Height: =24 * SY
+                  Size: =Round(13 * SF, 0)
                   Text: =If(IsBlank(TextInput_SearchCode_1.Text), "Type a barcode to find equipment to allocate.", "No equipment found for that barcode.")
                   Visible: =IsEmpty(Gallery_Find.AllItems)
                   Width: =400 * SX
@@ -1016,7 +1079,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =28 * SY
                   Size: =Round(16 * SF, 0)
-                  Text: ="Item details"
+                  Text: ="Item Details"
                   Width: =280 * SX
                   X: =20 * SX
                   Y: =16 * SY
@@ -1371,10 +1434,10 @@ Screens:
             - lblNoSel_PD:
                 Control: Label@2.5.1
                 Properties:
-                  Size: =Round(13 * SF, 0)
                   Color: =RGBA(140, 155, 174, 1)
                   Font: =Font.'Segoe UI'
                   Height: =24 * SY
+                  Size: =Round(13 * SF, 0)
                   Text: ="Select an item from a list to see its details."
                   Visible: =IsBlank(varSelectedItem)
                   Width: =400 * SX
@@ -1399,21 +1462,20 @@ Screens:
                   Y: =590 * SY
                 Children:
                   - btnAlloc_PD:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =24 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(255, 255, 255, 1)
                         DisplayMode: =If(!IsBlank(varSelectedItem) && varSelectedItem.Status.Value = "Available", DisplayMode.Edit, DisplayMode.Disabled)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(255, 255, 255, 1)
-                        FontSize: =Round(16 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =48 * SY
-                        Layout: ='ButtonCanvas.Layout'.TextOnly
+                        Layout: =ButtonLayout.TextOnly
                         OnSelect: |-
                           =If(
                               IsBlank(varSelectedItem) ||
-                              Coalesce(varSelectedItem.Status.Value, "") <> "Available",
+                              Coalesce(LookUp(Equipment_Inventory_SharePoint, ID = varSelectedItem.ID).Status.Value, "") <> "Available",
                               Notify(
                                   "Please select an available piece of equipment before allocating.",
                                   NotificationType.Error
@@ -1504,7 +1566,17 @@ Screens:
                                   Reset(TextInput_SearchCode_1)
                               )
                           )
-                        Text: ="Allocate to patient"
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =24 * SR
+                        RadiusBottomRight: =24 * SR
+                        RadiusTopLeft: =24 * SR
+                        RadiusTopRight: =24 * SR
+                        Size: =Round(18 * SF, 0)
+                        Text: ="Allocate"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =200 * SX
             - conReturn_PD:
                 Control: GroupContainer@1.5.0
@@ -1524,17 +1596,16 @@ Screens:
                   Y: =590 * SY
                 Children:
                   - btnReturn_PD:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =24 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(180, 26, 26, 1)
                         DisplayMode: =If(!IsBlank(varSelectedItem) && varSelectedItem.Status.Value = "Allocated", DisplayMode.Edit, DisplayMode.Disabled)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(180, 26, 26, 1)
-                        FontSize: =Round(16 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =48 * SY
-                        Layout: ='ButtonCanvas.Layout'.TextOnly
+                        Layout: =ButtonLayout.TextOnly
                         OnSelect: |-
                           =If(
                               IsBlank(varSelectedItem) ||
@@ -1546,17 +1617,28 @@ Screens:
                               ),
                               Set(pdShowRet, true)
                           )
-                        Text: ="Return equipment"
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =24 * SR
+                        RadiusBottomRight: =24 * SR
+                        RadiusTopLeft: =24 * SR
+                        RadiusTopRight: =24 * SR
+                        Size: =Round(18 * SF, 0)
+                        Text: ="Return"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =200 * SX
                   - btnReturnGo_PD:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        FontSize: =Round(14 * SF, 0)
+                        Align: =Align.Center
+                        FontWeight: =""
                         Height: =10 * SY
                         OnSelect: |-
                           =If(
                               IsBlank(varSelectedItem) ||
-                              Coalesce(varSelectedItem.Status.Value, "") <> "Allocated" ||
+                              Coalesce(LookUp(Equipment_Inventory_SharePoint, ID = varSelectedItem.ID).Status.Value, "") <> "Allocated" ||
                               IsBlank(varSelectedItem.'Date Signed Out'),
                               Notify(
                                   "Please select an allocated piece of equipment with a valid signed-out date before returning.",
@@ -1710,7 +1792,17 @@ Screens:
                                   )
                               )
                           )
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =4
+                        RadiusBottomRight: =4
+                        RadiusTopLeft: =4
+                        RadiusTopRight: =4
+                        Size: =Round(14 * SF, 0)
                         Text: =""
+                        VerticalAlign: =VerticalAlign.Middle
                         Visible: =false
                         Width: =10 * SX
       - conRetPopup_PD:
@@ -1740,11 +1832,11 @@ Screens:
                   - lblRetTitle_PD:
                       Control: Label@2.5.1
                       Properties:
-                        Height: =40 * SY
                         Align: =Align.Center
                         Color: =RGBA(14, 28, 42, 1)
                         Font: =Font.'Segoe UI'
                         FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
                         Size: =Round(22 * SF, 0)
                         Text: ="Return " & varSelectedItem.Title
                         Width: =560 * SX
@@ -1824,18 +1916,27 @@ Screens:
                         Y: =206 * SY
                       Children:
                         - btnRetCancel_PD:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =26 * SR
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =RGBA(58, 80, 104, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(58, 80, 104, 1)
-                              FontSize: =Round(17 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =52 * SY
-                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              Layout: =ButtonLayout.TextOnly
                               OnSelect: =Set(pdShowRet, false)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =26 * SR
+                              RadiusBottomRight: =26 * SR
+                              RadiusTopLeft: =26 * SR
+                              RadiusTopRight: =26 * SR
+                              Size: =Round(17 * SF, 0)
                               Text: ="Cancel"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =220 * SX
                   - conRetGo_PD:
                       Control: GroupContainer@1.5.0
@@ -1855,16 +1956,25 @@ Screens:
                         Y: =206 * SY
                       Children:
                         - btnRetGo_PD:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =26 * SR
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =RGBA(255, 255, 255, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(255, 255, 255, 1)
-                              FontSize: =Round(17 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =52 * SY
-                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              Layout: =ButtonLayout.TextOnly
                               OnSelect: =Set(pdShowRet, false); Select(btnReturnGo_PD)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =26 * SR
+                              RadiusBottomRight: =26 * SR
+                              RadiusTopLeft: =26 * SR
+                              RadiusTopRight: =26 * SR
+                              Size: =Round(17 * SF, 0)
                               Text: ="Return to stock"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =220 * SX

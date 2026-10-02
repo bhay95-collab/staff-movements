@@ -394,3 +394,6 @@ The stand-alone Training Register is now part of the dashboard. Home bottom bar 
 3. **Paste** `Training_Hub` and `Training_Sessions` (any order), then `Home_Main` (replace the old one: rename it `OLD_Home_Main` first, paste, then delete the old).
 
 Rebuild from source: `sh tools/build_desktop.sh` (the two training screens are drawn in `desktop/as_pasted/`). `desktop/Home_Main.pa.yaml` is your own Home (already scaled) plus the Training pill; it is kept by hand and is not rebuilt by the script.
+
+---
+**Update (2 Oct 2026):** the folders `desktop/` and `mobile/` now hold the code exactly as exported from Studio. See `REVIEW.md` for what was found and fixed.

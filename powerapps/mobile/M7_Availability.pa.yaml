@@ -20,42 +20,32 @@ Screens:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
-            Fill: =C_Bg
-            LayoutDirection: =LayoutDirection.Vertical
-            LayoutAlignItems: =LayoutAlignItems.Stretch
-            LayoutJustifyContent: =LayoutJustifyContent.Start
-            LayoutGap: =0
-            PaddingTop: =0
-            PaddingRight: =0
-            PaddingBottom: =0
-            PaddingLeft: =0
             DropShadow: =DropShadow.None
+            Fill: =C_Bg
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+            LayoutDirection: =LayoutDirection.Vertical
             RadiusBottomLeft: =0
             RadiusBottomRight: =0
             RadiusTopLeft: =0
             RadiusTopRight: =0
-            X: =0
-            Y: =0
             Width: =Parent.Width
-            Height: =Parent.Height
           Children:
             - conHdr_Av:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
                   AlignInContainer: =AlignInContainer.SetByContainer
-                  LayoutMinHeight: =Round(95 * UI, 0)
-                  FillPortions: =0
+                  DropShadow: =DropShadow.None
                   Fill: =RGBA(7, 95, 115, 1)
+                  FillPortions: =0
                   Height: =Round(95 * UI, 0)
-                  Width: =App.Width
-                  X: =0
-                  Y: =0
+                  LayoutMinHeight: =Round(95 * UI, 0)
                   RadiusBottomLeft: =0
                   RadiusBottomRight: =0
                   RadiusTopLeft: =0
                   RadiusTopRight: =0
-                  DropShadow: =DropShadow.None
+                  Width: =App.Width
                 Children:
                   - imgHdr_Av:
                       Control: Image@2.2.3
@@ -64,346 +54,383 @@ Screens:
                         Image: =HeaderImage
                         ImagePosition: =ImagePosition.Fill
                         Width: =Parent.Width
-                        X: =0
-                        Y: =0
                   - btnBack_Av:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        FontColor: =C_White
-                        FontSize: =Round(32 * UI, 0)
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =C_White
+                        FontWeight: =""
                         Height: =Round(60 * UI, 0)
                         Icon: ="ChevronLeft"
+                        OnSelect: =Back(ScreenTransition.UnCoverRight)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =4
+                        RadiusBottomRight: =4
+                        RadiusTopLeft: =4
+                        RadiusTopRight: =4
+                        Size: =Round(32 * UI, 0)
                         Text: =""
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =Round(60 * UI, 0)
                         X: =Gutter + Round(5 * UI, 0)
                         Y: =Round(18 * UI, 0)
-                        OnSelect: =Back(ScreenTransition.UnCoverRight)
                   - lblHdrT_Av:
                       Control: Label@2.5.1
                       Properties:
-                        Font: =AppFont
                         Color: =C_White
-                        Size: =Round(24 * UI, 0)
+                        Font: =AppFont
                         FontWeight: =FontWeight.Bold
-                        Height: =Round(35 * UI, 0)
+                        Height: =Round(42 * UI, 0)
+                        Size: =Round(24 * UI, 0)
                         Text: ="Availability"
                         Width: =PageW - Round(85 * UI, 0)
-                        X: =Gutter + Round(65 * UI, 0)
-                        Y: =Round(20 * UI, 0)
                         Wrap: =false
+                        X: =Gutter + Round(65 * UI, 0)
+                        Y: =Round(12 * UI, 0)
                   - lblHdrS_Av:
                       Control: Label@2.5.1
                       Properties:
-                        Font: =AppFont
                         Color: =RGBA(255, 255, 255, 0.85)
-                        Size: =Round(15 * UI, 0)
+                        Font: =AppFont
                         Height: =Round(25 * UI, 0)
+                        Size: =Round(15 * UI, 0)
                         Text: ="Free equipment by width"
                         Width: =PageW - Round(85 * UI, 0)
+                        Wrap: =false
                         X: =Gutter + Round(65 * UI, 0)
                         Y: =Round(53 * UI, 0)
-                        Wrap: =false
             - conBody_Av:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
                   AlignInContainer: =AlignInContainer.SetByContainer
-                  LayoutMinHeight: =Round(250 * UI, 0)
-                  FillPortions: =1
-                  Width: =App.Width
-                  Fill: =RGBA(0, 0, 0, 0)
-                  LayoutDirection: =LayoutDirection.Vertical
+                  DropShadow: =DropShadow.None
                   LayoutAlignItems: =LayoutAlignItems.Stretch
-                  LayoutJustifyContent: =LayoutJustifyContent.Start
+                  LayoutDirection: =LayoutDirection.Vertical
                   LayoutGap: =Round(13 * UI, 0)
-                  PaddingTop: =Round(15 * UI, 0)
-                  PaddingRight: =Gutter + Round(20 * UI, 0)
+                  LayoutMinHeight: =Round(250 * UI, 0)
                   PaddingBottom: =Round(15 * UI, 0)
                   PaddingLeft: =Gutter + Round(20 * UI, 0)
-                  DropShadow: =DropShadow.None
+                  PaddingRight: =Gutter + Round(20 * UI, 0)
+                  PaddingTop: =Round(15 * UI, 0)
                   RadiusBottomLeft: =0
                   RadiusBottomRight: =0
                   RadiusTopLeft: =0
                   RadiusTopRight: =0
+                  Width: =App.Width
                 Children:
                   - conSegCat_Av:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(50 * UI, 0)
+                        DropShadow: =DropShadow.None
                         FillPortions: =0
-                        Fill: =RGBA(0, 0, 0, 0)
                         Height: =Round(50 * UI, 0)
-                        Width: =PageW - Round(40 * UI, 0)
-                        X: =0
-                        Y: =0
+                        LayoutMinHeight: =Round(50 * UI, 0)
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
-                        DropShadow: =DropShadow.None
+                        Width: =PageW - Round(40 * UI, 0)
                       Children:
                         - conSegCatWheelchair_Av:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
+                              BorderColor: =If(avCat = "Wheelchair", C_Accent, C_Line)
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
                               Fill: =If(avCat = "Wheelchair", C_Accent, C_White)
                               Height: =Round(50 * UI, 0)
-                              Width: =(PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3
-                              X: =0 * ((PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0))
-                              Y: =0
                               RadiusBottomLeft: =Round(25 * UI, 0)
                               RadiusBottomRight: =Round(25 * UI, 0)
                               RadiusTopLeft: =Round(25 * UI, 0)
                               RadiusTopRight: =Round(25 * UI, 0)
-                              BorderColor: =If(avCat = "Wheelchair", C_Accent, C_Line)
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
-                              DropShadow: =DropShadow.None
+                              Width: =(PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3
+                              X: =0 * ((PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0))
                             Children:
                               - btnSegCatWheelchair_Av:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =Round(25 * UI, 0)
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =If(avCat = "Wheelchair", C_White, C_Ink2)
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =If(avCat = "Wheelchair", C_White, C_Ink2)
-                                    FontSize: =Round(16 * UI, 0)
                                     FontWeight: =FontWeight.Bold
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    Text: ="Wheelchairs"
+                                    Height: =63
                                     OnSelect: =Set(avCat, "Wheelchair")
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =Round(25 * UI, 0)
+                                    RadiusBottomRight: =Round(25 * UI, 0)
+                                    RadiusTopLeft: =Round(25 * UI, 0)
+                                    RadiusTopRight: =Round(25 * UI, 0)
+                                    Size: =Round(16 * UI, 0)
+                                    Text: ="Wheelchairs"
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =188.33333333333334
                         - conSegCatCushion_Av:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
+                              BorderColor: =If(avCat = "Cushion", C_Accent, C_Line)
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
                               Fill: =If(avCat = "Cushion", C_Accent, C_White)
                               Height: =Round(50 * UI, 0)
-                              Width: =(PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3
-                              X: =1 * ((PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0))
-                              Y: =0
                               RadiusBottomLeft: =Round(25 * UI, 0)
                               RadiusBottomRight: =Round(25 * UI, 0)
                               RadiusTopLeft: =Round(25 * UI, 0)
                               RadiusTopRight: =Round(25 * UI, 0)
-                              BorderColor: =If(avCat = "Cushion", C_Accent, C_Line)
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
-                              DropShadow: =DropShadow.None
+                              Width: =(PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3
+                              X: =1 * ((PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0))
                             Children:
                               - btnSegCatCushion_Av:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =Round(25 * UI, 0)
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =If(avCat = "Cushion", C_White, C_Ink2)
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =If(avCat = "Cushion", C_White, C_Ink2)
-                                    FontSize: =Round(16 * UI, 0)
                                     FontWeight: =FontWeight.Bold
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    Text: ="Cushions"
+                                    Height: =63
                                     OnSelect: =Set(avCat, "Cushion")
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =Round(25 * UI, 0)
+                                    RadiusBottomRight: =Round(25 * UI, 0)
+                                    RadiusTopLeft: =Round(25 * UI, 0)
+                                    RadiusTopRight: =Round(25 * UI, 0)
+                                    Size: =Round(16 * UI, 0)
+                                    Text: ="Cushions"
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =188.33333333333334
                         - conSegCatBackrest_Av:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
+                              BorderColor: =If(avCat = "Backrest", C_Accent, C_Line)
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
                               Fill: =If(avCat = "Backrest", C_Accent, C_White)
                               Height: =Round(50 * UI, 0)
-                              Width: =(PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3
-                              X: =2 * ((PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0))
-                              Y: =0
                               RadiusBottomLeft: =Round(25 * UI, 0)
                               RadiusBottomRight: =Round(25 * UI, 0)
                               RadiusTopLeft: =Round(25 * UI, 0)
                               RadiusTopRight: =Round(25 * UI, 0)
-                              BorderColor: =If(avCat = "Backrest", C_Accent, C_Line)
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
-                              DropShadow: =DropShadow.None
+                              Width: =(PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3
+                              X: =2 * ((PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0))
                             Children:
                               - btnSegCatBackrest_Av:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =Round(25 * UI, 0)
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =If(avCat = "Backrest", C_White, C_Ink2)
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =If(avCat = "Backrest", C_White, C_Ink2)
-                                    FontSize: =Round(16 * UI, 0)
                                     FontWeight: =FontWeight.Bold
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    Text: ="Backrests"
+                                    Height: =63
                                     OnSelect: =Set(avCat, "Backrest")
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =Round(25 * UI, 0)
+                                    RadiusBottomRight: =Round(25 * UI, 0)
+                                    RadiusTopLeft: =Round(25 * UI, 0)
+                                    RadiusTopRight: =Round(25 * UI, 0)
+                                    Size: =Round(16 * UI, 0)
+                                    Text: ="Backrests"
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =188.33333333333334
                   - conSegType_Av:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
-                        Visible: =avCat = "Wheelchair"
                         AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(50 * UI, 0)
+                        DropShadow: =DropShadow.None
                         FillPortions: =0
-                        Fill: =RGBA(0, 0, 0, 0)
                         Height: =Round(50 * UI, 0)
-                        Width: =PageW - Round(40 * UI, 0)
-                        X: =0
-                        Y: =0
+                        LayoutMinHeight: =Round(50 * UI, 0)
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
-                        DropShadow: =DropShadow.None
+                        Visible: =avCat = "Wheelchair"
+                        Width: =PageW - Round(40 * UI, 0)
                       Children:
                         - conSegTypeManualWheelchair_Av:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
+                              BorderColor: =If(avType = "Manual Wheelchair", C_Accent, C_Line)
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
                               Fill: =If(avType = "Manual Wheelchair", C_Accent, C_White)
                               Height: =Round(50 * UI, 0)
-                              Width: =(PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3
-                              X: =0 * ((PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0))
-                              Y: =0
                               RadiusBottomLeft: =Round(25 * UI, 0)
                               RadiusBottomRight: =Round(25 * UI, 0)
                               RadiusTopLeft: =Round(25 * UI, 0)
                               RadiusTopRight: =Round(25 * UI, 0)
-                              BorderColor: =If(avType = "Manual Wheelchair", C_Accent, C_Line)
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
-                              DropShadow: =DropShadow.None
+                              Width: =(PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3
+                              X: =0 * ((PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0))
                             Children:
                               - btnSegTypeManualWheelchair_Av:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =Round(25 * UI, 0)
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =If(avType = "Manual Wheelchair", C_White, C_Ink2)
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =If(avType = "Manual Wheelchair", C_White, C_Ink2)
-                                    FontSize: =Round(16 * UI, 0)
                                     FontWeight: =FontWeight.Bold
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    Text: ="Manual"
+                                    Height: =63
                                     OnSelect: =Set(avType, "Manual Wheelchair")
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =Round(25 * UI, 0)
+                                    RadiusBottomRight: =Round(25 * UI, 0)
+                                    RadiusTopLeft: =Round(25 * UI, 0)
+                                    RadiusTopRight: =Round(25 * UI, 0)
+                                    Size: =Round(16 * UI, 0)
+                                    Text: ="Manual"
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =188.33333333333334
                         - conSegTypeTiltinSpace_Av:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
+                              BorderColor: =If(avType = "Tilt in Space", C_Accent, C_Line)
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
                               Fill: =If(avType = "Tilt in Space", C_Accent, C_White)
                               Height: =Round(50 * UI, 0)
-                              Width: =(PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3
-                              X: =1 * ((PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0))
-                              Y: =0
                               RadiusBottomLeft: =Round(25 * UI, 0)
                               RadiusBottomRight: =Round(25 * UI, 0)
                               RadiusTopLeft: =Round(25 * UI, 0)
                               RadiusTopRight: =Round(25 * UI, 0)
-                              BorderColor: =If(avType = "Tilt in Space", C_Accent, C_Line)
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
-                              DropShadow: =DropShadow.None
+                              Width: =(PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3
+                              X: =1 * ((PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0))
                             Children:
                               - btnSegTypeTiltinSpace_Av:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =Round(25 * UI, 0)
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =If(avType = "Tilt in Space", C_White, C_Ink2)
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =If(avType = "Tilt in Space", C_White, C_Ink2)
-                                    FontSize: =Round(16 * UI, 0)
                                     FontWeight: =FontWeight.Bold
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    Text: ="Tilt in space"
+                                    Height: =63
                                     OnSelect: =Set(avType, "Tilt in Space")
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =Round(25 * UI, 0)
+                                    RadiusBottomRight: =Round(25 * UI, 0)
+                                    RadiusTopLeft: =Round(25 * UI, 0)
+                                    RadiusTopRight: =Round(25 * UI, 0)
+                                    Size: =Round(16 * UI, 0)
+                                    Text: ="Tilt in space"
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =188.33333333333334
                         - conSegTypePowerWheelchair_Av:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
+                              BorderColor: =If(avType = "Power Wheelchair", C_Accent, C_Line)
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
                               Fill: =If(avType = "Power Wheelchair", C_Accent, C_White)
                               Height: =Round(50 * UI, 0)
-                              Width: =(PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3
-                              X: =2 * ((PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0))
-                              Y: =0
                               RadiusBottomLeft: =Round(25 * UI, 0)
                               RadiusBottomRight: =Round(25 * UI, 0)
                               RadiusTopLeft: =Round(25 * UI, 0)
                               RadiusTopRight: =Round(25 * UI, 0)
-                              BorderColor: =If(avType = "Power Wheelchair", C_Accent, C_Line)
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
-                              DropShadow: =DropShadow.None
+                              Width: =(PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3
+                              X: =2 * ((PageW - Round(40 * UI, 0) - Round(20 * UI, 0)) / 3 + Round(10 * UI, 0))
                             Children:
                               - btnSegTypePowerWheelchair_Av:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =Round(25 * UI, 0)
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =If(avType = "Power Wheelchair", C_White, C_Ink2)
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =If(avType = "Power Wheelchair", C_White, C_Ink2)
-                                    FontSize: =Round(16 * UI, 0)
                                     FontWeight: =FontWeight.Bold
-                                    Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    Text: ="Power"
+                                    Height: =63
                                     OnSelect: =Set(avType, "Power Wheelchair")
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =Round(25 * UI, 0)
+                                    RadiusBottomRight: =Round(25 * UI, 0)
+                                    RadiusTopLeft: =Round(25 * UI, 0)
+                                    RadiusTopRight: =Round(25 * UI, 0)
+                                    Size: =Round(16 * UI, 0)
+                                    Text: ="Power"
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =188.33333333333334
                   - conSum_Av:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(95 * UI, 0)
-                        FillPortions: =0
+                        BorderColor: =C_Line
+                        BorderThickness: =1
                         Fill: =C_White
+                        FillPortions: =0
                         Height: =Round(95 * UI, 0)
-                        Width: =PageW - Round(40 * UI, 0)
-                        X: =0
-                        Y: =0
+                        LayoutMinHeight: =Round(95 * UI, 0)
                         RadiusBottomLeft: =Round(20 * UI, 0)
                         RadiusBottomRight: =Round(20 * UI, 0)
                         RadiusTopLeft: =Round(20 * UI, 0)
                         RadiusTopRight: =Round(20 * UI, 0)
-                        BorderColor: =C_Line
-                        BorderStyle: =BorderStyle.Solid
-                        BorderThickness: =1
-                        DropShadow: =DropShadow.Light
+                        Width: =PageW - Round(40 * UI, 0)
                       Children:
                         - lblSumN_Av:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Ink
-                              Size: =Round(32 * UI, 0)
+                              Font: =AppFont
                               FontWeight: =FontWeight.Bold
                               Height: =Round(43 * UI, 0)
+                              Size: =Round(32 * UI, 0)
                               Text: =CountRows(Filter(Filter(colAvail, cCat = avCat && (avCat <> "Wheelchair" || cType = avType) && !IsBlank(cWidth)), cStatus = "Available")) & " of " & CountRows(Filter(colAvail, cCat = avCat && (avCat <> "Wheelchair" || cType = avType) && !IsBlank(cWidth)))
                               Width: =Parent.Width - Round(40 * UI, 0)
+                              Wrap: =false
                               X: =Round(20 * UI, 0)
                               Y: =Round(13 * UI, 0)
-                              Wrap: =false
                         - lblSumS_Av:
                             Control: Label@2.5.1
                             Properties:
-                              Font: =AppFont
                               Color: =C_Muted
-                              Size: =Round(15 * UI, 0)
+                              Font: =AppFont
                               Height: =Round(25 * UI, 0)
+                              Size: =Round(15 * UI, 0)
                               Text: ="available right now  ·  " & If(avCat = "Wheelchair", avType, avCat & "s")
                               Width: =Parent.Width - Round(40 * UI, 0)
+                              Wrap: =false
                               X: =Round(20 * UI, 0)
                               Y: =Round(58 * UI, 0)
-                              Wrap: =false
                   - galWidths_Av:
                       Control: Gallery@2.15.0
                       Variant: Vertical
                       Properties:
                         AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(150 * UI, 0)
-                        FillPortions: =1
                         Items: =SortByColumns(AddColumns(GroupBy(Filter(colAvail, cCat = avCat && (avCat <> "Wheelchair" || cType = avType) && !IsBlank(cWidth)), cWidth, Rows), Total, CountRows(Rows), Free, CountRows(Filter(Rows, cStatus = "Available"))), "cWidth", SortOrder.Ascending)
+                        LayoutMinHeight: =Round(150 * UI, 0)
                         TemplatePadding: =0
                         TemplateSize: =Round(88 * UI, 0)
                         Width: =PageW - Round(40 * UI, 0)
@@ -412,77 +439,72 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
                             Properties:
+                              BorderColor: =C_Line
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
                               Fill: =C_White
                               Height: =Round(78 * UI, 0)
-                              Width: =Parent.TemplateWidth - Round(5 * UI, 0)
-                              X: =Round(3 * UI, 0)
-                              Y: =Round(5 * UI, 0)
                               RadiusBottomLeft: =Round(18 * UI, 0)
                               RadiusBottomRight: =Round(18 * UI, 0)
                               RadiusTopLeft: =Round(18 * UI, 0)
                               RadiusTopRight: =Round(18 * UI, 0)
-                              BorderColor: =C_Line
-                              BorderStyle: =BorderStyle.Solid
-                              BorderThickness: =1
-                              DropShadow: =DropShadow.None
+                              Width: =Parent.TemplateWidth - Round(5 * UI, 0)
+                              X: =1
+                              Y: =Round(5 * UI, 0)
                             Children:
                               - lblW_Av:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Font: =AppFont
                                     Color: =C_Ink
-                                    Size: =Round(21 * UI, 0)
+                                    Font: =AppFont
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
+                                    Size: =Round(21 * UI, 0)
                                     Text: =ThisItem.cWidth
                                     Width: =Round(88 * UI, 0)
-                                    X: =Round(20 * UI, 0)
-                                    Y: =0
-                                    VerticalAlign: =VerticalAlign.Middle
                                     Wrap: =false
+                                    X: =Round(20 * UI, 0)
                               - conBarBg_Av:
                                   Control: GroupContainer@1.5.0
                                   Variant: ManualLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     Fill: =C_Bg
                                     Height: =Round(18 * UI, 0)
-                                    Width: =(Parent.Width - Round(225 * UI, 0))
-                                    X: =Round(113 * UI, 0)
-                                    Y: =Round(30 * UI, 0)
                                     RadiusBottomLeft: =Round(9 * UI, 0)
                                     RadiusBottomRight: =Round(9 * UI, 0)
                                     RadiusTopLeft: =Round(9 * UI, 0)
                                     RadiusTopRight: =Round(9 * UI, 0)
-                                    DropShadow: =DropShadow.None
+                                    Width: =(Parent.Width - Round(225 * UI, 0))
+                                    X: =Round(113 * UI, 0)
+                                    Y: =Round(30 * UI, 0)
                               - conBar_Av:
                                   Control: GroupContainer@1.5.0
                                   Variant: ManualLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     Fill: =If(ThisItem.Free = 0, C_Danger, ThisItem.Free / Max(1, ThisItem.Total) < 0.3, C_Amber, C_Good)
                                     Height: =Round(18 * UI, 0)
-                                    Width: =(Parent.Width - Round(225 * UI, 0)) * ThisItem.Free / Max(1, ThisItem.Total)
-                                    X: =Round(113 * UI, 0)
-                                    Y: =Round(30 * UI, 0)
                                     RadiusBottomLeft: =Round(9 * UI, 0)
                                     RadiusBottomRight: =Round(9 * UI, 0)
                                     RadiusTopLeft: =Round(9 * UI, 0)
                                     RadiusTopRight: =Round(9 * UI, 0)
-                                    DropShadow: =DropShadow.None
+                                    Width: =(Parent.Width - Round(225 * UI, 0)) * ThisItem.Free / Max(1, ThisItem.Total)
+                                    X: =Round(113 * UI, 0)
+                                    Y: =Round(30 * UI, 0)
                               - lblN_Av:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Font: =AppFont
+                                    Align: =Align.Right
                                     Color: =C_Ink2
-                                    Size: =Round(17 * UI, 0)
+                                    Font: =AppFont
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
+                                    Size: =Round(17 * UI, 0)
                                     Text: =ThisItem.Free & " / " & ThisItem.Total
                                     Width: =Round(63 * UI, 0)
-                                    X: =Parent.Width - Round(103 * UI, 0)
-                                    Y: =0
-                                    Align: =Align.Right
-                                    VerticalAlign: =VerticalAlign.Middle
                                     Wrap: =false
+                                    X: =Parent.Width - Round(103 * UI, 0)
                               - icoGo_Av:
                                   Control: ModernIcon@1.1.1
                                   Properties:
@@ -493,30 +515,36 @@ Screens:
                                     X: =Parent.Width - Round(38 * UI, 0)
                                     Y: =Round(24 * UI, 0)
                               - btnRow_Av:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
                                     BorderStyle: =BorderStyle.None
+                                    FontWeight: =""
                                     Height: =Parent.Height
-                                    Width: =Parent.Width
-                                    X: =0
-                                    Y: =0
-                                    Text: =""
                                     OnSelect: |-
                                       =Set(fdCat, avCat); Set(fdType, If(avCat = "Wheelchair", avType, Blank())); Set(fdBrand, Blank()); Set(fdModel, Blank()); Set(fdWidth, ThisItem.cWidth); Set(fdDepth, Blank()); Set(fdHeight, Blank());
                                       Navigate(Find, ScreenTransition.Cover)
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =4
+                                    RadiusBottomRight: =4
+                                    RadiusTopLeft: =4
+                                    RadiusTopRight: =4
+                                    Size: =0
+                                    Text: =""
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =Parent.Width
                   - lblHint_Av:
                       Control: Label@2.5.1
                       Properties:
-                        AlignInContainer: =AlignInContainer.SetByContainer
-                        LayoutMinHeight: =Round(25 * UI, 0)
-                        FillPortions: =0
-                        Font: =AppFont
+                        Align: =Align.Center
                         Color: =C_Muted
-                        Size: =Round(15 * UI, 0)
+                        Font: =AppFont
                         Height: =Round(25 * UI, 0)
+                        LayoutMinHeight: =Round(25 * UI, 0)
+                        Size: =Round(15 * UI, 0)
                         Text: =Concatenate("Tap a width to see the available ", Lower(avCat), "s.")
                         Width: =PageW - Round(40 * UI, 0)
-                        X: =0
-                        Y: =0
-                        Align: =Align.Center

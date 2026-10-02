@@ -23,9 +23,10 @@ Screens:
         Select(btnLoad_Au_1)
     Children:
       - btnLoad_Au_1:
-          Control: Button@0.0.45
+          Control: ModernButton@1.0.0
           Properties:
-            FontSize: =Round(14 * SF, 0)
+            Align: =Align.Center
+            FontWeight: =""
             Height: =10 * SY
             OnSelect: |-
               =ClearCollect(
@@ -59,13 +60,24 @@ Screens:
                   )
               );
               Select(btnFilter_Au_1)
+            PaddingBottom: =5
+            PaddingLeft: =12
+            PaddingRight: =12
+            PaddingTop: =5
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            Size: =Round(14 * SF, 0)
             Text: =""
+            VerticalAlign: =VerticalAlign.Middle
             Visible: =false
             Width: =10 * SX
       - btnFilter_Au_1:
-          Control: Button@0.0.45
+          Control: ModernButton@1.0.0
           Properties:
-            FontSize: =Round(14 * SF, 0)
+            Align: =Align.Center
+            FontWeight: =""
             Height: =10 * SY
             OnSelect: |-
               =ClearCollect(
@@ -93,7 +105,17 @@ Screens:
                       Untagged: CountRows(Filter(colAuScope, Coalesce(TagResult.Value, "") <> "OK"))
                   }
               )
+            PaddingBottom: =5
+            PaddingLeft: =12
+            PaddingRight: =12
+            PaddingTop: =5
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            Size: =Round(14 * SF, 0)
             Text: =""
+            VerticalAlign: =VerticalAlign.Middle
             Visible: =false
             Width: =10 * SX
       - Au_Title_1:
@@ -119,41 +141,66 @@ Screens:
                   ImagePosition: =ImagePosition.Fill
                   Width: =Parent.Width
             - lblTitle_AuHdr_1:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
-                  Y: =8 * SY
+                  Color: =RGBA(255, 255, 255, 1)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontWeight: =FontWeight.Bold
                   Height: =44 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(28 * SF, 0)
                   Text: ="Equipment Audits"
-                  VerticalAlign: =VerticalAlign.Middle
-                  Weight: ='TextCanvas.Weight'.Bold
                   Width: =600 * SX
                   X: =76 * SX
+                  Y: =5 * SY
             - lblSub_AuHdr_1:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
+                  Color: =RGBA(255, 255, 255, 0.88)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 0.88)
                   Height: =20 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(12 * SF, 0)
                   Text: =CountRows(colAuScope) & " audits shown  ·  " & If(auWard = "", "all wards", "ward " & auWard)
-                  VerticalAlign: =VerticalAlign.Middle
                   Width: =600 * SX
                   X: =76 * SX
                   Y: =42 * SY
             - btnBack_Au_1:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  Width: =96 * SX
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
-                  FontColor: =RGBA(255, 255, 255, 1)
-                  FontSize: =Round(50 * SF, 0)
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
+                  Color: =RGBA(255, 255, 255, 1)
+                  FontWeight: =""
                   Height: =70 * SY
                   Icon: ="ChevronLeft"
                   OnSelect: =Back(ScreenTransition.Fade)
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =Round(35 * SF, 0)
                   Text: =""
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =96 * SX
                   X: =1 * SX
       - Au_CardFilters_1:
           Control: GroupContainer@1.5.0
@@ -202,15 +249,15 @@ Screens:
                   - dpFrom_Au_1:
                       Control: Classic/DatePicker@2.6.0
                       Properties:
-                        Height: =40 * SY
-                        Size: =Round(14 * SF, 0)
                         BorderStyle: =BorderStyle.None
                         Color: =RGBA(14, 28, 42, 1)
                         DefaultDate: =auFrom
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         OnChange: |-
                           =Set(auFrom, dpFrom_Au_1.SelectedDate);
                           Select(btnLoad_Au_1)
+                        Size: =Round(14 * SF, 0)
                         Width: =150 * SX
             - capTo_Au_1:
                 Control: Label@2.5.1
@@ -243,15 +290,15 @@ Screens:
                   - dpTo_Au_1:
                       Control: Classic/DatePicker@2.6.0
                       Properties:
-                        Height: =40 * SY
-                        Size: =Round(14 * SF, 0)
                         BorderStyle: =BorderStyle.None
                         Color: =RGBA(14, 28, 42, 1)
                         DefaultDate: =auTo
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         OnChange: |-
                           =Set(auTo, dpTo_Au_1.SelectedDate);
                           Select(btnLoad_Au_1)
+                        Size: =Round(14 * SF, 0)
                         Width: =150 * SX
             - capWard_Au_1:
                 Control: Label@2.5.1
@@ -284,7 +331,6 @@ Screens:
                   - ddWard_Au_1:
                       Control: Classic/DropDown@2.3.1
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         ChevronBackground: =RGBA(26, 90, 153, 1)
                         ChevronFill: =RGBA(255, 255, 255, 1)
@@ -292,6 +338,7 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: =If(auWard = "", "All wards", auWard)
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         Items: =colAuWards
                         Items.Value: =Value
                         OnChange: |-
@@ -330,7 +377,6 @@ Screens:
                   - ddOutcome_Au_1:
                       Control: Classic/DropDown@2.3.1
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         ChevronBackground: =RGBA(26, 90, 153, 1)
                         ChevronFill: =RGBA(255, 255, 255, 1)
@@ -338,6 +384,7 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: =If(auOutcome = "", "All outcomes", auOutcome)
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         Items: =colAuOutcomes
                         Items.Value: =Value
                         OnChange: |-
@@ -376,11 +423,11 @@ Screens:
                   - cmbClin_Au_1:
                       Control: Classic/ComboBox@2.4.0
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         DefaultSelectedItems: =Filter(colAuClin, auClin <> "" && Mail = auClin)
                         DisplayFields: =["DisplayName"]
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         InputTextPlaceholder: ="All clinicians"
                         Items: =colAuClin
                         OnChange: |-
@@ -419,19 +466,28 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnRisks_Au_1:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(auRisks, RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(auRisks, RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
                           =Set(auRisks, !auRisks);
                           Select(btnFilter_Au_1)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Risks"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =100 * SX
             - conMism_Au_1:
                 Control: GroupContainer@1.5.0
@@ -450,19 +506,28 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnMism_Au_1:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(auMismatch, RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(auMismatch, RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
                           =Set(auMismatch, !auMismatch);
                           Select(btnFilter_Au_1)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Mismatch"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =108 * SX
             - conUntag_Au_1:
                 Control: GroupContainer@1.5.0
@@ -481,19 +546,28 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnUntag_Au_1:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(auUntagged, RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(auUntagged, RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
                           =Set(auUntagged, !auUntagged);
                           Select(btnFilter_Au_1)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Untagged"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =108 * SX
             - conReset_Au_1:
                 Control: GroupContainer@1.5.0
@@ -512,13 +586,12 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnReset_Au_1:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
@@ -536,8 +609,18 @@ Screens:
                           Reset(ddOutcome_Au_1);
                           Reset(cmbClin_Au_1);
                           Select(btnLoad_Au_1)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Reset"
-                        Width: =79 * SX
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =79
       - Au_Kpi_Total_1:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
@@ -1055,16 +1138,27 @@ Screens:
                               X: =328 * SX
                               Y: =42 * SY
                         - btnWardRow_Au_1:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              FontSize: =Round(14 * SF, 0)
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
                               BorderStyle: =BorderStyle.None
+                              FontWeight: =""
                               Height: =Parent.Height
                               OnSelect: |-
                                 =Set(auWard, If(auWard = ThisItem.WardText, "", ThisItem.WardText));
                                 Select(btnFilter_Au_1)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =4
+                              RadiusBottomRight: =4
+                              RadiusTopLeft: =4
+                              RadiusTopRight: =4
+                              Size: =Round(14 * SF, 0)
                               Text: =""
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =Parent.Width
             - lblWardsEmpty_Au_1:
                 Control: Label@2.5.1
@@ -1218,16 +1312,27 @@ Screens:
                                     Text: =Coalesce(ThisItem.AuditOutcome.Value, "No outcome")
                                     Width: =Parent.Width
                         - btnAuRow_Au_1:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              FontSize: =Round(14 * SF, 0)
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
                               BorderStyle: =BorderStyle.None
+                              FontWeight: =""
                               Height: =Parent.Height
                               OnSelect: |-
                                 =Set(auAudit, ThisItem);
                                 Set(auPopup, true)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =4
+                              RadiusBottomRight: =4
+                              RadiusTopLeft: =4
+                              RadiusTopRight: =4
+                              Size: =Round(14 * SF, 0)
                               Text: =""
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =Parent.Width
             - lblListEmpty_Au_1:
                 Control: Label@2.5.1
@@ -1251,14 +1356,25 @@ Screens:
             Width: =1366 * SX
           Children:
             - btnPScrim_Au_1:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  FontSize: =Round(14 * SF, 0)
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
                   BorderStyle: =BorderStyle.None
+                  FontWeight: =""
                   Height: =768 * SY
                   OnSelect: =Set(auPopup, false)
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =Round(14 * SF, 0)
                   Text: =""
+                  VerticalAlign: =VerticalAlign.Middle
                   Width: =1366 * SX
             - Au_PopupCard_1:
                 Control: GroupContainer@1.5.0
@@ -1290,10 +1406,10 @@ Screens:
                   - lblPSub_Au_1:
                       Control: Label@2.5.1
                       Properties:
-                        Size: =Round(13 * SF, 0)
                         Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
                         Height: =20 * SY
+                        Size: =Round(13 * SF, 0)
                         Text: =Text(auAudit.AuditDateTime, "dd/mm/yyyy hh:mm") & "  ·  Barcode " & Coalesce(auAudit.Barcode, "—")
                         Width: =520 * SX
                         X: =24 * SX
@@ -1329,13 +1445,13 @@ Screens:
                         - lblPOut_Au_1:
                             Control: Label@2.5.1
                             Properties:
-                              Size: =Round(13 * SF, 0)
                               Align: =Align.Center
                               Color: |-
                                 =With({o: Coalesce(auAudit.AuditOutcome.Value, ""), r: auAudit.ImmediateRisk = true || auAudit.RemovedFromUse = true}, If(o = "Pass", RGBA(12, 122, 82, 1), If(o = "", RGBA(140, 155, 174, 1), If(r, RGBA(180, 26, 26, 1), RGBA(200, 120, 0, 1)))))
                               Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =Parent.Height
+                              Size: =Round(13 * SF, 0)
                               Text: =Coalesce(auAudit.AuditOutcome.Value, "No outcome")
                               Width: =Parent.Width
                   - lblPK_Aw_Au_1:
@@ -1642,11 +1758,11 @@ Screens:
                   - lblPEsc1_Au_1:
                       Control: Label@2.5.1
                       Properties:
-                        Size: =Round(13 * SF, 0)
                         Color: =RGBA(14, 28, 42, 1)
                         Font: =Font.'Segoe UI'
                         FontWeight: =FontWeight.Bold
                         Height: =22 * SY
+                        Size: =Round(13 * SF, 0)
                         Text: |-
                           ="Required: " & If(auAudit.EscalationRequired = true, "Yes", "No") & "   ·   Sent: " & If(auAudit.EscalationSent = true, "Yes", "No") & If(IsBlank(auAudit.EscalationSentDate), "", "   ·   " & Text(auAudit.EscalationSentDate, "dd/mm/yyyy"))
                         Visible: =auAudit.EscalationRequired = true || auAudit.EscalationSent = true
@@ -1656,10 +1772,10 @@ Screens:
                   - lblPEsc2_Au_1:
                       Control: Label@2.5.1
                       Properties:
-                        Size: =Round(13 * SF, 0)
                         Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
                         Height: =22 * SY
+                        Size: =Round(13 * SF, 0)
                         Text: |-
                           ="Reason: " & Coalesce(auAudit.EscalationReason.Value, "—") & "   ·   To: " & Coalesce(Concat(auAudit.EscalatedTo, Coalesce(Text(ThisRecord.DisplayName), Text(ThisRecord.Email), Last(Split(Coalesce(Text(ThisRecord.Claims), ""), "|")).Value, ""), "; "), "—")
                         Visible: =auAudit.EscalationRequired = true || auAudit.EscalationSent = true
@@ -1681,10 +1797,10 @@ Screens:
                   - lblPCom_Au_1:
                       Control: Label@2.5.1
                       Properties:
-                        Size: =Round(13 * SF, 0)
                         Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
                         Height: =64 * SY
+                        Size: =Round(13 * SF, 0)
                         Text: =Coalesce(auAudit.Comments, "—")
                         Width: =712 * SX
                         X: =24 * SX
@@ -1706,15 +1822,24 @@ Screens:
                         Y: =594 * SY
                       Children:
                         - btnPClose_Au_1:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =22 * SR
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =RGBA(255, 255, 255, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(255, 255, 255, 1)
-                              FontSize: =Round(13 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =44 * SY
                               OnSelect: =Set(auPopup, false)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =22 * SR
+                              RadiusBottomRight: =22 * SR
+                              RadiusTopLeft: =22 * SR
+                              RadiusTopRight: =22 * SR
+                              Size: =Round(13 * SF, 0)
                               Text: ="Close"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =240 * SX

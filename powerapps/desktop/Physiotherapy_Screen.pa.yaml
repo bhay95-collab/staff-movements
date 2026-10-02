@@ -85,41 +85,66 @@ Screens:
                   ImagePosition: =ImagePosition.Fill
                   Width: =Parent.Width
             - lblTitle_PtHdr:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
-                  Y: =8 * SY
+                  Color: =RGBA(255, 255, 255, 1)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontWeight: =FontWeight.Bold
                   Height: =44 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(28 * SF, 0)
                   Text: ="Physio Team Info"
-                  VerticalAlign: =VerticalAlign.Middle
-                  Weight: ='TextCanvas.Weight'.Bold
                   Width: =500 * SX
                   X: =76 * SX
+                  Y: =8 * SY
             - lblSub_PtHdr:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
+                  Color: =RGBA(255, 255, 255, 0.88)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 0.88)
                   Height: =20 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(12 * SF, 0)
                   Text: ="Team brief documents and notes for the team"
-                  VerticalAlign: =VerticalAlign.Middle
                   Width: =500 * SX
                   X: =76 * SX
                   Y: =42 * SY
             - btnBack_Pt:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  Width: =96 * SX
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
-                  FontColor: =RGBA(255, 255, 255, 1)
-                  FontSize: =Round(50 * SF, 0)
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
+                  Color: =RGBA(255, 255, 255, 1)
+                  FontWeight: =""
                   Height: =70 * SY
                   Icon: ="ChevronLeft"
                   OnSelect: =Back(ScreenTransition.Fade)
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =Round(35 * SF, 0)
                   Text: =""
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =96 * SX
                   X: =1 * SX
             - conStaff_Pt:
                 Control: GroupContainer@1.5.0
@@ -139,18 +164,16 @@ Screens:
                   Y: =15 * SY
                 Children:
                   - btnStaff_Pt:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         Icon: ="PeopleAdd"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        IconStyle: =IconStyle.Filled
                         OnSelect: |-
                           =If(
                               IsBlank(varMeDirectory),
@@ -159,7 +182,17 @@ Screens:
                               Set(varAdminAccess, varMeDirectory.Access.Value);
                               Navigate(Directory_Admin_New, ScreenTransition.Fade)
                           )
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Manage Staff"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =150 * SX
             - conDash_Pt:
                 Control: GroupContainer@1.5.0
@@ -178,18 +211,16 @@ Screens:
                   Y: =15 * SY
                 Children:
                   - btnDash_Pt:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         Icon: ="Database"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        IconStyle: =IconStyle.Filled
                         OnSelect: |-
                           =// 1) Build a unified collection for all wards (keeps all original columns)
                           ClearCollect(
@@ -219,7 +250,17 @@ Screens:
                           ClearCollect(col6A_PieData, ForAll(colPieDiagnoses As d, { City: d.Diag, Area: CountRows(Filter(colAllWardData, WardCode = "6A" && field_3.Value = d.Diag)) }));
                           // 4) Navigate to the data screen
                           Navigate(Physiotherapy_Screen, ScreenTransition.Fade)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Data Dashboard"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =160 * SX
             - conLeave_Pt:
                 Control: GroupContainer@1.5.0
@@ -238,20 +279,28 @@ Screens:
                   Y: =15 * SY
                 Children:
                   - btnLeave_Pt:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         Icon: ="Calendar"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        IconStyle: =IconStyle.Filled
                         OnSelect: =Navigate(PT_Leave_New, ScreenTransition.Fade)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Leave Calendar"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =150 * SX
       - Pt_CardDocs:
           Control: GroupContainer@1.5.0
@@ -277,7 +326,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =28 * SY
                   Size: =Round(16 * SF, 0)
-                  Text: ="Documents for review"
+                  Text: ="Documents for Review"
                   Width: =390 * SX
                   X: =20 * SX
                   Y: =14 * SY
@@ -311,22 +360,30 @@ Screens:
                   Y: =44 * SY
                 Children:
                   - btnUp_Pt:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Height: =32 * SY
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =16 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
+                        Height: =32 * SY
                         Icon: ="ChevronLeft"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        IconStyle: =IconStyle.Filled
                         OnSelect: |-
                           =Set(varCurrentFolderPath, With({p: varCurrentFolderPath}, Left(p, Max(0, Len(p) - Len(Last(Split(Left(p, Max(0, Len(p) - 1)), "/")).Value) - 1))))
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =16 * SR
+                        RadiusBottomRight: =16 * SR
+                        RadiusTopLeft: =16 * SR
+                        RadiusTopRight: =16 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Up"
-                        Width: =74 * SX
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =74
             - Gallery_Docs_Pt:
                 Control: Gallery@2.15.0
                 Variant: Vertical
@@ -392,7 +449,6 @@ Screens:
                                     Size: =Round(11 * SF, 0)
                                     Text: |-
                                       =With({e: If(CountRows(Split(ThisItem.FileName, ".")) > 1, Lower(Last(Split(ThisItem.FileName, ".")).Value), "")}, If(e = "", "FILE", Upper(Left(e, 4))))
-                                    VerticalAlign: =VerticalAlign.Middle
                                     Visible: =!(ThisItem.IsFolder = true)
                                     Width: =Parent.Width
                         - lblDocName_Pt:
@@ -445,14 +501,25 @@ Screens:
                               X: =Parent.Width - 76 * SX
                               Y: =26 * SY
                         - btnDocRow_Pt:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              FontSize: =Round(14 * SF, 0)
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
                               BorderStyle: =BorderStyle.None
+                              FontWeight: =""
                               Height: =Parent.Height
                               OnSelect: =If(ThisItem.IsFolder = true, Set(varCurrentFolderPath, ThisItem.Path & ThisItem.Name & "/"), If(!IsBlank(ThisItem.Link), Launch(ThisItem.Link)))
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =4
+                              RadiusBottomRight: =4
+                              RadiusTopLeft: =4
+                              RadiusTopRight: =4
+                              Size: =Round(14 * SF, 0)
                               Text: =""
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =Parent.Width
             - lblDocsEmpty_Pt:
                 Control: Label@2.5.1
@@ -551,7 +618,6 @@ Screens:
                   - txtAdminCode_Pt:
                       Control: Classic/TextInput@2.3.2
                       Properties:
-                        Size: =Round(13 * SF, 0)
                         BorderStyle: =BorderStyle.None
                         Color: =RGBA(14, 28, 42, 1)
                         Default: =""
@@ -559,6 +625,7 @@ Screens:
                         Height: =38 * SY
                         HintText: ="Edit password"
                         Mode: =TextMode.Password
+                        Size: =Round(13 * SF, 0)
                         Width: =170 * SX
             - conUnlock_Pt:
                 Control: GroupContainer@1.5.0
@@ -578,13 +645,12 @@ Screens:
                   Y: =10 * SY
                 Children:
                   - btnUnlock_Pt:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =19 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(255, 255, 255, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(255, 255, 255, 1)
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =38 * SY
                         OnSelect: |-
@@ -594,7 +660,17 @@ Screens:
                               Reset(txtAdminCode_Pt),
                               Notify("Wrong password.", NotificationType.Error)
                           )
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =19 * SR
+                        RadiusBottomRight: =19 * SR
+                        RadiusTopLeft: =19 * SR
+                        RadiusTopRight: =19 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Unlock"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =100 * SX
             - conNotesBox_Pt:
                 Control: GroupContainer@1.5.0
@@ -646,13 +722,12 @@ Screens:
                   Y: =598 * SY
                 Children:
                   - btnSave_Pt:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =21 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(255, 255, 255, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(255, 255, 255, 1)
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =42 * SY
                         OnSelect: |-
@@ -677,7 +752,17 @@ Screens:
                                   Notify("Could not save the notes. Please try again.", NotificationType.Error)
                               )
                           )
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =21 * SR
+                        RadiusBottomRight: =21 * SR
+                        RadiusTopLeft: =21 * SR
+                        RadiusTopRight: =21 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Save notes"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =160 * SX
             - conDiscard_Pt:
                 Control: GroupContainer@1.5.0
@@ -697,17 +782,26 @@ Screens:
                   Y: =598 * SY
                 Children:
                   - btnDiscard_Pt:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =21 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =42 * SY
                         OnSelect: =Reset(txtTeamNotes_Pt)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =21 * SR
+                        RadiusBottomRight: =21 * SR
+                        RadiusTopLeft: =21 * SR
+                        RadiusTopRight: =21 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Discard"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =130 * SX
             - lblUnsaved_Pt:
                 Control: Label@2.5.1

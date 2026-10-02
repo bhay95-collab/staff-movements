@@ -18,9 +18,10 @@ Screens:
         Select(btnReload_Ho)
     Children:
       - btnReload_Ho:
-          Control: Button@0.0.45
+          Control: ModernButton@1.0.0
           Properties:
-            FontSize: =Round(14 * SF, 0)
+            Align: =Align.Center
+            FontWeight: =""
             Height: =10 * SY
             OnSelect: |-
               =// =======================================================
@@ -96,7 +97,17 @@ Screens:
                       )
                   )
               )
+            PaddingBottom: =5
+            PaddingLeft: =12
+            PaddingRight: =12
+            PaddingTop: =5
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            Size: =Round(14 * SF, 0)
             Text: ="Reload"
+            VerticalAlign: =VerticalAlign.Middle
             Visible: =false
             Width: =10 * SX
       - Ho_Title:
@@ -122,37 +133,51 @@ Screens:
                   ImagePosition: =ImagePosition.Fill
                   Width: =Parent.Width
             - TextCanvas_HoTitle:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
-                  Y: =8 * SY
+                  Color: =RGBA(255, 255, 255, 1)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontWeight: =FontWeight.Bold
                   Height: =44 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(28 * SF, 0)
                   Text: ="Ward " & varWard & " Handover"
-                  VerticalAlign: =VerticalAlign.Middle
-                  Weight: ='TextCanvas.Weight'.Bold
                   Width: =480 * SX
                   X: =76 * SX
+                  Y: =5 * SY
             - TextCanvas_HoSub:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
+                  Color: =RGBA(255, 255, 255, 0.88)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 0.88)
                   Height: =20 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(12 * SF, 0)
                   Text: =CountRows(Filter(colWard, !IsBlank(Trim(Patient)))) & " patients  ·  Morning Handover  ·  Case Conference"
-                  VerticalAlign: =VerticalAlign.Middle
                   Width: =480 * SX
                   X: =76 * SX
                   Y: =42 * SY
             - btnBack_Ho:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  Width: =96 * SX
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
-                  FontColor: =RGBA(255, 255, 255, 1)
-                  FontSize: =Round(50 * SF, 0)
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
+                  Color: =RGBA(255, 255, 255, 1)
+                  FontWeight: =""
                   Height: =70 * SY
                   Icon: ="ChevronLeft"
                   OnSelect: |-
@@ -164,7 +189,18 @@ Screens:
                         ),
                         Back(ScreenTransition.Fade)
                     )
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =Round(35 * SF, 0)
                   Text: =""
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =96 * SX
                   X: =1 * SX
             - conSave_Ho:
                 Control: GroupContainer@1.5.0
@@ -185,20 +221,18 @@ Screens:
                   Y: =12 * SY
                 Children:
                   - btnSave_Ho:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =23 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
                         BorderStyle: =BorderStyle.None
+                        Color: =RGBA(255, 255, 255, 1)
                         DisplayMode: =If(hoIsSaving, DisplayMode.Disabled, DisplayMode.Edit)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(255, 255, 255, 1)
-                        FontSize: =Round(14 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =46 * SY
                         Icon: ="Save"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        IconStyle: =IconStyle.Filled
                         OnSelect: |-
                           =// ======================================
                           // SAVE HANDOVER NOTES (any ward)
@@ -339,7 +373,17 @@ Screens:
                                   Notify("Handover saved.", NotificationType.Success)
                               )
                           )
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =23 * SR
+                        RadiusBottomRight: =23 * SR
+                        RadiusTopLeft: =23 * SR
+                        RadiusTopRight: =23 * SR
+                        Size: =Round(14 * SF, 0)
                         Text: ="Save"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =100 * SX
             - conDiscard_Ho:
                 Control: GroupContainer@1.5.0
@@ -358,20 +402,28 @@ Screens:
                   Y: =12 * SY
                 Children:
                   - btnDiscard_Ho:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =23 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(180, 26, 26, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(180, 26, 26, 1)
-                        FontSize: =Round(14 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =46 * SY
                         Icon: ="DismissCircle"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        IconStyle: =IconStyle.Filled
                         OnSelect: =Set(hoShowDiscard, true)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =23 * SR
+                        RadiusBottomRight: =23 * SR
+                        RadiusTopLeft: =23 * SR
+                        RadiusTopRight: =23 * SR
+                        Size: =Round(14 * SF, 0)
                         Text: ="Discard"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =120 * SX
       - Ho_Card:
           Control: GroupContainer@1.5.0
@@ -404,10 +456,10 @@ Screens:
                   - lblHeadBed_Ho:
                       Control: Label@2.5.1
                       Properties:
-                        Height: =40 * SY
                         Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
                         FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
                         Size: =Round(11 * SF, 0)
                         Text: ="BED"
                         Width: =64 * SX
@@ -415,10 +467,10 @@ Screens:
                   - lblHeadPatient_Ho:
                       Control: Label@2.5.1
                       Properties:
-                        Height: =40 * SY
                         Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
                         FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
                         Size: =Round(11 * SF, 0)
                         Text: ="PATIENT"
                         Width: =236 * SX
@@ -426,11 +478,11 @@ Screens:
                   - lblHeadAM_Ho:
                       Control: Label@2.5.1
                       Properties:
-                        Height: =40 * SY
                         Align: =Align.Center
                         Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
                         FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
                         Size: =Round(11 * SF, 0)
                         Text: ="MORNING HANDOVER"
                         Width: =490 * SX
@@ -438,11 +490,11 @@ Screens:
                   - lblHeadCC_Ho:
                       Control: Label@2.5.1
                       Properties:
-                        Height: =40 * SY
                         Align: =Align.Center
                         Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
                         FontWeight: =FontWeight.Bold
+                        Height: =40 * SY
                         Size: =Round(11 * SF, 0)
                         Text: ="CASE CONFERENCE"
                         Width: =470 * SX
@@ -540,7 +592,6 @@ Screens:
                         - txtMorning_Ho:
                             Control: Classic/TextInput@2.3.2
                             Properties:
-                              Size: =Round(13 * SF, 0)
                               BorderColor: =RGBA(14, 42, 70, 0.22)
                               BorderThickness: =1
                               Color: =RGBA(14, 28, 42, 1)
@@ -564,13 +615,13 @@ Screens:
                               RadiusBottomRight: =12 * SR
                               RadiusTopLeft: =12 * SR
                               RadiusTopRight: =12 * SR
+                              Size: =Round(13 * SF, 0)
                               Width: =490 * SX
                               X: =330 * SX
                               Y: =8 * SY
                         - txtCC_Ho:
                             Control: Classic/TextInput@2.3.2
                             Properties:
-                              Size: =Round(13 * SF, 0)
                               BorderColor: =RGBA(14, 42, 70, 0.22)
                               BorderThickness: =1
                               Color: =RGBA(14, 28, 42, 1)
@@ -594,6 +645,7 @@ Screens:
                               RadiusBottomRight: =12 * SR
                               RadiusTopLeft: =12 * SR
                               RadiusTopRight: =12 * SR
+                              Size: =Round(13 * SF, 0)
                               Width: =470 * SX
                               X: =836 * SX
                               Y: =8 * SY
@@ -664,18 +716,27 @@ Screens:
                         Y: =190 * SY
                       Children:
                         - btnDiscardKeep_Ho:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =26 * SR
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =RGBA(58, 80, 104, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(58, 80, 104, 1)
-                              FontSize: =Round(18 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =52 * SY
-                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              Layout: =ButtonLayout.TextOnly
                               OnSelect: =Set(hoShowDiscard, false)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =26 * SR
+                              RadiusBottomRight: =26 * SR
+                              RadiusTopLeft: =26 * SR
+                              RadiusTopRight: =26 * SR
+                              Size: =Round(18 * SF, 0)
                               Text: ="Keep editing"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =200 * SX
                   - conDiscardGo_Ho:
                       Control: GroupContainer@1.5.0
@@ -696,21 +757,30 @@ Screens:
                         Y: =190 * SY
                       Children:
                         - btnDiscardGo_Ho:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =26 * SR
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =RGBA(255, 255, 255, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(255, 255, 255, 1)
-                              FontSize: =Round(18 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =52 * SY
-                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              Layout: =ButtonLayout.TextOnly
                               OnSelect: |-
                                 =Set(hoShowDiscard, false);
                                 Select(btnReload_Ho);
                                 Notify("Unsaved changes discarded.", NotificationType.Information)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =26 * SR
+                              RadiusBottomRight: =26 * SR
+                              RadiusTopLeft: =26 * SR
+                              RadiusTopRight: =26 * SR
+                              Size: =Round(18 * SF, 0)
                               Text: ="Discard"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =200 * SX
       - Timer_Pulse_Ho:
           Control: Timer@2.1.0

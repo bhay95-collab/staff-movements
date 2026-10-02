@@ -15,9 +15,10 @@ Screens:
         Select(btnLoad_Dh)
     Children:
       - btnLoad_Dh:
-          Control: Button@0.0.45
+          Control: ModernButton@1.0.0
           Properties:
-            FontSize: =Round(14 * SF, 0)
+            Align: =Align.Center
+            FontWeight: =""
             Height: =10 * SY
             OnSelect: |-
               =Set(dhLoading, true);
@@ -84,13 +85,24 @@ Screens:
               );
               Set(dhLoading, false);
               Select(btnBuild_Dh)
+            PaddingBottom: =5
+            PaddingLeft: =12
+            PaddingRight: =12
+            PaddingTop: =5
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            Size: =Round(14 * SF, 0)
             Text: =""
+            VerticalAlign: =VerticalAlign.Middle
             Visible: =false
             Width: =10 * SX
       - btnBuild_Dh:
-          Control: Button@0.0.45
+          Control: ModernButton@1.0.0
           Properties:
-            FontSize: =Round(14 * SF, 0)
+            Align: =Align.Center
+            FontWeight: =""
             Height: =10 * SY
             OnSelect: |-
               =ClearCollect(
@@ -253,13 +265,24 @@ Screens:
                   }
               );
               Select(btnShow_Dh)
+            PaddingBottom: =5
+            PaddingLeft: =12
+            PaddingRight: =12
+            PaddingTop: =5
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            Size: =Round(14 * SF, 0)
             Text: =""
+            VerticalAlign: =VerticalAlign.Middle
             Visible: =false
             Width: =10 * SX
       - btnShow_Dh:
-          Control: Button@0.0.45
+          Control: ModernButton@1.0.0
           Properties:
-            FontSize: =Round(14 * SF, 0)
+            Align: =Align.Center
+            FontWeight: =""
             Height: =10 * SY
             OnSelect: |-
               =// issues that match the filters (the kind list ignores the kind chosen)
@@ -291,7 +314,17 @@ Screens:
                   colDhShow,
                   SortByColumns(Filter(colDhPool, dhKind = "" || Kind = dhKind), "SevN", SortOrder.Descending, "Where", SortOrder.Ascending)
               )
+            PaddingBottom: =5
+            PaddingLeft: =12
+            PaddingRight: =12
+            PaddingTop: =5
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            Size: =Round(14 * SF, 0)
             Text: =""
+            VerticalAlign: =VerticalAlign.Middle
             Visible: =false
             Width: =10 * SX
       - Dh_Title:
@@ -317,41 +350,66 @@ Screens:
                   ImagePosition: =ImagePosition.Fill
                   Width: =Parent.Width
             - lblTitle_DhHdr:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
-                  Y: =8 * SY
+                  Color: =RGBA(255, 255, 255, 1)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontWeight: =FontWeight.Bold
                   Height: =44 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(28 * SF, 0)
                   Text: ="Data Health"
-                  VerticalAlign: =VerticalAlign.Middle
-                  Weight: ='TextCanvas.Weight'.Bold
                   Width: =700 * SX
                   X: =76 * SX
+                  Y: =5 * SY
             - lblSub_DhHdr:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
+                  Color: =RGBA(255, 255, 255, 0.88)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 0.88)
                   Height: =20 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(12 * SF, 0)
                   Text: =If(dhLoading, "Checking the wards, stock and audits...", dhKpi.Total & " things to fix  ·  " & dhKpi.Patients & " patients and " & CountRows(colDhInv) & " equipment items checked")
-                  VerticalAlign: =VerticalAlign.Middle
                   Width: =800 * SX
                   X: =76 * SX
                   Y: =42 * SY
             - btnBack_Dh:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  Width: =96 * SX
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
-                  FontColor: =RGBA(255, 255, 255, 1)
-                  FontSize: =Round(50 * SF, 0)
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
+                  Color: =RGBA(255, 255, 255, 1)
+                  FontWeight: =""
                   Height: =70 * SY
                   Icon: ="ChevronLeft"
                   OnSelect: =Back(ScreenTransition.Fade)
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =Round(35 * SF, 0)
                   Text: =""
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =96 * SX
                   X: =1 * SX
             - conReload_Dh:
                 Control: GroupContainer@1.5.0
@@ -371,20 +429,28 @@ Screens:
                   Y: =15 * SY
                 Children:
                   - btnReload_Dh:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         Icon: ="ArrowClockwise"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        IconStyle: =IconStyle.Filled
                         OnSelect: =Select(btnLoad_Dh)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Reload"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =140 * SX
       - Dh_CardFilters:
           Control: GroupContainer@1.5.0
@@ -432,21 +498,30 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnGrpAll_Dh:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(dhGroup = "All", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(dhGroup = "All", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
                           =Set(dhGroup, "All");
                           Set(dhKind, "");
                           Select(btnShow_Dh)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="All"
-                        Width: =52 * SX
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =52
             - conGrpW_Dh:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
@@ -465,21 +540,30 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnGrpW_Dh:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(dhGroup = "Ward", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(dhGroup = "Ward", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
                           =Set(dhGroup, "Ward");
                           Set(dhKind, "");
                           Select(btnShow_Dh)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="Patients"
-                        Width: =82 * SX
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =82
             - conGrpE_Dh:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
@@ -498,21 +582,30 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnGrpE_Dh:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Width: =96 * SX
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(dhGroup = "Equipment", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(dhGroup = "Equipment", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
                           =Set(dhGroup, "Equipment");
                           Set(dhKind, "");
                           Select(btnShow_Dh)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="Equipment"
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =96 * SX
             - conGrpA_Dh:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
@@ -531,21 +624,30 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnGrpA_Dh:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(dhGroup = "Audit", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(dhGroup = "Audit", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
                           =Set(dhGroup, "Audit");
                           Set(dhKind, "");
                           Select(btnShow_Dh)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="Audits"
-                        Width: =78 * SX
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =78
             - capSev_Dh:
                 Control: Label@2.5.1
                 Properties:
@@ -576,21 +678,30 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnSevAll_Dh:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(dhSev = "All", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(dhSev = "All", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
                           =Set(dhSev, "All");
                           Set(dhKind, "");
                           Select(btnShow_Dh)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="All"
-                        Width: =52 * SX
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =52
             - conSevH_Dh:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
@@ -609,21 +720,30 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnSevH_Dh:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(dhSev = "High", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(dhSev = "High", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
                           =Set(dhSev, "High");
                           Set(dhKind, "");
                           Select(btnShow_Dh)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="High"
-                        Width: =66 * SX
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =66
             - conSevM_Dh:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
@@ -642,21 +762,30 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnSevM_Dh:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(dhSev = "Medium", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(dhSev = "Medium", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
                           =Set(dhSev, "Medium");
                           Set(dhKind, "");
                           Select(btnShow_Dh)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="Medium"
-                        Width: =82 * SX
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =82
             - conSevL_Dh:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
@@ -675,21 +804,30 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnSevL_Dh:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(dhSev = "Low", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(dhSev = "Low", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
                           =Set(dhSev, "Low");
                           Set(dhKind, "");
                           Select(btnShow_Dh)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="Low"
-                        Width: =62 * SX
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =62
             - capWard_Dh:
                 Control: Label@2.5.1
                 Properties:
@@ -722,7 +860,6 @@ Screens:
                   - ddWard_Dh:
                       Control: Classic/DropDown@2.3.1
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         ChevronBackground: =RGBA(26, 90, 153, 1)
                         ChevronFill: =RGBA(255, 255, 255, 1)
@@ -730,6 +867,7 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: =If(dhWard = "All", "All wards", dhWard)
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         Items: =colDhWardOpts
                         Items.Value: =Value
                         OnChange: |-
@@ -770,12 +908,12 @@ Screens:
                   - txtSearch_Dh:
                       Control: Classic/TextInput@2.3.2
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         Color: =RGBA(14, 28, 42, 1)
                         Default: =""
                         DelayOutput: =true
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         HintText: ="Patient, barcode or wording"
                         OnChange: |-
                           =Set(dhQ, Lower(Trim(Self.Text)));
@@ -801,13 +939,12 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnReset_Dh:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
@@ -819,7 +956,17 @@ Screens:
                           Reset(ddWard_Dh);
                           Reset(txtSearch_Dh);
                           Select(btnShow_Dh)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Reset"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =99 * SX
       - Dh_Kpi_Total:
           Control: GroupContainer@1.5.0
@@ -1212,11 +1359,11 @@ Screens:
                         - lblKindName_Dh:
                             Control: Label@2.5.1
                             Properties:
-                              Size: =Round(13 * SF, 0)
                               Color: =RGBA(14, 28, 42, 1)
                               Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =20 * SY
+                              Size: =Round(13 * SF, 0)
                               Text: =ThisItem.KindKey
                               Width: =300 * SX
                               Wrap: =false
@@ -1248,16 +1395,27 @@ Screens:
                               Wrap: =false
                               X: =330 * SX
                         - btnKind_Dh:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              FontSize: =Round(14 * SF, 0)
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
                               BorderStyle: =BorderStyle.None
+                              FontWeight: =""
                               Height: =Parent.Height
                               OnSelect: |-
                                 =Set(dhKind, If(dhKind = ThisItem.KindKey, "", ThisItem.KindKey));
                                 Select(btnShow_Dh)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =4
+                              RadiusBottomRight: =4
+                              RadiusTopLeft: =4
+                              RadiusTopRight: =4
+                              Size: =Round(14 * SF, 0)
                               Text: =""
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =Parent.Width
             - lblKindsEmpty_Dh:
                 Control: Label@2.5.1
@@ -1380,11 +1538,11 @@ Screens:
                         - lblIssWho_Dh:
                             Control: Label@2.5.1
                             Properties:
-                              Size: =Round(13 * SF, 0)
                               Color: =RGBA(58, 80, 104, 1)
                               Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =20 * SY
+                              Size: =Round(13 * SF, 0)
                               Text: =ThisItem.Who
                               Width: =220 * SX
                               Wrap: =false
@@ -1442,14 +1600,25 @@ Screens:
                               Wrap: =false
                               X: =782 * SX
                         - btnIss_Dh:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              FontSize: =Round(14 * SF, 0)
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
                               BorderStyle: =BorderStyle.None
+                              FontWeight: =""
                               Height: =Parent.Height
                               OnSelect: =If(ThisItem.Group = "Ward", Set(varWard, ThisItem.WardCode); Navigate(Ward_All, ScreenTransition.Fade))
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =4
+                              RadiusBottomRight: =4
+                              RadiusTopLeft: =4
+                              RadiusTopRight: =4
+                              Size: =Round(14 * SF, 0)
                               Text: =""
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =Parent.Width
             - lblIssEmpty_Dh:
                 Control: Label@2.5.1

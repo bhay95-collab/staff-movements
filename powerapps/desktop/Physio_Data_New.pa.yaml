@@ -95,9 +95,10 @@ Screens:
         )
     Children:
       - btnCalc_Dd:
-          Control: Button@0.0.45
+          Control: ModernButton@1.0.0
           Properties:
-            FontSize: =Round(14 * SF, 0)
+            Align: =Align.Center
+            FontWeight: =""
             Height: =10 * SY
             OnSelect: |-
               =// 1) Normalize to Impairment + PatientCount (colStaffPie is filled by the ward card / AFRM button)
@@ -185,7 +186,17 @@ Screens:
                   )
               );
               Set(locShowStaffing, true)
+            PaddingBottom: =5
+            PaddingLeft: =12
+            PaddingRight: =12
+            PaddingTop: =5
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            Size: =Round(14 * SF, 0)
             Text: =""
+            VerticalAlign: =VerticalAlign.Middle
             Visible: =false
             Width: =10 * SX
       - Dd_Title:
@@ -211,41 +222,66 @@ Screens:
                   ImagePosition: =ImagePosition.Fill
                   Width: =Parent.Width
             - lblTitle_DdHdr:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
-                  Y: =8 * SY
+                  Color: =RGBA(255, 255, 255, 1)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontWeight: =FontWeight.Bold
                   Height: =44 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(28 * SF, 0)
                   Text: ="Data Dashboard"
-                  VerticalAlign: =VerticalAlign.Middle
-                  Weight: ='TextCanvas.Weight'.Bold
                   Width: =500 * SX
                   X: =76 * SX
+                  Y: =5 * SY
             - lblSub_DdHdr:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
+                  Color: =RGBA(255, 255, 255, 0.88)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 0.88)
                   Height: =20 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(12 * SF, 0)
                   Text: ="Acuity and predicted staffing by ward  ·  tap a ward for its staffing"
-                  VerticalAlign: =VerticalAlign.Middle
                   Width: =600 * SX
                   X: =76 * SX
                   Y: =42 * SY
             - btnBack_Dd:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  Width: =96 * SX
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
-                  FontColor: =RGBA(255, 255, 255, 1)
-                  FontSize: =Round(50 * SF, 0)
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
+                  Color: =RGBA(255, 255, 255, 1)
+                  FontWeight: =""
                   Height: =70 * SY
                   Icon: ="ChevronLeft"
                   OnSelect: =Back(ScreenTransition.Fade)
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =Round(35 * SF, 0)
                   Text: =""
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =96 * SX
                   X: =1 * SX
             - conAfrm_Dd:
                 Control: GroupContainer@1.5.0
@@ -264,24 +300,32 @@ Screens:
                   Y: =15 * SY
                 Children:
                   - btnAfrm_Dd:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         Icon: ="People"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        IconStyle: =IconStyle.Filled
                         OnSelect: |-
                           =// AFRM combined staffing = 4A + 4B + 5A
                           Set(locSelectedWard, "AFRM");
                           ClearCollect(colStaffPie, col4A_PieData, col4B_PieData, col5A_PieData);
                           Select(btnCalc_Dd)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="AFRM staffing (4A + 4B + 5A)"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =290 * SX
       - Gallery_Wards_Dd:
           Control: Gallery@2.15.0
@@ -432,11 +476,12 @@ Screens:
                         Width: =Parent.Width
                         Y: =190 * SY
                   - btnWardCard_Dd:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        FontSize: =Round(14 * SF, 0)
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
                         BorderStyle: =BorderStyle.None
+                        FontWeight: =""
                         Height: =Parent.Height
                         OnSelect: |-
                           =Set(locSelectedWard, ThisItem.WardCode);
@@ -452,7 +497,17 @@ Screens:
                               )
                           );
                           Select(btnCalc_Dd)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =4
+                        RadiusBottomRight: =4
+                        RadiusTopLeft: =4
+                        RadiusTopRight: =4
+                        Size: =Round(14 * SF, 0)
                         Text: =""
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =Parent.Width
       - Dd_CardTrend:
           Control: GroupContainer@1.5.0
@@ -537,14 +592,25 @@ Screens:
             Width: =1366 * SX
           Children:
             - btnPScrim_Dd:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  FontSize: =Round(14 * SF, 0)
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
                   BorderStyle: =BorderStyle.None
+                  FontWeight: =""
                   Height: =768 * SY
                   OnSelect: =Set(locShowStaffing, false)
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =Round(14 * SF, 0)
                   Text: =""
+                  VerticalAlign: =VerticalAlign.Middle
                   Width: =1366 * SX
             - Dd_PopupCard:
                 Control: GroupContainer@1.5.0
@@ -720,11 +786,11 @@ Screens:
                               - lblImpName_Dd:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Size: =Round(13 * SF, 0)
                                     Color: =RGBA(14, 28, 42, 1)
                                     Font: =Font.'Segoe UI'
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
+                                    Size: =Round(13 * SF, 0)
                                     Text: =ThisItem.Impairment
                                     Width: =Parent.Width - 90 * SX
                                     X: =38 * SX
@@ -757,15 +823,24 @@ Screens:
                         Y: =574 * SY
                       Children:
                         - btnPClose_Dd:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =22 * SR
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =RGBA(255, 255, 255, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(255, 255, 255, 1)
-                              FontSize: =Round(13 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =44 * SY
                               OnSelect: =Set(locShowStaffing, false)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =22 * SR
+                              RadiusBottomRight: =22 * SR
+                              RadiusTopLeft: =22 * SR
+                              RadiusTopRight: =22 * SR
+                              Size: =Round(13 * SF, 0)
                               Text: ="Close"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =240 * SX

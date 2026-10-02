@@ -22,9 +22,10 @@ Screens:
         Select(btnLoad_Ul)
     Children:
       - btnLoad_Ul:
-          Control: Button@0.0.45
+          Control: ModernButton@1.0.0
           Properties:
-            FontSize: =Round(14 * SF, 0)
+            Align: =Align.Center
+            FontWeight: =""
             Height: =10 * SY
             OnSelect: |-
               =Set(ulLoading, true);
@@ -61,13 +62,24 @@ Screens:
               );
               Set(ulLoading, false);
               Select(btnBuild_Ul)
+            PaddingBottom: =5
+            PaddingLeft: =12
+            PaddingRight: =12
+            PaddingTop: =5
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            Size: =Round(14 * SF, 0)
             Text: =""
+            VerticalAlign: =VerticalAlign.Middle
             Visible: =false
             Width: =10 * SX
       - btnBuild_Ul:
-          Control: Button@0.0.45
+          Control: ModernButton@1.0.0
           Properties:
-            FontSize: =Round(14 * SF, 0)
+            Align: =Align.Center
+            FontWeight: =""
             Height: =10 * SY
             OnSelect: |-
               =// 1) the log rows that match the filters
@@ -168,7 +180,17 @@ Screens:
                       12
                   )
               )
+            PaddingBottom: =5
+            PaddingLeft: =12
+            PaddingRight: =12
+            PaddingTop: =5
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            Size: =Round(14 * SF, 0)
             Text: =""
+            VerticalAlign: =VerticalAlign.Middle
             Visible: =false
             Width: =10 * SX
       - Ul_Title:
@@ -194,41 +216,66 @@ Screens:
                   ImagePosition: =ImagePosition.Fill
                   Width: =Parent.Width
             - lblTitle_UlHdr:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
-                  Y: =8 * SY
+                  Color: =RGBA(255, 255, 255, 1)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontWeight: =FontWeight.Bold
                   Height: =44 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(28 * SF, 0)
                   Text: ="Equipment Usage"
-                  VerticalAlign: =VerticalAlign.Middle
-                  Weight: ='TextCanvas.Weight'.Bold
                   Width: =500 * SX
                   X: =76 * SX
+                  Y: =5 * SY
             - lblSub_UlHdr:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
+                  Color: =RGBA(255, 255, 255, 0.88)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 0.88)
                   Height: =20 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(12 * SF, 0)
                   Text: =If(ulLoading, "Loading the usage log...", Text(ulFrom, "d mmm") & " – " & Text(ulTo, "d mmm yyyy") & "  ·  " & CountRows(colUlLog) & " log entries loaded")
-                  VerticalAlign: =VerticalAlign.Middle
                   Width: =700 * SX
                   X: =76 * SX
                   Y: =42 * SY
             - btnBack_Ul:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  Width: =96 * SX
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
-                  FontColor: =RGBA(255, 255, 255, 1)
-                  FontSize: =Round(50 * SF, 0)
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
+                  Color: =RGBA(255, 255, 255, 1)
+                  FontWeight: =""
                   Height: =70 * SY
                   Icon: ="ChevronLeft"
                   OnSelect: =Back(ScreenTransition.Fade)
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =Round(35 * SF, 0)
                   Text: =""
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =96 * SX
                   X: =1 * SX
             - conReload_Ul:
                 Control: GroupContainer@1.5.0
@@ -248,20 +295,28 @@ Screens:
                   Y: =15 * SY
                 Children:
                   - btnReload_Ul:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         Icon: ="ArrowClockwise"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        IconStyle: =IconStyle.Filled
                         OnSelect: =Select(btnLoad_Ul)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Reload"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =140 * SX
       - Ul_CardFilters:
           Control: GroupContainer@1.5.0
@@ -309,13 +364,12 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnPre30:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(ulPreset = "30", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(ulPreset = "30", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
@@ -325,8 +379,18 @@ Screens:
                           Reset(dpFrom_Ul);
                           Reset(dpTo_Ul);
                           Select(btnLoad_Ul)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="Last 30 days"
-                        Width: =92 * SX
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =92
             - conPre90:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
@@ -345,13 +409,12 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnPre90:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(ulPreset = "90", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(ulPreset = "90", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
@@ -361,8 +424,18 @@ Screens:
                           Reset(dpFrom_Ul);
                           Reset(dpTo_Ul);
                           Select(btnLoad_Ul)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="Last 90 days"
-                        Width: =92 * SX
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =92
             - conPre365:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
@@ -381,13 +454,12 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnPre365:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(ulPreset = "365", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(ulPreset = "365", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
@@ -397,8 +469,18 @@ Screens:
                           Reset(dpFrom_Ul);
                           Reset(dpTo_Ul);
                           Select(btnLoad_Ul)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="Last 12 months"
-                        Width: =92 * SX
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =92
             - capFrom_Ul:
                 Control: Label@2.5.1
                 Properties:
@@ -431,12 +513,11 @@ Screens:
                   - dpFrom_Ul:
                       Control: Classic/DatePicker@2.6.0
                       Properties:
-                        Height: =40 * SY
-                        Size: =Round(14 * SF, 0)
                         BorderStyle: =BorderStyle.None
                         Color: =RGBA(14, 28, 42, 1)
                         DefaultDate: =ulFrom
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         OnChange: |-
                           =If(
                               Coalesce(Text(Self.SelectedDate, "yyyymmdd"), "") <> Coalesce(Text(ulFrom, "yyyymmdd"), ""),
@@ -444,6 +525,7 @@ Screens:
                               Set(ulPreset, "custom");
                               Select(btnLoad_Ul)
                           )
+                        Size: =Round(14 * SF, 0)
                         Width: =130 * SX
             - capTo_Ul:
                 Control: Label@2.5.1
@@ -477,12 +559,11 @@ Screens:
                   - dpTo_Ul:
                       Control: Classic/DatePicker@2.6.0
                       Properties:
-                        Height: =40 * SY
-                        Size: =Round(14 * SF, 0)
                         BorderStyle: =BorderStyle.None
                         Color: =RGBA(14, 28, 42, 1)
                         DefaultDate: =ulTo
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         OnChange: |-
                           =If(
                               Coalesce(Text(Self.SelectedDate, "yyyymmdd"), "") <> Coalesce(Text(ulTo, "yyyymmdd"), ""),
@@ -490,6 +571,7 @@ Screens:
                               Set(ulPreset, "custom");
                               Select(btnLoad_Ul)
                           )
+                        Size: =Round(14 * SF, 0)
                         Width: =130 * SX
             - capCat_Ul:
                 Control: Label@2.5.1
@@ -523,7 +605,6 @@ Screens:
                   - ddCat_Ul:
                       Control: Classic/DropDown@2.3.1
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         ChevronBackground: =RGBA(26, 90, 153, 1)
                         ChevronFill: =RGBA(255, 255, 255, 1)
@@ -531,6 +612,7 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: =If(ulCat = "All", "All categories", ulCat)
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         Items: =colUlCats
                         Items.Value: =Value
                         OnChange: |-
@@ -570,7 +652,6 @@ Screens:
                   - ddWard_Ul:
                       Control: Classic/DropDown@2.3.1
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         ChevronBackground: =RGBA(26, 90, 153, 1)
                         ChevronFill: =RGBA(255, 255, 255, 1)
@@ -578,6 +659,7 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: =If(ulWard = "All", "All wards", ulWard)
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         Items: =colUlWardOpts
                         Items.Value: =Value
                         OnChange: |-
@@ -617,18 +699,18 @@ Screens:
                   - txtSearch_Ul:
                       Control: Classic/TextInput@2.3.2
                       Properties:
-                        Width: =320 * SX
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         Color: =RGBA(14, 28, 42, 1)
                         Default: =""
                         DelayOutput: =true
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         HintText: ="Code, brand, model or physio"
                         OnChange: |-
                           =Set(ulQ, Lower(Trim(Self.Text)));
                           Select(btnBuild_Ul)
                         Size: =Round(14 * SF, 0)
+                        Width: =320 * SX
             - conReset_Ul:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
@@ -647,13 +729,12 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnReset_Ul:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
@@ -670,7 +751,17 @@ Screens:
                           Reset(ddWard_Ul);
                           Reset(txtSearch_Ul);
                           Select(btnLoad_Ul)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Reset"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =99 * SX
       - Ul_Kpi_Out:
           Control: GroupContainer@1.5.0
@@ -1012,17 +1103,26 @@ Screens:
                   Y: =12 * SY
                 Children:
                   - btnTabUsed:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =17 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(ulTab = "Used", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(ulTab = "Used", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =34 * SY
                         OnSelect: =Set(ulTab, "Used")
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =17 * SR
+                        RadiusBottomRight: =17 * SR
+                        RadiusTopLeft: =17 * SR
+                        RadiusTopRight: =17 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Most used"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =130 * SX
             - conTabSize:
                 Control: GroupContainer@1.5.0
@@ -1042,17 +1142,26 @@ Screens:
                   Y: =12 * SY
                 Children:
                   - btnTabSize:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =17 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(ulTab = "Size", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(ulTab = "Size", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =34 * SY
                         OnSelect: =Set(ulTab, "Size")
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =17 * SR
+                        RadiusBottomRight: =17 * SR
+                        RadiusTopLeft: =17 * SR
+                        RadiusTopRight: =17 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Demand by size"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =150 * SX
             - conTabWards:
                 Control: GroupContainer@1.5.0
@@ -1072,17 +1181,26 @@ Screens:
                   Y: =12 * SY
                 Children:
                   - btnTabWards:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =17 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(ulTab = "Wards", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(ulTab = "Wards", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =34 * SY
                         OnSelect: =Set(ulTab, "Wards")
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =17 * SR
+                        RadiusBottomRight: =17 * SR
+                        RadiusTopLeft: =17 * SR
+                        RadiusTopRight: =17 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Wards and physios"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =170 * SX
             - conSortLoans:
                 Control: GroupContainer@1.5.0
@@ -1103,20 +1221,29 @@ Screens:
                   Y: =14 * SY
                 Children:
                   - btnSortLoans:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =15 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(ulSort = "Loans", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(ulSort = "Loans", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
-                        Height: =30 * SY
+                        Height: =30
                         OnSelect: |-
                           =Set(ulSort, "Loans");
                           Select(btnBuild_Ul)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =15 * SR
+                        RadiusBottomRight: =15 * SR
+                        RadiusTopLeft: =15 * SR
+                        RadiusTopRight: =15 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="By loans"
-                        Width: =74 * SX
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =74
             - conSortDays:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
@@ -1136,20 +1263,29 @@ Screens:
                   Y: =14 * SY
                 Children:
                   - btnSortDays:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =15 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(ulSort = "Days", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(ulSort = "Days", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
-                        Height: =30 * SY
+                        Height: =30
                         OnSelect: |-
                           =Set(ulSort, "Days");
                           Select(btnBuild_Ul)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =15 * SR
+                        RadiusBottomRight: =15 * SR
+                        RadiusTopLeft: =15 * SR
+                        RadiusTopRight: =15 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="By days"
-                        Width: =70 * SX
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =70
             - hUsedItem_Ul:
                 Control: Label@2.5.1
                 Properties:
@@ -1672,23 +1808,23 @@ Screens:
                               - lblWardChip_Ul:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Size: =Round(13 * SF, 0)
                                     Align: =Align.Center
                                     Color: =RGBA(14, 28, 42, 1)
                                     Font: =Font.'Segoe UI'
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
+                                    Size: =Round(13 * SF, 0)
                                     Text: =ThisItem.WardKey
                                     Width: =Parent.Width
                                     Wrap: =false
                         - lblWardLoans_Ul:
                             Control: Label@2.5.1
                             Properties:
-                              Size: =Round(13 * SF, 0)
                               Color: =RGBA(14, 28, 42, 1)
                               Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =20 * SY
+                              Size: =Round(13 * SF, 0)
                               Text: =ThisItem.Loans & If(ThisItem.Loans = 1, " loan", " loans")
                               Width: =110 * SX
                               Wrap: =false
@@ -1753,11 +1889,11 @@ Screens:
                         - lblPhysName_Ul:
                             Control: Label@2.5.1
                             Properties:
-                              Size: =Round(13 * SF, 0)
                               Color: =RGBA(14, 28, 42, 1)
                               Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =20 * SY
+                              Size: =Round(13 * SF, 0)
                               Text: =ThisItem.Physiotherapist
                               Width: =Parent.Width - 100 * SX
                               Wrap: =false
@@ -1848,18 +1984,27 @@ Screens:
                   Y: =44 * SY
                 Children:
                   - btnLogAll:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =15 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(ulLogFilter = "All", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(ulLogFilter = "All", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
-                        Height: =30 * SY
+                        Height: =30
                         OnSelect: =Set(ulLogFilter, "All")
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =15 * SR
+                        RadiusBottomRight: =15 * SR
+                        RadiusTopLeft: =15 * SR
+                        RadiusTopRight: =15 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="All  ·  " & CountRows(Filter(colUlF, true))
-                        Width: =92 * SX
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =92
             - conLogOut:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
@@ -1878,17 +2023,26 @@ Screens:
                   Y: =44 * SY
                 Children:
                   - btnLogOut:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =15 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(ulLogFilter = "Out", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(ulLogFilter = "Out", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
-                        Height: =30 * SY
+                        Height: =30
                         OnSelect: =Set(ulLogFilter, "Out")
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =15 * SR
+                        RadiusBottomRight: =15 * SR
+                        RadiusTopLeft: =15 * SR
+                        RadiusTopRight: =15 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="Sign-outs  ·  " & CountRows(Filter(colUlF, EventType.Value = "Sign Out"))
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =120 * SX
             - conLogBack:
                 Control: GroupContainer@1.5.0
@@ -1908,17 +2062,26 @@ Screens:
                   Y: =44 * SY
                 Children:
                   - btnLogBack:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =15 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(ulLogFilter = "Back", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(ulLogFilter = "Back", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
-                        Height: =30 * SY
+                        Height: =30
                         OnSelect: =Set(ulLogFilter, "Back")
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =15 * SR
+                        RadiusBottomRight: =15 * SR
+                        RadiusTopLeft: =15 * SR
+                        RadiusTopRight: =15 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="Returns  ·  " & CountRows(Filter(colUlF, EventType.Value = "Sign In"))
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =104 * SX
             - conLogSvc:
                 Control: GroupContainer@1.5.0
@@ -1938,17 +2101,26 @@ Screens:
                   Y: =44 * SY
                 Children:
                   - btnLogSvc:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =15 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(ulLogFilter = "Svc", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(ulLogFilter = "Svc", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
-                        Height: =30 * SY
+                        Height: =30
                         OnSelect: =Set(ulLogFilter, "Svc")
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =15 * SR
+                        RadiusBottomRight: =15 * SR
+                        RadiusTopLeft: =15 * SR
+                        RadiusTopRight: =15 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="Service due  ·  " & CountRows(Filter(colUlF, Over100DaysAfterEvent = true || ServiceRequired = true))
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =124 * SX
             - conLogReview:
                 Control: GroupContainer@1.5.0
@@ -1968,17 +2140,26 @@ Screens:
                   Y: =44 * SY
                 Children:
                   - btnLogReview:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =15 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(ulLogFilter = "Review", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(ulLogFilter = "Review", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
-                        Height: =30 * SY
+                        Height: =30
                         OnSelect: =Set(ulLogFilter, "Review")
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =15 * SR
+                        RadiusBottomRight: =15 * SR
+                        RadiusTopLeft: =15 * SR
+                        RadiusTopRight: =15 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="To review  ·  " & CountRows(Filter(colUlF, EpisodeStatus.Value = "Legacy unmatched"))
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =118 * SX
             - Gallery_Log_Ul:
                 Control: Gallery@2.15.0
@@ -2011,11 +2192,11 @@ Screens:
                         - lblLogDate_Ul:
                             Control: Label@2.5.1
                             Properties:
-                              Size: =Round(13 * SF, 0)
                               Color: =RGBA(14, 28, 42, 1)
                               Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =20 * SY
+                              Size: =Round(13 * SF, 0)
                               Text: =Text(ThisItem.EventDateTime, "d mmm")
                               Width: =70 * SX
                               Wrap: =false
@@ -2063,11 +2244,11 @@ Screens:
                         - lblLogItem_Ul:
                             Control: Label@2.5.1
                             Properties:
-                              Size: =Round(13 * SF, 0)
                               Color: =RGBA(14, 28, 42, 1)
                               Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =20 * SY
+                              Size: =Round(13 * SF, 0)
                               Text: =ThisItem.EquipmentTitle
                               Width: =230 * SX
                               Wrap: =false
@@ -2138,16 +2319,27 @@ Screens:
                                     Width: =Parent.Width
                                     Wrap: =false
                         - btnLogRow_Ul:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              FontSize: =Round(14 * SF, 0)
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
                               BorderStyle: =BorderStyle.None
+                              FontWeight: =""
                               Height: =Parent.Height
                               OnSelect: |-
                                 =Set(ulDetail, ThisItem);
                                 Set(ulShowDetail, true)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =4
+                              RadiusBottomRight: =4
+                              RadiusTopLeft: =4
+                              RadiusTopRight: =4
+                              Size: =Round(14 * SF, 0)
                               Text: =""
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =Parent.Width
             - lblLogEmpty_Ul:
                 Control: Label@2.5.1
@@ -2171,14 +2363,25 @@ Screens:
             Width: =1366 * SX
           Children:
             - btnDScrim_Ul:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  FontSize: =Round(14 * SF, 0)
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
                   BorderStyle: =BorderStyle.None
+                  FontWeight: =""
                   Height: =Parent.Height
                   OnSelect: =Set(ulShowDetail, false)
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =Round(14 * SF, 0)
                   Text: =""
+                  VerticalAlign: =VerticalAlign.Middle
                   Width: =Parent.Width
             - Ul_PopupCard:
                 Control: GroupContainer@1.5.0
@@ -2211,10 +2414,10 @@ Screens:
                   - lblDSub_Ul:
                       Control: Label@2.5.1
                       Properties:
-                        Size: =Round(13 * SF, 0)
                         Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
                         Height: =20 * SY
+                        Size: =Round(13 * SF, 0)
                         Text: =ulDetail.EventType.Value & "  ·  " & Text(ulDetail.EventDateTime, "dddd d mmmm yyyy, hh:mm")
                         Width: =580 * SX
                         Wrap: =false
@@ -2586,10 +2789,10 @@ Screens:
                   - lblDNotes_Ul:
                       Control: Label@2.5.1
                       Properties:
-                        Height: =40 * SY
-                        Size: =Round(13 * SF, 0)
                         Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
+                        Size: =Round(13 * SF, 0)
                         Text: =Coalesce(ulDetail.Notes, "—")
                         Width: =590 * SX
                         X: =24 * SX
@@ -2624,15 +2827,24 @@ Screens:
                         Y: =526 * SY
                       Children:
                         - btnDClose_Ul:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =21 * SR
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =RGBA(255, 255, 255, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(255, 255, 255, 1)
-                              FontSize: =Round(15 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =42 * SY
                               OnSelect: =Set(ulShowDetail, false)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =21 * SR
+                              RadiusBottomRight: =21 * SR
+                              RadiusTopLeft: =21 * SR
+                              RadiusTopRight: =21 * SR
+                              Size: =Round(15 * SF, 0)
                               Text: ="Close"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =240 * SX

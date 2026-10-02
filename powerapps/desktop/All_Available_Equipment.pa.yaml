@@ -37,41 +37,66 @@ Screens:
                   ImagePosition: =ImagePosition.Fill
                   Width: =Parent.Width
             - lblTitle_AvHdr:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
-                  Y: =8 * SY
+                  Color: =RGBA(255, 255, 255, 1)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontWeight: =FontWeight.Bold
                   Height: =44 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(28 * SF, 0)
                   Text: ="Available Equipment"
-                  VerticalAlign: =VerticalAlign.Middle
-                  Weight: ='TextCanvas.Weight'.Bold
                   Width: =600 * SX
                   X: =76 * SX
+                  Y: =5 * SY
             - lblSub_AvHdr:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
+                  Color: =RGBA(255, 255, 255, 0.88)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 0.88)
                   Height: =20 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(12 * SF, 0)
                   Text: =CountRows(Gallery_Available.AllItems) & " items shown  ·  tap a row for its details"
-                  VerticalAlign: =VerticalAlign.Middle
                   Width: =600 * SX
                   X: =76 * SX
                   Y: =42 * SY
             - btnBack_Av:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  Width: =96 * SX
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
-                  FontColor: =RGBA(255, 255, 255, 1)
-                  FontSize: =Round(50 * SF, 0)
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
+                  Color: =RGBA(255, 255, 255, 1)
+                  FontWeight: =""
                   Height: =70 * SY
                   Icon: ="ChevronLeft"
                   OnSelect: =Back(ScreenTransition.Fade)
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =Round(35 * SF, 0)
                   Text: =""
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =96 * SX
                   X: =1 * SX
       - Av_CardFilters:
           Control: GroupContainer@1.5.0
@@ -118,18 +143,16 @@ Screens:
                   Y: =14 * SY
                 Children:
                   - btnReset_Av:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =17 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =34 * SY
                         Icon: ="ArrowClockwise"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        IconStyle: =IconStyle.Filled
                         OnSelect: |-
                           =Reset(ddType_Av);
                           Reset(ddWCType_Av);
@@ -139,7 +162,17 @@ Screens:
                           Reset(txtCode_Av);
                           Reset(chkService_Av);
                           Set(avSelected, Blank())
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =17 * SR
+                        RadiusBottomRight: =17 * SR
+                        RadiusTopLeft: =17 * SR
+                        RadiusTopRight: =17 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Reset"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =110 * SX
             - capCat_Av:
                 Control: Label@2.5.1
@@ -172,7 +205,6 @@ Screens:
                   - ddType_Av:
                       Control: Classic/DropDown@2.3.1
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         ChevronBackground: =RGBA(26, 90, 153, 1)
                         ChevronFill: =RGBA(255, 255, 255, 1)
@@ -180,6 +212,7 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: ="All"
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         Items: |-
                           =With(
                               {
@@ -240,7 +273,6 @@ Screens:
                   - ddWCType_Av:
                       Control: Classic/DropDown@2.3.1
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         ChevronBackground: =RGBA(26, 90, 153, 1)
                         ChevronFill: =RGBA(255, 255, 255, 1)
@@ -248,6 +280,7 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: ="All"
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         Items: |-
                           =With(
                               {
@@ -308,7 +341,6 @@ Screens:
                   - ddWidth_Av:
                       Control: Classic/DropDown@2.3.1
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         ChevronBackground: =RGBA(26, 90, 153, 1)
                         ChevronFill: =RGBA(255, 255, 255, 1)
@@ -316,6 +348,7 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: ="All"
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         Items: |-
                           =With(
                               {
@@ -376,7 +409,6 @@ Screens:
                   - ddDepth_Av:
                       Control: Classic/DropDown@2.3.1
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         ChevronBackground: =RGBA(26, 90, 153, 1)
                         ChevronFill: =RGBA(255, 255, 255, 1)
@@ -384,6 +416,7 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: ="All"
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         Items: |-
                           =With(
                               {
@@ -444,7 +477,6 @@ Screens:
                   - ddHeight_Av:
                       Control: Classic/DropDown@2.3.1
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         ChevronBackground: =RGBA(26, 90, 153, 1)
                         ChevronFill: =RGBA(255, 255, 255, 1)
@@ -452,6 +484,7 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: ="All"
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         Items: |-
                           =With(
                               {
@@ -512,12 +545,12 @@ Screens:
                   - txtCode_Av:
                       Control: Classic/TextInput@2.3.2
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         Color: =RGBA(14, 28, 42, 1)
                         Default: =""
                         Font: =Font.'Segoe UI'
-                        HintText: ="Equipment code"
+                        Height: =40 * SY
+                        HintText: ="Equipment Code"
                         Size: =Round(14 * SF, 0)
                         Width: =360 * SX
             - conService_Av:
@@ -574,9 +607,9 @@ Screens:
             - lblFilterHint_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Height: =40 * SY
                   Color: =RGBA(140, 155, 174, 1)
                   Font: =Font.'Segoe UI'
+                  Height: =40 * SY
                   Size: =Round(12 * SF, 0)
                   Text: |-
                     ="Filters combine: only equipment matching every filter is listed."
@@ -782,14 +815,25 @@ Screens:
                                     Width: =Parent.Width
                                     Y: =34 * SY
                         - btnRow_Av:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              FontSize: =Round(14 * SF, 0)
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
                               BorderStyle: =BorderStyle.None
+                              FontWeight: =""
                               Height: =Parent.Height
                               OnSelect: =Set(avSelected, LookUp(Equipment_Inventory_SharePoint, ID = ThisItem.ID))
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =4
+                              RadiusBottomRight: =4
+                              RadiusTopLeft: =4
+                              RadiusTopRight: =4
+                              Size: =Round(14 * SF, 0)
                               Text: =""
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =Parent.Width
             - lblEmpty_Av:
                 Control: Label@2.5.1
@@ -847,7 +891,6 @@ Screens:
             - lblVBc_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Width: =150 * SX
                   Color: =RGBA(14, 28, 42, 1)
                   Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
@@ -855,6 +898,7 @@ Screens:
                   Size: =Round(14 * SF, 0)
                   Text: =Coalesce(avSelected.Title, "-")
                   Visible: =!IsBlank(avSelected)
+                  Width: =150 * SX
                   X: =124 * SX
                   Y: =60 * SY
             - lblKCt_Av:
@@ -873,7 +917,6 @@ Screens:
             - lblVCt_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Width: =150 * SX
                   Color: =RGBA(14, 28, 42, 1)
                   Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
@@ -881,6 +924,7 @@ Screens:
                   Size: =Round(14 * SF, 0)
                   Text: =Coalesce(avSelected.Category.Value, "-")
                   Visible: =!IsBlank(avSelected)
+                  Width: =150 * SX
                   X: =124 * SX
                   Y: =92 * SY
             - lblKBr_Av:
@@ -899,7 +943,6 @@ Screens:
             - lblVBr_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Width: =150 * SX
                   Color: =RGBA(14, 28, 42, 1)
                   Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
@@ -907,6 +950,7 @@ Screens:
                   Size: =Round(14 * SF, 0)
                   Text: =Coalesce(avSelected.Brand, "-")
                   Visible: =!IsBlank(avSelected)
+                  Width: =150 * SX
                   X: =124 * SX
                   Y: =124 * SY
             - lblKMd_Av:
@@ -925,7 +969,6 @@ Screens:
             - lblVMd_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Width: =150 * SX
                   Color: =RGBA(14, 28, 42, 1)
                   Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
@@ -933,6 +976,7 @@ Screens:
                   Size: =Round(14 * SF, 0)
                   Text: =Coalesce(avSelected.Model, "-")
                   Visible: =!IsBlank(avSelected)
+                  Width: =150 * SX
                   X: =124 * SX
                   Y: =156 * SY
             - lblKWt_Av:
@@ -951,7 +995,6 @@ Screens:
             - lblVWt_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Width: =150 * SX
                   Color: =RGBA(14, 28, 42, 1)
                   Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
@@ -959,6 +1002,7 @@ Screens:
                   Size: =Round(14 * SF, 0)
                   Text: =Coalesce(avSelected.'Wheelchair Type'.Value, "-")
                   Visible: =!IsBlank(avSelected)
+                  Width: =150 * SX
                   X: =124 * SX
                   Y: =188 * SY
             - lblKWd_Av:
@@ -977,7 +1021,6 @@ Screens:
             - lblVWd_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Width: =150 * SX
                   Color: =RGBA(14, 28, 42, 1)
                   Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
@@ -985,6 +1028,7 @@ Screens:
                   Size: =Round(14 * SF, 0)
                   Text: =Coalesce(avSelected.Width.Value, "-")
                   Visible: =!IsBlank(avSelected)
+                  Width: =150 * SX
                   X: =124 * SX
                   Y: =220 * SY
             - lblKDp_Av:
@@ -1003,7 +1047,6 @@ Screens:
             - lblVDp_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Width: =150 * SX
                   Color: =RGBA(14, 28, 42, 1)
                   Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
@@ -1011,6 +1054,7 @@ Screens:
                   Size: =Round(14 * SF, 0)
                   Text: =Coalesce(avSelected.Depth.Value, "-")
                   Visible: =!IsBlank(avSelected)
+                  Width: =150 * SX
                   X: =124 * SX
                   Y: =252 * SY
             - lblKHt_Av:
@@ -1029,7 +1073,6 @@ Screens:
             - lblVHt_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Width: =150 * SX
                   Color: =RGBA(14, 28, 42, 1)
                   Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
@@ -1037,6 +1080,7 @@ Screens:
                   Size: =Round(14 * SF, 0)
                   Text: =Coalesce(avSelected.Height.Value, "-")
                   Visible: =!IsBlank(avSelected)
+                  Width: =150 * SX
                   X: =124 * SX
                   Y: =284 * SY
             - lblKLc_Av:
@@ -1055,7 +1099,6 @@ Screens:
             - lblVLc_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Width: =150 * SX
                   Color: =RGBA(14, 28, 42, 1)
                   Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
@@ -1063,6 +1106,7 @@ Screens:
                   Size: =Round(14 * SF, 0)
                   Text: =Coalesce(avSelected.Location.Value, "-")
                   Visible: =!IsBlank(avSelected)
+                  Width: =150 * SX
                   X: =124 * SX
                   Y: =316 * SY
             - lblKDu_Av:
@@ -1081,7 +1125,6 @@ Screens:
             - lblVDu_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Width: =150 * SX
                   Color: =RGBA(14, 28, 42, 1)
                   Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
@@ -1089,6 +1132,7 @@ Screens:
                   Size: =Round(14 * SF, 0)
                   Text: =Coalesce(Text(Coalesce(avSelected.TotalDaysSignedOut, 0)), "-")
                   Visible: =!IsBlank(avSelected)
+                  Width: =150 * SX
                   X: =124 * SX
                   Y: =356 * SY
             - conSvc_Av:
@@ -1124,10 +1168,10 @@ Screens:
             - lblNoSel_Av:
                 Control: Label@2.5.1
                 Properties:
-                  Size: =Round(13 * SF, 0)
                   Color: =RGBA(140, 155, 174, 1)
                   Font: =Font.'Segoe UI'
                   Height: =60 * SY
+                  Size: =Round(13 * SF, 0)
                   Text: ="Tap a row to see the item's details."
                   Visible: =!(!IsBlank(avSelected))
                   Width: =253 * SX

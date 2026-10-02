@@ -16,9 +16,10 @@ Screens:
         Select(btnLoad_Sd)
     Children:
       - btnLoad_Sd:
-          Control: Button@0.0.45
+          Control: ModernButton@1.0.0
           Properties:
-            FontSize: =Round(14 * SF, 0)
+            Align: =Align.Center
+            FontWeight: =""
             Height: =10 * SY
             OnSelect: |-
               =Set(sdLoading, true);
@@ -42,13 +43,24 @@ Screens:
               );
               Set(sdLoading, false);
               Select(btnBuild_Sd)
+            PaddingBottom: =5
+            PaddingLeft: =12
+            PaddingRight: =12
+            PaddingTop: =5
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            Size: =Round(14 * SF, 0)
             Text: =""
+            VerticalAlign: =VerticalAlign.Middle
             Visible: =false
             Width: =10 * SX
       - btnBuild_Sd:
-          Control: Button@0.0.45
+          Control: ModernButton@1.0.0
           Properties:
-            FontSize: =Round(14 * SF, 0)
+            Align: =Align.Center
+            FontWeight: =""
             Height: =10 * SY
             OnSelect: |-
               =// 1) due now: more than 100 days in use and not already at service
@@ -90,7 +102,17 @@ Screens:
                       Condemned: CountRows(Filter(colSdHist, StartsWith(Coalesce(Outcome.Value, ""), "Condemned")))
                   }
               )
+            PaddingBottom: =5
+            PaddingLeft: =12
+            PaddingRight: =12
+            PaddingTop: =5
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            Size: =Round(14 * SF, 0)
             Text: =""
+            VerticalAlign: =VerticalAlign.Middle
             Visible: =false
             Width: =10 * SX
       - Sd_Title:
@@ -116,41 +138,66 @@ Screens:
                   ImagePosition: =ImagePosition.Fill
                   Width: =Parent.Width
             - lblTitle_SdHdr:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
-                  Y: =8 * SY
+                  Color: =RGBA(255, 255, 255, 1)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontWeight: =FontWeight.Bold
                   Height: =44 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(28 * SF, 0)
                   Text: ="Equipment Servicing"
-                  VerticalAlign: =VerticalAlign.Middle
-                  Weight: ='TextCanvas.Weight'.Bold
                   Width: =700 * SX
                   X: =76 * SX
+                  Y: =5 * SY
             - lblSub_SdHdr:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
+                  Color: =RGBA(255, 255, 255, 0.88)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 0.88)
                   Height: =20 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(12 * SF, 0)
                   Text: =If(sdLoading, "Loading the service log...", CountRows(colSdNow) & " at service now  ·  " & CountRows(colSdDue) & " due for service  ·  stock of " & CountRows(colSdInv) & " items")
-                  VerticalAlign: =VerticalAlign.Middle
                   Width: =800 * SX
                   X: =76 * SX
                   Y: =42 * SY
             - btnBack_Sd:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  Width: =96 * SX
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
-                  FontColor: =RGBA(255, 255, 255, 1)
-                  FontSize: =Round(50 * SF, 0)
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
+                  Color: =RGBA(255, 255, 255, 1)
+                  FontWeight: =""
                   Height: =70 * SY
                   Icon: ="ChevronLeft"
                   OnSelect: =Back(ScreenTransition.Fade)
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =Round(35 * SF, 0)
                   Text: =""
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =96 * SX
                   X: =1 * SX
             - conReload_Sd:
                 Control: GroupContainer@1.5.0
@@ -170,20 +217,28 @@ Screens:
                   Y: =15 * SY
                 Children:
                   - btnReload_Sd:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         Icon: ="ArrowClockwise"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        IconStyle: =IconStyle.Filled
                         OnSelect: =Select(btnLoad_Sd)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Reload"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =140 * SX
       - Sd_CardFilters:
           Control: GroupContainer@1.5.0
@@ -231,20 +286,29 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnPre90_Sd:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(sdPreset = "90", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(sdPreset = "90", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
                           =Set(sdPreset, "90");
                           Set(sdFrom, DateAdd(Today(), -89));
                           Select(btnLoad_Sd)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="90 days"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =112 * SX
             - conPre365_Sd:
                 Control: GroupContainer@1.5.0
@@ -264,20 +328,29 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnPre365_Sd:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(sdPreset = "365", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(sdPreset = "365", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
                           =Set(sdPreset, "365");
                           Set(sdFrom, DateAdd(Today(), -364));
                           Select(btnLoad_Sd)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="12 months"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =112 * SX
             - conPre3650_Sd:
                 Control: GroupContainer@1.5.0
@@ -297,20 +370,29 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnPre3650_Sd:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(sdPreset = "3650", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(sdPreset = "3650", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
                           =Set(sdPreset, "3650");
                           Set(sdFrom, DateAdd(Today(), -3649));
                           Select(btnLoad_Sd)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="All time"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =112 * SX
             - capCat_Sd:
                 Control: Label@2.5.1
@@ -344,7 +426,6 @@ Screens:
                   - ddCat_Sd:
                       Control: Classic/DropDown@2.3.1
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         ChevronBackground: =RGBA(26, 90, 153, 1)
                         ChevronFill: =RGBA(255, 255, 255, 1)
@@ -352,6 +433,7 @@ Screens:
                         Color: =RGBA(14, 28, 42, 1)
                         Default: =If(sdCat = "All", "All categories", sdCat)
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         Items: =colSdCats
                         Items.Value: =Value
                         OnChange: |-
@@ -391,13 +473,13 @@ Screens:
                   - txtSearch_Sd:
                       Control: Classic/TextInput@2.3.2
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         Color: =RGBA(14, 28, 42, 1)
                         Default: =""
                         DelayOutput: =true
                         Font: =Font.'Segoe UI'
-                        HintText: ="Barcode, brand or model"
+                        Height: =40 * SY
+                        HintText: ="Barcode, Brand or Model"
                         OnChange: |-
                           =Set(sdQ, Lower(Trim(Self.Text)));
                           Select(btnBuild_Sd)
@@ -421,13 +503,12 @@ Screens:
                   Y: =30 * SY
                 Children:
                   - btnReset_Sd:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
@@ -438,7 +519,17 @@ Screens:
                           Reset(ddCat_Sd);
                           Reset(txtSearch_Sd);
                           Select(btnLoad_Sd)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Reset"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =99 * SX
       - Sd_Kpi_Due:
           Control: GroupContainer@1.5.0
@@ -780,17 +871,26 @@ Screens:
                   Y: =12 * SY
                 Children:
                   - btnTabDue:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =17 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(sdTab = "Due", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(sdTab = "Due", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =34 * SY
                         OnSelect: =Set(sdTab, "Due")
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =17 * SR
+                        RadiusBottomRight: =17 * SR
+                        RadiusTopLeft: =17 * SR
+                        RadiusTopRight: =17 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Due for service  ·  " & sdKpi.Due
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =190 * SX
             - conTabNow:
                 Control: GroupContainer@1.5.0
@@ -810,17 +910,26 @@ Screens:
                   Y: =12 * SY
                 Children:
                   - btnTabNow:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =17 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(sdTab = "Now", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(sdTab = "Now", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =34 * SY
                         OnSelect: =Set(sdTab, "Now")
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =17 * SR
+                        RadiusBottomRight: =17 * SR
+                        RadiusTopLeft: =17 * SR
+                        RadiusTopRight: =17 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="At service now  ·  " & sdKpi.Now
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =190 * SX
             - conTabHist:
                 Control: GroupContainer@1.5.0
@@ -840,17 +949,26 @@ Screens:
                   Y: =12 * SY
                 Children:
                   - btnTabHist:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =17 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(sdTab = "Hist", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(sdTab = "Hist", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =34 * SY
                         OnSelect: =Set(sdTab, "Hist")
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =17 * SR
+                        RadiusBottomRight: =17 * SR
+                        RadiusTopLeft: =17 * SR
+                        RadiusTopRight: =17 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="History  ·  " & CountRows(colSdHist)
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =160 * SX
             - lblHint_Sd:
                 Control: Label@2.5.1
@@ -1019,11 +1137,11 @@ Screens:
                         - lblDueCat_Sd:
                             Control: Label@2.5.1
                             Properties:
-                              Size: =Round(13 * SF, 0)
                               Color: =RGBA(58, 80, 104, 1)
                               Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =20 * SY
+                              Size: =Round(13 * SF, 0)
                               Text: =ThisItem.iCat & If(ThisItem.iType = "", "", "  ·  " & ThisItem.iType)
                               Width: =260 * SX
                               Wrap: =false
@@ -1084,21 +1202,21 @@ Screens:
                         - lblDueLast_Sd:
                             Control: Label@2.5.1
                             Properties:
-                              Width: =150 * SX
-                              Size: =Round(13 * SF, 0)
                               Color: =RGBA(58, 80, 104, 1)
                               Font: =Font.'Segoe UI'
                               Height: =50 * SY
+                              Size: =Round(13 * SF, 0)
                               Text: =If(IsBlank(ThisItem.LastServiceDate), "Never recorded", Text(ThisItem.LastServiceDate, "d mmm yyyy"))
+                              Width: =150 * SX
                               Wrap: =false
                               X: =870 * SX
                         - lblDueLoc_Sd:
                             Control: Label@2.5.1
                             Properties:
-                              Size: =Round(13 * SF, 0)
                               Color: =RGBA(58, 80, 104, 1)
                               Font: =Font.'Segoe UI'
                               Height: =50 * SY
+                              Size: =Round(13 * SF, 0)
                               Text: =If(ThisItem.iLoc = "", "—", ThisItem.iLoc)
                               Width: =260 * SX
                               Wrap: =false
@@ -1282,13 +1400,13 @@ Screens:
                         - lblNowSent_Sd:
                             Control: Label@2.5.1
                             Properties:
-                              Width: =150 * SX
-                              Size: =Round(13 * SF, 0)
                               Color: =RGBA(58, 80, 104, 1)
                               Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =20 * SY
+                              Size: =Round(13 * SF, 0)
                               Text: =Text(ThisItem.SentDateTime, "d mmm yyyy")
+                              Width: =150 * SX
                               Wrap: =false
                               X: =500 * SX
                               Y: =6 * SY
@@ -1328,16 +1446,27 @@ Screens:
                               Width: =440 * SX
                               X: =850 * SX
                         - btnNowRow_Sd:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              FontSize: =Round(14 * SF, 0)
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
                               BorderStyle: =BorderStyle.None
+                              FontWeight: =""
                               Height: =Parent.Height
                               OnSelect: |-
                                 =Set(sdDetail, ThisItem);
                                 Set(sdShowDetail, true)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =4
+                              RadiusBottomRight: =4
+                              RadiusTopLeft: =4
+                              RadiusTopRight: =4
+                              Size: =Round(14 * SF, 0)
                               Text: =""
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =Parent.Width
             - lblNowEmpty_Sd:
                 Control: Label@2.5.1
@@ -1491,11 +1620,11 @@ Screens:
                         - lblHistType_Sd:
                             Control: Label@2.5.1
                             Properties:
-                              Size: =Round(13 * SF, 0)
                               Color: =RGBA(58, 80, 104, 1)
                               Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =56 * SY
+                              Size: =Round(13 * SF, 0)
                               Text: =Coalesce(ThisItem.ServiceType.Value, "—")
                               Width: =130 * SX
                               Wrap: =false
@@ -1503,11 +1632,11 @@ Screens:
                         - lblHistDates_Sd:
                             Control: Label@2.5.1
                             Properties:
-                              Size: =Round(13 * SF, 0)
                               Color: =RGBA(58, 80, 104, 1)
                               Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =20 * SY
+                              Size: =Round(13 * SF, 0)
                               Text: =Text(ThisItem.SentDateTime, "d mmm") & " – " & Text(ThisItem.ReturnedDateTime, "d mmm yyyy")
                               Width: =220 * SX
                               Wrap: =false
@@ -1566,16 +1695,27 @@ Screens:
                                     Width: =Parent.Width
                                     Wrap: =false
                         - btnHistRow_Sd:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              FontSize: =Round(14 * SF, 0)
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
                               BorderStyle: =BorderStyle.None
+                              FontWeight: =""
                               Height: =Parent.Height
                               OnSelect: |-
                                 =Set(sdDetail, ThisItem);
                                 Set(sdShowDetail, true)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =4
+                              RadiusBottomRight: =4
+                              RadiusTopLeft: =4
+                              RadiusTopRight: =4
+                              Size: =Round(14 * SF, 0)
                               Text: =""
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =Parent.Width
             - lblHistEmpty_Sd:
                 Control: Label@2.5.1
@@ -1599,14 +1739,25 @@ Screens:
             Width: =1366 * SX
           Children:
             - btnScrim_Sd:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  FontSize: =Round(14 * SF, 0)
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
                   BorderStyle: =BorderStyle.None
+                  FontWeight: =""
                   Height: =Parent.Height
                   OnSelect: =Set(sdShowDetail, false)
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =Round(14 * SF, 0)
                   Text: =""
+                  VerticalAlign: =VerticalAlign.Middle
                   Width: =Parent.Width
             - Sd_PopupCard:
                 Control: GroupContainer@1.5.0
@@ -1639,10 +1790,10 @@ Screens:
                   - lblDSub_Sd:
                       Control: Label@2.5.1
                       Properties:
-                        Size: =Round(13 * SF, 0)
                         Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
                         Height: =20 * SY
+                        Size: =Round(13 * SF, 0)
                         Text: =sdDetail.ServiceType.Value & "  ·  " & sdDetail.ServiceStatus.Value
                         Width: =580 * SX
                         Wrap: =false
@@ -1913,10 +2064,10 @@ Screens:
                   - lblDSendN_Sd:
                       Control: Label@2.5.1
                       Properties:
-                        Height: =40 * SY
-                        Size: =Round(13 * SF, 0)
                         Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
+                        Size: =Round(13 * SF, 0)
                         Text: =Coalesce(sdDetail.SendNotes, "—")
                         Width: =590 * SX
                         X: =24 * SX
@@ -1936,10 +2087,10 @@ Screens:
                   - lblDRetN_Sd:
                       Control: Label@2.5.1
                       Properties:
-                        Height: =40 * SY
-                        Size: =Round(13 * SF, 0)
                         Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
+                        Size: =Round(13 * SF, 0)
                         Text: =Coalesce(sdDetail.ReturnNotes, "—")
                         Width: =590 * SX
                         X: =24 * SX
@@ -1962,15 +2113,24 @@ Screens:
                         Y: =526 * SY
                       Children:
                         - btnDClose_Sd:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =21 * SR
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =RGBA(255, 255, 255, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(255, 255, 255, 1)
-                              FontSize: =Round(15 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =42 * SY
                               OnSelect: =Set(sdShowDetail, false)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =21 * SR
+                              RadiusBottomRight: =21 * SR
+                              RadiusTopLeft: =21 * SR
+                              RadiusTopRight: =21 * SR
+                              Size: =Round(15 * SF, 0)
                               Text: ="Close"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =240 * SX

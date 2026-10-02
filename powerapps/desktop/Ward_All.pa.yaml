@@ -34,9 +34,10 @@ Screens:
         Select(btnLoadData_Ward)
     Children:
       - btnRebuildCharts_Ward:
-          Control: Button@0.0.45
+          Control: ModernButton@1.0.0
           Properties:
-            FontSize: =Round(14 * SF, 0)
+            Align: =Align.Center
+            FontWeight: =""
             Height: =10 * SY
             OnSelect: |-
               =// =======================================================
@@ -160,14 +161,25 @@ Screens:
                   )
               );
               Set(wdLoading, false)
+            PaddingBottom: =5
+            PaddingLeft: =12
+            PaddingRight: =12
+            PaddingTop: =5
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            Size: =Round(14 * SF, 0)
             Text: ="Charts"
+            VerticalAlign: =VerticalAlign.Middle
             Visible: =false
             Width: =10 * SX
             X: =10 * SX
       - btnLoadData_Ward:
-          Control: Button@0.0.45
+          Control: ModernButton@1.0.0
           Properties:
-            FontSize: =Round(14 * SF, 0)
+            Align: =Align.Center
+            FontWeight: =""
             Height: =10 * SY
             OnSelect: |-
               =// =======================================================
@@ -397,7 +409,17 @@ Screens:
               );
               // Chart collections are rebuilt from the fresh data
               Select(btnRebuildCharts_Ward)
+            PaddingBottom: =5
+            PaddingLeft: =12
+            PaddingRight: =12
+            PaddingTop: =5
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            Size: =Round(14 * SF, 0)
             Text: ="Load"
+            VerticalAlign: =VerticalAlign.Middle
             Visible: =false
             Width: =10 * SX
       - Ward_Title:
@@ -423,38 +445,52 @@ Screens:
                   ImagePosition: =ImagePosition.Fill
                   Width: =Parent.Width
             - TextCanvas7:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
-                  Y: =8 * SY
+                  Color: =RGBA(255, 255, 255, 1)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontWeight: =FontWeight.Bold
                   Height: =44 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(28 * SF, 0)
                   Text: ="Ward " & varWard
-                  VerticalAlign: =VerticalAlign.Middle
-                  Weight: ='TextCanvas.Weight'.Bold
                   Width: =205 * SX
                   X: =76 * SX
+                  Y: =5 * SY
             - TextCanvas7_Sub:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
+                  Color: =RGBA(255, 255, 255, 0.88)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 0.88)
                   Height: =20 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(12 * SF, 0)
                   Text: |-
                     =With({p: CountRows(Filter(colWard, !IsBlank(Trim(Patient))))}, p & If(p = 1, " patient", " patients") & "  ·  " & (CountRows(colWard) - p) & " empty")
-                  VerticalAlign: =VerticalAlign.Middle
                   Width: =205 * SX
                   X: =76 * SX
                   Y: =42 * SY
             - ButtonCanvas31_1:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  Width: =96 * SX
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
-                  FontColor: =RGBA(255, 255, 255, 1)
-                  FontSize: =Round(50 * SF, 0)
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
+                  Color: =RGBA(255, 255, 255, 1)
+                  FontWeight: =""
                   Height: =70 * SY
                   Icon: ="ChevronLeft"
                   OnSelect: |
@@ -468,7 +504,18 @@ Screens:
                         // ✅ Safe to leave
                         Back()
                     )
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =Round(35 * SF, 0)
                   Text: =
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =96 * SX
                   X: =1 * SX
             - Container211:
                 Control: GroupContainer@1.5.0
@@ -487,6 +534,48 @@ Screens:
                   Width: =800 * SX
                   X: =520 * SX
                 Children:
+                  - Container210:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.Center
+                        BorderStyle: =BorderStyle.None
+                        DropShadow: =DropShadow.Semibold
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =40 * SY
+                        LayoutMaxHeight: =40 * SY
+                        LayoutMinHeight: =10 * SY
+                        LayoutMinWidth: =160 * SX
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Width: =160 * SX
+                        X: =530 * SX
+                        Y: =15 * SY
+                      Children:
+                        - ButtonCanvas15:
+                            Control: ModernButton@1.0.0
+                            Properties:
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =RGBA(7, 58, 87, 1)
+                              Font: =Font.'Segoe UI'
+                              FontWeight: =FontWeight.Bold
+                              Height: =Parent.Height
+                              OnSelect: =Set(wdShowPatientList,true)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =20 * SR
+                              RadiusBottomRight: =20 * SR
+                              RadiusTopLeft: =20 * SR
+                              RadiusTopRight: =20 * SR
+                              Size: =Round(14 * SF, 0)
+                              Text: ="Patient List/Data"
+                              VerticalAlign: =VerticalAlign.Middle
+                              Width: =Parent.Width
                   - Container52:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
@@ -510,26 +599,21 @@ Screens:
                         Y: =15 * SY
                       Children:
                         - ButtonCanvas20_1:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
                               BasePaletteColor: =RGBA(189, 178, 176, 1)
                               BorderColor: =RGBA(53, 61, 63, 1)
-                              BorderRadius: =20 * SR
-                              BorderRadiusBottomLeft: =20 * SR
-                              BorderRadiusBottomRight: =20 * SR
-                              BorderRadiusTopLeft: =20 * SR
-                              BorderRadiusTopRight: =20 * SR
                               BorderStyle: =BorderStyle.None
                               BorderThickness: =3
+                              Color: =RGBA(7, 58, 87, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(7, 58, 87, 1)
-                              FontSize: =Round(14 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =Parent.Height
                               Icon: ="Edit"
-                              IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              IconStyle: =IconStyle.Filled
+                              Layout: =ButtonLayout.TextOnly
                               OnSelect: |-
                                 =If(
                                     !IsEmpty(Filter(colWard, IsDirty)),
@@ -539,55 +623,17 @@ Screens:
                                     ),
                                     Navigate(Handover_All, ScreenTransition.Fade)
                                 )
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =20 * SR
+                              RadiusBottomRight: =20 * SR
+                              RadiusTopLeft: =20 * SR
+                              RadiusTopRight: =20 * SR
+                              Size: =Round(14 * SF, 0)
                               Text: ="Handover"
-                              Width: =Parent.Width
-                  - Container53:
-                      Control: GroupContainer@1.5.0
-                      Variant: ManualLayout
-                      Properties:
-                        AlignInContainer: =AlignInContainer.Center
-                        BorderColor: =RGBA(53, 61, 63, 1)
-                        BorderStyle: =BorderStyle.None
-                        BorderThickness: =2
-                        DropShadow: =DropShadow.Semibold
-                        Fill: =RGBA(255, 255, 255, 1)
-                        Height: =40 * SY
-                        LayoutMaxHeight: =40 * SY
-                        LayoutMinHeight: =10 * SY
-                        LayoutMinWidth: =160 * SX
-                        RadiusBottomLeft: =20 * SR
-                        RadiusBottomRight: =20 * SR
-                        RadiusTopLeft: =20 * SR
-                        RadiusTopRight: =20 * SR
-                        Width: =160 * SX
-                        X: =397 * SX
-                        Y: =15 * SY
-                      Children:
-                        - ButtonCanvas20_2:
-                            Control: Button@0.0.45
-                            Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BasePaletteColor: =RGBA(189, 178, 176, 1)
-                              BorderColor: =RGBA(53, 61, 63, 1)
-                              BorderRadius: =20 * SR
-                              BorderRadiusBottomLeft: =20 * SR
-                              BorderRadiusBottomRight: =20 * SR
-                              BorderRadiusTopLeft: =20 * SR
-                              BorderRadiusTopRight: =20 * SR
-                              BorderStyle: =BorderStyle.None
-                              BorderThickness: =3
-                              Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(7, 58, 87, 1)
-                              FontSize: =Round(14 * SF, 0)
-                              FontWeight: =FontWeight.Bold
-                              Height: =Parent.Height
-                              Icon: ="Open"
-                              IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                              OnSelect: |
-                                =Launch(
-                                    "ms-excel:ofe|u|https://healthqld.sharepoint.com/teams/PhysioDreamTeam/Shared%20Documents/General/Acuity%20Tool/AROC%20Calculator.xlsx"
-                                )
-                              Text: ="AROC Calculator"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =Parent.Width
                   - Container55:
                       Control: GroupContainer@1.5.0
@@ -612,28 +658,22 @@ Screens:
                         Y: =15 * SY
                       Children:
                         - ButtonCanvas20_8:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
                               BasePaletteColor: =RGBA(189, 178, 176, 1)
                               BorderColor: =RGBA(53, 61, 63, 1)
-                              BorderRadius: =20 * SR
-                              BorderRadiusBottomLeft: =20 * SR
-                              BorderRadiusBottomRight: =20 * SR
-                              BorderRadiusTopLeft: =20 * SR
-                              BorderRadiusTopRight: =20 * SR
                               BorderStyle: =BorderStyle.None
                               BorderThickness: =3
+                              Color: =RGBA(7, 58, 87, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(7, 58, 87, 1)
-                              FontSize: =Round(14 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =Parent.Height
                               Icon: ="Mail"
-                              IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                              Layout: ='ButtonCanvas.Layout'.IconBefore
+                              IconStyle: =IconStyle.Filled
                               OnSelect: |-
-                                =// Patients on this ward with an EDD in the next 7 days (as shown on screen)
+                                =// EDD Summary button > OnSelect  (Ward_All).  Needs EmailHead and EmailFoot from Email_Formulas.txt.
                                 ClearCollect(
                                     colWardEDD,
                                     Filter(
@@ -648,18 +688,24 @@ Screens:
                                     CountRows(colWardEDD) > 0,
                                     Set(
                                         varEmailBody,
-                                        "<html><body style='font-family:Segoe UI, Arial, sans-serif; font-size:12pt;'>" &
-                                        "Hi " & User().FullName & ",<br><br>" &
-                                        "The patients with an EDD in the next 7 days are listed below.<br><br>" &
-                                        "<table style='border-collapse:collapse; width:100%;' border='1' cellpadding='6'>" &
-                                            "<tr style='background-color:#f2f2f2; font-weight:600;'>" &
-                                                "<th align='left'>Name</th>" &
-                                                "<th align='left'>URN</th>" &
-                                                "<th align='left'>DOB</th>" &
-                                                "<th align='left'>EDD</th>" &
-                                                "<th align='left'>Physio</th>" &
-                                                "<th align='left'>OT</th>" &
-                                                "<th align='left'>SP</th>" &
+                                        Substitute(Substitute(EmailHead, "{{TITLE}}", "EDD Summary"), "{{SUB}}", "Ward " & varWard & "&nbsp;&nbsp;|&nbsp;&nbsp;Next 7 days") &
+
+                                        // greeting
+                                        "<tr><td style='padding:28px 32px 8px 32px;font-size:15px;line-height:22px;color:#3A5068;'>" &
+                                            "Hi " & First(Split(User().FullName, " ")).Value & ",<br><br>" &
+                                            "<b style='color:#0E1C2A;'>" & CountRows(colWardEDD) & If(CountRows(colWardEDD) = 1, " patient has", " patients have") & "</b> an estimated discharge date in the next 7 days. " &
+                                            "The earliest are listed first." &
+                                        "</td></tr>" &
+
+                                        // table
+                                        "<tr><td style='padding:16px 32px 8px 32px;'>" &
+                                        "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='border-collapse:separate;border-spacing:0;width:100%;font-size:14px;border:1px solid #E3EAF1;border-radius:14px;overflow:hidden;'>" &
+                                            "<tr bgcolor='#F2F6FA' style='background-color:#F2F6FA;'>" &
+                                                "<th align='left' style='padding:10px 12px;font-size:11px;letter-spacing:1px;color:#8C9BAE;border-bottom:2px solid #1A5A99;border-radius:14px 0 0 0;'>PATIENT</th>" &
+                                                "<th align='left' style='padding:10px 12px;font-size:11px;letter-spacing:1px;color:#8C9BAE;border-bottom:2px solid #1A5A99;'>URN</th>" &
+                                                "<th align='left' style='padding:10px 12px;font-size:11px;letter-spacing:1px;color:#8C9BAE;border-bottom:2px solid #1A5A99;'>DOB</th>" &
+                                                "<th align='left' style='padding:10px 12px;font-size:11px;letter-spacing:1px;color:#8C9BAE;border-bottom:2px solid #1A5A99;'>EDD</th>" &
+                                                "<th align='left' style='padding:10px 12px;font-size:11px;letter-spacing:1px;color:#8C9BAE;border-bottom:2px solid #1A5A99;border-radius:0 14px 0 0;'>PHYSIO</th>" &
                                             "</tr>" &
                                             Concat(
                                                 SortByColumns(colWardEDD, "EDD", SortOrder.Ascending),
@@ -667,52 +713,65 @@ Screens:
                                                     {
                                                         ptNames: If(
                                                             IsBlank(PT_Users) || CountRows(PT_Users) = 0,
-                                                            "",
-                                                            Concat(PT_Users, Coalesce(DisplayName, Email) & "; ")
+                                                            "<span style='color:#8C9BAE;'>Not allocated</span>",
+                                                            Concat(PT_Users, Coalesce(DisplayName, Email), ", ")
                                                         ),
-                                                        otNames: If(
-                                                            IsBlank(OT_Users) || CountRows(OT_Users) = 0,
-                                                            "",
-                                                            Concat(OT_Users, Coalesce(DisplayName, Email) & "; ")
-                                                        ),
-                                                        spNames: If(
-                                                            IsBlank(SP_Users) || CountRows(SP_Users) = 0,
-                                                            "",
-                                                            Concat(SP_Users, Coalesce(DisplayName, Email) & "; ")
-                                                        )
+                                                        daysTo: DateDiff(Today(), EDD, TimeUnit.Days)
                                                     },
-                                                    "<tr>" &
-                                                        "<td>" & Coalesce(Text(Patient), "") & "</td>" &
-                                                        "<td>" & Coalesce(Text(URN), "") & "</td>" &
-                                                        "<td>" & If(IsBlank(DOB), "", Text(DateValue(DOB), "dd/mm/yyyy")) & "</td>" &
-                                                        "<td>" & Text(EDD, "dd/mm/yyyy") & "</td>" &
-                                                        "<td>" & ptNames & "</td>" &
-                                                        "<td>" & otNames & "</td>" &
-                                                        "<td>" & spNames & "</td>" &
-                                                    "</tr>"
+                                                    With(
+                                                        {
+                                                            chipBg: If(daysTo <= 1, "#FDECEC", daysTo <= 3, "#FFF3DC", "#E8F1FA"),
+                                                            chipFg: If(daysTo <= 1, "#B41A1A", daysTo <= 3, "#8A5300", "#1A5A99"),
+                                                            chipTxt: Switch(daysTo, 0, "Today", 1, "Tomorrow", "In " & daysTo & " days")
+                                                        },
+                                                        "<tr>" &
+                                                            "<td style='padding:12px;border-top:1px solid #E3EAF1;font-weight:600;color:#0E1C2A;'>" & Coalesce(Text(Patient), "") & "</td>" &
+                                                            "<td style='padding:12px;border-top:1px solid #E3EAF1;color:#3A5068;'>" & Coalesce(Text(URN), "") & "</td>" &
+                                                            "<td style='padding:12px;border-top:1px solid #E3EAF1;color:#3A5068;'>" & If(IsBlank(DOB), "", Text(DateValue(DOB), "dd/mm/yyyy")) & "</td>" &
+                                                            "<td style='padding:12px;border-top:1px solid #E3EAF1;color:#0E1C2A;'>" & Text(EDD, "dd/mm/yyyy") &
+                                                                "<br><span style='display:inline-block;margin-top:4px;padding:3px 12px;border-radius:12px;font-size:11px;font-weight:700;background-color:" & chipBg & ";color:" & chipFg & ";'>" & chipTxt & "</span></td>" &
+                                                            "<td style='padding:12px;border-top:1px solid #E3EAF1;color:#3A5068;'>" & ptNames & "</td>" &
+                                                        "</tr>"
+                                                    )
                                                 )
                                             ) &
                                         "</table>" &
-                                        "<br><br>Thanks,<br>" & User().FullName &
-                                        "</body></html>"
+                                        "</td></tr>" &
+
+                                        // sign-off
+                                        "<tr><td style='padding:20px 32px 28px 32px;font-size:15px;line-height:22px;color:#3A5068;'>Thanks,<br><b style='color:#0E1C2A;'>" & User().FullName & "</b></td></tr>" &
+
+                                        Substitute(EmailFoot, "{{NOTE}}", "This email contains patient information. Please handle it in line with your privacy policy.")
                                     );
                                     Office365Outlook.SendEmailV2(
                                         User().Email,
-                                        "Patients with EDD within the next 7 days – Ward " & varWard,
+                                        "EDD Summary: Ward " & varWard & " (next 7 days)",
                                         varEmailBody,
                                         { IsHtml: true }
                                     );
                                     Notify("Email Sent", NotificationType.Success),
                                     Notify("No patients with EDD in the next 7 days.", NotificationType.Information)
-                                );
+                                )
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =20 * SR
+                              RadiusBottomRight: =20 * SR
+                              RadiusTopLeft: =20 * SR
+                              RadiusTopRight: =20 * SR
+                              Size: =Round(14 * SF, 0)
                               Text: ="EDD Summary"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =Parent.Width
-                  - Container210:
+                  - Container53:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
                         AlignInContainer: =AlignInContainer.Center
+                        BorderColor: =RGBA(53, 61, 63, 1)
                         BorderStyle: =BorderStyle.None
+                        BorderThickness: =2
                         DropShadow: =DropShadow.Semibold
                         Fill: =RGBA(255, 255, 255, 1)
                         Height: =40 * SY
@@ -724,21 +783,39 @@ Screens:
                         RadiusTopLeft: =20 * SR
                         RadiusTopRight: =20 * SR
                         Width: =160 * SX
-                        X: =530 * SX
+                        X: =397 * SX
                         Y: =15 * SY
                       Children:
-                        - ButtonCanvas15:
-                            Control: Button@0.0.45
+                        - ButtonCanvas20_2:
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =20 * SR
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              BasePaletteColor: =RGBA(189, 178, 176, 1)
+                              BorderColor: =RGBA(53, 61, 63, 1)
+                              BorderStyle: =BorderStyle.None
+                              BorderThickness: =3
+                              Color: =RGBA(7, 58, 87, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(7, 58, 87, 1)
-                              FontSize: =Round(14 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =Parent.Height
-                              OnSelect: =Set(wdShowPatientList,true)
-                              Text: ="Patient List/Data"
+                              Icon: ="Open"
+                              IconStyle: =IconStyle.Filled
+                              OnSelect: |
+                                =Launch(
+                                    "ms-excel:ofe|u|https://healthqld.sharepoint.com/teams/PhysioDreamTeam/Shared%20Documents/General/Acuity%20Tool/AROC%20Calculator.xlsx"
+                                )
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =20 * SR
+                              RadiusBottomRight: =20 * SR
+                              RadiusTopLeft: =20 * SR
+                              RadiusTopRight: =20 * SR
+                              Size: =Round(14 * SF, 0)
+                              Text: ="AROC Calculator"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =Parent.Width
                   - conOutcome_Ward:
                       Control: GroupContainer@1.5.0
@@ -759,21 +836,29 @@ Screens:
                         Width: =165 * SX
                       Children:
                         - btnOutcome_Ward:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =20 * SR
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
                               BorderStyle: =BorderStyle.None
+                              Color: =RGBA(7, 58, 87, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(7, 58, 87, 1)
-                              FontSize: =Round(14 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =Parent.Height
                               Icon: ="Open"
-                              IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                              Layout: ='ButtonCanvas.Layout'.IconBefore
+                              IconStyle: =IconStyle.Filled
                               OnSelect: =Launch("https://bhay95-collab.github.io/basic-outcome-measures/")
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =20 * SR
+                              RadiusBottomRight: =20 * SR
+                              RadiusTopLeft: =20 * SR
+                              RadiusTopRight: =20 * SR
+                              Size: =Round(14 * SF, 0)
                               Text: ="Outcome Measures"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =Parent.Width
             - Container62:
                 Control: GroupContainer@1.5.0
@@ -794,21 +879,19 @@ Screens:
                   Y: =12 * SY
                 Children:
                   - ButtonCanvas21:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
                         BorderColor: =RGBA(53, 61, 63, 1)
-                        BorderRadius: =23 * SR
                         BorderStyle: =BorderStyle.None
                         BorderThickness: =2
+                        Color: =RGBA(255, 255, 255, 1)
                         DisplayMode: =If(wdIsSaving, DisplayMode.Disabled, DisplayMode.Edit)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(255, 255, 255, 1)
-                        FontSize: =Round(14 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =46 * SY
                         Icon: ="Save"
-                        Layout: ='ButtonCanvas.Layout'.IconBefore
                         OnSelect: |-
                           =// ======================================
                           // SAVE WARD (any ward – handles new + existing rows)  [version 4 - no "rec" variable]
@@ -1062,7 +1145,17 @@ Screens:
                                   )
                               )
                           )
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =23 * SR
+                        RadiusBottomRight: =23 * SR
+                        RadiusTopLeft: =23 * SR
+                        RadiusTopRight: =23 * SR
+                        Size: =Round(14 * SF, 0)
                         Text: ="Save"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =100 * SX
             - conDiscard_Ward:
                 Control: GroupContainer@1.5.0
@@ -1081,20 +1174,28 @@ Screens:
                   Y: =12 * SY
                 Children:
                   - btnDiscard_Ward:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =23 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(180, 26, 26, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(180, 26, 26, 1)
-                        FontSize: =Round(14 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =46 * SY
                         Icon: ="DismissCircle"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        IconStyle: =IconStyle.Filled
                         OnSelect: =Set(wdShowDiscardWarning, true)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =23 * SR
+                        RadiusBottomRight: =23 * SR
+                        RadiusTopLeft: =23 * SR
+                        RadiusTopRight: =23 * SR
+                        Size: =Round(14 * SF, 0)
                         Text: ="Discard"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =120 * SX
       - Wd_CardBoard:
           Control: GroupContainer@1.5.0
@@ -1130,17 +1231,26 @@ Screens:
                   Y: =12 * SY
                 Children:
                   - btnChip_All_WB:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Height: =32 * SY
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =16 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(wdFilter = "All", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(wdFilter = "All", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
+                        Height: =32 * SY
                         OnSelect: =Set(wdFilter, "All")
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =16 * SR
+                        RadiusBottomRight: =16 * SR
+                        RadiusTopLeft: =16 * SR
+                        RadiusTopRight: =16 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="All beds  ·  " & CountRows(Filter(colWard, !IsBlank(ID) && true))
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =108 * SX
             - conChip_Patients_WB:
                 Control: GroupContainer@1.5.0
@@ -1160,17 +1270,26 @@ Screens:
                   Y: =12 * SY
                 Children:
                   - btnChip_Patients_WB:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Height: =32 * SY
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =16 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(wdFilter = "Patients", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(wdFilter = "Patients", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
+                        Height: =32 * SY
                         OnSelect: =Set(wdFilter, "Patients")
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =16 * SR
+                        RadiusBottomRight: =16 * SR
+                        RadiusTopLeft: =16 * SR
+                        RadiusTopRight: =16 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="Patients  ·  " & CountRows(Filter(colWard, !IsBlank(ID) && !IsBlank(Trim(Patient))))
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =108 * SX
             - conChip_Mine_WB:
                 Control: GroupContainer@1.5.0
@@ -1190,17 +1309,26 @@ Screens:
                   Y: =12 * SY
                 Children:
                   - btnChip_Mine_WB:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Height: =32 * SY
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =16 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(wdFilter = "Mine", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(wdFilter = "Mine", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
+                        Height: =32 * SY
                         OnSelect: =Set(wdFilter, "Mine")
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =16 * SR
+                        RadiusBottomRight: =16 * SR
+                        RadiusTopLeft: =16 * SR
+                        RadiusTopRight: =16 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="My patients  ·  " & CountRows(Filter(colWard, !IsBlank(ID) && !IsBlank(LookUp(PT_Users, Lower(Email) = Lower(User().Email)))))
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =132 * SX
             - conChip_EDD_WB:
                 Control: GroupContainer@1.5.0
@@ -1220,17 +1348,26 @@ Screens:
                   Y: =12 * SY
                 Children:
                   - btnChip_EDD_WB:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Height: =32 * SY
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =16 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(wdFilter = "EDD", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(wdFilter = "EDD", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
+                        Height: =32 * SY
                         OnSelect: =Set(wdFilter, "EDD")
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =16 * SR
+                        RadiusBottomRight: =16 * SR
+                        RadiusTopLeft: =16 * SR
+                        RadiusTopRight: =16 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="EDD ≤ 3 days  ·  " & CountRows(Filter(colWard, !IsBlank(ID) && !IsBlank(Trim(Patient)) && !IsBlank(EDD) && EDD <= DateAdd(Today(), 3)))
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =138 * SX
             - conChip_NoPT_WB:
                 Control: GroupContainer@1.5.0
@@ -1250,17 +1387,26 @@ Screens:
                   Y: =12 * SY
                 Children:
                   - btnChip_NoPT_WB:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Height: =32 * SY
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =16 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =If(wdFilter = "NoPT", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
                         Font: =Font.'Segoe UI'
-                        FontColor: =If(wdFilter = "NoPT", RGBA(255, 255, 255, 1), RGBA(58, 80, 104, 1))
-                        FontSize: =Round(12 * SF, 0)
                         FontWeight: =FontWeight.Bold
+                        Height: =32 * SY
                         OnSelect: =Set(wdFilter, "NoPT")
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =16 * SR
+                        RadiusBottomRight: =16 * SR
+                        RadiusTopLeft: =16 * SR
+                        RadiusTopRight: =16 * SR
+                        Size: =Round(12 * SF, 0)
                         Text: ="No physio  ·  " & CountRows(Filter(colWard, !IsBlank(ID) && !IsBlank(Trim(Patient)) && (IsBlank(PT_Users) || CountRows(PT_Users) = 0)))
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =120 * SX
             - lblLegend_WB:
                 Control: Label@2.5.1
@@ -1420,7 +1566,7 @@ Screens:
                         RadiusBottomRight: =14 * SR
                         RadiusTopLeft: =14 * SR
                         RadiusTopRight: =14 * SR
-                        Width: =Parent.TemplateWidth - 20 * SX
+                        Width: =Parent.TemplateWidth - 25 * SX
                         X: =10 * SX
                         Y: =3 * SY
                       Children:
@@ -1434,7 +1580,7 @@ Screens:
                               RadiusBottomRight: =0
                               RadiusTopLeft: =14 * SR
                               RadiusTopRight: =0
-                              Width: =6 * SX
+                              Width: =10 * SX
                         - lblBed_WB:
                             Control: Label@2.5.1
                             Properties:
@@ -1451,11 +1597,11 @@ Screens:
                         - lblEmpty_WB:
                             Control: Label@2.5.1
                             Properties:
-                              Size: =Round(13 * SF, 0)
                               Color: =RGBA(140, 155, 174, 1)
                               Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =20 * SY
+                              Size: =Round(13 * SF, 0)
                               Text: ="Empty bed"
                               Visible: =!(!IsBlank(Trim(ThisItem.Patient)))
                               Width: =200 * SX
@@ -1752,14 +1898,25 @@ Screens:
                                     Text: ="M"
                                     Width: =Parent.Width
                         - btnRow_WB:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              FontSize: =Round(14 * SF, 0)
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
                               BorderStyle: =BorderStyle.None
+                              FontWeight: =""
                               Height: =Parent.Height
                               OnSelect: =If(!IsBlank(Trim(ThisItem.Patient)), Set(wdSelID, ThisItem.ID), Set(wdIDRowID, ThisItem.ID); Set(wdShowIDPopup, true))
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =4
+                              RadiusBottomRight: =4
+                              RadiusTopLeft: =4
+                              RadiusTopRight: =4
+                              Size: =Round(14 * SF, 0)
                               Text: =""
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =Parent.Width
             - lblNone_WB:
                 Control: Label@2.5.1
@@ -1899,13 +2056,12 @@ Screens:
                               Y: =84 * SY
                             Children:
                               - btnOpen_WB:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =19 * SR
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =RGBA(255, 255, 255, 1)
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =RGBA(255, 255, 255, 1)
-                                    FontSize: =Round(14 * SF, 0)
                                     FontWeight: =FontWeight.Bold
                                     Height: =38 * SY
                                     OnSelect: |-
@@ -1921,7 +2077,17 @@ Screens:
                                           Set(varWardCode, varWard);
                                           Navigate(Patient_Detail_Screen, ScreenTransition.Fade)
                                       )
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =19 * SR
+                                    RadiusBottomRight: =19 * SR
+                                    RadiusTopLeft: =19 * SR
+                                    RadiusTopRight: =19 * SR
+                                    Size: =Round(14 * SF, 0)
                                     Text: ="Open Patient Details ›"
+                                    VerticalAlign: =VerticalAlign.Middle
                                     Width: =240 * SX
                         - conMove_WB:
                             Control: GroupContainer@1.5.0
@@ -1941,20 +2107,29 @@ Screens:
                               Y: =84 * SY
                             Children:
                               - btnMove_WB:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =19 * SR
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =RGBA(26, 90, 153, 1)
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =RGBA(26, 90, 153, 1)
-                                    FontSize: =Round(14 * SF, 0)
                                     FontWeight: =FontWeight.Bold
                                     Height: =38 * SY
                                     OnSelect: |-
                                       =Set(wdMoveFromID, ThisItem.ID);
                                       Set(wdMoveTargetID, Blank());
                                       Set(wdShowMove, true)
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =19 * SR
+                                    RadiusBottomRight: =19 * SR
+                                    RadiusTopLeft: =19 * SR
+                                    RadiusTopRight: =19 * SR
+                                    Size: =Round(14 * SF, 0)
                                     Text: ="Move bed"
+                                    VerticalAlign: =VerticalAlign.Middle
                                     Width: =112 * SX
                         - capDx_WB:
                             Control: Label@2.5.1
@@ -1986,19 +2161,28 @@ Screens:
                               Y: =156 * SY
                             Children:
                               - btnDx0_WB:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =15 * SR
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =If(ThisItem.Diagnosis.Value = "Ortho", RGBA(14, 28, 42, 1), RGBA(58, 80, 104, 1))
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =If(ThisItem.Diagnosis.Value = "Ortho", RGBA(14, 28, 42, 1), RGBA(58, 80, 104, 1))
-                                    FontSize: =Round(12 * SF, 0)
                                     FontWeight: =FontWeight.Bold
-                                    Height: =30 * SY
+                                    Height: =30
                                     OnSelect: |-
                                       =Patch(colWard, ThisItem, {Diagnosis: If(ThisItem.Diagnosis.Value = "Ortho", Blank(), {Value: "Ortho"}), IsDirty: true})
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =15 * SR
+                                    RadiusBottomRight: =15 * SR
+                                    RadiusTopLeft: =15 * SR
+                                    RadiusTopRight: =15 * SR
+                                    Size: =Round(12 * SF, 0)
                                     Text: ="Ortho"
-                                    Width: =84 * SX
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =84
                         - conDx1_WB:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -2017,19 +2201,28 @@ Screens:
                               Y: =156 * SY
                             Children:
                               - btnDx1_WB:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =15 * SR
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =If(ThisItem.Diagnosis.Value = "Amp", RGBA(14, 28, 42, 1), RGBA(58, 80, 104, 1))
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =If(ThisItem.Diagnosis.Value = "Amp", RGBA(14, 28, 42, 1), RGBA(58, 80, 104, 1))
-                                    FontSize: =Round(12 * SF, 0)
                                     FontWeight: =FontWeight.Bold
-                                    Height: =30 * SY
+                                    Height: =30
                                     OnSelect: |-
                                       =Patch(colWard, ThisItem, {Diagnosis: If(ThisItem.Diagnosis.Value = "Amp", Blank(), {Value: "Amp"}), IsDirty: true})
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =15 * SR
+                                    RadiusBottomRight: =15 * SR
+                                    RadiusTopLeft: =15 * SR
+                                    RadiusTopRight: =15 * SR
+                                    Size: =Round(12 * SF, 0)
                                     Text: ="Amp"
-                                    Width: =84 * SX
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =84
                         - conDx2_WB:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -2048,19 +2241,28 @@ Screens:
                               Y: =156 * SY
                             Children:
                               - btnDx2_WB:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =15 * SR
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =If(ThisItem.Diagnosis.Value = "TBI", RGBA(14, 28, 42, 1), RGBA(58, 80, 104, 1))
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =If(ThisItem.Diagnosis.Value = "TBI", RGBA(14, 28, 42, 1), RGBA(58, 80, 104, 1))
-                                    FontSize: =Round(12 * SF, 0)
                                     FontWeight: =FontWeight.Bold
-                                    Height: =30 * SY
+                                    Height: =30
                                     OnSelect: |-
                                       =Patch(colWard, ThisItem, {Diagnosis: If(ThisItem.Diagnosis.Value = "TBI", Blank(), {Value: "TBI"}), IsDirty: true})
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =15 * SR
+                                    RadiusBottomRight: =15 * SR
+                                    RadiusTopLeft: =15 * SR
+                                    RadiusTopRight: =15 * SR
+                                    Size: =Round(12 * SF, 0)
                                     Text: ="TBI"
-                                    Width: =84 * SX
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =84
                         - conDx3_WB:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -2079,19 +2281,28 @@ Screens:
                               Y: =156 * SY
                             Children:
                               - btnDx3_WB:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =15 * SR
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =If(ThisItem.Diagnosis.Value = "SCI", RGBA(14, 28, 42, 1), RGBA(58, 80, 104, 1))
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =If(ThisItem.Diagnosis.Value = "SCI", RGBA(14, 28, 42, 1), RGBA(58, 80, 104, 1))
-                                    FontSize: =Round(12 * SF, 0)
                                     FontWeight: =FontWeight.Bold
-                                    Height: =30 * SY
+                                    Height: =30
                                     OnSelect: |-
                                       =Patch(colWard, ThisItem, {Diagnosis: If(ThisItem.Diagnosis.Value = "SCI", Blank(), {Value: "SCI"}), IsDirty: true})
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =15 * SR
+                                    RadiusBottomRight: =15 * SR
+                                    RadiusTopLeft: =15 * SR
+                                    RadiusTopRight: =15 * SR
+                                    Size: =Round(12 * SF, 0)
                                     Text: ="SCI"
-                                    Width: =84 * SX
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =84
                         - conDx4_WB:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -2110,19 +2321,28 @@ Screens:
                               Y: =192 * SY
                             Children:
                               - btnDx4_WB:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =15 * SR
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =If(ThisItem.Diagnosis.Value = "Recon", RGBA(14, 28, 42, 1), RGBA(58, 80, 104, 1))
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =If(ThisItem.Diagnosis.Value = "Recon", RGBA(14, 28, 42, 1), RGBA(58, 80, 104, 1))
-                                    FontSize: =Round(12 * SF, 0)
                                     FontWeight: =FontWeight.Bold
-                                    Height: =30 * SY
+                                    Height: =30
                                     OnSelect: |-
                                       =Patch(colWard, ThisItem, {Diagnosis: If(ThisItem.Diagnosis.Value = "Recon", Blank(), {Value: "Recon"}), IsDirty: true})
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =15 * SR
+                                    RadiusBottomRight: =15 * SR
+                                    RadiusTopLeft: =15 * SR
+                                    RadiusTopRight: =15 * SR
+                                    Size: =Round(12 * SF, 0)
                                     Text: ="Recon"
-                                    Width: =84 * SX
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =84
                         - conDx5_WB:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -2141,19 +2361,28 @@ Screens:
                               Y: =192 * SY
                             Children:
                               - btnDx5_WB:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =15 * SR
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =If(ThisItem.Diagnosis.Value = "Trauma", RGBA(14, 28, 42, 1), RGBA(58, 80, 104, 1))
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =If(ThisItem.Diagnosis.Value = "Trauma", RGBA(14, 28, 42, 1), RGBA(58, 80, 104, 1))
-                                    FontSize: =Round(12 * SF, 0)
                                     FontWeight: =FontWeight.Bold
-                                    Height: =30 * SY
+                                    Height: =30
                                     OnSelect: |-
                                       =Patch(colWard, ThisItem, {Diagnosis: If(ThisItem.Diagnosis.Value = "Trauma", Blank(), {Value: "Trauma"}), IsDirty: true})
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =15 * SR
+                                    RadiusBottomRight: =15 * SR
+                                    RadiusTopLeft: =15 * SR
+                                    RadiusTopRight: =15 * SR
+                                    Size: =Round(12 * SF, 0)
                                     Text: ="Trauma"
-                                    Width: =84 * SX
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =84
                         - conDx6_WB:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -2172,19 +2401,28 @@ Screens:
                               Y: =192 * SY
                             Children:
                               - btnDx6_WB:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =15 * SR
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =If(ThisItem.Diagnosis.Value = "Stroke", RGBA(14, 28, 42, 1), RGBA(58, 80, 104, 1))
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =If(ThisItem.Diagnosis.Value = "Stroke", RGBA(14, 28, 42, 1), RGBA(58, 80, 104, 1))
-                                    FontSize: =Round(12 * SF, 0)
                                     FontWeight: =FontWeight.Bold
-                                    Height: =30 * SY
+                                    Height: =30
                                     OnSelect: |-
                                       =Patch(colWard, ThisItem, {Diagnosis: If(ThisItem.Diagnosis.Value = "Stroke", Blank(), {Value: "Stroke"}), IsDirty: true})
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =15 * SR
+                                    RadiusBottomRight: =15 * SR
+                                    RadiusTopLeft: =15 * SR
+                                    RadiusTopRight: =15 * SR
+                                    Size: =Round(12 * SF, 0)
                                     Text: ="Stroke"
-                                    Width: =84 * SX
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =84
                         - conDx7_WB:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -2203,19 +2441,28 @@ Screens:
                               Y: =192 * SY
                             Children:
                               - btnDx7_WB:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =15 * SR
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =If(ThisItem.Diagnosis.Value = "Neuro", RGBA(14, 28, 42, 1), RGBA(58, 80, 104, 1))
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =If(ThisItem.Diagnosis.Value = "Neuro", RGBA(14, 28, 42, 1), RGBA(58, 80, 104, 1))
-                                    FontSize: =Round(12 * SF, 0)
                                     FontWeight: =FontWeight.Bold
-                                    Height: =30 * SY
+                                    Height: =30
                                     OnSelect: |-
                                       =Patch(colWard, ThisItem, {Diagnosis: If(ThisItem.Diagnosis.Value = "Neuro", Blank(), {Value: "Neuro"}), IsDirty: true})
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =15 * SR
+                                    RadiusBottomRight: =15 * SR
+                                    RadiusTopLeft: =15 * SR
+                                    RadiusTopRight: =15 * SR
+                                    Size: =Round(12 * SF, 0)
                                     Text: ="Neuro"
-                                    Width: =84 * SX
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =84
                         - capPT_WB:
                             Control: Label@2.5.1
                             Properties:
@@ -2252,12 +2499,10 @@ Screens:
                                     Font: =Font.'Segoe UI'
                                     Height: =38 * SY
                                     Size: =Round(14 * SF, 0)
-                                    Text: =Coalesce(Concat(Filter(colClinicians_Physio, !IsBlank(LookUp(ThisItem.PTKeys, Key = DisplayKey))), DisplayNameFlat, ", "), "Add physio")
-                                    VerticalAlign: =VerticalAlign.Middle
+                                    Text: =Coalesce(Concat(Filter(colClinicians_Physio, !IsBlank(LookUp(ThisItem.PTKeys, Key = DisplayKey))), DisplayNameFlat, ", "), "Add Physio")
                                     Width: =316 * SX
                                     Wrap: =false
                                     X: =10 * SX
-                                    Y: =0
                               - icoPTChev_WB:
                                   Control: ModernIcon@1.1.1
                                   Properties:
@@ -2268,19 +2513,28 @@ Screens:
                                     X: =332 * SX
                                     Y: =9 * SY
                               - btnPTOpen_WB:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    FontSize: =Round(14 * SF, 0)
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
                                     BorderStyle: =BorderStyle.None
+                                    FontWeight: =""
                                     Height: =Parent.Height
                                     OnSelect: |-
                                       =Set(wdShowPTPick, true);
                                       Reset(txtPTSearch_Ward)
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =4
+                                    RadiusBottomRight: =4
+                                    RadiusTopLeft: =4
+                                    RadiusTopRight: =4
+                                    Size: =Round(14 * SF, 0)
                                     Text: =""
+                                    VerticalAlign: =VerticalAlign.Middle
                                     Width: =Parent.Width
-                                    X: =0
-                                    Y: =0
                         - capAcu_WB:
                             Control: Label@2.5.1
                             Properties:
@@ -2323,20 +2577,29 @@ Screens:
                               Y: =328 * SY
                             Children:
                               - conMinus_WBB:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =10 * SR
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =RGBA(26, 90, 153, 1)
                                     DisplayMode: =If(Coalesce(ThisItem.'Acuity Score', 0) <= 0, DisplayMode.Disabled, DisplayMode.Edit)
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =RGBA(26, 90, 153, 1)
-                                    FontSize: =Round(20 * SF, 0)
                                     FontWeight: =FontWeight.Bold
                                     Height: =38 * SY
                                     OnSelect: |-
                                       =Patch(colWard, ThisItem, {'Acuity Score': Min(4, Max(0, Coalesce(ThisItem.'Acuity Score', 0) - 1)), IsDirty: true})
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =10 * SR
+                                    RadiusBottomRight: =10 * SR
+                                    RadiusTopLeft: =10 * SR
+                                    RadiusTopRight: =10 * SR
+                                    Size: =Round(20 * SF, 0)
                                     Text: ="−"
-                                    Width: =44 * SX
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =44
                         - lblAcuVal_WB:
                             Control: Label@2.5.1
                             Properties:
@@ -2368,20 +2631,29 @@ Screens:
                               Y: =328 * SY
                             Children:
                               - conPlus_WBB:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =10 * SR
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =RGBA(26, 90, 153, 1)
                                     DisplayMode: =If(Coalesce(ThisItem.'Acuity Score', 0) >= 4, DisplayMode.Disabled, DisplayMode.Edit)
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =RGBA(26, 90, 153, 1)
-                                    FontSize: =Round(20 * SF, 0)
                                     FontWeight: =FontWeight.Bold
                                     Height: =38 * SY
                                     OnSelect: |-
                                       =Patch(colWard, ThisItem, {'Acuity Score': Min(4, Max(0, Coalesce(ThisItem.'Acuity Score', 0) + 1)), IsDirty: true})
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =10 * SR
+                                    RadiusBottomRight: =10 * SR
+                                    RadiusTopLeft: =10 * SR
+                                    RadiusTopRight: =10 * SR
+                                    Size: =Round(20 * SF, 0)
                                     Text: ="+"
-                                    Width: =44 * SX
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =44
                         - lblLosVal_WB:
                             Control: Label@2.5.1
                             Properties:
@@ -2471,10 +2743,10 @@ Screens:
                               - conAdmUnset_WBL:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Size: =Round(13 * SF, 0)
                                     Color: =RGBA(140, 155, 174, 1)
                                     Font: =Font.'Segoe UI'
                                     Height: =Parent.Height
+                                    Size: =Round(13 * SF, 0)
                                     Text: ="Not set"
                                     Width: =Parent.Width - 12 * SX
                                     Wrap: =false
@@ -2531,10 +2803,10 @@ Screens:
                               - conEddUnset_WBL:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Size: =Round(13 * SF, 0)
                                     Color: =RGBA(140, 155, 174, 1)
                                     Font: =Font.'Segoe UI'
                                     Height: =Parent.Height
+                                    Size: =Round(13 * SF, 0)
                                     Text: ="Not set"
                                     Width: =Parent.Width - 12 * SX
                                     Wrap: =false
@@ -2605,10 +2877,10 @@ Screens:
                               - conArocUnset_WBL:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Size: =Round(13 * SF, 0)
                                     Color: =RGBA(140, 155, 174, 1)
                                     Font: =Font.'Segoe UI'
                                     Height: =Parent.Height
+                                    Size: =Round(13 * SF, 0)
                                     Text: ="Not set"
                                     Width: =Parent.Width - 12 * SX
                                     Wrap: =false
@@ -2655,16 +2927,27 @@ Screens:
                                     Width: =Parent.Width
                                     Wrap: =false
                               - conFalls_WBB:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    FontSize: =Round(14 * SF, 0)
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
                                     BorderStyle: =BorderStyle.None
+                                    FontWeight: =""
                                     Height: =Parent.Height
                                     OnSelect: |-
                                       =Patch(colWard, ThisItem, {'Falls Risk': !Coalesce(ThisItem.'Falls Risk', false), IsDirty: true})
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =4
+                                    RadiusBottomRight: =4
+                                    RadiusTopLeft: =4
+                                    RadiusTopRight: =4
+                                    Size: =Round(14 * SF, 0)
                                     Text: =""
-                                    Width: =Parent.Width
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =84
                         - conContact_WB:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -2695,16 +2978,27 @@ Screens:
                                     Width: =Parent.Width
                                     Wrap: =false
                               - conContact_WBB:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    FontSize: =Round(14 * SF, 0)
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
                                     BorderStyle: =BorderStyle.None
+                                    FontWeight: =""
                                     Height: =Parent.Height
                                     OnSelect: |-
                                       =Patch(colWard, ThisItem, {Contact: !Coalesce(ThisItem.Contact, false), IsDirty: true})
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =4
+                                    RadiusBottomRight: =4
+                                    RadiusTopLeft: =4
+                                    RadiusTopRight: =4
+                                    Size: =Round(14 * SF, 0)
                                     Text: =""
-                                    Width: =Parent.Width
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =84
                         - conNdis_WB:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -2736,16 +3030,27 @@ Screens:
                                     Width: =Parent.Width
                                     Wrap: =false
                               - conNdis_WBB:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    FontSize: =Round(14 * SF, 0)
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
                                     BorderStyle: =BorderStyle.None
+                                    FontWeight: =""
                                     Height: =Parent.Height
                                     OnSelect: |-
                                       =Patch(colWard, ThisItem, {NDIS: !Coalesce(ThisItem.NDIS, false), IsDirty: true})
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =4
+                                    RadiusBottomRight: =4
+                                    RadiusTopLeft: =4
+                                    RadiusTopRight: =4
+                                    Size: =Round(14 * SF, 0)
                                     Text: =""
-                                    Width: =Parent.Width
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =84
                         - conMaint_WB:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -2776,16 +3081,27 @@ Screens:
                                     Width: =Parent.Width
                                     Wrap: =false
                               - conMaint_WBB:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    FontSize: =Round(14 * SF, 0)
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
                                     BorderStyle: =BorderStyle.None
+                                    FontWeight: =""
                                     Height: =Parent.Height
                                     OnSelect: |-
                                       =Patch(colWard, ThisItem, {Maintenance: !Coalesce(ThisItem.Maintenance, false), IsDirty: true})
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =4
+                                    RadiusBottomRight: =4
+                                    RadiusTopLeft: =4
+                                    RadiusTopRight: =4
+                                    Size: =Round(14 * SF, 0)
                                     Text: =""
-                                    Width: =Parent.Width
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =84
                         - conDiv_WB:
                             Control: GroupContainer@1.5.0
                             Variant: ManualLayout
@@ -2820,19 +3136,28 @@ Screens:
                               Y: =608 * SY
                             Children:
                               - btnDc_WB:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
-                                    BorderRadius: =20 * SR
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    Color: =RGBA(180, 26, 26, 1)
                                     Font: =Font.'Segoe UI'
-                                    FontColor: =RGBA(180, 26, 26, 1)
-                                    FontSize: =Round(14 * SF, 0)
                                     FontWeight: =FontWeight.Bold
                                     Height: =40 * SY
                                     OnSelect: |-
                                       =Set(wdShowClearWarning, true);
                                       Set(wdPendingClearItem, ThisItem)
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =20 * SR
+                                    RadiusBottomRight: =20 * SR
+                                    RadiusTopLeft: =20 * SR
+                                    RadiusTopRight: =20 * SR
+                                    Size: =Round(14 * SF, 0)
                                     Text: ="Discharge patient  (D/C)"
+                                    VerticalAlign: =VerticalAlign.Middle
                                     Width: =360 * SX
             - lblSelHint_WB:
                 Control: Label@2.5.1
@@ -2888,11 +3213,11 @@ Screens:
             - Label13_Sub:
                 Control: Label@2.5.1
                 Properties:
-                  Size: =Round(13 * SF, 0)
                   Align: =Align.Center
                   Color: =RGBA(58, 80, 104, 1)
                   Font: =Font.'Segoe UI'
                   Height: =24 * SY
+                  Size: =Round(13 * SF, 0)
                   Text: ="Enter the patient's details to place them in this bed."
                   Width: =824 * SX
                   Y: =72 * SY
@@ -2974,17 +3299,24 @@ Screens:
                   Width: =180 * SX
                   X: =54 * SX
                   Y: =244 * SY
-            - TextCanvas12_1:
-                Control: Text@0.0.51
+            - TextCanvas12:
+                Control: ModernText@1.0.0
                 Properties:
-                  Align: ='TextCanvas.Align'.Center
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(140, 155, 174, 1)
+                  FontWeight: =FontWeight.Bold
                   Height: =60 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(30 * SF, 0)
                   Text: ="/"
-                  VerticalAlign: =VerticalAlign.Middle
-                  Weight: ='TextCanvas.Weight'.Bold
                   Width: =76 * SX
                   X: =502 * SX
                   Y: =244 * SY
@@ -3012,16 +3344,23 @@ Screens:
                   X: =322 * SX
                   Y: =244 * SY
             - TextCanvas12:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
-                  Align: ='TextCanvas.Align'.Center
+                  Align: =Align.Center
+                  Color: =RGBA(140, 155, 174, 1)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(140, 155, 174, 1)
+                  FontWeight: =FontWeight.Bold
                   Height: =60 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(30 * SF, 0)
                   Text: ="/"
-                  VerticalAlign: =VerticalAlign.Middle
-                  Weight: ='TextCanvas.Weight'.Bold
                   Width: =88 * SX
                   X: =234 * SX
                   Y: =244 * SY
@@ -3064,18 +3403,17 @@ Screens:
                   Y: =340 * SY
                 Children:
                   - ButtonCanvas28:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =28 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(255, 255, 255, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(255, 255, 255, 1)
-                        FontSize: =Round(18 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =56 * SY
                         Icon: ="CheckmarkCircle"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                        Layout: ='ButtonCanvas.Layout'.TextOnly
+                        IconStyle: =IconStyle.Filled
+                        Layout: =ButtonLayout.TextOnly
                         OnSelect: |-
                           =// Require all 3 identifiers
                           If(
@@ -3132,9 +3470,19 @@ Screens:
                                   )
                               )
                           );
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =28 * SR
+                        RadiusBottomRight: =28 * SR
+                        RadiusTopLeft: =28 * SR
+                        RadiusTopRight: =28 * SR
+                        Size: =Round(18 * SF, 0)
                         Text: ="Confirm"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =250 * SX
-            - Container47_1:
+            - Container47:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
@@ -3152,17 +3500,17 @@ Screens:
                   Y: =340 * SY
                 Children:
                   - ButtonCanvas33:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =28 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(18 * SF, 0)
+                        FontWeight: =""
                         Height: =56 * SY
                         Icon: ="DismissCircle"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                        Layout: ='ButtonCanvas.Layout'.TextOnly
+                        IconStyle: =IconStyle.Filled
+                        Layout: =ButtonLayout.TextOnly
                         OnSelect: |
                           =Set(wdShowIDPopup, false);
                           Reset(TextInput_ID_Name);
@@ -3170,7 +3518,17 @@ Screens:
                           Reset(TextInput_ID_DOB_Day);
                           Reset(TextInput_ID_DOB_Month);
                           Reset(TextInput_ID_DOB_Year);
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =28 * SR
+                        RadiusBottomRight: =28 * SR
+                        RadiusTopLeft: =28 * SR
+                        RadiusTopRight: =28 * SR
+                        Size: =Round(18 * SF, 0)
                         Text: ="Cancel"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =250 * SX
       - conClearWarning_Ward:
           Control: GroupContainer@1.5.0
@@ -3237,18 +3595,17 @@ Screens:
                         Y: =222 * SY
                       Children:
                         - ButtonCanvas38:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =26 * SR
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =RGBA(255, 255, 255, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(255, 255, 255, 1)
-                              FontSize: =Round(18 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =52 * SY
                               Icon: ="CheckmarkCircle"
-                              IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              IconStyle: =IconStyle.Filled
+                              Layout: =ButtonLayout.TextOnly
                               OnSelect: |-
                                 =// SAFETY: close popup immediately
                                 Set(wdShowClearWarning, false);
@@ -3336,9 +3693,19 @@ Screens:
                                     "Patient removed from the list. Press Save to finalise or Discard to undo.",
                                     NotificationType.Success
                                 )
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =26 * SR
+                              RadiusBottomRight: =26 * SR
+                              RadiusTopLeft: =26 * SR
+                              RadiusTopRight: =26 * SR
+                              Size: =Round(18 * SF, 0)
                               Text: ="Discharge"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =190 * SX
-                  - Container77_1:
+                  - Container77:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
@@ -3356,21 +3723,31 @@ Screens:
                         Y: =222 * SY
                       Children:
                         - ButtonCanvas39:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =26 * SR
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =RGBA(58, 80, 104, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(58, 80, 104, 1)
-                              FontSize: =Round(18 * SF, 0)
+                              FontWeight: =""
                               Height: =52 * SY
                               Icon: ="DismissCircle"
-                              IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              IconStyle: =IconStyle.Filled
+                              Layout: =ButtonLayout.TextOnly
                               OnSelect: |
                                 =Set(wdShowClearWarning, false);
                                 Set(wdPendingClearItem, Blank());
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =26 * SR
+                              RadiusBottomRight: =26 * SR
+                              RadiusTopLeft: =26 * SR
+                              RadiusTopRight: =26 * SR
+                              Size: =Round(18 * SF, 0)
                               Text: ="Cancel"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =190 * SX
       - conDiscardWarning_Ward:
           Control: GroupContainer@1.5.0
@@ -3439,18 +3816,27 @@ Screens:
                         Y: =190 * SY
                       Children:
                         - btnDiscardKeep_Ward:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =26 * SR
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =RGBA(58, 80, 104, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(58, 80, 104, 1)
-                              FontSize: =Round(18 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =52 * SY
-                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              Layout: =ButtonLayout.TextOnly
                               OnSelect: =Set(wdShowDiscardWarning, false)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =26 * SR
+                              RadiusBottomRight: =26 * SR
+                              RadiusTopLeft: =26 * SR
+                              RadiusTopRight: =26 * SR
+                              Size: =Round(18 * SF, 0)
                               Text: ="Keep editing"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =200 * SX
                   - conDiscardGo_Ward:
                       Control: GroupContainer@1.5.0
@@ -3471,16 +3857,15 @@ Screens:
                         Y: =190 * SY
                       Children:
                         - btnDiscardGo_Ward:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =26 * SR
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =RGBA(255, 255, 255, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(255, 255, 255, 1)
-                              FontSize: =Round(18 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =52 * SY
-                              Layout: ='ButtonCanvas.Layout'.TextOnly
+                              Layout: =ButtonLayout.TextOnly
                               OnSelect: |-
                                 =Set(wdShowDiscardWarning, false);
                                 Set(wdLoading, true);
@@ -3495,7 +3880,17 @@ Screens:
                                 );
                                 Select(btnLoadData_Ward);
                                 Notify("Unsaved changes discarded.", NotificationType.Information)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =26 * SR
+                              RadiusBottomRight: =26 * SR
+                              RadiusTopLeft: =26 * SR
+                              RadiusTopRight: =26 * SR
+                              Size: =Round(18 * SF, 0)
                               Text: ="Discard"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =200 * SX
       - Timer_Pulse_Ward:
           Control: Timer@2.1.0
@@ -3557,7 +3952,7 @@ Screens:
                         Size: =Round(18 * SF, 0)
                         Text: ="Patient List"
                         Width: =664 * SX
-                  - Label5_1:
+                  - Label5:
                       Control: Label@2.5.1
                       Properties:
                         Align: =Align.Center
@@ -3632,7 +4027,7 @@ Screens:
                                           Text: =ThisItem.Patient
                                           Width: =194 * SX
                                           X: =60 * SX
-                                    - Label7_1:
+                                    - Label7:
                                         Control: Label@2.5.1
                                         Properties:
                                           Color: =RGBA(58, 80, 104, 1)
@@ -3643,7 +4038,7 @@ Screens:
                                           Text: ="Physio:"
                                           Width: =74 * SX
                                           X: =246 * SX
-                                    - Label8_1:
+                                    - Label8:
                                         Control: Label@2.5.1
                                         Properties:
                                           Color: =RGBA(14, 28, 42, 1)
@@ -3782,11 +4177,11 @@ Screens:
                         - lblSecPTCaseload_Ward:
                             Control: Label@2.5.1
                             Properties:
-                              Size: =Round(13 * SF, 0)
                               Color: =RGBA(14, 28, 42, 1)
                               Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =20 * SY
+                              Size: =Round(13 * SF, 0)
                               Text: ="Physio caseload"
                               Visible: =Coalesce(varMeDirectory.Discipline.Value, "") = "Physio"
                               Width: =485 * SX
@@ -3795,11 +4190,11 @@ Screens:
                         - lblSecPTAcuity_Ward:
                             Control: Label@2.5.1
                             Properties:
-                              Size: =Round(13 * SF, 0)
                               Color: =RGBA(14, 28, 42, 1)
                               Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =20 * SY
+                              Size: =Round(13 * SF, 0)
                               Text: ="Physio acuity"
                               Visible: =Coalesce(varMeDirectory.Discipline.Value, "") = "Physio"
                               Width: =485 * SX
@@ -3808,11 +4203,11 @@ Screens:
                         - lblSecDiag_Ward:
                             Control: Label@2.5.1
                             Properties:
-                              Size: =Round(13 * SF, 0)
                               Color: =RGBA(14, 28, 42, 1)
                               Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =20 * SY
+                              Size: =Round(13 * SF, 0)
                               Text: ="Diagnosis mix"
                               Width: =485 * SX
                               X: =14 * SX
@@ -3879,14 +4274,25 @@ Screens:
             Width: =1366 * SX
           Children:
             - btnMvScrim_WB:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  FontSize: =Round(14 * SF, 0)
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
                   BorderStyle: =BorderStyle.None
+                  FontWeight: =""
                   Height: =768 * SY
                   OnSelect: =Set(wdShowMove, false)
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =Round(14 * SF, 0)
                   Text: =""
+                  VerticalAlign: =VerticalAlign.Middle
                   Width: =1366 * SX
             - Wd_MoveCard:
                 Control: GroupContainer@1.5.0
@@ -4024,23 +4430,34 @@ Screens:
                                     Width: =64 * SX
                                     X: =Parent.Width - 76 * SX
                               - btnMvRow_WB:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    FontSize: =Round(14 * SF, 0)
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
                                     BorderStyle: =BorderStyle.None
+                                    FontWeight: =""
                                     Height: =Parent.Height
                                     OnSelect: =Set(wdMoveTargetID, ThisItem.ID)
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =4
+                                    RadiusBottomRight: =4
+                                    RadiusTopLeft: =4
+                                    RadiusTopRight: =4
+                                    Size: =Round(14 * SF, 0)
                                     Text: =""
+                                    VerticalAlign: =VerticalAlign.Middle
                                     Width: =Parent.Width
                   - lblMvSum_WB:
                       Control: Label@2.5.1
                       Properties:
-                        Size: =Round(13 * SF, 0)
                         Color: =RGBA(26, 90, 153, 1)
                         Font: =Font.'Segoe UI'
                         FontWeight: =FontWeight.Bold
                         Height: =32 * SY
+                        Size: =Round(13 * SF, 0)
                         Text: |-
                           =With({s: LookUp(colWard, ID = wdMoveFromID), t: LookUp(colWard, ID = wdMoveTargetID)}, If(IsBlank(t), "Select a bed above.", IsBlank(Trim(t.Patient)), s.Patient & " moves to bed " & t.Bed & ".", s.Patient & " and " & t.Patient & " swap beds (" & s.Bed & " and " & t.Bed & ")."))
                         Width: =480 * SX
@@ -4064,17 +4481,26 @@ Screens:
                         Y: =500 * SY
                       Children:
                         - btnMvCancel_WB:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =22 * SR
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =RGBA(58, 80, 104, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(58, 80, 104, 1)
-                              FontSize: =Round(15 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =44 * SY
                               OnSelect: =Set(wdShowMove, false)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =22 * SR
+                              RadiusBottomRight: =22 * SR
+                              RadiusTopLeft: =22 * SR
+                              RadiusTopRight: =22 * SR
+                              Size: =Round(15 * SF, 0)
                               Text: ="Cancel"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =230 * SX
                   - conMvGo_WB:
                       Control: GroupContainer@1.5.0
@@ -4094,14 +4520,13 @@ Screens:
                         Y: =500 * SY
                       Children:
                         - btnMvGo_WB:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =22 * SR
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =RGBA(255, 255, 255, 1)
                               DisplayMode: =If(IsBlank(wdMoveTargetID), DisplayMode.Disabled, DisplayMode.Edit)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(255, 255, 255, 1)
-                              FontSize: =Round(15 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =44 * SY
                               OnSelect: |-
@@ -4130,7 +4555,17 @@ Screens:
                                         )
                                     )
                                 )
-                              Text: =If(IsBlank(LookUp(colWard, ID = wdMoveTargetID).Patient), "Move here", "Swap beds")
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =22 * SR
+                              RadiusBottomRight: =22 * SR
+                              RadiusTopLeft: =22 * SR
+                              RadiusTopRight: =22 * SR
+                              Size: =Round(15 * SF, 0)
+                              Text: =If(IsBlank(LookUp(colWard, ID = wdMoveTargetID).Patient), "Move Here", "Swap Beds")
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =230 * SX
       - conPhysioPick_Ward:
           Control: GroupContainer@1.5.0
@@ -4140,21 +4575,28 @@ Screens:
             Height: =768 * SY
             Visible: =wdShowPTPick
             Width: =1366 * SX
-            X: =0
-            Y: =0
           Children:
             - btnPTScrim_Ward:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  FontSize: =Round(14 * SF, 0)
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
                   BorderStyle: =BorderStyle.None
+                  FontWeight: =""
                   Height: =Parent.Height
                   OnSelect: =Set(wdShowPTPick, false)
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =Round(14 * SF, 0)
                   Text: =""
+                  VerticalAlign: =VerticalAlign.Middle
                   Width: =Parent.Width
-                  X: =0
-                  Y: =0
             - conPTCard_Ward:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
@@ -4170,49 +4612,46 @@ Screens:
                   X: =453 * SX
                   Y: =104 * SY
                 Children:
-                - lblPTTitle_Ward:
-                    Control: Label@2.5.1
-                    Properties:
-                      Color: =RGBA(14, 28, 42, 1)
-                      Font: =Font.'Segoe UI'
-                      Height: =30 * SY
-                      Size: =Round(20 * SF, 0)
-                      Text: ="Physio"
-                      VerticalAlign: =VerticalAlign.Middle
-                      Width: =412 * SX
-                      X: =24 * SX
-                      Y: =18 * SY
-                      FontWeight: =FontWeight.Bold
-                - lblPTSub_Ward:
-                    Control: Label@2.5.1
-                    Properties:
-                      Color: =RGBA(58, 80, 104, 1)
-                      Font: =Font.'Segoe UI'
-                      Height: =22 * SY
-                      Size: =Round(13 * SF, 0)
-                      Text: =LookUp(colWard, ID = wdSelID).Patient & "  ·  tap a name to add or remove"
-                      VerticalAlign: =VerticalAlign.Middle
-                      Width: =412 * SX
-                      X: =24 * SX
-                      Y: =50 * SY
-                - boxPTSearch_Ward:
-                    Control: GroupContainer@1.5.0
-                    Variant: ManualLayout
-                    Properties:
-                      BorderColor: =RGBA(14, 42, 70, 0.22)
-                      BorderStyle: =BorderStyle.Solid
-                      BorderThickness: =1
-                      DropShadow: =DropShadow.None
-                      Fill: =RGBA(255, 255, 255, 1)
-                      Height: =40 * SY
-                      RadiusBottomLeft: =10 * SR
-                      RadiusBottomRight: =10 * SR
-                      RadiusTopLeft: =10 * SR
-                      RadiusTopRight: =10 * SR
-                      Width: =412 * SX
-                      X: =24 * SX
-                      Y: =88 * SY
-                    Children:
+                  - lblPTTitle_Ward:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(14, 28, 42, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Height: =30 * SY
+                        Size: =Round(20 * SF, 0)
+                        Text: ="Physio"
+                        Width: =412 * SX
+                        X: =24 * SX
+                        Y: =18 * SY
+                  - lblPTSub_Ward:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =RGBA(58, 80, 104, 1)
+                        Font: =Font.'Segoe UI'
+                        Height: =22 * SY
+                        Size: =Round(13 * SF, 0)
+                        Text: =LookUp(colWard, ID = wdSelID).Patient & "  ·  tap a name to add or remove"
+                        Width: =412 * SX
+                        X: =24 * SX
+                        Y: =50 * SY
+                  - boxPTSearch_Ward:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        BorderColor: =RGBA(14, 42, 70, 0.22)
+                        BorderThickness: =1
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        Height: =40 * SY
+                        RadiusBottomLeft: =10 * SR
+                        RadiusBottomRight: =10 * SR
+                        RadiusTopLeft: =10 * SR
+                        RadiusTopRight: =10 * SR
+                        Width: =412 * SX
+                        X: =24 * SX
+                        Y: =88 * SY
+                      Children:
                         - txtPTSearch_Ward:
                             Control: Classic/TextInput@2.3.2
                             Properties:
@@ -4225,130 +4664,142 @@ Screens:
                               HintText: ="Search physios"
                               Size: =Round(14 * SF, 0)
                               Width: =412 * SX
-                - galPTPick_Ward:
-                    Control: Gallery@2.15.0
-                    Variant: Vertical
-                    Properties:
-                      Height: =336 * SY
-                      Items: =SortByColumns(Filter(colClinicians_Physio, Lower(Trim(txtPTSearch_Ward.Text)) in Lower(DisplayNameFlat)), "DisplayNameFlat", SortOrder.Ascending)
-                      TemplatePadding: =0
-                      TemplateSize: =48 * SY
-                      Width: =460 * SX
-                      X: =0
-                      Y: =140 * SY
-                    Children:
-                    - conPTRow_Ward:
-                        Control: GroupContainer@1.5.0
-                        Variant: ManualLayout
-                        Properties:
-                          BorderColor: =RGBA(14, 42, 70, 0.12)
-                          BorderStyle: =BorderStyle.Solid
-                          BorderThickness: =1
-                          DropShadow: =DropShadow.None
-                          Fill: =If(!IsBlank(LookUp(LookUp(colWard, ID = wdSelID).PTKeys, Key = ThisItem.DisplayKey)), RGBA(205, 226, 247, 1), RGBA(244, 249, 252, 1))
-                          Height: =42 * SY
-                          RadiusBottomLeft: =10 * SR
-                          RadiusBottomRight: =10 * SR
-                          RadiusTopLeft: =10 * SR
-                          RadiusTopRight: =10 * SR
-                          Width: =Parent.TemplateWidth - 32 * SX
-                          X: =16 * SX
-                          Y: =3 * SY
-                        Children:
-                        - lblPTName_Ward:
-                            Control: Label@2.5.1
+                  - galPTPick_Ward:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        Height: =336 * SY
+                        Items: =SortByColumns(Filter(colClinicians_Physio, Lower(Trim(txtPTSearch_Ward.Text)) in Lower(DisplayNameFlat)), "DisplayNameFlat", SortOrder.Ascending)
+                        TemplatePadding: =0
+                        TemplateSize: =48 * SY
+                        Width: =460 * SX
+                        Y: =140 * SY
+                      Children:
+                        - conPTRow_Ward:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
                             Properties:
-                              Color: =RGBA(14, 28, 42, 1)
-                              Font: =Font.'Segoe UI'
+                              BorderColor: =RGBA(14, 42, 70, 0.12)
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                              Fill: =If(!IsBlank(LookUp(LookUp(colWard, ID = wdSelID).PTKeys, Key = ThisItem.DisplayKey)), RGBA(205, 226, 247, 1), RGBA(244, 249, 252, 1))
                               Height: =42 * SY
-                              Size: =Round(14 * SF, 0)
-                              Text: =ThisItem.DisplayNameFlat
-                              VerticalAlign: =VerticalAlign.Middle
-                              Width: =340 * SX
-                              X: =14 * SX
-                              Y: =0
-                              FontWeight: =FontWeight.Bold
-                              Wrap: =false
-                        - lblPTTick_Ward:
-                            Control: Label@2.5.1
-                            Properties:
-                              Color: =RGBA(26, 90, 153, 1)
-                              Font: =Font.'Segoe UI'
-                              Height: =42 * SY
-                              Size: =Round(18 * SF, 0)
-                              Text: ="✓"
-                              VerticalAlign: =VerticalAlign.Middle
-                              Width: =28 * SX
-                              X: =Parent.Width - 40 * SX
-                              Y: =0
-                              FontWeight: =FontWeight.Bold
-                              Align: =Align.Center
-                              Visible: =!IsBlank(LookUp(LookUp(colWard, ID = wdSelID).PTKeys, Key = ThisItem.DisplayKey))
-                        - btnPTRow_Ward:
-                            Control: Button@0.0.45
-                            Properties:
-                              FontSize: =Round(14 * SF, 0)
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderStyle: =BorderStyle.None
-                              Height: =Parent.Height
-                              OnSelect: |-
-                                =With(
-                                    { p: LookUp(colWard, ID = wdSelID), me: ThisItem.DisplayKey },
-                                    If(
-                                        IsBlank(p) || wdIsSaving || wdLoading,
-                                        Blank(),
-                                        With(
-                                            {
-                                                sel: Filter(
-                                                    colClinicians_Physio,
-                                                    If(
-                                                        DisplayKey = me,
-                                                        IsBlank(LookUp(p.PTKeys, Key = DisplayKey)),
-                                                        !IsBlank(LookUp(p.PTKeys, Key = DisplayKey))
-                                                    )
-                                                )
-                                            },
-                                            Patch(
-                                                colWard,
-                                                p,
-                                                {
-                                                    PT_Users: ForAll(sel, PersonRec),
-                                                    PTKeys: ForAll(sel, { Key: DisplayKey }),
-                                                    IsDirty: true
-                                                }
-                                            )
-                                        )
-                                    )
-                                )
-                              Text: =""
-                              Width: =Parent.Width
-                              X: =0
-                              Y: =0
-                - conPTDone_Ward:
-                    Control: GroupContainer@1.5.0
-                    Variant: ManualLayout
-                    Properties:
-                      DropShadow: =DropShadow.None
-                      Fill: =RGBA(26, 90, 153, 1)
-                      Height: =44 * SY
-                      RadiusBottomLeft: =22 * SR
-                      RadiusBottomRight: =22 * SR
-                      RadiusTopLeft: =22 * SR
-                      RadiusTopRight: =22 * SR
-                      Width: =240 * SX
-                      X: =110 * SX
-                      Y: =492 * SY
-                    Children:
+                              RadiusBottomLeft: =10 * SR
+                              RadiusBottomRight: =10 * SR
+                              RadiusTopLeft: =10 * SR
+                              RadiusTopRight: =10 * SR
+                              Width: =Parent.TemplateWidth - 32 * SX
+                              X: =16 * SX
+                              Y: =3 * SY
+                            Children:
+                              - lblPTName_Ward:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Color: =RGBA(14, 28, 42, 1)
+                                    Font: =Font.'Segoe UI'
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =42 * SY
+                                    Size: =Round(14 * SF, 0)
+                                    Text: =ThisItem.DisplayNameFlat
+                                    Width: =340 * SX
+                                    Wrap: =false
+                                    X: =14 * SX
+                              - lblPTTick_Ward:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Align: =Align.Center
+                                    Color: =RGBA(26, 90, 153, 1)
+                                    Font: =Font.'Segoe UI'
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =42 * SY
+                                    Size: =Round(18 * SF, 0)
+                                    Text: ="✓"
+                                    Visible: =!IsBlank(LookUp(LookUp(colWard, ID = wdSelID).PTKeys, Key = ThisItem.DisplayKey))
+                                    Width: =28 * SX
+                                    X: =Parent.Width - 40 * SX
+                              - btnPTRow_Ward:
+                                  Control: ModernButton@1.0.0
+                                  Properties:
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
+                                    BorderStyle: =BorderStyle.None
+                                    FontWeight: =""
+                                    Height: =Parent.Height
+                                    OnSelect: |-
+                                      =With(
+                                          { p: LookUp(colWard, ID = wdSelID), me: ThisItem.DisplayKey },
+                                          If(
+                                              IsBlank(p) || wdIsSaving || wdLoading,
+                                              Blank(),
+                                              With(
+                                                  {
+                                                      sel: Filter(
+                                                          colClinicians_Physio,
+                                                          If(
+                                                              DisplayKey = me,
+                                                              IsBlank(LookUp(p.PTKeys, Key = DisplayKey)),
+                                                              !IsBlank(LookUp(p.PTKeys, Key = DisplayKey))
+                                                          )
+                                                      )
+                                                  },
+                                                  Patch(
+                                                      colWard,
+                                                      p,
+                                                      {
+                                                          PT_Users: ForAll(sel, PersonRec),
+                                                          PTKeys: ForAll(sel, { Key: DisplayKey }),
+                                                          IsDirty: true
+                                                      }
+                                                  )
+                                              )
+                                          )
+                                      )
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =4
+                                    RadiusBottomRight: =4
+                                    RadiusTopLeft: =4
+                                    RadiusTopRight: =4
+                                    Size: =Round(14 * SF, 0)
+                                    Text: =""
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =Parent.Width
+                  - conPTDone_Ward:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(26, 90, 153, 1)
+                        Height: =44 * SY
+                        RadiusBottomLeft: =22 * SR
+                        RadiusBottomRight: =22 * SR
+                        RadiusTopLeft: =22 * SR
+                        RadiusTopRight: =22 * SR
+                        Width: =240 * SX
+                        X: =110 * SX
+                        Y: =492 * SY
+                      Children:
                         - btnPTDone_Ward:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
-                              BorderRadius: =22 * SR
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
+                              Color: =RGBA(255, 255, 255, 1)
                               Font: =Font.'Segoe UI'
-                              FontColor: =RGBA(255, 255, 255, 1)
-                              FontSize: =Round(15 * SF, 0)
                               FontWeight: =FontWeight.Bold
                               Height: =44 * SY
                               OnSelect: =Set(wdShowPTPick, false)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =22 * SR
+                              RadiusBottomRight: =22 * SR
+                              RadiusTopLeft: =22 * SR
+                              RadiusTopRight: =22 * SR
+                              Size: =Round(15 * SF, 0)
                               Text: ="Done"
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =240 * SX

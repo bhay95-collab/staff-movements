@@ -11,9 +11,10 @@ Screens:
         Select(btnLoad_Md)
     Children:
       - btnLoad_Md:
-          Control: Button@0.0.45
+          Control: ModernButton@1.0.0
           Properties:
-            FontSize: =Round(14 * SF, 0)
+            Align: =Align.Center
+            FontWeight: =""
             Height: =10 * SY
             OnSelect: |-
               =Set(mdLoading, true);
@@ -135,13 +136,24 @@ Screens:
               );
               Set(mdLoading, false);
               Select(btnBuild_Md)
+            PaddingBottom: =5
+            PaddingLeft: =12
+            PaddingRight: =12
+            PaddingTop: =5
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            Size: =Round(14 * SF, 0)
             Text: =""
+            VerticalAlign: =VerticalAlign.Middle
             Visible: =false
             Width: =10 * SX
       - btnBuild_Md:
-          Control: Button@0.0.45
+          Control: ModernButton@1.0.0
           Properties:
-            FontSize: =Round(14 * SF, 0)
+            Align: =Align.Center
+            FontWeight: =""
             Height: =10 * SY
             OnSelect: |-
               =ClearCollect(
@@ -164,7 +176,17 @@ Screens:
                       Old: CountRows(Filter(colMdEq, DaysOut > 42))
                   }
               )
+            PaddingBottom: =5
+            PaddingLeft: =12
+            PaddingRight: =12
+            PaddingTop: =5
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            Size: =Round(14 * SF, 0)
             Text: =""
+            VerticalAlign: =VerticalAlign.Middle
             Visible: =false
             Width: =10 * SX
       - Md_Title:
@@ -190,41 +212,66 @@ Screens:
                   ImagePosition: =ImagePosition.Fill
                   Width: =Parent.Width
             - lblTitle_MdHdr:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
-                  Y: =8 * SY
+                  Color: =RGBA(255, 255, 255, 1)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 1)
-                  Height: =44 * SY
+                  FontWeight: =FontWeight.Bold
+                  Height: =52
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(28 * SF, 0)
                   Text: ="My Day"
-                  VerticalAlign: =VerticalAlign.Middle
-                  Weight: ='TextCanvas.Weight'.Bold
                   Width: =700 * SX
                   X: =76 * SX
+                  Y: =5 * SY
             - lblSub_MdHdr:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
+                  Color: =RGBA(255, 255, 255, 0.88)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 0.88)
                   Height: =20 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(12 * SF, 0)
                   Text: =Switch(true, Hour(Now()) < 12, "Good morning", Hour(Now()) < 17, "Good afternoon", "Good evening") & ", " & First(Split(User().FullName, " ")).Value & "  ·  " & Text(Today(), "dddd d mmmm")
-                  VerticalAlign: =VerticalAlign.Middle
                   Width: =800 * SX
                   X: =76 * SX
                   Y: =42 * SY
             - btnBack_Md:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  Width: =96 * SX
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
-                  FontColor: =RGBA(255, 255, 255, 1)
-                  FontSize: =Round(50 * SF, 0)
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
+                  Color: =RGBA(255, 255, 255, 1)
+                  FontWeight: =""
                   Height: =70 * SY
                   Icon: ="ChevronLeft"
                   OnSelect: =Back(ScreenTransition.Fade)
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =Round(35 * SF, 0)
                   Text: =""
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =96 * SX
                   X: =1 * SX
             - conReload_Md:
                 Control: GroupContainer@1.5.0
@@ -244,20 +291,28 @@ Screens:
                   Y: =15 * SY
                 Children:
                   - btnReload_Md:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         Icon: ="ArrowClockwise"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
-                        Layout: ='ButtonCanvas.Layout'.IconBefore
+                        IconStyle: =IconStyle.Filled
                         OnSelect: =Select(btnLoad_Md)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="Reload"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =140 * SX
       - Md_Kpi_Pts:
           Control: GroupContainer@1.5.0
@@ -467,7 +522,6 @@ Screens:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            Width: =500 * SX
             BorderColor: =RGBA(14, 42, 70, 0.12)
             BorderThickness: =1
             Fill: =RGBA(255, 255, 255, 1)
@@ -476,6 +530,7 @@ Screens:
             RadiusBottomRight: =18 * SR
             RadiusTopLeft: =18 * SR
             RadiusTopRight: =18 * SR
+            Width: =500 * SX
             X: =18 * SX
             Y: =195 * SY
           Children:
@@ -557,7 +612,7 @@ Screens:
                                     FontWeight: =FontWeight.Bold
                                     Height: =Parent.Height
                                     Size: =Round(11 * SF, 0)
-                                    Text: =ThisItem.Ward & If(ThisItem.BedT = "", "", "-" & ThisItem.BedT)
+                                    Text: =ThisItem.BedT
                                     Width: =Parent.Width
                                     Wrap: =false
                         - lblPtName_Md:
@@ -725,11 +780,12 @@ Screens:
                                     Width: =Parent.Width
                                     Wrap: =false
                         - btnPt_Md:
-                            Control: Button@0.0.45
+                            Control: ModernButton@1.0.0
                             Properties:
-                              FontSize: =Round(14 * SF, 0)
-                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              Align: =Align.Center
+                              Appearance: =ButtonAppearance.Transparent
                               BorderStyle: =BorderStyle.None
+                              FontWeight: =""
                               Height: =Parent.Height
                               OnSelect: |-
                                 =Set(varSelectedList, "Ward_" & ThisItem.Ward & "_Shared");
@@ -747,7 +803,17 @@ Screens:
                                     )
                                 );
                                 Navigate(Patient_Detail_Screen, ScreenTransition.Fade)
+                              PaddingBottom: =5
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =5
+                              RadiusBottomLeft: =4
+                              RadiusBottomRight: =4
+                              RadiusTopLeft: =4
+                              RadiusTopRight: =4
+                              Size: =Round(14 * SF, 0)
                               Text: =""
+                              VerticalAlign: =VerticalAlign.Middle
                               Width: =Parent.Width
             - lblPtsEmpty_Md:
                 Control: Label@2.5.1
@@ -765,7 +831,6 @@ Screens:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            Width: =500 * SX
             BorderColor: =RGBA(14, 42, 70, 0.12)
             BorderThickness: =1
             Fill: =RGBA(255, 255, 255, 1)
@@ -774,6 +839,7 @@ Screens:
             RadiusBottomRight: =18 * SR
             RadiusTopLeft: =18 * SR
             RadiusTopRight: =18 * SR
+            Width: =500 * SX
             X: =530 * SX
             Y: =195 * SY
           Children:
@@ -842,7 +908,9 @@ Screens:
                               RadiusBottomRight: =0
                               RadiusTopLeft: =12 * SR
                               RadiusTopRight: =0
-                              Width: =6 * SX
+                              Width: |-
+                                =10
+                                 * SX
                         - lblEqCode_Md:
                             Control: Label@2.5.1
                             Properties:
@@ -871,11 +939,11 @@ Screens:
                         - lblEqPt_Md:
                             Control: Label@2.5.1
                             Properties:
-                              Size: =Round(13 * SF, 0)
                               Color: =RGBA(58, 80, 104, 1)
                               Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =20 * SY
+                              Size: =Round(13 * SF, 0)
                               Text: =Coalesce(ThisItem.'Patient Name', "—")
                               Width: =130 * SX
                               Wrap: =false
@@ -1005,11 +1073,11 @@ Screens:
                         - lblLvName_Md:
                             Control: Label@2.5.1
                             Properties:
-                              Size: =Round(13 * SF, 0)
                               Color: =RGBA(14, 28, 42, 1)
                               Font: =Font.'Segoe UI'
                               FontWeight: =FontWeight.Bold
                               Height: =20 * SY
+                              Size: =Round(13 * SF, 0)
                               Text: =ThisItem.EventTitle
                               Width: =275 * SX
                               Wrap: =false
@@ -1042,11 +1110,11 @@ Screens:
             - lblLvNo_Md:
                 Control: Label@2.5.1
                 Properties:
-                  Height: =40 * SY
-                  Size: =Round(13 * SF, 0)
                   Align: =Align.Center
                   Color: =RGBA(180, 26, 26, 1)
                   Font: =Font.'Segoe UI'
+                  Height: =40 * SY
+                  Size: =Round(13 * SF, 0)
                   Text: ="The leave calendar could not be read."
                   Visible: =!mdCalOK
                   Width: =270 * SX

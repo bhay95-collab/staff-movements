@@ -30,9 +30,10 @@ Screens:
         )
     Children:
       - btnRefresh_Lv:
-          Control: Button@0.0.45
+          Control: ModernButton@1.0.0
           Properties:
-            FontSize: =Round(14 * SF, 0)
+            Align: =Align.Center
+            FontWeight: =""
             Height: =10 * SY
             OnSelect: |-
               =If(
@@ -89,7 +90,17 @@ Screens:
                       )
                   )
               )
+            PaddingBottom: =5
+            PaddingLeft: =12
+            PaddingRight: =12
+            PaddingTop: =5
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            Size: =Round(14 * SF, 0)
             Text: =""
+            VerticalAlign: =VerticalAlign.Middle
             Visible: =false
             Width: =10 * SX
       - Lv_Title:
@@ -115,41 +126,66 @@ Screens:
                   ImagePosition: =ImagePosition.Fill
                   Width: =Parent.Width
             - lblTitle_LvHdr:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
-                  Y: =8 * SY
+                  Color: =RGBA(255, 255, 255, 1)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 1)
+                  FontWeight: =FontWeight.Bold
                   Height: =44 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(28 * SF, 0)
                   Text: ="Physio Leave"
-                  VerticalAlign: =VerticalAlign.Middle
-                  Weight: ='TextCanvas.Weight'.Bold
                   Width: =400 * SX
                   X: =76 * SX
+                  Y: =5 * SY
             - lblSub_LvHdr:
-                Control: Text@0.0.51
+                Control: ModernText@1.0.0
                 Properties:
+                  Color: =RGBA(255, 255, 255, 0.88)
                   Font: =Font.'Segoe UI'
-                  FontColor: =RGBA(255, 255, 255, 0.88)
                   Height: =20 * SY
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
                   Size: =Round(12 * SF, 0)
                   Text: =Text(varLeaveWeekStart, "d mmm") & " – " & Text(DateAdd(varLeaveWeekStart, 4), "d mmm yyyy") & "  ·  " & CountRows(colLeaveEvents) & If(CountRows(colLeaveEvents) = 1, " entry", " entries") & "  ·  tap an entry to open it in Outlook"
-                  VerticalAlign: =VerticalAlign.Middle
                   Width: =600 * SX
                   X: =76 * SX
                   Y: =42 * SY
             - btnBack_Lv:
-                Control: Button@0.0.45
+                Control: ModernButton@1.0.0
                 Properties:
-                  Width: =96 * SX
-                  Appearance: ='ButtonCanvas.Appearance'.Transparent
-                  FontColor: =RGBA(255, 255, 255, 1)
-                  FontSize: =Round(50 * SF, 0)
+                  Align: =Align.Center
+                  Appearance: =ButtonAppearance.Transparent
+                  Color: =RGBA(255, 255, 255, 1)
+                  FontWeight: =""
                   Height: =70 * SY
                   Icon: ="ChevronLeft"
                   OnSelect: =Back(ScreenTransition.Fade)
+                  PaddingBottom: =5
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  PaddingTop: =5
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  Size: =Round(35 * SF, 0)
                   Text: =""
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =96 * SX
                   X: =1 * SX
             - conRefresh_Lv:
                 Control: GroupContainer@1.5.0
@@ -168,18 +204,28 @@ Screens:
                   Y: =15 * SY
                 Children:
                   - btnRefreshUi_Lv:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(18 * SF, 0)
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
+                        FontWeight: =""
                         Height: =40 * SY
                         Icon: ="ArrowClockwise"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        IconStyle: =IconStyle.Filled
                         OnSelect: =Select(btnRefresh_Lv)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(18 * SF, 0)
                         Text: =""
-                        Width: =40 * SX
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =40
             - conJump_Lv:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
@@ -199,11 +245,11 @@ Screens:
                   - dpJump_Lv:
                       Control: Classic/DatePicker@2.6.0
                       Properties:
-                        Height: =40 * SY
                         BorderStyle: =BorderStyle.None
                         Color: =RGBA(14, 28, 42, 1)
                         DefaultDate: =varLeaveWeekStart
                         Font: =Font.'Segoe UI'
+                        Height: =40 * SY
                         OnChange: |-
                           =Set(varLeaveWeekStart, DateAdd(dpJump_Lv.SelectedDate, 1 - Weekday(dpJump_Lv.SelectedDate, StartOfWeek.Monday)));
                           Select(btnRefresh_Lv)
@@ -226,20 +272,30 @@ Screens:
                   Y: =15 * SY
                 Children:
                   - btnPrev_Lv:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(18 * SF, 0)
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
+                        FontWeight: =""
                         Height: =40 * SY
                         Icon: ="ChevronLeft"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        IconStyle: =IconStyle.Filled
                         OnSelect: |-
                           =Set(varLeaveWeekStart, DateAdd(varLeaveWeekStart, -7));
                           Select(btnRefresh_Lv)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(18 * SF, 0)
                         Text: =""
-                        Width: =40 * SX
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =40
             - conToday_Lv:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
@@ -257,19 +313,28 @@ Screens:
                   Y: =15 * SY
                 Children:
                   - btnToday_Lv:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(13 * SF, 0)
                         FontWeight: =FontWeight.Bold
                         Height: =40 * SY
                         OnSelect: |-
                           =Set(varLeaveWeekStart, DateAdd(Today(), 1 - Weekday(Today(), StartOfWeek.Monday)));
                           Select(btnRefresh_Lv)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(13 * SF, 0)
                         Text: ="This week"
+                        VerticalAlign: =VerticalAlign.Middle
                         Width: =110 * SX
             - conNext_Lv:
                 Control: GroupContainer@1.5.0
@@ -288,20 +353,30 @@ Screens:
                   Y: =15 * SY
                 Children:
                   - btnNext_Lv:
-                      Control: Button@0.0.45
+                      Control: ModernButton@1.0.0
                       Properties:
-                        Appearance: ='ButtonCanvas.Appearance'.Transparent
-                        BorderRadius: =20 * SR
-                        FontColor: =RGBA(58, 80, 104, 1)
-                        FontSize: =Round(18 * SF, 0)
+                        Align: =Align.Center
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(58, 80, 104, 1)
+                        FontWeight: =""
                         Height: =40 * SY
                         Icon: ="ChevronRight"
-                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        IconStyle: =IconStyle.Filled
                         OnSelect: |-
                           =Set(varLeaveWeekStart, DateAdd(varLeaveWeekStart, 7));
                           Select(btnRefresh_Lv)
+                        PaddingBottom: =5
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        PaddingTop: =5
+                        RadiusBottomLeft: =20 * SR
+                        RadiusBottomRight: =20 * SR
+                        RadiusTopLeft: =20 * SR
+                        RadiusTopRight: =20 * SR
+                        Size: =Round(18 * SF, 0)
                         Text: =""
-                        Width: =40 * SX
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =40
       - Gallery_LvDays:
           Control: Gallery@2.15.0
           Variant: Horizontal
@@ -317,11 +392,11 @@ Screens:
             - lblDayKey_Lv:
                 Control: Label@2.5.1
                 Properties:
-                  Width: =150 * SX
                   Height: =40 * SY
                   Size: =Round(13 * SF, 0)
                   Text: =Text(ThisItem.DayDate, "[$-en-US]yyyy-mm-dd")
                   Visible: =false
+                  Width: =150 * SX
             - Lv_DayCard:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
@@ -354,10 +429,10 @@ Screens:
                   - lblDayNum_Lv:
                       Control: Label@2.5.1
                       Properties:
-                        Size: =Round(13 * SF, 0)
                         Color: =RGBA(58, 80, 104, 1)
                         Font: =Font.'Segoe UI'
                         Height: =22 * SY
+                        Size: =Round(13 * SF, 0)
                         Text: =ThisItem.DayNum & If(ThisItem.IsToday, "  ·  Today", "")
                         Width: =Parent.Width - 32 * SX
                         X: =18 * SX
@@ -439,11 +514,11 @@ Screens:
                               - lblEvTitle_Lv:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Size: =Round(13 * SF, 0)
                                     Color: =RGBA(14, 28, 42, 1)
                                     Font: =Font.'Segoe UI'
                                     FontWeight: =FontWeight.Bold
                                     Height: =42 * SY
+                                    Size: =Round(13 * SF, 0)
                                     Text: =ThisItem.EventTitle
                                     Width: =Parent.Width - 28 * SX
                                     X: =16 * SX
@@ -460,23 +535,34 @@ Screens:
                                     X: =16 * SX
                                     Y: =52 * SY
                               - btnEv_Lv:
-                                  Control: Button@0.0.45
+                                  Control: ModernButton@1.0.0
                                   Properties:
-                                    FontSize: =Round(14 * SF, 0)
-                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    Align: =Align.Center
+                                    Appearance: =ButtonAppearance.Transparent
                                     BorderStyle: =BorderStyle.None
+                                    FontWeight: =""
                                     Height: =Parent.Height
                                     OnSelect: =Launch(ThisItem.WebLink)
+                                    PaddingBottom: =5
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =4
+                                    RadiusBottomRight: =4
+                                    RadiusTopLeft: =4
+                                    RadiusTopRight: =4
+                                    Size: =Round(14 * SF, 0)
                                     Text: =""
+                                    VerticalAlign: =VerticalAlign.Middle
                                     Width: =Parent.Width
                   - lblNoLeave_Lv:
                       Control: Label@2.5.1
                       Properties:
-                        Size: =Round(13 * SF, 0)
                         Align: =Align.Center
                         Color: =RGBA(140, 155, 174, 1)
                         Font: =Font.'Segoe UI'
                         Height: =24 * SY
+                        Size: =Round(13 * SF, 0)
                         Text: ="Nobody on leave"
                         Visible: =IsEmpty(Gallery_LvEvents.AllItems)
                         Width: =Parent.Width
