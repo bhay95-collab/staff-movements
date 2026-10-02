@@ -21,7 +21,7 @@ The old generator pipeline is retired: `powerapps/archive/desktop_as_pasted/` an
 | 7 | Ward board Save | Overwrote whole rows, last save won silently | Load keeps `Modified`; Save refuses a patient changed by someone else since the ward was loaded and shows a message (Discard reloads) |
 | 8 | Mobile Allocate and Audit | Rebuilt the patient list on every open | Cached for 10 minutes (`varPatientsLoaded`) |
 | 9 | Physiotherapy_Screen Data Dashboard button | Navigated to itself, so `Physio_Data_New` was unreachable | Navigates to `Physio_Data_New` |
-| 10 | Usage log growth (5000 item limit) | Log only grows | New flow `flows/Usage_Log_Cleanup.zip`: when the list reaches 4999 items, archives the oldest 1000 to CSV then deletes them |
+| 10 | Usage log growth (5000 item limit) | Log only grows | New flow `flows/Usage_Log_Cleanup.zip` (tested): when the list reaches 4999 items, saves the oldest 1000 to a CSV in `Usage Log Archive`, then moves them to the site recycle bin (restorable for 93 days). List name is `Equipment_Usage_Log` |
 
 ## Still recommended
 1. **The allocate / return logic exists in five places** (3 desktop screens, 2 mobile). Any fix has to be made five times. Consider one flow, or a Power Fx user-defined function, as the single copy.
