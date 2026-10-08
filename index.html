@@ -289,6 +289,81 @@ table.timeline thead .tl-label{z-index:3;background:var(--bg-2)}
 .audit-changes{max-width:520px;white-space:normal;color:var(--ink-2);font-size:11.5px;line-height:1.45}
 @media(max-width:760px){.action-item{grid-template-columns:5px minmax(0,1fr)}.action-item .rowact{grid-column:2/-1}.timeline-wrap{max-width:100%}}
 
+/* ---- Shared data status + banner ---- */
+.save-dot{cursor:pointer}
+.save-dot.warn .d{background:#FFD24A;box-shadow:0 0 0 3px rgba(255,210,74,0.3)}
+.save-dot.err .d{background:#FF7A7A;box-shadow:0 0 0 3px rgba(255,122,122,0.3)}
+.syncbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid rgba(122,88,0,.22);background:var(--warn-bg);color:var(--warn);border-radius:14px;padding:11px 16px;margin-bottom:16px;font-size:12.5px;font-weight:700}
+.syncbar.err{background:var(--danger-bg);border-color:rgba(180,26,26,.22);color:var(--danger)}
+.syncbar .grow{flex:1 1 320px}
+.syncbar .btn{box-shadow:none}
+.syncstatus{display:flex;flex-wrap:wrap;gap:10px 26px;align-items:center;margin-bottom:12px}
+.syncstatus .k{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.syncstatus .v{font-size:13.5px;font-weight:800}
+.snaplist{display:flex;flex-direction:column;gap:8px;max-height:52vh;overflow-y:auto}
+.snaprow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:9px 12px}
+.snaprow .grow{flex:1;min-width:0}
+.snaprow .sn{font-weight:800;font-size:13px}
+
+/* ---- Approvals board ---- */
+.board{display:flex;gap:12px;overflow-x:auto;align-items:flex-start;padding-bottom:10px}
+.bcol{flex:0 0 252px;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:10px;min-height:130px}
+.bcol.dragover{outline:2.5px dashed var(--accent);outline-offset:-4px;background:var(--accent-soft)}
+.bcol.is-done{opacity:.85}
+.bcol-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:2px 4px 10px}
+.bcol-head b{font-size:12.5px;font-weight:800}
+.bcol-head span{font-size:11px;font-weight:800;color:var(--muted);white-space:nowrap}
+.bcard{background:#fff;border:1px solid var(--line);border-left:5px solid var(--line);border-radius:12px;padding:10px 11px;margin-bottom:9px;box-shadow:var(--shadow-sm);cursor:grab}
+.bcard.high{border-left-color:var(--danger)}
+.bcard.warn{border-left-color:#C9A227}
+.bcard .bc-top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.bcard .bc-name{font-weight:850;font-size:13px;border:0;background:transparent;padding:0;font-family:inherit;text-align:left;cursor:pointer;color:var(--ink)}
+.bcard .bc-name:hover{color:var(--accent)}
+.bcard .bc-sub,.bcard .bc-meta{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:3px}
+.bcard .bc-flags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.bcard .bc-act{display:flex;gap:6px;margin-top:9px;align-items:center}
+.bcard .bc-act select{flex:1;min-width:0;font-size:11.5px;padding:5px 8px;border-radius:9px}
+
+/* ---- Leave & cover calendar ---- */
+.pcell[data-k="ok"]{background:#DCEFE4;color:#0A6A47}
+.pcell[data-k="part"]{background:#FBE6B0;color:#7A5800}
+.pcell[data-k="none"]{background:#F6CFCF;color:#9E1717}
+table.planner tr.lc-sum td,table.planner tr.lc-sum th{background:var(--bg-2)}
+table.planner td.lc-num{text-align:center;font-weight:800;font-variant-numeric:tabular-nums}
+table.planner td.lc-num.bad{color:var(--danger);background:var(--danger-bg)}
+.lcsub{display:block;font-size:10px;font-weight:600;color:var(--muted)}
+
+/* ---- Budget forecast ---- */
+.fstrip{display:flex;gap:2px;align-items:center}
+.fstrip i{display:block;flex:1;min-width:9px;height:22px;border-radius:4px}
+.fs-ceil{background:#E89B9B}.fs-base{background:#F3D98A}.fs-under{background:#BBD5EE}.fs-on{background:#BFE3CF}
+.fcrow{display:grid;grid-template-columns:70px 1fr;gap:14px;align-items:center;padding:7px 0}
+.fcnote{font-size:12px;color:var(--ink-2);font-weight:600;margin:4px 0 0;padding-left:18px}
+.fcnote li{margin:2px 0}
+
+/* ---- Briefing (also the print layout) ---- */
+.briefing{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:26px 30px;margin-bottom:18px}
+.briefing h1{font-size:22px;letter-spacing:-.02em}
+.briefing .bsub{font-size:12.5px;color:var(--muted);font-weight:600;margin:3px 0 18px}
+.briefing h3.bh{font-size:14px;margin:22px 0 4px;padding-bottom:5px;border-bottom:2px solid var(--line)}
+.briefing .bnote{font-size:11.5px;color:var(--muted);font-weight:600;margin:0 0 8px}
+.briefing .tile .v{font-size:22px}
+.briefing table{font-size:12px}
+.briefing .bnone{font-size:12.5px;color:var(--muted);font-weight:600;padding:6px 0}
+
+@media print{
+  body{background:#fff!important}
+  .topbar,.rail,.toast,.no-print,.syncbar,.modal-bg{display:none!important}
+  .app{display:block!important;margin:0!important;padding:0!important;max-width:none!important}
+  .view{animation:none!important}
+  .card,.briefing{box-shadow:none!important;break-inside:avoid}
+  .briefing{border:0;padding:0}
+  .tbl-wrap,.ptbl-wrap{overflow:visible!important}
+  thead th{position:static!important}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{margin:12mm}
+}
+
 </style>
 </head>
 <body>
@@ -296,7 +371,7 @@ table.timeline thead .tl-label{z-index:3;background:var(--bg-2)}
 <div class="topbar">
   <div class="brand"><span class="t" id="brandTitle">Staff Movement Tracker</span><span class="s" id="brandSub">STARS Physiotherapy · Metro North Health</span></div>
   <div class="top-actions">
-    <span class="save-dot" id="saveDot"><span class="d"></span><span id="saveTxt">Saved</span></span>
+    <span class="save-dot" id="saveDot" onclick="go('settings')" title="Click for shared data and backup settings"><span class="d"></span><span id="saveTxt">Saved</span></span>
     <button class="btn" onclick="exportBackup()">Export backup</button>
     <button class="btn" onclick="document.getElementById('importInput').click()">Import</button>
     <input id="importInput" type="file" accept="application/json,.json" style="display:none" onchange="importBackup(event)"/>
@@ -309,11 +384,16 @@ table.timeline thead .tl-label{z-index:3;background:var(--bg-2)}
   <nav class="rail">
     <div class="rl">Views</div>
     <button class="navbtn active" data-view="dashboard" onclick="go('dashboard')"><span class="ic">◆</span> Manager Dashboard <span class="ct" id="navActions"></span></button>
+    <button class="navbtn" data-view="reports" onclick="go('reports')"><span class="ic">▤</span> Briefing &amp; Export</button>
     <button class="navbtn" data-view="gaps" onclick="go('gaps')"><span class="ic">⇅</span> FTE Gaps <span class="ct" id="navGaps"></span></button>
-    <button class="navbtn" data-view="budget" onclick="go('budget')"><span class="ic">$</span> Budget</button>
+    <button class="navbtn" data-view="leave" onclick="go('leave')"><span class="ic">☂</span> Leave &amp; Cover <span class="ct" id="navLeave"></span></button>
+    <button class="navbtn" data-view="budget" onclick="go('budget')"><span class="ic">$</span> Budget <span class="ct" id="navBudget"></span></button>
     <button class="navbtn" data-view="planner" onclick="go('planner')"><span class="ic">▣</span> Planner</button>
     <button class="navbtn" data-view="timeline" onclick="go('timeline')"><span class="ic">👤</span> Staff Details</button>
     <button class="navbtn" data-view="rotations" onclick="go('rotations')"><span class="ic">◷</span> Rotations <span class="ct" id="navRot"></span></button>
+    <div class="rl">Workflow</div>
+    <button class="navbtn" data-view="approvals" onclick="go('approvals')"><span class="ic">✓</span> Approvals <span class="ct" id="navApprovals"></span></button>
+    <button class="navbtn" data-view="recruit" onclick="go('recruit')"><span class="ic">✚</span> Recruitment <span class="ct" id="navRecruit"></span></button>
     <div class="rl">Data</div>
     <button class="navbtn" data-view="movements" onclick="go('movements')"><span class="ic">⇄</span> Movements <span class="ct" id="navMov"></span></button>
     <button class="navbtn" data-view="staff" onclick="go('staff')"><span class="ic">☰</span> Staff Register <span class="ct" id="navStaff"></span></button>
@@ -322,6 +402,8 @@ table.timeline thead .tl-label{z-index:3;background:var(--bg-2)}
   </nav>
 
   <div class="content">
+
+    <div id="syncBar"></div>
 
     <!-- DASHBOARD -->
     <section class="view active" id="view-dashboard">
@@ -369,6 +451,73 @@ table.timeline thead .tl-label{z-index:3;background:var(--bg-2)}
       </div>
     </section>
 
+    <!-- BRIEFING & EXPORT -->
+    <section class="view" id="view-reports">
+      <div class="viewhead no-print"><div><h2>Briefing &amp; Export</h2><div class="vsub">A one-page briefing for a pay cycle, ready to print or paste into an email — plus spreadsheet exports.</div></div></div>
+      <div class="card no-print"><div class="ctrlrow">
+        <div class="field" style="min-width:230px"><label>Pay cycle</label><select id="repCycle" onchange="renderBriefing()"></select></div>
+        <div class="field"><label>&nbsp;</label><div style="display:flex;gap:9px;flex-wrap:wrap">
+          <button class="btn primary" onclick="printBriefing()">Print / Save as PDF</button>
+          <button class="btn" onclick="copyBriefing()">Copy as email text</button>
+        </div></div>
+      </div></div>
+      <div id="briefingDoc" class="briefing"></div>
+      <div class="card no-print">
+        <div class="card-head" onclick="toggleCard(this)"><div><h3>Export to Excel</h3><div class="card-sub">One workbook with a sheet each for movements, staff, rotations, recruitment, contracts, FTE gaps and a 26-cycle budget forecast.</div></div><span class="chev">▾</span></div>
+        <div class="card-body">
+          <div class="ctrlrow">
+            <button class="btn primary" onclick="exportWorkbook()">Download Excel workbook (.xlsx)</button>
+            <div class="field" style="min-width:220px"><label>Or a single sheet as CSV</label><select id="csvSheet"></select></div>
+            <div class="field"><label>&nbsp;</label><button class="btn" onclick="exportCsv()">Download CSV</button></div>
+          </div>
+          <div class="hint" style="margin-top:10px">The FTE gaps sheet uses the pay cycle selected above. Dates are real Excel dates, so they filter and sort properly.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEAVE & COVER -->
+    <section class="view" id="view-leave">
+      <div class="viewhead"><div><h2>Leave &amp; Cover</h2><div class="vsub">Who is away, week by week, and whether their FTE is covered. Red = nobody covering. Amber = part covered. Green = covered.</div></div></div>
+      <div class="card"><div class="ctrlrow">
+        <div class="field" style="min-width:200px"><label>Start from week of</label><select id="lcStart" onchange="renderLeaveCalendar()"></select></div>
+        <div class="field" style="min-width:130px"><label>Weeks shown</label><select id="lcWeeks" onchange="renderLeaveCalendar()"><option value="12">12 weeks</option><option value="26" selected>26 weeks</option><option value="52">52 weeks</option></select></div>
+        <div class="field" style="min-width:190px"><label>Show</label><select id="lcOnly" onchange="renderLeaveCalendar()"><option value="all">Everyone away</option><option value="short">Only where cover is short</option></select></div>
+      </div></div>
+      <div class="sectionnote">Built live from Movements, using the same rules as FTE Gaps: leave, secondments out, vacancies, flexible work arrangements and part-returns from parental leave. Cover = backfill, acting or secondment-in movements that name the absent person as owner, counted only for the weeks they overlap. Heavier line = pay-cycle start.</div>
+      <div class="card">
+        <div class="plegend">
+          <span class="pchip" style="background:#DCEFE4;color:#0A6A47">✓ Covered</span>
+          <span class="pchip" style="background:#FBE6B0;color:#7A5800">−0.4 Part covered (FTE short)</span>
+          <span class="pchip" style="background:#F6CFCF;color:#9E1717">−1 Nobody covering (FTE short)</span>
+        </div>
+        <div id="lcTable"></div>
+      </div>
+    </section>
+
+    <!-- APPROVALS BOARD -->
+    <section class="view" id="view-approvals">
+      <div class="viewhead"><div><h2>Approvals Board</h2><div class="vsub">Every movement by where it sits in the approval and payroll process. Drag a card to a new column, or use its Move menu.</div></div></div>
+      <div id="boardTiles"></div>
+      <div class="card"><div class="ctrlrow">
+        <label class="hint" style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="boardOnlyFlagged" onchange="renderBoard()"> Only cards needing attention</label>
+        <label class="hint" style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="boardShowDone" onchange="renderBoard()"> Show finished (Confirmed / Completed / Cancelled)</label>
+        <span class="hint">Days-in-status counts from the last time the status changed. Older movements use the audit history where it has one.</span>
+      </div></div>
+      <div id="board" class="board"></div>
+    </section>
+
+    <!-- RECRUITMENT -->
+    <section class="view" id="view-recruit">
+      <div class="viewhead">
+        <div><h2>Recruitment</h2><div class="vsub">Every position being filled — from approval to recruit through to start date.</div></div>
+        <div class="spacer"></div>
+        <label class="hint" style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="rcShowClosed" onchange="renderRecruit()"> Show started / closed</label>
+        <button class="btn primary" onclick="openRecruit(null)">+ Add position</button>
+      </div>
+      <div id="rcTiles"></div>
+      <div class="card"><div id="rcTable"></div></div>
+    </section>
+
     <!-- FTE GAPS -->
     <section class="view" id="view-gaps">
       <div class="card"><div class="card-body"><div class="ctrlrow">
@@ -382,7 +531,16 @@ table.timeline thead .tl-label{z-index:3;background:var(--bg-2)}
 
     <!-- BUDGET -->
     <section class="view" id="view-budget">
-      <div class="viewhead"><div><h2>Budget Summary</h2><div class="vsub">Effective FTE per classification across 13 fortnights.</div></div></div>
+      <div class="viewhead"><div><h2>Budget Summary</h2><div class="vsub">Forecast of funded FTE against baseline and ceiling, then effective FTE per classification across 13 fortnights.</div></div></div>
+      <div class="card">
+        <div class="card-head" onclick="toggleCard(this)"><div><h3>Forecast — where are we heading?</h3><div class="card-sub">Uses every dated contract, movement and rotation already recorded. Flags the first pay cycle a classification goes over its ceiling or baseline.</div></div><span class="chev">▾</span></div>
+        <div class="card-body">
+          <div class="ctrlrow" style="margin-bottom:14px">
+            <div class="field" style="min-width:180px"><label>Look ahead</label><select id="fcHorizon" onchange="renderForecast()"><option value="13">13 pay cycles (~6 months)</option><option value="26" selected>26 pay cycles (~12 months)</option></select></div>
+          </div>
+          <div id="budgetForecast"></div>
+        </div>
+      </div>
       <div class="card">
         <div class="ctrlrow" style="margin-bottom:14px">
           <div class="field" style="min-width:210px"><label>Start window from cycle</label><select id="budgetStart" onchange="renderBudget()"></select></div>
@@ -452,7 +610,7 @@ table.timeline thead .tl-label{z-index:3;background:var(--bg-2)}
       <div class="viewhead">
         <div><h2>Audit History</h2><div class="vsub">Local change log for staff lines, movements, settings and administrative changes.</div></div>
         <div class="spacer"></div>
-        <div class="field" style="min-width:170px"><label>Filter</label><select id="auditFilter" onchange="renderAudit()"><option value="all">All changes</option><option value="Movement">Movements</option><option value="Staff">Staff</option><option value="Rotation">Rotations</option><option value="Settings">Settings</option><option value="Data">Data</option></select></div>
+        <div class="field" style="min-width:170px"><label>Filter</label><select id="auditFilter" onchange="renderAudit()"><option value="all">All changes</option><option value="Movement">Movements</option><option value="Staff">Staff</option><option value="Rotation">Rotations</option><option value="Recruitment">Recruitment</option><option value="Settings">Settings</option><option value="Data">Data</option></select></div>
         <button class="btn danger" onclick="clearAudit()">Clear audit</button>
       </div>
       <div class="sectionnote">The audit history is stored locally in this browser and included in exported backups. It is not a formal enterprise audit log, but it gives a practical history of what changed and when.</div>
@@ -503,9 +661,21 @@ table.timeline thead .tl-label{z-index:3;background:var(--bg-2)}
         </div>
       </div>
       <div class="card">
-        <div class="card-head" onclick="toggleCard(this)"><h3>Backup &amp; data</h3><span class="chev">▾</span></div>
+        <div class="card-head" onclick="toggleCard(this)"><div><h3>Shared data &amp; backup</h3><div class="card-sub">Keep one shared copy of the data in a OneDrive folder, with automatic daily backups.</div></div><span class="chev">▾</span></div>
         <div class="card-body">
-          <div class="hint" style="margin-bottom:12px">Your data auto-saves to this browser on every change. The backup file is your insurance — export it regularly and keep a copy somewhere safe.</div>
+          <div id="syncStatus"></div>
+          <div class="ctrlrow" style="margin-bottom:12px">
+            <div class="field" style="min-width:240px"><label>Your name (shown as “saved by”)</label><input type="text" id="setUserName" onchange="setUser(this.value)" placeholder="e.g. Sam (admin) or Alex (manager)"></div>
+          </div>
+          <div id="syncButtons" style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px"></div>
+          <div class="sectionnote"><b>Set up once on each PC.</b><br>
+            1. In File Explorer, make a folder inside OneDrive (for example <b>StaffMovements</b>). Share it with the other person with <b>Can edit</b> permission, and have them sync it to their PC.<br>
+            2. Put this tracker file (index.html) in that folder too, and open it from there in <b>Microsoft Edge or Google Chrome</b>.<br>
+            3. Click <b>Link shared folder</b> above, pick that same folder, and choose <b>Edit files</b> when the browser asks.<br>
+            4. Each new browser session you may see <b>Reconnect</b> — one click, no data lost.<br>
+            Every save writes to <b>StaffMovementTracker-data.json</b>. A start-of-day snapshot goes in the <b>backups</b> folder (last 45 days kept), and OneDrive also keeps its own version history of the file.</div>
+          <h4 style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:6px 0 8px">Manual backup file</h4>
+          <div class="hint" style="margin-bottom:12px">A separate copy you can keep anywhere. Also how you move data between browsers that cannot use a shared folder.</div>
           <div style="display:flex;gap:9px;flex-wrap:wrap">
             <button class="btn primary" onclick="exportBackup()">Export backup (.json)</button>
             <button class="btn" onclick="document.getElementById('importInput').click()">Import backup</button>
@@ -629,7 +799,56 @@ table.timeline thead .tl-label{z-index:3;background:var(--bg-2)}
   </div>
 </div>
 
-<datalist id="staffNames"></datalist>
+<!-- RECRUITMENT MODAL -->
+<div class="modal-bg" id="rcModal">
+  <div class="modal">
+    <h3 id="rcModalTitle">Add position</h3>
+    <div class="msub">One row = one position being recruited. Move it along the stages as it progresses.</div>
+    <div class="grid2">
+      <div class="field"><label>Recruitment ID</label><input type="text" id="rc_id" readonly></div>
+      <div class="field"><label>Stage</label><select id="rc_stage"></select></div>
+      <div class="field full"><label>Position title</label><input type="text" id="rc_title" placeholder="e.g. Physiotherapist (HP3), Rehab Ward"></div>
+      <div class="field"><label>Classification</label><select id="rc_cls"></select></div>
+      <div class="field"><label>FTE</label><input type="number" step="0.01" min="0" id="rc_fte"></div>
+      <div class="field"><label>Employment type</label><select id="rc_empType"></select></div>
+      <div class="field"><label>Reason</label><select id="rc_reason"></select></div>
+      <div class="field full"><label>Role in Teams &amp; roles (optional)</label><select id="rc_role"></select></div>
+      <div class="field full"><label>Related movement (optional)</label><select id="rc_mov"></select><span class="hint">Link the vacancy, leave or backfill this position is filling, so it is easy to trace.</span></div>
+      <div class="field"><label>Date opened</label><input type="date" id="rc_opened"></div>
+      <div class="field"><label>Target start date</label><input type="date" id="rc_target"></div>
+      <div class="field"><label>Position ID</label><input type="text" id="rc_posId"></div>
+      <div class="field"><label>Request / VMC number</label><input type="text" id="rc_vmcNum"></div>
+      <div class="field full"><label>Successful candidate (once known)</label><input type="text" id="rc_candidate"></div>
+      <div class="field full"><label>Notes</label><textarea id="rc_notes" rows="2"></textarea></div>
+    </div>
+    <div class="validation-panel is-clean" id="rcValidation"><div class="vh">Validation ready</div></div>
+    <div class="modal-foot">
+      <button class="btn danger" id="rc_delBtn" onclick="deleteRecruit()">Delete</button>
+      <div class="spacer"></div>
+      <button class="btn" onclick="closeModal('rcModal')">Cancel</button>
+      <button class="btn primary" onclick="saveRecruit()">Save position</button>
+    </div>
+  </div>
+</div>
+
+<!-- SYNC DECISION MODAL -->
+<div class="modal-bg" id="syncModal">
+  <div class="modal" style="max-width:560px">
+    <h3 id="syncTitle"></h3>
+    <div class="msub" id="syncBody" style="white-space:pre-line;line-height:1.55"></div>
+    <div class="modal-foot" id="syncFoot" style="flex-wrap:wrap"></div>
+  </div>
+</div>
+
+<!-- SNAPSHOT RESTORE MODAL -->
+<div class="modal-bg" id="snapModal">
+  <div class="modal" style="max-width:600px">
+    <h3>Restore from a snapshot</h3>
+    <div class="msub">Snapshots live in the <b>backups</b> folder next to the shared data file. Restoring replaces what is in the tracker now (a copy of the current data is saved first).</div>
+    <div class="snaplist" id="snapList"></div>
+    <div class="modal-foot"><div class="spacer"></div><button class="btn" onclick="closeModal('snapModal')">Close</button></div>
+  </div>
+</div>
 
 <datalist id="staffNames"></datalist>
 
@@ -655,6 +874,9 @@ const SEED = {
   { "id":"ROT-003", "roleId":"R-DEMO3", "staff":"Demo Clinician (HP3)", "fte":1, "start":"2026-01-01", "end":"", "notes":"On leave in Movements — flagged in the planner" },
   { "id":"ROT-004", "roleId":"R-DEMO3", "staff":"Demo Temp Soon (HP3)", "fte":0.5, "start":"2026-01-01", "end":"2026-08-15", "notes":"" },
   { "id":"ROT-005", "roleId":"R-DEMO5", "staff":"Demo Assistant (CA3)", "fte":1, "start":"2026-01-01", "end":"", "notes":"" }
+ ],
+ "recruitment": [
+  { "id":"RC-0001", "title":"Physiotherapist (HP3) — example position", "cls":"HP3", "fte":0.6, "empType":"Temporary", "reason":"Backfill for leave", "roleId":"", "movId":"MV-0001", "stage":"Advertised", "opened":"2026-08-10", "stageSince":"2026-08-24", "target":"2026-10-19", "posId":"", "vmcNum":"", "candidate":"", "notes":"Example data — replace with your own." }
  ],
  "settings": {
   "serviceName": "STARS Physiotherapy",
@@ -714,7 +936,7 @@ let managerActionFilter = 'all';
 /* ============================ DATE / CYCLE HELPERS ============================ */
 const MS_DAY = 86400000;
 function parseDate(v){ if(v===null||v===undefined||v==='') return null; const s=String(v).slice(0,10); const t=Date.parse(s+'T00:00:00Z'); return isNaN(t)?null:t; }
-function isoToday(){ const d=new Date(); return d.toISOString().slice(0,10); }
+function isoToday(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function fmtDate(v){ const t=parseDate(v); if(t===null) return ''; const d=new Date(t); return d.getUTCDate().toString().padStart(2,'0')+'-'+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getUTCMonth()]+'-'+d.getUTCFullYear(); }
 function num(v){ return (v===null||v===undefined||v==='')?0:Number(v)||0; }
 function str(v){ return (v===null||v===undefined)?'':String(v).trim(); }
@@ -790,25 +1012,305 @@ function baselineOf(cls){ if(classHasRoles(cls)) return roleFundedByClass(cls); 
 function ceilingOf(cls){ const c=(state.settings.ceilings||{})[cls]||{}; return num(c.ceiling)+num(c.additional); }
 const r2=x=>Math.round(x*100)/100;
 
-/* ============================ PERSISTENCE (IndexedDB) ============================ */
+/* ============================ PERSISTENCE (IndexedDB cache + shared OneDrive folder) ============================ */
+// Every change is saved to this browser straight away. If a shared folder is linked, the same
+// data is also written to StaffMovementTracker-data.json in that folder (a OneDrive-synced folder
+// makes it shared between users). A revision number stops one person silently overwriting the
+// other: if the file changed since it was last read, the user is asked which version to keep and
+// the other one is saved in the backups folder.
 const DB_NAME='starsMovementTracker', STORE='state';
 let _db=null, _saveTimer=null;
 function openDB(){ return new Promise((res,rej)=>{ const r=indexedDB.open(DB_NAME,1); r.onupgradeneeded=()=>{ r.result.createObjectStore(STORE); }; r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
-async function dbGet(){ if(!_db) _db=await openDB(); return new Promise((res,rej)=>{ const tx=_db.transaction(STORE,'readonly').objectStore(STORE).get('current'); tx.onsuccess=()=>res(tx.result); tx.onerror=()=>rej(tx.error); }); }
-async function dbPut(val){ if(!_db) _db=await openDB(); return new Promise((res,rej)=>{ const tx=_db.transaction(STORE,'readwrite').objectStore(STORE).put(val,'current'); tx.onsuccess=()=>res(); tx.onerror=()=>rej(tx.error); }); }
+async function dbGetKey(k){ if(!_db) _db=await openDB(); return new Promise((res,rej)=>{ const tx=_db.transaction(STORE,'readonly').objectStore(STORE).get(k); tx.onsuccess=()=>res(tx.result); tx.onerror=()=>rej(tx.error); }); }
+async function dbPutKey(k,val){ if(!_db) _db=await openDB(); return new Promise((res,rej)=>{ const tx=_db.transaction(STORE,'readwrite').objectStore(STORE).put(val,k); tx.onsuccess=()=>res(); tx.onerror=()=>rej(tx.error); }); }
+async function dbDelKey(k){ if(!_db) _db=await openDB(); return new Promise((res,rej)=>{ const tx=_db.transaction(STORE,'readwrite').objectStore(STORE).delete(k); tx.onsuccess=()=>res(); tx.onerror=()=>rej(tx.error); }); }
+function dbGet(){ return dbGetKey('current'); }
+function dbPut(val){ return dbPutKey('current',val); }
 
-function markSaving(){ const d=document.getElementById('saveDot'); d.classList.add('saving'); document.getElementById('saveTxt').textContent='Saving…'; }
-function markSaved(){ const d=document.getElementById('saveDot'); d.classList.remove('saving'); document.getElementById('saveTxt').textContent='Saved'; }
-function persist(){ markSaving(); clearTimeout(_saveTimer); _saveTimer=setTimeout(async()=>{ try{ await dbPut(JSON.stringify(state)); }catch(e){ console.error(e);} markSaved(); },350); }
+const DATA_FILE='StaffMovementTracker-data.json', BACKUP_DIR='backups';
+const KEEP_COPIES={snapshot_:45,manual_:20,conflict_:20,restore_:10};
+const FS_OK=typeof window.showDirectoryPicker==='function';
+let dirHandle=null, folderState='off', folderMsg='', lastMod=null, pushing=false, pushAgain=false, _chg=0, saving=false, bannerHidden=false;
+function lsGet(k){ try{ return localStorage.getItem(k)||''; }catch(e){ return ''; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function userName(){ return lsGet('smt_user'); }
+function setUser(v){ lsSet('smt_user',str(v)); }
+function meta(){ if(!state._meta||typeof state._meta!=='object') state._meta={}; return state._meta; }
+function p2(n){ return String(n).padStart(2,'0'); }
+function localStamp(d){ d=d||new Date(); return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()); }
+function localStampTime(d){ d=d||new Date(); return localStamp(d)+'_'+p2(d.getHours())+p2(d.getMinutes()); }
+
+function updateSaveDot(){
+  const d=document.getElementById('saveDot'), t=document.getElementById('saveTxt'); if(!d||!t) return;
+  d.classList.remove('saving','warn','err');
+  let txt;
+  if(folderState==='ok'){ const busy=saving||pushing||(state&&meta().unsynced); if(busy){ d.classList.add('saving'); txt='Saving…'; } else txt='Saved · shared'; }
+  else if(folderState==='reconnect'){ d.classList.add('warn'); txt='Reconnect shared folder'; }
+  else if(folderState==='error'){ d.classList.add('err'); txt='Not reaching shared folder'; }
+  else if(saving){ d.classList.add('saving'); txt='Saving…'; }
+  else { txt=FS_OK?'Saved on this PC only':'Saved in this browser'; if(FS_OK) d.classList.add('warn'); }
+  t.textContent=txt;
+}
+function markSaving(){ saving=true; updateSaveDot(); }
+function markSaved(){ saving=false; updateSaveDot(); }
+function persist(){
+  markSaving(); _chg++;
+  if(state){ const m=meta(); m.edited=true; if(dirHandle) m.unsynced=true; }
+  clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(async()=>{
+    try{ await dbPut(JSON.stringify(state)); }catch(e){ console.error(e); }
+    markSaved();
+    if(folderState==='ok') pushToFolder();
+  },350);
+}
 
 function deepCopy(o){ return JSON.parse(JSON.stringify(o)); }
+
+/* ---- shared folder: files ---- */
+async function readShared(){
+  let fh;
+  try{ fh=await dirHandle.getFileHandle(DATA_FILE); }catch(e){ if(e&&e.name==='NotFoundError') return null; throw e; }
+  const f=await fh.getFile(), raw=await f.text();
+  let data; try{ data=JSON.parse(raw); }catch(e){ throw new Error('The shared data file could not be read yet — it may still be syncing. It will be retried.'); }
+  if(!data||!Array.isArray(data.staff)||!Array.isArray(data.movements)) throw new Error('The data file in that folder is not tracker data.');
+  return {data,raw,lastModified:f.lastModified};
+}
+async function writeFileIn(dir,name,text){ const fh=await dir.getFileHandle(name,{create:true}); const w=await fh.createWritable(); await w.write(text); await w.close(); return fh; }
+async function backupDir(){ return dirHandle.getDirectoryHandle(BACKUP_DIR,{create:true}); }
+async function pruneBackups(d){
+  const by={};
+  for await (const [n,h] of d.entries()){ if(h.kind!=='file') continue; const p=Object.keys(KEEP_COPIES).find(k=>n.startsWith(k)); if(p) (by[p]=by[p]||[]).push(n); }
+  for(const p in by){ for(const n of by[p].sort().reverse().slice(KEEP_COPIES[p])){ try{ await d.removeEntry(n); }catch(e){} } }
+}
+async function saveCopy(prefix,text,tag){
+  const d=await backupDir();
+  const name=prefix+localStampTime()+(tag?'_'+String(tag).replace(/[^A-Za-z0-9]+/g,''):'')+'.json';
+  await writeFileIn(d,name,text); await pruneBackups(d); return name;
+}
+// Copy of the shared file as it stood before today's first save = the start-of-day snapshot.
+async function dailySnapshot(raw){
+  const d=await backupDir(), name='snapshot_'+localStamp()+'.json';
+  try{ await d.getFileHandle(name); return; }catch(e){ if(!e||e.name!=='NotFoundError') throw e; }
+  await writeFileIn(d,name,raw); await pruneBackups(d);
+}
+function anyModalOpen(){ return !!document.querySelector('.modal-bg.open'); }
+function whoWhen(d){ const m=(d&&d._meta)||{}; return (m.savedBy||'Someone')+(m.savedAt?' ('+fmtDateTime(m.savedAt)+')':''); }
+function dataSummary(d){ return (d.staff||[]).length+' staff lines, '+(d.movements||[]).length+' movements'; }
+// Plain-English list of what differs between two versions, so the choice is an informed one.
+function diffSummary(mine,theirs){
+  const out=[], sets=(d,k)=>new Set((d[k]||[]).map(x=>JSON.stringify(x)));
+  [['movements','Movements'],['staff','Staff register lines'],['rotations','Rotation assignments'],['recruitment','Recruitment positions']].forEach(([k,label])=>{
+    const a=sets(mine,k), b=sets(theirs,k);
+    const onlyMine=[...a].filter(x=>!b.has(x)).length, onlyTheirs=[...b].filter(x=>!a.has(x)).length;
+    if(onlyMine||onlyTheirs) out.push('• '+label+': '+onlyTheirs+' new or changed in theirs, '+onlyMine+' in yours.');
+  });
+  return out.length?out.join('\n'):'• The records match; only settings or the audit log differ.';
+}
+
+/* ---- shared folder: save, load, compare ---- */
+async function pushToFolder(){
+  if(folderState!=='ok'||!dirHandle) return;
+  if(pushing){ pushAgain=true; return; }
+  pushing=true; updateSaveDot();
+  try{
+    const cur=await readShared();
+    const m=meta(), fileRev=cur?num(cur.data._meta&&cur.data._meta.rev):0;
+    const same=!cur||(str(cur.data._meta&&cur.data._meta.fileId)===str(m.fileId)&&fileRev===num(m.rev));
+    if(!same){ openConflict(cur); return; }
+    if(cur) await dailySnapshot(cur.raw);
+    const chg0=_chg;
+    const out=Object.assign({},state,{_meta:Object.assign({},m,{fileId:m.fileId||newId('F'),rev:num(m.rev)+1,savedAt:new Date().toISOString(),savedBy:userName()||'Unknown',unsynced:false})});
+    await writeFileIn(dirHandle,DATA_FILE,JSON.stringify(out));
+    Object.assign(m,{fileId:out._meta.fileId,rev:out._meta.rev,savedAt:out._meta.savedAt,savedBy:out._meta.savedBy});
+    if(_chg===chg0) m.unsynced=false;
+    try{ lastMod=(await (await dirHandle.getFileHandle(DATA_FILE)).getFile()).lastModified; }catch(e){}
+    try{ await dbPut(JSON.stringify(state)); }catch(e){}
+    folderMsg='';
+  }catch(e){
+    console.error(e);
+    if(e&&e.name==='NotAllowedError'){ folderState='reconnect'; folderMsg=''; }
+    else { folderState='error'; folderMsg=(e&&e.message)?e.message:String(e); }
+  }finally{
+    pushing=false; updateSaveDot(); renderSyncUI();
+    if(pushAgain&&folderState==='ok'){ pushAgain=false; pushToFolder(); }
+  }
+}
+async function adoptShared(data,msg){
+  state=data; ensureShape(); meta().unsynced=false;
+  try{ await dbPut(JSON.stringify(state)); }catch(e){}
+  rebuildAll(); updateSaveDot(); renderSyncUI();
+  if(migratedNow){ migratedNow=false; persist(); }
+  if(msg) toast(msg);
+}
+function openSyncModal(title,body,buttons){
+  document.getElementById('syncTitle').textContent=title;
+  document.getElementById('syncBody').textContent=body;
+  const f=document.getElementById('syncFoot'); f.innerHTML='';
+  buttons.forEach(b=>{ const el=document.createElement('button'); el.className='btn'+(b.primary?' primary':''); el.textContent=b.label; el.onclick=()=>{ closeModal('syncModal'); if(b.fn) b.fn(); }; f.appendChild(el); });
+  document.getElementById('syncModal').classList.add('open');
+}
+// Someone else saved a newer version while this PC also has changes.
+function openConflict(cur){
+  if(document.getElementById('syncModal').classList.contains('open')) return;
+  openSyncModal('Someone else saved changes first',
+    whoWhen(cur.data)+' saved a newer version of the shared file while this PC also has changes.\n\n'+diffSummary(state,cur.data)+'\n\nPick the version to keep. The other version is saved into the backups folder, so nothing is lost.',
+    [{label:'Use their version',fn:()=>takeShared(cur)},{label:'Keep my version',primary:true,fn:()=>keepMine(cur)}]);
+}
+// The folder already holds different data from a different history than this PC's.
+function openLinkChoice(cur){
+  openSyncModal('This folder already has tracker data',
+    'Shared folder: '+dataSummary(cur.data)+', last saved by '+whoWhen(cur.data)+'.\nThis PC: '+dataSummary(state)+'.\n\nWhich should be used going forward? The other one is saved into the backups folder first.',
+    [{label:'Use the folder’s data',primary:true,fn:()=>takeShared(cur)},{label:'Replace it with this PC’s data',fn:()=>keepMine(cur)}]);
+}
+async function takeShared(cur){
+  try{ await saveCopy('conflict_',JSON.stringify(state),'thisPC'); }catch(e){ console.error(e); }
+  lastMod=cur.lastModified;
+  await adoptShared(cur.data,'Loaded the shared version — your version was saved in the backups folder');
+}
+async function keepMine(cur){
+  try{ await saveCopy('conflict_',cur.raw,'theirs'); }catch(e){ console.error(e); }
+  const m=meta(), t=cur.data._meta||{};
+  m.fileId=str(t.fileId)||m.fileId; m.rev=num(t.rev); m.unsynced=true;
+  await pushToFolder();
+  toast('Kept your version — the other was saved in the backups folder');
+}
+async function connectFolder(){
+  try{
+    const cur=await readShared(), m=meta();
+    folderState='ok'; folderMsg='';
+    if(!cur){ m.unsynced=true; _chg++; await pushToFolder(); toast('Shared folder linked — data saved there'); }
+    else{
+      lastMod=cur.lastModified;
+      const t=cur.data._meta||{}, sameLine=str(t.fileId)&&str(t.fileId)===str(m.fileId);
+      if(sameLine){
+        if(num(t.rev)===num(m.rev)){ if(m.unsynced) await pushToFolder(); }
+        else if(num(t.rev)>num(m.rev)&&!m.unsynced) await adoptShared(cur.data,'Loaded the latest data — saved by '+whoWhen(cur.data));
+        else openConflict(cur);
+      }
+      else if(!m.edited) await adoptShared(cur.data,'Loaded data from the shared folder ('+dataSummary(cur.data)+')');
+      else openLinkChoice(cur);
+    }
+  }catch(e){
+    console.error(e);
+    if(e&&e.name==='NotAllowedError'){ folderState='reconnect'; folderMsg=''; } else { folderState='error'; folderMsg=(e&&e.message)?e.message:String(e); }
+  }
+  updateSaveDot(); renderSyncUI();
+}
+async function pollShared(){
+  if(!dirHandle||pushing||document.hidden) return;
+  if(folderState==='error'&&meta().unsynced){ folderState='ok'; await pushToFolder(); return; }
+  if(folderState!=='ok') return;
+  try{
+    const f=await (await dirHandle.getFileHandle(DATA_FILE)).getFile();
+    if(f.lastModified===lastMod) return;
+    const cur=await readShared(); lastMod=cur.lastModified;
+    const t=cur.data._meta||{}, m=meta();
+    if(str(t.fileId)!==str(m.fileId)||num(t.rev)===num(m.rev)) return;
+    if(m.unsynced){ openConflict(cur); return; }
+    if(anyModalOpen()){ lastMod=null; return; } // finish what you are typing first; try again next tick
+    await adoptShared(cur.data,'Updated — '+whoWhen(cur.data)+' saved changes');
+  }catch(e){ /* transient (file still syncing) — try again next tick */ }
+}
+async function checkNow(){ lastMod=null; await pollShared(); toast('Checked the shared folder'); }
+
+/* ---- shared folder: link / reconnect / unlink / snapshots ---- */
+async function linkFolder(){
+  if(!FS_OK){ alert('This browser cannot save to a shared folder. Please open the tracker in Microsoft Edge or Google Chrome.'); return; }
+  let h;
+  try{ h=await window.showDirectoryPicker({id:'staffmovements',mode:'readwrite'}); }
+  catch(e){ if(e&&e.name==='AbortError') return; toast('Could not open that folder: '+((e&&e.message)||e)+'. Try a sub-folder such as OneDrive\\StaffMovements rather than Documents or Desktop itself.',true); return; }
+  if(!userName()){ const n=prompt('Your name — it is recorded as “saved by” so the other person can see who changed what:',''); if(n) setUser(n); }
+  dirHandle=h;
+  try{ await dbPutKey('dirHandle',h); }catch(e){ console.error(e); }
+  await connectFolder();
+}
+async function reconnectFolder(){
+  if(!dirHandle) return;
+  try{
+    const p=await dirHandle.requestPermission({mode:'readwrite'});
+    if(p!=='granted'){ toast('Permission was not given, so the shared folder stays disconnected.',true); return; }
+  }catch(e){ toast('Could not reconnect: '+((e&&e.message)||e),true); return; }
+  await connectFolder();
+}
+async function unlinkFolder(){
+  if(!confirm('Stop using the shared folder on this PC?\n\nThe data file and backups stay in the folder. This PC keeps its own copy and will no longer save to the folder until you link it again.')) return;
+  dirHandle=null; folderState='off'; folderMsg=''; lastMod=null;
+  try{ await dbDelKey('dirHandle'); }catch(e){}
+  const m=meta(); m.unsynced=false; persist(); updateSaveDot(); renderSyncUI();
+}
+async function retrySync(){ folderState='ok'; folderMsg=''; if(meta().unsynced) await pushToFolder(); else await connectFolder(); updateSaveDot(); renderSyncUI(); }
+async function snapshotNow(){
+  if(folderState!=='ok'){ toast('Link the shared folder first.',true); return; }
+  try{ const n=await saveCopy('manual_',JSON.stringify(state),userName()); toast('Snapshot saved: '+n); }catch(e){ toast('Could not save a snapshot: '+((e&&e.message)||e),true); }
+}
+async function openSnapshots(){
+  if(folderState!=='ok'){ toast('Link the shared folder first.',true); return; }
+  const el=document.getElementById('snapList'); el.innerHTML='<div class="empty">Looking…</div>';
+  document.getElementById('snapModal').classList.add('open');
+  try{
+    const d=await backupDir(), items=[];
+    for await (const [n,h] of d.entries()){ if(h.kind!=='file'||!n.endsWith('.json')) continue; const f=await h.getFile(); items.push({n,size:f.size,mod:f.lastModified}); }
+    items.sort((a,b)=>b.mod-a.mod);
+    if(!items.length){ el.innerHTML='<div class="empty">No snapshots yet. The first one is created the first time data is saved on a new day.</div>'; return; }
+    const label=n=>n.startsWith('snapshot_')?'Start of day '+n.slice(9,19):n.startsWith('manual_')?'Saved by hand':n.startsWith('conflict_')?'Set aside in a clash':n.startsWith('restore_')?'Before a restore':'Copy';
+    el.innerHTML=items.map(i=>`<div class="snaprow"><div class="grow"><div class="sn">${esc(label(i.n))}</div><div class="hint">${esc(i.n)} · ${esc(fmtDateTime(i.mod))} · ${Math.round(i.size/1024)} KB</div></div><button class="btn sm" onclick="restoreSnapshot(${esc(jsq(i.n))})">Restore</button></div>`).join('');
+  }catch(e){ el.innerHTML='<div class="empty">Could not read the backups folder: '+esc((e&&e.message)||e)+'</div>'; }
+}
+async function restoreSnapshot(name){
+  try{
+    const d=await backupDir(), f=await (await d.getFileHandle(name)).getFile();
+    let data; try{ data=JSON.parse(await f.text()); }catch(e){ toast('That snapshot could not be read.',true); return; }
+    if(!data||!Array.isArray(data.staff)||!Array.isArray(data.movements)){ toast('That file is not tracker data.',true); return; }
+    if(!confirm('Restore “'+name+'”?\n\nIt has '+dataSummary(data)+'. Everything in the tracker now is replaced (a copy of the current data is saved first).')) return;
+    try{ await saveCopy('restore_',JSON.stringify(state),'beforeRestore'); }catch(e){ console.error(e); }
+    const keep=meta(); state=data; ensureShape();
+    state._meta={fileId:keep.fileId,rev:keep.rev,edited:true};
+    auditLog('Restore','Data','Snapshot','Data restored from a snapshot',null,null,['Restored from '+name]);
+    closeModal('snapModal'); persist(); rebuildAll(); toast('Restored from '+name);
+  }catch(e){ toast('Could not restore: '+((e&&e.message)||e),true); }
+}
+
+/* ---- shared folder: what the user sees ---- */
+function renderSyncUI(){
+  if(typeof state==='undefined'||!state) return;
+  const bar=document.getElementById('syncBar');
+  const lastExp=+lsGet('smt_lastExport')||0, days=lastExp?Math.floor((Date.now()-lastExp)/MS_DAY):null;
+  let b='';
+  if(folderState==='reconnect') b=`<div class="syncbar"><div class="grow">The shared folder needs your permission again — browsers ask once per session. Nothing is lost; changes are kept on this PC meanwhile.</div><button class="btn sm primary" onclick="reconnectFolder()">Reconnect</button></div>`;
+  else if(folderState==='error') b=`<div class="syncbar err"><div class="grow">Changes are not reaching the shared folder${folderMsg?': '+esc(folderMsg):''}. They are safe on this PC.</div><button class="btn sm" onclick="retrySync()">Try again</button></div>`;
+  else if(folderState==='off'&&!bannerHidden){
+    if(FS_OK) b=`<div class="syncbar"><div class="grow">Your data is stored only in this browser on this PC — nobody else can see it, and clearing the browser would lose it. Link a OneDrive folder to share it and back it up automatically.</div><button class="btn sm primary" onclick="go('settings')">Set up shared folder</button><button class="btn sm" onclick="bannerHidden=true;renderSyncUI()">Not now</button></div>`;
+    else b=`<div class="syncbar"><div class="grow">This browser cannot save to a shared folder — use Microsoft Edge or Google Chrome for that. Until then, export a backup regularly${days===null?' (you have not exported one yet)':days>7?' (last export '+days+' days ago)':''}.</div><button class="btn sm primary" onclick="exportBackup()">Export now</button><button class="btn sm" onclick="bannerHidden=true;renderSyncUI()">Not now</button></div>`;
+  }
+  if(bar) bar.innerHTML=b;
+  const st=document.getElementById('syncStatus'), bt=document.getElementById('syncButtons');
+  if(!st||!bt) return;
+  const m=meta(), stateTxt={off:'Not linked — data is only in this browser',reconnect:'Linked — needs reconnecting',ok:'Linked and saving',error:'Linked — not saving'}[folderState];
+  st.innerHTML=`<div class="syncstatus"><div><div class="k">Shared folder</div><div class="v">${dirHandle?esc(dirHandle.name):'—'}</div></div><div><div class="k">Status</div><div class="v">${esc(stateTxt)}</div></div>${m.savedAt&&dirHandle?`<div><div class="k">Last shared save</div><div class="v">${esc(m.savedBy||'')} · ${esc(fmtDateTime(m.savedAt))}</div></div>`:''}</div>`
+    +(FS_OK?'':'<div class="sectionnote" style="background:var(--warn-bg);color:var(--warn)">This browser cannot save to a shared folder. Open the tracker in Microsoft Edge or Google Chrome. Your IT settings may also block the feature — if the button does nothing, use Export backup instead.</div>');
+  let btns='';
+  if(folderState==='off') btns=`<button class="btn primary" onclick="linkFolder()">Link shared folder</button>`;
+  else if(folderState==='reconnect') btns=`<button class="btn primary" onclick="reconnectFolder()">Reconnect</button><button class="btn danger" onclick="unlinkFolder()">Unlink</button>`;
+  else btns=`<button class="btn" onclick="checkNow()">Check for changes</button><button class="btn" onclick="snapshotNow()">Save a snapshot now</button><button class="btn" onclick="openSnapshots()">Restore from a snapshot…</button>${folderState==='error'?'<button class="btn primary" onclick="retrySync()">Try again</button>':''}<button class="btn danger" onclick="unlinkFolder()">Unlink</button>`;
+  bt.innerHTML=btns;
+  const un=document.getElementById('setUserName'); if(un&&document.activeElement!==un) un.value=userName();
+}
+async function initFolder(){
+  renderSyncUI();
+  if(!FS_OK) return;
+  try{ dirHandle=(await dbGetKey('dirHandle'))||null; }catch(e){ dirHandle=null; }
+  if(!dirHandle){ renderSyncUI(); return; }
+  try{ const p=await dirHandle.queryPermission({mode:'readwrite'}); if(p==='granted') await connectFolder(); else folderState='reconnect'; }
+  catch(e){ folderState='reconnect'; }
+  updateSaveDot(); renderSyncUI();
+}
 
 
 /* ============================ AUDIT + VALIDATION HELPERS ============================ */
 function shortVal(v){ const s=String(v==null?'':v); return s.length>60?s.slice(0,57)+'…':s; }
 function fieldChanges(before,after){
   before=before||{}; after=after||{};
-  const keys=[...new Set([...Object.keys(before),...Object.keys(after)])].filter(k=>!['notes'].includes(k));
+  const keys=[...new Set([...Object.keys(before),...Object.keys(after)])].filter(k=>!['notes','statusSince','stageSince','doneDate'].includes(k));
   const out=[];
   keys.forEach(k=>{ const a=before[k]??'', b=after[k]??''; if(JSON.stringify(a)!==JSON.stringify(b)) out.push(`${k}: "${shortVal(a)}" → "${shortVal(b)}"`); });
   return out;
@@ -816,7 +1318,7 @@ function fieldChanges(before,after){
 function auditLog(action,entityType,entityId,summary,before,after,changes){
   if(!state) return;
   state.audit=Array.isArray(state.audit)?state.audit:[];
-  state.audit.unshift({ts:new Date().toISOString(),action,entityType,entityId:String(entityId||''),summary:String(summary||''),changes:changes||fieldChanges(before,after)});
+  state.audit.unshift({ts:new Date().toISOString(),by:userName(),action,entityType,entityId:String(entityId||''),summary:String(summary||''),changes:changes||fieldChanges(before,after)});
   if(state.audit.length>1000) state.audit=state.audit.slice(0,1000);
 }
 function rangesOverlap(aStart,aEnd,bStart,bEnd){ return aStart!==null&&aEnd!==null&&bStart!==null&&bEnd!==null&&aStart<=bEnd&&aEnd>=bStart; }
@@ -956,6 +1458,7 @@ function toast(msg,bad){
 }
 function exportBackup(){
   let url=null;
+  lsSet('smt_lastExport',String(Date.now()));
   try{
     const json=JSON.stringify(state,null,2);
     const blob=new Blob([json],{type:'application/json'});
@@ -986,12 +1489,12 @@ function importBackup(ev){
   reader.onload=()=>{ let data; try{ data=JSON.parse(reader.result);}catch(e){ alert('That file could not be read as tracker data.'); return; }
     if(!data||!data.staff||!data.movements){ alert('That file does not look like tracker data.'); return; }
     if(!confirm('Load this backup? It replaces everything currently in the tracker.')){ ev.target.value=''; toast('Import cancelled'); return; }
-    state=data; ensureShape(); auditLog('Import','Data','Backup','Backup imported into tracker',null,null,['Imported from '+(file.name||'backup file')]); persist(); rebuildAll(); ev.target.value='';
+    const prevMeta=state&&state._meta; state=data; state._meta=Object.assign({},prevMeta,{edited:true}); ensureShape(); auditLog('Import','Data','Backup','Backup imported into tracker',null,null,['Imported from '+(file.name||'backup file')]); persist(); rebuildAll(); ev.target.value='';
     toast('Imported '+state.staff.length+' staff lines and '+state.movements.length+' movements from '+(file.name||'backup file'));
   };
   reader.readAsText(file);
 }
-function resetToSeed(){ if(!confirm('Reset to the original imported data? Anything added or edited since will be lost (export a backup first if unsure).')) return; state=deepCopy(SEED); ensureShape(); auditLog('Reset','Data','Seed','Tracker reset to original seed data',null,null,['Reset to original data']); persist(); rebuildAll(); }
+function resetToSeed(){ if(!confirm('Reset to the original imported data? Anything added or edited since will be lost (export a backup first if unsure).')) return; const prevMeta=state&&state._meta; state=deepCopy(SEED); state._meta=Object.assign({},prevMeta,{edited:true}); ensureShape(); auditLog('Reset','Data','Seed','Tracker reset to original seed data',null,null,['Reset to original data']); persist(); rebuildAll(); }
 
 function applyBranding(){
   const svc=str(state.settings.serviceName)||'Service', org=str(state.settings.orgName);
@@ -1052,6 +1555,8 @@ function ensureShape(){
   state.staff=state.staff||[]; state.movements=state.movements||[];
   state.audit=Array.isArray(state.audit)?state.audit:[];
   state.rotations=Array.isArray(state.rotations)?state.rotations:[];
+  state.recruitment=Array.isArray(state.recruitment)?state.recruitment:[];
+  state.recruitment.forEach(r=>{ if(!str(r.id)) r.id=newId('RC'); if(!RC_STAGES.includes(str(r.stage))) r.stage=RC_STAGES[0]; });
   state.settings=state.settings||{};
   if(state.settings.serviceName===undefined) state.settings.serviceName='STARS Physiotherapy';
   if(state.settings.orgName===undefined) state.settings.orgName='Metro North Health';
@@ -1454,6 +1959,23 @@ function computeManagerActions(){
     if(str(m.staff)&&!state.staff.some(x=>str(x.name)===str(m.staff))) add('warn',person,'Movement staff member is not in the Staff Register',`${movementSummary}. Movement ${str(m.id)} names someone with no register line, so their FTE is not counted anywhere.`,['Register'],actions,'Movement');
     if(st===null||en===null) add('high',person,'Movement dates incomplete',`${movementSummary}. Movement ${str(m.id)} will not calculate reliably until start and end dates are recorded.`,['Date required'],actions,'Movement');
   });
+  // Approvals stuck part-way, or starting before they are approved. Old movements left on the
+  // default Draft status are not raised here (they show on the Approvals board only).
+  state.movements.forEach(m=>{
+    if(!liveMovement(m)) return;
+    const person=str(m.staff)||str(m.owner)||'Unassigned staff member', en=parseDate(m.end), st=parseDate(m.start);
+    const actions=`${staffDetailsAction(person)}<button class="iconbtn" onclick="go('approvals')">Approvals board</button>`;
+    approvalFlags(m).flags.forEach(f=>{
+      if(f.k==='stale'&&statusOf(m)!=='Draft / Planning') add(f.sev,person,'Movement approval looks stuck',`${str(m.type)} · ${r2(num(m.fteMoved))} FTE · ${fmtDate(m.start)} → ${fmtDate(m.end)}. Status “${statusOf(m)}”: ${f.t}.`,['Approvals'],actions,'Approval');
+      if(f.k==='start'&&(en===null||en>=today)&&st!==null&&st>=today-60*MS_DAY) add(f.sev,person,'Movement starts before it is approved',`${str(m.type)} · ${r2(num(m.fteMoved))} FTE · ${fmtDate(m.start)} → ${fmtDate(m.end)}. Status “${statusOf(m)}”: ${f.t}.`,['Approvals'],actions,'Approval');
+    });
+    if(str(m.type)==='Vacancy'&&(en===null||en>=today)&&!state.recruitment.some(r=>str(r.movId)===str(m.id)))
+      add('info',person,'Vacancy has no recruitment record',`${r2(num(m.fteMoved))} FTE vacant ${fmtDate(m.start)} → ${fmtDate(m.end)}. Add a position on the Recruitment board and link it to ${str(m.id)} if this is being filled.`,['Recruitment'],`<button class="iconbtn" onclick="go('recruit');openRecruit(null)">Add position</button>`,'Vacancy');
+  });
+  state.recruitment.forEach(r=>{
+    rcFlags(r).forEach(f=>add(f.sev,str(r.title)||'Position','Recruitment: '+f.t,`${str(r.cls)} · ${r2(num(r.fte))} FTE · stage “${str(r.stage)}” · target start ${fmtDate(r.target)||'not set'}.`,['Recruitment'],`<button class="iconbtn" onclick="go('recruit')">Recruitment board</button><button class="iconbtn" onclick="openRecruit(${esc(jsq(str(r.id)))})">Open position</button>`,'Recruitment'));
+  });
+  forecastFindings(forecastData(26)).filter(x=>x.kind==='ceil').forEach(x=>add(x.sev,x.cls+' budget','Forecast: '+x.cls+' goes over its ceiling',x.text,['Budget forecast'],`<button class="iconbtn" onclick="go('budget')">View forecast</button>`,'Budget'));
   computeGaps().filter(g=>g.gap>0.001).forEach(g=>{
     const actions=`${staffDetailsAction(g.name)}<button class="iconbtn" onclick="go('gaps')">View FTE gap</button>`;
     add(g.gap>=0.5?'high':'warn',g.name,'Unfilled FTE gap linked to this person',`${g.subClass}: ${r2(g.vacated)} FTE vacated, ${r2(g.backfilled)} FTE backfilled, gap ${r2(g.gap)} FTE.`,['FTE gaps'],actions,'FTE gap');
@@ -1481,7 +2003,7 @@ function renderManagerActions(){
   if(!items.length){ h+='<div class="empty">No manager actions detected from the current data.</div>'; el.innerHTML=h; return; }
   h+=`<div class="action-filter-note">Showing ${filtered.length} ${filterLabel.toLowerCase()} ${filtered.length===1?'item':'items'}.</div>`;
   if(!filtered.length){ h+=`<div class="empty">No ${filterLabel.toLowerCase()} actions detected. Select Open actions to view all current items.</div>`; el.innerHTML=h; return; }
-  h+='<div class="action-list">'+filtered.slice(0,24).map(i=>`<div class="action-item ${i.sev}"><div class="abar"></div><div><div class="action-person-row"><button class="linklike action-person" onclick="viewStaffDetails(${esc(jsq(i.person))})">${esc(i.person)}</button>${i.type?`<span class="action-type-chip">${esc(i.type)}</span>`:''}</div><div class="action-issue">${esc(i.issue)}</div><div class="action-detail">${esc(i.detail)}</div><div class="action-meta">${(i.meta||[]).map(m=>`<span class="pill neutral">${esc(m)}</span>`).join('')}</div></div><div class="action-buttons">${i.actions}</div></div>`).join('')+'</div>';
+  h+='<div class="action-list">'+filtered.slice(0,24).map(i=>`<div class="action-item ${i.sev}"><div class="abar"></div><div><div class="action-person-row">${['Budget','Recruitment','Vacancy'].includes(i.type)?`<span class="action-person" style="cursor:default">${esc(i.person)}</span>`:`<button class="linklike action-person" onclick="viewStaffDetails(${esc(jsq(i.person))})">${esc(i.person)}</button>`}${i.type?`<span class="action-type-chip">${esc(i.type)}</span>`:''}</div><div class="action-issue">${esc(i.issue)}</div><div class="action-detail">${esc(i.detail)}</div><div class="action-meta">${(i.meta||[]).map(m=>`<span class="pill neutral">${esc(m)}</span>`).join('')}</div></div><div class="action-buttons">${i.actions}</div></div>`).join('')+'</div>';
   if(filtered.length>24) h+=`<div class="hint" style="margin-top:10px">Showing first 24 of ${filtered.length} ${filterLabel.toLowerCase()} actions.</div>`;
   el.innerHTML=h;
 }
@@ -1525,6 +2047,7 @@ function budgetChartSVG(eff,base,ceil){
     +`${bars}</svg>`;
 }
 function renderBudget(){
+  renderForecast();
   const {cycles,len}=buildCycles(); let start=+document.getElementById('budgetStart').value||0;
   const win=cycles.slice(start,start+13);
   const effByClass={};
@@ -1960,10 +2483,12 @@ function movTypeHint(){
   }
   else hint.textContent='Name the substantive person being backfilled / acted up for.';
 }
-function blankMovement(){ return {id:nextMovId(),staff:'',subClass:defaultClass(),subFTE:'',empArr:'Temporary',workPosId:'',workPosTitle:'',workClass:defaultClass(),type:'Backfill',fteMoved:'',start:'',end:'',vmcNum:'',vmcUrl:'',procNum:'',adminStatus:'Draft / Planning',absenceType:'',archived:'No',notes:'',owner:''}; }
+function blankMovement(){ return {id:nextMovId(),staff:'',subClass:defaultClass(),subFTE:'',empArr:'Temporary',workPosId:'',workPosTitle:'',workClass:defaultClass(),type:'Backfill',fteMoved:'',start:'',end:'',vmcNum:'',vmcUrl:'',procNum:'',adminStatus:'Draft / Planning',statusSince:localStamp(),absenceType:'',archived:'No',notes:'',owner:''}; }
 function nextMovId(){ let max=0; state.movements.forEach(m=>{ const mm=/MV-?(\d+)/.exec(str(m.id)); if(mm) max=Math.max(max,+mm[1]); }); return 'MV-'+String(max+1).padStart(4,'0'); }
 function saveMovement(){
   const obj=readMovementForm();
+  const prevM=editingMovId?state.movements.find(x=>str(x.id)===editingMovId):null;
+  obj.statusSince=(prevM&&statusOf(prevM)===statusOf(obj))?(prevM.statusSince||''):localStamp();
   const result=validateMovementObject(obj,editingMovId);
   renderValidationPanel('movValidation',result);
   if(!confirmWarnings(result)) return;
@@ -2003,9 +2528,9 @@ function staffRoleChanged(){
   updateStaffValidation();
 }
 
-function openStaff(idx){
+function openStaff(idx,preset){
   editingStaffIdx=idx;
-  const s= idx!==null? state.staff[idx] : {name:'',roleId:'',subClass:defaultClass(),subFTE:'',posId:'',posTitle:'',empType:'Permanent',active:'Yes',contractStart:'',contractEnd:'',notes:''};
+  const s= idx!==null? state.staff[idx] : Object.assign({name:'',roleId:'',subClass:defaultClass(),subFTE:'',posId:'',posTitle:'',empType:'Permanent',active:'Yes',contractStart:'',contractEnd:'',notes:''},preset||{});
   document.getElementById('staffModalTitle').textContent=idx!==null?'Edit staff line':'Add staff line';
   document.getElementById('s_delBtn').style.display=idx!==null?'':'none';
   document.getElementById('s_name').value=str(s.name);
@@ -2571,9 +3096,9 @@ function renderAudit(){
   const filt=document.getElementById('auditFilter')?document.getElementById('auditFilter').value:'all';
   let rows=(state.audit||[]).filter(a=>filt==='all'||str(a.entityType)===filt).slice(0,300);
   if(!rows.length){ el.innerHTML='<div class="empty">No audit history recorded yet.</div>'; return; }
-  const head=['When','Action','Entity','Summary','Changes'];
+  const head=['When / by','Action','Entity','Summary','Changes'];
   const out=rows.map(a=>[
-    esc(fmtDateTime(a.ts)),
+    esc(fmtDateTime(a.ts))+(str(a.by)?`<br><span class="hint">${esc(str(a.by))}</span>`:''),
     `<span class="pill accent">${esc(a.action)}</span>`,
     `${esc(a.entityType)}${a.entityId?'<br><span class="hint">'+esc(a.entityId)+'</span>':''}`,
     esc(a.summary),
@@ -2583,9 +3108,494 @@ function renderAudit(){
 }
 function clearAudit(){ if(!confirm('Clear the local audit history? This does not change staff or movement data. Export a backup first if you want to keep it.')) return; state.audit=[]; persist(); renderAudit(); }
 
+/* ============================ SMALL SHARED HELPERS (new tools) ============================ */
+function msDate(ms){ return fmtDate(new Date(ms).toISOString().slice(0,10)); }
+function daysFromToday(ms){ return Math.round((ms-parseDate(isoToday()))/MS_DAY); }
+function liveMovement(m){ return str(m.archived).toLowerCase()!=='yes'; }
+
+/* ============================ APPROVALS BOARD ============================ */
+const BOARD_COLS=['Draft / Planning','Awaiting Submission','Awaiting Approval','VMC Submitted','VMC Approved','Payroll / MyHR Pending','On Hold'];
+const BOARD_DONE=['Confirmed','Completed','Cancelled'];
+const PRE_APPROVAL=['Draft / Planning','Awaiting Submission','Awaiting Approval','VMC Submitted'];
+// Days in one status before a movement is flagged (amber), doubled = red.
+const STALE_DAYS={'Draft / Planning':21,'Awaiting Submission':7,'Awaiting Approval':14,'VMC Submitted':14,'Payroll / MyHR Pending':10};
+function statusOf(m){ return str(m.adminStatus)||'Draft / Planning'; }
+// When the movement entered its current status: the stamp saved with it, else the audit history.
+function statusSinceOf(m){
+  if(str(m.statusSince)) return parseDate(m.statusSince);
+  const id=str(m.id);
+  const a=(state.audit||[]).find(x=>str(x.entityType)==='Movement'&&str(x.entityId)===id&&(x.changes||[]).some(c=>/^adminStatus:/.test(c)));
+  if(a){ const t=Date.parse(a.ts); if(!isNaN(t)) return parseDate(localStamp(new Date(t))); }
+  return null;
+}
+function approvalFlags(m){
+  const today=parseDate(isoToday()), s=statusOf(m), st=parseDate(m.start), en=parseDate(m.end), flags=[];
+  const since=statusSinceOf(m), age=since===null?null:Math.round((today-since)/MS_DAY), lim=STALE_DAYS[s];
+  if(lim&&age!==null&&age>lim) flags.push({k:'stale',sev:age>lim*2?'high':'warn',t:age+' days in this status'});
+  if(PRE_APPROVAL.includes(s)&&st!==null){
+    const d=Math.round((st-today)/MS_DAY);
+    if(d<=14) flags.push({k:'start',sev:'high',t:d<0?'Started '+(-d)+' d ago — not yet approved':d===0?'Starts today — not yet approved':'Starts in '+d+' d — not yet approved'});
+  }
+  if(en!==null&&en<today&&!BOARD_DONE.includes(s)) flags.push({k:'ended',sev:'high',t:'Ended — needs completing'});
+  if(['VMC Submitted','VMC Approved','Payroll / MyHR Pending'].includes(s)&&!str(m.vmcNum)&&!str(m.vmcUrl)) flags.push({k:'vmc',sev:'warn',t:'No VMC number recorded'});
+  return {age,flags};
+}
+function boardCards(){
+  return state.movements.filter(liveMovement).map(m=>Object.assign({m},approvalFlags(m)));
+}
+function renderBoard(){
+  const el=document.getElementById('board'); if(!el) return;
+  const showDone=document.getElementById('boardShowDone').checked, onlyFlag=document.getElementById('boardOnlyFlagged').checked;
+  const all=boardCards();
+  const flagged=all.filter(c=>c.flags.length&&!BOARD_DONE.includes(statusOf(c.m)));
+  const waiting=all.filter(c=>['Awaiting Approval','VMC Submitted'].includes(statusOf(c.m))).length;
+  const startSoon=all.filter(c=>c.flags.some(f=>f.k==='start')).length;
+  const nav=document.getElementById('navApprovals'); if(nav) nav.textContent=(all.filter(c=>!BOARD_DONE.includes(statusOf(c.m))&&statusOf(c.m)!=='On Hold').length)||'';
+  document.getElementById('boardTiles').innerHTML=`<div class="tiles" style="margin-bottom:14px">
+    <div class="tile"><div class="k">In the pipeline</div><div class="v">${all.filter(c=>!BOARD_DONE.includes(statusOf(c.m))).length}</div></div>
+    <div class="tile"><div class="k">Waiting on approval</div><div class="v">${waiting}</div></div>
+    <div class="tile"><div class="k">Starting soon, not approved</div><div class="v" style="color:${startSoon?'var(--danger)':'inherit'}">${startSoon}</div></div>
+    <div class="tile"><div class="k">Need attention</div><div class="v" style="color:${flagged.length?'var(--warn)':'inherit'}">${flagged.length}</div></div></div>`;
+  const cols=BOARD_COLS.concat(showDone?BOARD_DONE:[]);
+  let h='';
+  cols.forEach(col=>{
+    let cards=all.filter(c=>statusOf(c.m)===col);
+    if(onlyFlag) cards=cards.filter(c=>c.flags.length);
+    cards.sort((a,b)=>(parseDate(a.m.start)??9e15)-(parseDate(b.m.start)??9e15));
+    const fte=r2(cards.reduce((t,c)=>t+num(c.m.fteMoved),0));
+    h+=`<div class="bcol${BOARD_DONE.includes(col)?' is-done':''}" ondragover="boardOver(event)" ondragleave="boardLeave(event)" ondrop="boardDrop(event,${esc(jsq(col))})">
+      <div class="bcol-head"><b>${esc(col)}</b><span>${cards.length} · ${fte} FTE</span></div>`;
+    if(!cards.length) h+='<div class="hint" style="padding:6px 4px">Nothing here.</div>';
+    cards.forEach(c=>{
+      const m=c.m, id=str(m.id), sev=c.flags.some(f=>f.sev==='high')?'high':c.flags.some(f=>f.sev==='warn')?'warn':'';
+      const opts=BOARD_COLS.concat(BOARD_DONE).map(s=>`<option value="${esc(s)}" ${s===col?'selected':''}>${esc(s)}</option>`).join('');
+      h+=`<div class="bcard ${sev}" draggable="true" ondragstart="boardDrag(event,${esc(jsq(id))})">
+        <div class="bc-top"><button class="bc-name" onclick="viewStaffDetails(${esc(jsq(str(m.staff)))})">${esc(str(m.staff)||'(no name)')}</button><span class="pill neutral">${esc(str(m.type))}</span></div>
+        <div class="bc-sub">${r2(num(m.fteMoved))} FTE · ${esc(str(m.workClass)||'—')} · ${esc(fmtDate(m.start)||'no start')} → ${esc(fmtDate(m.end)||'no end')}</div>
+        <div class="bc-meta">${esc(id)}${str(m.vmcNum)?' · VMC '+esc(str(m.vmcNum)):''}${c.age!==null?' · '+c.age+' d in status':''}${str(m.owner)?' · for '+esc(str(m.owner)):''}</div>
+        ${c.flags.length?`<div class="bc-flags">${c.flags.map(f=>`<span class="pill ${f.sev==='high'?'danger':'warn'}">${esc(f.t)}</span>`).join('')}</div>`:''}
+        <div class="bc-act"><select onchange="boardMove(${esc(jsq(id))},this.value)" title="Move to a new status">${opts}</select><button class="iconbtn" onclick="openMovement(${esc(jsq(id))})">Open</button></div>
+      </div>`;
+    });
+    h+='</div>';
+  });
+  el.innerHTML=h;
+}
+let dragId=null;
+function boardDrag(ev,id){ dragId=id; try{ ev.dataTransfer.setData('text/plain',id); ev.dataTransfer.effectAllowed='move'; }catch(e){} }
+function boardOver(ev){ ev.preventDefault(); ev.currentTarget.classList.add('dragover'); }
+function boardLeave(ev){ ev.currentTarget.classList.remove('dragover'); }
+function boardDrop(ev,status){ ev.preventDefault(); ev.currentTarget.classList.remove('dragover'); const id=dragId; dragId=null; if(id) boardMove(id,status); }
+function boardMove(id,status){
+  const m=state.movements.find(x=>str(x.id)===id); if(!m||statusOf(m)===status) { renderBoard(); return; }
+  const before=deepCopy(m);
+  m.adminStatus=status; m.statusSince=localStamp();
+  auditLog('Update','Movement',id,`Status moved to ${status} · ${str(m.staff)} · ${str(m.type)}`,before,m);
+  persist(); rebuildAll();
+}
+
+/* ============================ LEAVE & COVER CALENDAR ============================ */
+function renderLeaveControls(){
+  const weeks=buildWeeksAll(), sel=document.getElementById('lcStart'); if(!sel) return;
+  const prev=sel.value, today=parseDate(isoToday());
+  sel.innerHTML=weeks.map(w=>`<option value="${w}">${msDate(w)}</option>`).join('');
+  let def=weeks[0]; for(let i=weeks.length-1;i>=0;i--){ if(weeks[i]<=today){ def=weeks[i]; break; } }
+  sel.value=(prev!==''&&weeks.includes(+prev))?prev:def;
+}
+function renderLeaveCalendar(){
+  renderLeaveControls();
+  const el=document.getElementById('lcTable'); if(!el) return;
+  const weeks=buildWeeksAll(), start=+document.getElementById('lcStart').value, count=+document.getElementById('lcWeeks').value||26;
+  const i0=Math.max(0,weeks.indexOf(start)), win=weeks.slice(i0,i0+count);
+  const only=document.getElementById('lcOnly').value==='short';
+  const perWeek=win.map(w=>{ const map={}; computeGaps(w,w+6*MS_DAY).forEach(g=>{ if(g.vacated>0.001) map[g.name]=g; }); return map; });
+  const names=[...new Set(perWeek.flatMap(m=>Object.keys(m)))];
+  const shortIn=n=>perWeek.some(m=>m[n]&&m[n].gap<-0.001);
+  let people=names.filter(n=>!only||shortIn(n));
+  const clsOf=n=>{ const g=perWeek.map(m=>m[n]).find(Boolean); return g?g.subClass:''; };
+  people.sort((a,b)=>CLASSES.indexOf(clsOf(a))-CLASSES.indexOf(clsOf(b))||a.localeCompare(b));
+  const anchor=parseDate(state.settings.cycleAnchorDate)??parseDate('2025-06-18'), len=(num(state.settings.cycleLenDays)||14)*MS_DAY;
+  const isFn=w=>((((w-anchor)%len)+len)%len)===0;
+  const estab=CLASSES.reduce((t,c)=>t+baselineOf(c),0);
+  const away=perWeek.map(m=>r2(Object.values(m).reduce((t,g)=>t+g.vacated,0)));
+  const covered=perWeek.map(m=>r2(Object.values(m).reduce((t,g)=>t+Math.min(g.vacated,g.backfilled),0)));
+  const shortW=perWeek.map(m=>r2(Object.values(m).reduce((t,g)=>t+Math.max(0,-g.gap),0)));
+  const nav=document.getElementById('navLeave'); if(nav){ const cur=perWeek[0]||{}; const n=Object.values(cur).filter(g=>g.gap<-0.001).length; nav.textContent=n||''; }
+  if(!names.length){ el.innerHTML='<div class="empty">Nobody has leave, a secondment out or another absence in this window.</div>'; return; }
+  let h='<div class="ptbl-wrap"><table class="planner"><thead><tr><th class="pname">Person</th><th class="pcls">Class</th>';
+  win.forEach(w=>{ h+=`<th class="${isFn(w)?'fnb':''}">${esc(msDate(w).slice(0,6))}</th>`; });
+  h+='</tr></thead><tbody>';
+  const sum=(label,arr,bad)=>{ h+=`<tr class="lc-sum"><td class="pname">${label}</td><td class="pcls"></td>${arr.map((v,i)=>`<td class="lc-num${bad&&v>0.001?' bad':''} ${isFn(win[i])?'fnb':''}">${v||'·'}</td>`).join('')}</tr>`; };
+  sum('FTE away',away); sum('FTE covered',covered); sum('FTE short',shortW,true);
+  h+=`<tr class="lc-sum"><td class="pname">Away as % of funded FTE</td><td class="pcls"></td>${away.map((v,i)=>`<td class="lc-num ${isFn(win[i])?'fnb':''}">${estab>0?Math.round(v/estab*100)+'%':'·'}</td>`).join('')}</tr>`;
+  if(!people.length) h+=`<tr><td colspan="${win.length+2}" class="empty">Nobody has uncovered FTE in this window.</td></tr>`;
+  people.forEach(n=>{
+    const first=perWeek.map(m=>m[n]).find(Boolean);
+    h+=`<tr><td class="pname"><button type="button" class="planner-name-link" onclick="viewStaffDetails(${esc(jsq(n))})">${esc(n)}</button><span class="lcsub">${esc(first?first.absence:'')}</span></td><td class="pcls">${esc(first?first.subClass:'')}</td>`;
+    win.forEach((w,i)=>{
+      const g=perWeek[i][n]; let k='', t='', tip='';
+      if(g){ const short=r2(Math.max(0,-g.gap)); tip=`${n}: ${g.absence}. Vacated ${g.vacated} FTE, covered ${r2(Math.min(g.vacated,g.backfilled))} FTE.${g.count?' Cover: '+g.coveredBy.join(', ')+'.':' Nobody covering.'}`; if(short<=0.001){ k='ok'; t='✓'; } else { k=g.backfilled>0.001?'part':'none'; t='−'+short; } }
+      h+=`<td class="pcell ${isFn(w)?'fnb':''}" data-k="${k}" title="${esc(tip)}">${esc(t)}</td>`;
+    });
+    h+='</tr>';
+  });
+  h+='</tbody></table></div>';
+  el.innerHTML=h;
+}
+
+/* ============================ BUDGET FORECAST ============================ */
+function forecastData(n){
+  const {cycles,len}=buildCycles(), i0=currentCycleIndex(cycles,len), list=cycles.slice(i0,i0+n);
+  const rows=CLASSES.map(cls=>{
+    const base=baselineOf(cls), ceil=ceilingOf(cls);
+    const eff=list.map(c=>r2(effFTE(cls,c,c+len-MS_DAY,'funded')));
+    const peak=Math.max(...eff), low=Math.min(...eff);
+    return {cls,base,ceil,eff,peak,low,iPeak:eff.indexOf(peak),iLow:eff.indexOf(low),
+      iCeil:ceil>0?eff.findIndex(v=>v>ceil+0.001):-1, iBase:eff.findIndex(v=>v>base+0.001), iUnder:eff.findIndex(v=>v<base-0.001)};
+  });
+  return {len,list,rows};
+}
+// What lands on the pay cycle starting at cs that was not there in the cycle before it.
+function cycleEvents(cls,cs,len){
+  const ce=cs+len-MS_DAY, pcs=cs-len, ev=[], inR=(d,a,b)=>{ const t=parseDate(d); return t!==null&&t>=a&&t<=b; };
+  state.staff.forEach(s=>{
+    if(str(s.active)!=='Yes'||str(s.subClass)!==cls) return;
+    if(inR(s.contractEnd,pcs,cs-MS_DAY)) ev.push(`${str(s.name)}'s ${str(s.empType).toLowerCase()||''} line ends ${fmtDate(s.contractEnd)}`);
+    if(inR(s.contractStart,cs,ce)) ev.push(`${str(s.name)} starts ${fmtDate(s.contractStart)} (${r2(num(s.subFTE))} FTE)`);
+  });
+  state.movements.forEach(m=>{
+    if(!liveMovement(m)||!(str(m.subClass)===cls||str(m.workClass)===cls)) return;
+    const who=`${str(m.type)} for ${str(m.staff)||'?'} (${r2(num(m.fteMoved))} FTE)`;
+    if(inR(m.start,cs,ce)) ev.push(`${who} starts ${fmtDate(m.start)}`);
+    if(inR(m.end,pcs,cs-MS_DAY)) ev.push(`${who} ended ${fmtDate(m.end)}`);
+  });
+  return ev;
+}
+function forecastFindings(f){
+  const out=[];
+  f.rows.forEach(r=>{
+    const at=i=>({cs:f.list[i],days:daysFromToday(f.list[i]),val:r.eff[i]});
+    if(r.iCeil>=0){ const a=at(r.iCeil); out.push({cls:r.cls,kind:'ceil',sev:a.days<=90?'high':'warn',idx:r.iCeil,...a,over:r2(a.val-r.ceil),text:(r.iCeil===0?`${r.cls} is over its ceiling now`:`${r.cls} goes over its ceiling from the cycle starting ${msDate(a.cs)}`)+`: ${a.val} FTE against ${r.ceil} (${signed(a.val-r.ceil)}).`}); }
+    else if(r.iBase>=0){ const a=at(r.iBase); out.push({cls:r.cls,kind:'base',sev:'info',idx:r.iBase,...a,text:(r.iBase===0?`${r.cls} is over its baseline now`:`${r.cls} goes over its baseline from the cycle starting ${msDate(a.cs)}`)+`: ${a.val} FTE against ${r.base} (${signed(a.val-r.base)}). Still under the ceiling.`}); }
+    if(r.iUnder>=0&&r.iCeil<0){ const a=at(r.iUnder); out.push({cls:r.cls,kind:'under',sev:'info',idx:r.iUnder,...a,text:(r.iUnder===0?`${r.cls} is under its baseline now`:`${r.cls} drops under its baseline from the cycle starting ${msDate(a.cs)}`)+`: ${a.val} FTE against ${r.base} (${signed(a.val-r.base)}). Lowest point ${r.low} FTE.`}); }
+  });
+  return out;
+}
+function renderForecast(){
+  const el=document.getElementById('budgetForecast'); if(!el) return;
+  const n=+(document.getElementById('fcHorizon')||{value:26}).value||26;
+  const f=forecastData(n), finds=forecastFindings(f);
+  const nav=document.getElementById('navBudget'); if(nav){ const c=finds.filter(x=>x.kind==='ceil').length; nav.textContent=c||''; }
+  const cls=(v,r)=>r.ceil>0&&v>r.ceil+0.001?'fs-ceil':v>r.base+0.001?'fs-base':v<r.base-0.001?'fs-under':'fs-on';
+  const rows=f.rows.map(r=>{
+    let pill;
+    if(r.iCeil>=0) pill=`<span class="pill danger">Over ceiling from ${esc(msDate(f.list[r.iCeil]))}</span>`;
+    else if(r.iBase>=0) pill=`<span class="pill warn">Over baseline from ${esc(msDate(f.list[r.iBase]))}</span>`;
+    else if(r.iUnder>=0) pill=`<span class="pill neutral">Under baseline from ${esc(msDate(f.list[r.iUnder]))}</span>`;
+    else pill='<span class="pill good">Within range</span>';
+    return [esc(r.cls),r.base,r.ceil,r.eff[0],`${r.peak} <span class="hint">(${esc(msDate(f.list[r.iPeak]).slice(0,6))})</span>`,`${r.low} <span class="hint">(${esc(msDate(f.list[r.iLow]).slice(0,6))})</span>`,r2(r.ceil-r.peak),pill];
+  });
+  let h=tableHTML(['Class','Baseline','Ceiling','Now','Peak','Lowest','Headroom at peak','Outlook'],rows,'No classifications set up.');
+  h+='<div style="margin-top:16px">';
+  f.rows.forEach(r=>{ h+=`<div class="fcrow"><div class="blab" style="font-weight:800;font-size:13px">${esc(r.cls)}</div><div class="fstrip">${r.eff.map((v,i)=>`<i class="${cls(v,r)}" title="${esc(msDate(f.list[i])+': '+v+' FTE (baseline '+r.base+', ceiling '+r.ceil+')')}"></i>`).join('')}</div></div>`; });
+  h+=`<div class="plegend" style="margin-top:10px"><span class="pchip" style="background:#BFE3CF;color:var(--good)">On baseline</span><span class="pchip" style="background:#F3D98A;color:var(--warn)">Over baseline</span><span class="pchip" style="background:#E89B9B;color:var(--danger)">Over ceiling</span><span class="pchip" style="background:#BBD5EE;color:var(--accent-dark)">Under baseline</span><span class="hint" style="align-self:center">Each block = one pay cycle, from ${esc(msDate(f.list[0]))}. Hover for the numbers.</span></div></div>`;
+  if(finds.length){
+    h+='<h4 style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 8px">What to watch</h4>';
+    finds.sort((a,b)=>({high:0,warn:1,info:2}[a.sev]-{high:0,warn:1,info:2}[b.sev])||a.idx-b.idx).forEach(x=>{
+      const ev=cycleEvents(x.cls,x.cs,f.len), shown=ev.slice(0,4);
+      h+=`<div class="action-item ${x.sev}" style="margin-bottom:9px"><div class="abar"></div><div><div class="action-issue">${esc(x.text)}</div>${ev.length?`<ul class="fcnote">${shown.map(e=>`<li>${esc(e)}</li>`).join('')}${ev.length>4?`<li>+${ev.length-4} more changes</li>`:''}</ul>`:'<div class="action-detail">No single dated event explains this — it is the position today, or the result of several smaller changes.</div>'}</div><div class="action-buttons"></div></div>`;
+    });
+  } else h+='<div class="sectionnote" style="margin-top:16px">Nothing in the look-ahead window pushes any classification over its baseline or ceiling.</div>';
+  h+='<div class="hint" style="margin-top:12px">The forecast is only as good as the dates recorded. A permanent line, or a temporary line with no end date, is assumed to carry on. Funded FTE is used, so positions held open during parental leave and long service leave still count. Casual staff are not counted.</div>';
+  el.innerHTML=h;
+}
+
+/* ============================ RECRUITMENT ============================ */
+const RC_STAGES=['Approval to recruit','Advertised','Shortlisting','Interviews','Offer made','Pre-employment checks','Started','Closed – not filled'];
+const RC_DONE=['Started','Closed – not filled'];
+const RC_REASONS=['Vacant position','Backfill for leave','Temporary extension or replacement','New funding','Other'];
+const RC_LONG_DAYS=60, RC_STALE_DAYS=21;
+let editingRcId=null, rcSort={key:'target',dir:'asc'};
+function sortRc(k){ if(rcSort.key===k) rcSort.dir=rcSort.dir==='asc'?'desc':'asc'; else {rcSort.key=k;rcSort.dir='asc';} renderRecruit(); }
+function rcDaysOpen(r){ const o=parseDate(r.opened); if(o===null) return null; const e=RC_DONE.includes(str(r.stage))&&parseDate(r.doneDate)!==null?parseDate(r.doneDate):parseDate(isoToday()); return Math.max(0,Math.round((e-o)/MS_DAY)); }
+function rcDaysInStage(r){ const s=parseDate(r.stageSince); return s===null?null:Math.max(0,Math.round((parseDate(isoToday())-s)/MS_DAY)); }
+function rcFlags(r){
+  const f=[], s=str(r.stage), today=parseDate(isoToday());
+  if(RC_DONE.includes(s)) return f;
+  const tg=parseDate(r.target), pre=RC_STAGES.indexOf(s)<RC_STAGES.indexOf('Offer made');
+  if(tg!==null){ const d=Math.round((tg-today)/MS_DAY); if(d<0) f.push({sev:'high',t:'Target start passed '+(-d)+' d ago'}); else if(d<=21&&pre) f.push({sev:'high',t:'Starts in '+d+' d — no offer yet'}); }
+  const open=rcDaysOpen(r), inSt=rcDaysInStage(r);
+  if(open!==null&&open>RC_LONG_DAYS&&pre) f.push({sev:'warn',t:open+' days open, no offer yet'});
+  if(inSt!==null&&inSt>RC_STALE_DAYS&&!f.some(x=>x.t.includes('days open'))) f.push({sev:'warn',t:inSt+' days at this stage'});
+  return f;
+}
+function renderRecruit(){
+  const el=document.getElementById('rcTable'); if(!el) return;
+  const showClosed=document.getElementById('rcShowClosed').checked;
+  const all=state.recruitment.map((r,i)=>({row:r,i}));
+  const open=all.filter(o=>!RC_DONE.includes(str(o.row.stage)));
+  const nav=document.getElementById('navRecruit'); if(nav) nav.textContent=open.length||'';
+  const flagged=open.filter(o=>rcFlags(o.row).length).length;
+  const days=open.map(o=>rcDaysOpen(o.row)).filter(x=>x!==null), avg=days.length?Math.round(days.reduce((a,b)=>a+b,0)/days.length):0;
+  const byCls={}; open.forEach(o=>{ const c=str(o.row.cls)||'—'; byCls[c]=r2((byCls[c]||0)+num(o.row.fte)); });
+  document.getElementById('rcTiles').innerHTML=`<div class="tiles" style="margin-bottom:14px">
+    <div class="tile"><div class="k">Positions open</div><div class="v">${open.length}</div></div>
+    <div class="tile"><div class="k">FTE being recruited</div><div class="v">${r2(open.reduce((t,o)=>t+num(o.row.fte),0))}</div><div class="hint">${Object.keys(byCls).map(c=>esc(c)+' '+byCls[c]).join(' · ')||'&nbsp;'}</div></div>
+    <div class="tile"><div class="k">Average days open</div><div class="v">${avg}</div></div>
+    <div class="tile"><div class="k">Need attention</div><div class="v" style="color:${flagged?'var(--warn)':'inherit'}">${flagged}</div></div></div>`;
+  const items=all.filter(o=>showClosed||!RC_DONE.includes(str(o.row.stage)));
+  const cols=[
+    {key:'id',label:'ID',val:r=>str(r.id).toLowerCase(),get:r=>esc(str(r.id))},
+    {key:'title',label:'Position',val:r=>str(r.title).toLowerCase(),get:r=>`<b>${esc(str(r.title))}</b>${str(r.candidate)?`<div class="hint">Candidate: ${esc(str(r.candidate))}</div>`:''}`},
+    {key:'cls',label:'Class',group:true,val:r=>CLASSES.indexOf(str(r.cls)),get:r=>esc(str(r.cls))},
+    {key:'fte',label:'FTE',num:true,val:r=>num(r.fte),get:r=>r2(num(r.fte))},
+    {key:'empType',label:'Type',val:r=>str(r.empType).toLowerCase(),get:r=>esc(str(r.empType))},
+    {key:'reason',label:'Reason',val:r=>str(r.reason).toLowerCase(),get:r=>{ const mv=str(r.movId)?state.movements.find(x=>str(x.id)===str(r.movId)):null; return esc(str(r.reason))+(mv?`<div class="hint">${esc(str(mv.id))} · ${esc(str(mv.staff))}</div>`:''); }},
+    {key:'stage',label:'Stage',group:true,val:r=>RC_STAGES.indexOf(str(r.stage)),get:r=>{ const s=str(r.stage); const cl=s==='Started'?'good':s==='Closed – not filled'?'neutral':RC_STAGES.indexOf(s)>=RC_STAGES.indexOf('Offer made')?'accent':'warn'; return `<span class="pill ${cl}">${esc(s)}</span>`; }},
+    {key:'open',label:'Days open',num:true,val:r=>rcDaysOpen(r),get:r=>{ const d=rcDaysOpen(r); return d===null?'':d; }},
+    {key:'inStage',label:'In stage',num:true,val:r=>rcDaysInStage(r),get:r=>{ const d=rcDaysInStage(r); return d===null?'':d+' d'; }},
+    {key:'target',label:'Target start',val:r=>parseDate(r.target),get:r=>esc(fmtDate(r.target))},
+    {label:'Flags',get:r=>rcFlags(r).map(x=>`<span class="pill ${x.sev==='high'?'danger':'warn'}" style="display:block;margin-bottom:3px">${esc(x.t)}</span>`).join('')},
+    {label:'',get:(r,i)=>`<div class="rowact"><button class="iconbtn" onclick="openRecruit(${esc(jsq(str(r.id)))})">Edit</button></div>`}
+  ];
+  el.innerHTML=sortableTable(cols,items,rcSort,'sortRc',{emptyMsg:'No positions being recruited. Use “Add position” to start one.',rowClass:r=>RC_DONE.includes(str(r.stage))?'archived':''});
+}
+function nextRcId(){ let max=0; state.recruitment.forEach(r=>{ const mm=/RC-?(\d+)/.exec(str(r.id)); if(mm) max=Math.max(max,+mm[1]); }); return 'RC-'+String(max+1).padStart(4,'0'); }
+function openRecruit(id){
+  editingRcId=id;
+  const r=id?state.recruitment.find(x=>str(x.id)===id):{id:nextRcId(),title:'',cls:defaultClass(),fte:'',empType:'Permanent',reason:'Vacant position',roleId:'',movId:'',stage:'Approval to recruit',opened:localStamp(),target:'',posId:'',vmcNum:'',candidate:'',notes:''};
+  document.getElementById('rcModalTitle').textContent=id?'Edit position':'Add position';
+  document.getElementById('rc_delBtn').style.display=id?'':'none';
+  document.getElementById('rc_id').value=str(r.id);
+  fillSelect('rc_stage',RC_STAGES,str(r.stage));
+  document.getElementById('rc_title').value=str(r.title);
+  fillSelect('rc_cls',CLASSES,str(r.cls)||defaultClass());
+  document.getElementById('rc_fte').value=r.fte??'';
+  fillSelect('rc_empType',['Permanent','Temporary'],str(r.empType)||'Permanent');
+  fillSelect('rc_reason',RC_REASONS,str(r.reason));
+  fillSelect('rc_role',[{v:'',label:'— none —'},...rotLiveRoles().map(x=>({v:x.role.id,label:x.team.name+' / '+x.role.name+' ('+(x.role.cls||'no class')+')'}))],str(r.roleId));
+  fillSelect('rc_mov',[{v:'',label:'— none —'},...state.movements.filter(liveMovement).map(m=>({v:str(m.id),label:`${str(m.id)} · ${str(m.type)} · ${str(m.staff)} · ${fmtDate(m.start)} → ${fmtDate(m.end)}`}))],str(r.movId));
+  document.getElementById('rc_opened').value=str(r.opened).slice(0,10);
+  document.getElementById('rc_target').value=str(r.target).slice(0,10);
+  document.getElementById('rc_posId').value=str(r.posId);
+  document.getElementById('rc_vmcNum').value=str(r.vmcNum);
+  document.getElementById('rc_candidate').value=str(r.candidate);
+  document.getElementById('rc_notes').value=str(r.notes);
+  updateRcValidation();
+  document.getElementById('rcModal').classList.add('open');
+}
+function readRcForm(){
+  const g=id=>document.getElementById(id).value;
+  return {id:g('rc_id'),title:str(g('rc_title')),cls:g('rc_cls'),fte:g('rc_fte')===''?'':Number(g('rc_fte')),empType:g('rc_empType'),reason:g('rc_reason'),roleId:g('rc_role'),movId:g('rc_mov'),stage:g('rc_stage'),opened:g('rc_opened'),target:g('rc_target'),posId:str(g('rc_posId')),vmcNum:str(g('rc_vmcNum')),candidate:str(g('rc_candidate')),notes:g('rc_notes')};
+}
+function validateRecruit(o){
+  const errors=[],warnings=[];
+  if(!str(o.title)) errors.push('Position title is required.');
+  if(!str(o.cls)) errors.push('Classification is required.');
+  if(num(o.fte)<=0) errors.push('FTE must be greater than 0.');
+  if(!str(o.opened)) warnings.push('No date opened, so days open cannot be worked out.');
+  const op=parseDate(o.opened), tg=parseDate(o.target);
+  if(op!==null&&tg!==null&&tg<op) warnings.push('Target start date is before the date opened.');
+  if(['Offer made','Pre-employment checks','Started'].includes(str(o.stage))&&!str(o.candidate)) warnings.push('This stage usually has a successful candidate — add their name.');
+  return {errors,warnings};
+}
+function updateRcValidation(){ renderValidationPanel('rcValidation',validateRecruit(readRcForm())); }
+function saveRecruit(){
+  const obj=readRcForm(), res=validateRecruit(obj);
+  renderValidationPanel('rcValidation',res);
+  if(!confirmWarnings(res)) return;
+  const prev=editingRcId?state.recruitment.find(x=>str(x.id)===editingRcId):null;
+  const stageChanged=!prev||str(prev.stage)!==str(obj.stage);
+  obj.stageSince=stageChanged?localStamp():(prev.stageSince||'');
+  obj.doneDate=RC_DONE.includes(str(obj.stage))?(stageChanged?localStamp():(prev.doneDate||localStamp())):'';
+  if(prev){ const i=state.recruitment.indexOf(prev), before=deepCopy(prev); state.recruitment[i]=obj; auditLog('Update','Recruitment',str(obj.id),`Updated ${str(obj.title)} · ${str(obj.stage)}`,before,obj); }
+  else { state.recruitment.push(obj); auditLog('Create','Recruitment',str(obj.id),`Created ${str(obj.title)} · ${str(obj.stage)}`,null,obj,fieldChanges(null,obj)); }
+  closeModal('rcModal'); persist(); rebuildAll();
+  if(str(obj.stage)==='Started'&&(!prev||str(prev.stage)!=='Started')&&confirm('Marked as started. Add '+(str(obj.candidate)||'this person')+' to the Staff Register now?\n\nThe details from this position are filled in for you.')){
+    go('staff');
+    openStaff(null,{name:str(obj.candidate),roleId:str(obj.roleId),subClass:str(obj.cls),subFTE:num(obj.fte),posId:str(obj.posId),posTitle:str(obj.title),empType:str(obj.empType),contractStart:str(obj.target)});
+  }
+}
+function deleteRecruit(){
+  if(!editingRcId) return; if(!confirm('Delete this position permanently? (Setting the stage to “Closed – not filled” keeps a record.)')) return;
+  const before=deepCopy(state.recruitment.find(x=>str(x.id)===editingRcId));
+  state.recruitment=state.recruitment.filter(x=>str(x.id)!==editingRcId);
+  auditLog('Delete','Recruitment',editingRcId,`Deleted ${before?str(before.title):''}`,before,null,['Position deleted']);
+  closeModal('rcModal'); persist(); rebuildAll();
+}
+
+/* ============================ BRIEFING ============================ */
+function buildBriefing(csMs,ceMs){
+  const today=parseDate(isoToday());
+  const actions=computeManagerActions(), high=actions.filter(a=>a.sev==='high'), warn=actions.filter(a=>a.sev==='warn');
+  const secs=[];
+  // FTE position
+  const pos=CLASSES.map(cls=>{ const fu=r2(effFTE(cls,csMs,ceMs,'funded')), fl=r2(effFTE(cls,csMs,ceMs,'floor')), b=baselineOf(cls), c=ceilingOf(cls);
+    return [cls,b,c,fu,signed(fu-b),fl,c>0&&fu>c+0.001?'OVER ceiling':fu>b+0.001?'Over baseline':fu<b-0.001?'Under baseline':'On baseline']; });
+  secs.push({title:'FTE position this cycle',note:'Funded FTE counts positions held open during parental leave and long service leave. “On the floor” is who is actually at work.',head:['Class','Baseline','Ceiling','Funded FTE','vs baseline','On the floor','Status'],rows:pos});
+  // decisions
+  secs.push({title:'Needs a decision',note:high.length?'High-priority items from the Manager Dashboard.':'',head:['Who / what','Issue','Detail'],rows:high.slice(0,15).map(a=>[a.person,a.issue,a.detail]),empty:'No high-priority items.',more:high.length>15?high.length-15:0});
+  // contracts
+  const cont=state.staff.filter(s=>str(s.empType)==='Temporary'&&str(s.active)==='Yes'&&parseDate(s.contractEnd)!==null&&daysFromToday(parseDate(s.contractEnd))<=90)
+    .sort((a,b)=>parseDate(a.contractEnd)-parseDate(b.contractEnd));
+  secs.push({title:'Temporary contracts expired or ending within 90 days',head:['Name','Class','FTE','Ends','Days left'],rows:cont.map(s=>{ const d=daysFromToday(parseDate(s.contractEnd)); return [str(s.name),str(s.subClass),r2(num(s.subFTE)),fmtDate(s.contractEnd),d<0?'EXPIRED '+(-d)+' d ago':d]; }),empty:'None.'});
+  // approvals
+  const ap=boardCards().filter(c=>!BOARD_DONE.includes(statusOf(c.m))).sort((a,b)=>BOARD_COLS.indexOf(statusOf(a.m))-BOARD_COLS.indexOf(statusOf(b.m)));
+  secs.push({title:'Approvals in progress',note:'Movements not yet confirmed. Flags mark anything stuck or starting before it is approved.',head:['Status','Person','Movement','FTE','Starts','Days in status','Flags'],rows:ap.map(c=>[statusOf(c.m),str(c.m.staff),str(c.m.type)+(str(c.m.vmcNum)?' · VMC '+str(c.m.vmcNum):''),r2(num(c.m.fteMoved)),fmtDate(c.m.start),c.age===null?'—':c.age,c.flags.map(f=>f.t).join('; ')]),empty:'Nothing in the approval pipeline.'});
+  // gaps
+  const gaps=computeGaps(csMs,ceMs).filter(g=>g.gap<-0.001);
+  secs.push({title:'FTE not covered this cycle',head:['Person away','Class','Reason','Vacated','Covered','Short','Covered by'],rows:gaps.map(g=>[g.name,g.subClass,g.absence,g.vacated,r2(g.backfilled),r2(-g.gap),g.count?g.coveredBy.join(', '):'nobody']),empty:'Every absence is covered.'});
+  // coming up
+  const soon=state.movements.filter(m=>liveMovement(m)&&['Leave','Secondment Out'].includes(str(m.type))).map(m=>({m,st:parseDate(m.start),en:parseDate(m.end)}))
+    .filter(x=>(x.st!==null&&x.st>=today&&x.st<=today+28*MS_DAY)||(x.en!==null&&x.en>=today&&x.en<=today+28*MS_DAY)).sort((a,b)=>(a.st??0)-(b.st??0));
+  secs.push({title:'Leave starting or ending in the next 28 days',head:['Person','Type','FTE','Starts','Ends'],rows:soon.map(x=>[str(x.m.staff),str(x.m.absenceType)||str(x.m.type),r2(num(x.m.fteMoved)),fmtDate(x.m.start),fmtDate(x.m.end)]),empty:'None.'});
+  // recruitment
+  const rc=state.recruitment.filter(r=>!RC_DONE.includes(str(r.stage))).sort((a,b)=>(parseDate(a.target)??9e15)-(parseDate(b.target)??9e15));
+  secs.push({title:'Recruitment',head:['Position','Class','FTE','Stage','Days open','Target start','Flags'],rows:rc.map(r=>[str(r.title),str(r.cls),r2(num(r.fte)),str(r.stage),rcDaysOpen(r)??'',fmtDate(r.target),rcFlags(r).map(x=>x.t).join('; ')]),empty:'No positions being recruited.'});
+  // forecast
+  const fc=forecastFindings(forecastData(26)).filter(x=>x.kind==='ceil'||x.kind==='under'||x.kind==='base');
+  secs.push({title:'Budget outlook — next 12 months',head:['Class','What happens','From'],rows:fc.map(x=>[x.cls,x.text,msDate(x.cs)]),empty:'No baseline or ceiling breaches forecast.'});
+  const tiles=[
+    ['High-priority actions',high.length],['Needs review',warn.length],['Contracts ending ≤ 90 days',cont.length],['Approvals in progress',ap.length],
+    ['FTE not covered',r2(gaps.reduce((t,g)=>t-g.gap,0))],['Positions recruiting',rc.length],['Ceiling breaches forecast',fc.filter(x=>x.kind==='ceil').length]];
+  return {tiles,secs,today};
+}
+function renderBriefing(){
+  fillCycleSelect('repCycle');
+  const el=document.getElementById('briefingDoc'); if(!el) return;
+  const {csMs,ceMs}=cycleFromSelect('repCycle'), b=buildBriefing(csMs,ceMs);
+  const svc=str(state.settings.serviceName)||'Service', org=str(state.settings.orgName), by=userName();
+  let h=`<h1>${esc(svc)} — manager briefing</h1><div class="bsub">${esc(org?org+' · ':'')}Pay cycle ${esc(cycleRangeText(csMs,ceMs))} · Prepared ${esc(fmtDate(isoToday()))}${by?' by '+esc(by):''}</div>`;
+  h+='<div class="tiles">'+b.tiles.map(t=>`<div class="tile"><div class="k">${esc(t[0])}</div><div class="v">${esc(t[1])}</div></div>`).join('')+'</div>';
+  b.secs.forEach(s=>{
+    h+=`<h3 class="bh">${esc(s.title)}</h3>`+(s.note?`<div class="bnote">${esc(s.note)}</div>`:'');
+    h+=s.rows.length?tableHTML(s.head,s.rows.map(r=>r.map(c=>typeof c==='number'?c:esc(c))),''):`<div class="bnone">${esc(s.empty||'Nothing to report.')}</div>`;
+    if(s.more) h+=`<div class="bnone">+${s.more} more on the Manager Dashboard.</div>`;
+  });
+  el.innerHTML=h;
+}
+function briefingText(){
+  const {csMs,ceMs}=cycleFromSelect('repCycle'), b=buildBriefing(csMs,ceMs), by=userName();
+  const L=[`${str(state.settings.serviceName)||'Service'} — manager briefing`,`Pay cycle ${cycleRangeText(csMs,ceMs)} · Prepared ${fmtDate(isoToday())}${by?' by '+by:''}`,'','AT A GLANCE'];
+  b.tiles.forEach(t=>L.push(`- ${t[0]}: ${t[1]}`));
+  b.secs.forEach(s=>{
+    L.push('','* '+s.title.toUpperCase()+' *');
+    if(!s.rows.length){ L.push(s.empty||'Nothing to report.'); return; }
+    s.rows.forEach(r=>L.push('- '+r.filter(c=>c!==''&&c!==null&&c!==undefined).join(' | ')));
+    if(s.more) L.push(`(+${s.more} more)`);
+  });
+  return L.join('\n');
+}
+function printBriefing(){ renderBriefing(); window.print(); }
+async function copyBriefing(){
+  const t=briefingText();
+  try{ await navigator.clipboard.writeText(t); toast('Briefing copied — paste it into an email'); }
+  catch(e){ const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); let ok=false; try{ ok=document.execCommand('copy'); }catch(x){} ta.remove(); toast(ok?'Briefing copied — paste it into an email':'Could not copy. Use Print / Save as PDF instead.',!ok); }
+}
+
+/* ============================ EXCEL / CSV EXPORT ============================ */
+// Column types: s = text, n = number (2dp), d = date. Rows hold ISO strings for dates.
+function exportSheets(){
+  const {csMs,ceMs}=cycleFromSelect('repCycle'), today=parseDate(isoToday());
+  const fc=forecastData(26);
+  const S=[];
+  S.push({name:'Movements',cols:[['ID','s'],['Staff','s'],['Sub class','s'],['Sub FTE','n'],['Type','s'],['FTE moved','n'],['Working class','s'],['Owner / backfilling','s'],['Working position','s'],['Start','d'],['End','d'],['Absence type','s'],['Admin status','s'],['Status since','d'],['VMC number','s'],['Process number','s'],['VMC link','s'],['Archived','s'],['Notes','s']],
+    rows:state.movements.map(m=>[str(m.id),str(m.staff),str(m.subClass),num(m.subFTE),str(m.type),num(m.fteMoved),str(m.workClass),str(m.owner),str(m.workPosTitle),str(m.start),str(m.end),str(m.absenceType),statusOf(m),(()=>{ const s=statusSinceOf(m); return s===null?'':new Date(s).toISOString().slice(0,10); })(),str(m.vmcNum),str(m.procNum),str(m.vmcUrl),str(m.archived),str(m.notes)])});
+  S.push({name:'Staff register',cols:[['Name','s'],['Team','s'],['Role','s'],['Class','s'],['FTE','n'],['Position ID','s'],['Position title','s'],['Employment type','s'],['Active','s'],['Line starts','d'],['Line ends','d'],['Notes','s']],
+    rows:state.staff.map(s=>{ const l=roleLabel(s); return [str(s.name),l?l.team:'',l?l.role:'',str(s.subClass),num(s.subFTE),str(s.posId),str(s.posTitle),str(s.empType),str(s.active),str(s.contractStart),str(s.contractEnd),str(s.notes)]; })});
+  S.push({name:'Rotations',cols:[['Team','s'],['Role','s'],['Staff','s'],['FTE','n'],['Start','d'],['End','d'],['Notes','s']],
+    rows:state.rotations.map(a=>{ const f=findRole(str(a.roleId)); return [f?f.team.name:'',f?f.role.name:'',str(a.staff),num(a.fte),str(a.start),str(a.end),str(a.notes)]; })});
+  S.push({name:'Recruitment',cols:[['ID','s'],['Position','s'],['Class','s'],['FTE','n'],['Type','s'],['Reason','s'],['Stage','s'],['Date opened','d'],['Days open','n'],['Target start','d'],['Candidate','s'],['Position ID','s'],['Request / VMC','s'],['Related movement','s'],['Notes','s']],
+    rows:state.recruitment.map(r=>[str(r.id),str(r.title),str(r.cls),num(r.fte),str(r.empType),str(r.reason),str(r.stage),str(r.opened),rcDaysOpen(r)??'',str(r.target),str(r.candidate),str(r.posId),str(r.vmcNum),str(r.movId),str(r.notes)])});
+  const con=[];
+  state.staff.forEach(s=>{ if(str(s.empType)==='Temporary'&&str(s.active)==='Yes') con.push(['Temporary contract',str(s.name),`${str(s.subClass)} · ${r2(num(s.subFTE))} FTE`,str(s.contractEnd),parseDate(s.contractEnd)===null?'':daysFromToday(parseDate(s.contractEnd))]); });
+  state.movements.forEach(m=>{ if(liveMovement(m)&&parseDate(m.end)!==null) con.push(['Movement',str(m.staff),`${str(m.id)} · ${str(m.type)} · ${r2(num(m.fteMoved))} FTE`,str(m.end),daysFromToday(parseDate(m.end))]); });
+  con.sort((a,b)=>(a[4]===''?9e9:a[4])-(b[4]===''?9e9:b[4]));
+  S.push({name:'Contracts & end dates',cols:[['Kind','s'],['Name','s'],['Detail','s'],['End date','d'],['Days left','n']],rows:con});
+  S.push({name:'FTE gaps',cols:[['Person away','s'],['Class','s'],['Reason','s'],['Vacated FTE','n'],['Covered FTE','n'],['Gap (− short)','n'],['Covered by','s'],['Earliest start','d'],['Latest end','d']],
+    rows:computeGaps(csMs,ceMs).map(g=>[g.name,g.subClass,g.absence,g.vacated,r2(g.backfilled),g.gap,g.count?g.coveredBy.join('; '):'nobody',g.start?new Date(g.start).toISOString().slice(0,10):'',g.end?new Date(g.end).toISOString().slice(0,10):''])});
+  const bud=[]; fc.rows.forEach(r=>fc.list.forEach((c,i)=>{ const fl=r2(effFTE(r.cls,c,c+fc.len-MS_DAY,'floor')); bud.push([r.cls,new Date(c).toISOString().slice(0,10),new Date(c+fc.len-MS_DAY).toISOString().slice(0,10),r.eff[i],fl,r.base,r.ceil,r2(r.eff[i]-r.base),r.ceil>0&&r.eff[i]>r.ceil+0.001?'Over ceiling':r.eff[i]>r.base+0.001?'Over baseline':r.eff[i]<r.base-0.001?'Under baseline':'On baseline']); }));
+  S.push({name:'Budget forecast',cols:[['Class','s'],['Cycle start','d'],['Cycle end','d'],['Funded FTE','n'],['On the floor','n'],['Baseline','n'],['Ceiling','n'],['vs baseline','n'],['Status','s']],rows:bud});
+  return S;
+}
+function xmlEsc(s){ return String(s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function colName(i){ let s='',n=i+1; while(n>0){ const r=(n-1)%26; s=String.fromCharCode(65+r)+s; n=Math.floor((n-1)/26); } return s; }
+const CRC_T=(()=>{ const t=new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1); t[n]=c>>>0; } return t; })();
+function crc32(u8){ let c=0xFFFFFFFF; for(let i=0;i<u8.length;i++) c=CRC_T[(c^u8[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+// Minimal ZIP writer (no compression) — enough for an .xlsx, and needs no library.
+function zipStore(files){
+  const enc=new TextEncoder(), parts=[], central=[]; let offset=0;
+  const u16=n=>[n&255,(n>>8)&255], u32=n=>[n&255,(n>>8)&255,(n>>16)&255,(n>>>24)&255];
+  const now=new Date(), dt=((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate(), tm=(now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1);
+  files.forEach(f=>{
+    const nm=enc.encode(f.name), data=enc.encode(f.text), crc=crc32(data), sz=data.length;
+    const lh=Uint8Array.from([0x50,0x4b,3,4,...u16(20),...u16(0x0800),...u16(0),...u16(tm),...u16(dt),...u32(crc),...u32(sz),...u32(sz),...u16(nm.length),...u16(0)]);
+    parts.push(lh,nm,data); central.push({nm,crc,sz,offset}); offset+=lh.length+nm.length+sz;
+  });
+  const cdStart=offset;
+  central.forEach(c=>{
+    const ch=Uint8Array.from([0x50,0x4b,1,2,...u16(20),...u16(20),...u16(0x0800),...u16(0),...u16(tm),...u16(dt),...u32(c.crc),...u32(c.sz),...u32(c.sz),...u16(c.nm.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(c.offset)]);
+    parts.push(ch,c.nm); offset+=ch.length+c.nm.length;
+  });
+  parts.push(Uint8Array.from([0x50,0x4b,5,6,...u16(0),...u16(0),...u16(central.length),...u16(central.length),...u32(offset-cdStart),...u32(cdStart),...u16(0)]));
+  return new Blob(parts,{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+function sheetXml(sh){
+  const NS='xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"';
+  const widths=sh.cols.map((c,i)=>Math.min(60,Math.max(9,String(c[0]).length+2,...sh.rows.slice(0,400).map(r=>String(r[i]==null?'':r[i]).length+2))));
+  let x=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet ${NS}><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${widths.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('')}</cols><sheetData>`;
+  x+='<row r="1" ht="20" customHeight="1">'+sh.cols.map((c,i)=>`<c r="${colName(i)}1" s="1" t="inlineStr"><is><t>${xmlEsc(c[0])}</t></is></c>`).join('')+'</row>';
+  sh.rows.forEach((r,ri)=>{
+    x+=`<row r="${ri+2}">`;
+    sh.cols.forEach((c,i)=>{
+      const v=r[i], ref=colName(i)+(ri+2);
+      if(v===''||v===null||v===undefined) return;
+      if(c[1]==='n'&&typeof v==='number'&&isFinite(v)) x+=`<c r="${ref}" s="3"><v>${v}</v></c>`;
+      else if(c[1]==='d'&&parseDate(v)!==null) x+=`<c r="${ref}" s="2"><v>${parseDate(v)/MS_DAY+25569}</v></c>`;
+      else if(typeof v==='number'&&isFinite(v)) x+=`<c r="${ref}"><v>${v}</v></c>`;
+      else x+=`<c r="${ref}" t="inlineStr"><is><t xml:space="preserve">${xmlEsc(v)}</t></is></c>`;
+    });
+    x+='</row>';
+  });
+  x+=`</sheetData><autoFilter ref="A1:${colName(sh.cols.length-1)}${Math.max(1,sh.rows.length+1)}"/></worksheet>`;
+  return x;
+}
+function makeXlsx(sheets){
+  const R='http://schemas.openxmlformats.org/officeDocument/2006/relationships', NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main', hdr='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+  const safe=n=>n.replace(/[\[\]:*?\/\\]/g,'-').slice(0,31);
+  const files=[
+    {name:'[Content_Types].xml',text:hdr+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'+sheets.map((s,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')+'</Types>'},
+    {name:'_rels/.rels',text:hdr+`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${R}/officeDocument" Target="xl/workbook.xml"/></Relationships>`},
+    {name:'xl/workbook.xml',text:hdr+`<workbook xmlns="${NS}" xmlns:r="${R}"><sheets>${sheets.map((s,i)=>`<sheet name="${xmlEsc(safe(s.name))}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`},
+    {name:'xl/_rels/workbook.xml.rels',text:hdr+`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((s,i)=>`<Relationship Id="rId${i+1}" Type="${R}/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length+1}" Type="${R}/styles" Target="styles.xml"/></Relationships>`},
+    {name:'xl/styles.xml',text:hdr+`<styleSheet xmlns="${NS}"><numFmts count="1"><numFmt numFmtId="164" formatCode="dd\\-mmm\\-yyyy"/></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1A5A9A"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="4"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"><alignment vertical="center" wrapText="1"/></xf><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="2" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`}
+  ].concat(sheets.map((s,i)=>({name:`xl/worksheets/sheet${i+1}.xml`,text:sheetXml(s)})));
+  return zipStore(files);
+}
+function downloadBlob(blob,name){
+  if(window.navigator&&window.navigator.msSaveOrOpenBlob){ window.navigator.msSaveOrOpenBlob(blob,name); return; }
+  const url=URL.createObjectURL(blob), a=document.createElement('a'); a.href=url; a.download=name; a.rel='noopener';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>{ try{ URL.revokeObjectURL(url); }catch(e){} },4000);
+}
+function exportName(ext){ return ((str(state.settings.serviceName)||'Service').replace(/[^A-Za-z0-9]+/g,''))+'_StaffMovements_'+localStamp().replace(/-/g,'')+'.'+ext; }
+function exportWorkbook(){
+  try{ const name=exportName('xlsx'); downloadBlob(makeXlsx(exportSheets()),name); toast('Excel workbook downloaded: '+name+' — check your Downloads folder'); }
+  catch(e){ console.error(e); toast('Could not build the workbook: '+((e&&e.message)||e),true); }
+}
+function csvCell(v){ const s=v===null||v===undefined?'':String(v); return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }
+function exportCsv(){
+  try{
+    const sheets=exportSheets(), sh=sheets[+document.getElementById('csvSheet').value||0];
+    const text='﻿'+[sh.cols.map(c=>c[0])].concat(sh.rows).map(r=>r.map(csvCell).join(',')).join('\r\n');
+    const name=exportName('csv').replace('.csv','_'+sh.name.replace(/[^A-Za-z0-9]+/g,'')+'.csv');
+    downloadBlob(new Blob([text],{type:'text/csv;charset=utf-8'}),name); toast('CSV downloaded: '+name);
+  }catch(e){ console.error(e); toast('Could not build the CSV: '+((e&&e.message)||e),true); }
+}
+function fillCsvSheets(){ const sel=document.getElementById('csvSheet'); if(!sel||sel.options.length) return; sel.innerHTML=['Movements','Staff register','Rotations','Recruitment','Contracts & end dates','FTE gaps','Budget forecast'].map((n,i)=>`<option value="${i}">${esc(n)}</option>`).join(''); }
+
 /* ============================ REBUILD ============================ */
-function rebuildCalc(){ renderDashboard(); renderManagerActions(); renderGaps(); renderRotations(); renderBudget(); renderPlanner(); renderTimeline(); renderAudit(); }
-function rebuildAll(){ applyBranding(); renderDashControls(); renderGapsControls(); renderBudgetControls(); renderPlannerControls(); renderTimelineControls(); updateDatalist(); renderMovements(); renderStaff(); renderSettings(); renderDashboard(); renderManagerActions(); renderGaps(); renderRotations(); renderBudget(); renderPlanner(); renderTimeline(); renderAudit(); }
+function rebuildCalc(){ renderDashboard(); renderManagerActions(); renderGaps(); renderLeaveCalendar(); renderRotations(); renderBudget(); renderPlanner(); renderTimeline(); renderBoard(); renderRecruit(); renderBriefing(); renderAudit(); }
+function rebuildAll(){ applyBranding(); renderDashControls(); renderGapsControls(); renderBudgetControls(); renderPlannerControls(); renderTimelineControls(); updateDatalist(); renderMovements(); renderStaff(); renderSettings(); renderDashboard(); renderManagerActions(); renderGaps(); renderLeaveCalendar(); renderRotations(); renderBudget(); renderPlanner(); renderTimeline(); renderBoard(); renderRecruit(); renderBriefing(); renderAudit(); renderSyncUI(); }
 
 /* ============================ INIT ============================ */
 (async function init(){
@@ -2597,8 +3607,15 @@ function rebuildAll(){ applyBranding(); renderDashControls(); renderGapsControls
   wireValidation();
   rebuildAll();
   if(migratedNow) persist(); else markSaved();
-  // close modal on backdrop click
-  document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{ if(e.target===bg) bg.classList.remove('open'); }));
+  fillCsvSheets();
+  // close modal on backdrop click (the shared-data decision box must be answered, so it stays)
+  document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{ if(e.target===bg&&bg.id!=='syncModal') bg.classList.remove('open'); }));
+  ['rc_title','rc_cls','rc_fte','rc_empType','rc_reason','rc_stage','rc_opened','rc_target','rc_candidate'].forEach(id=>{ const el=document.getElementById(id); if(el){ el.addEventListener('input',updateRcValidation); el.addEventListener('change',updateRcValidation); } });
+  await initFolder();
+  setInterval(pollShared,15000);
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) pollShared(); });
+  window.addEventListener('focus',pollShared);
+  window.addEventListener('beforeunload',e=>{ if(dirHandle&&state&&meta().unsynced&&folderState!=='off'){ e.preventDefault(); e.returnValue=''; } });
 })();
 </script>
 </body>
