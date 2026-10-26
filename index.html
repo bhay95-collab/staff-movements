@@ -87,6 +87,11 @@ button{font-family:inherit}
 
 .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:20px 22px;margin-bottom:18px}
 .card.is-collapsed .card-body{display:none}
+body.lean .extra-tool{display:none!important}
+.howto p{margin:0 0 10px;line-height:1.55}
+.howto ol,.howto ul{margin:0 0 10px 20px;line-height:1.6}
+.howto h4{font-size:13px;margin:16px 0 6px}
+.howto td{vertical-align:top;line-height:1.5}
 .card-head{display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none}
 .card-head h3{font-size:15px}
 .card-head .chev{margin-left:auto;color:var(--muted);transition:transform .25s var(--spring);font-size:13px}
@@ -177,6 +182,14 @@ table.planner thead .pcls{z-index:3;background:var(--bg-2)}
 .pchip[data-k="sec"],.pcell[data-k="sec"]{background:#D2DAE3;color:#324A62}
 .pchip[data-k="end"],.pcell[data-k="end"]{background:#F6CFCF;color:#9E1717}
 .pchip{font-weight:800}
+.pchip[data-k="vacant"],.pcell[data-k="vacant"]{background:repeating-linear-gradient(45deg,#F1F3F6,#F1F3F6 4px,#E3E7EC 4px,#E3E7EC 8px);color:#4A5868}
+.pcell .psub{display:block;font-size:8.5px;font-weight:700;opacity:.8;line-height:1.1;margin-top:1px}
+table.planner tr.ptally td{background:var(--bg-2);border-top:2px solid var(--line);font-weight:800}
+table.planner tr.ptally td.pname,table.planner tr.ptally td.pcls{background:var(--bg-2);color:var(--ink-2)}
+.ptcell{text-align:center;font-variant-numeric:tabular-nums;font-size:10.5px}
+.ptcell[data-k="over"]{color:#7A5800;background:#FBEFC8!important}
+.ptcell[data-k="under"]{color:#0F3A63;background:#E3EEF9!important}
+.ptcell[data-k="on"]{color:#0A6A47}
 
 /* Sortable headers */
 th.sortable{cursor:pointer;user-select:none}
@@ -195,6 +208,13 @@ tr.rowexpired:hover td{background:#FBDADA!important}
 .heat-warn{background:var(--warn-bg);color:var(--warn)}
 .heat-under{background:#E7F0FA;color:var(--accent-dark)}
 .heat-on{background:var(--good-bg);color:var(--good)}
+.hrcell{text-align:center;font-weight:800;font-variant-numeric:tabular-nums;min-width:52px}
+.hrcell[data-k="spare"]{background:#E3EEF9;color:#0F3A63}
+.hrcell[data-k="over"]{background:#FBEFC8;color:#7A5800}
+.hrcell[data-k="ceil"]{background:#F6CFCF;color:#9E1717}
+.hrcell[data-k="on"]{background:#DCEFE4;color:#0A6A47}
+.hrcell .psub{display:block;font-size:8.5px;font-weight:700;opacity:.85;margin-top:1px}
+table.hroom .pcls{left:150px}
 
 /* Budget shape charts */
 .bchart{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line-soft)}
@@ -384,21 +404,23 @@ table.planner td.lc-num.bad{color:var(--danger);background:var(--danger-bg)}
   <nav class="rail">
     <div class="rl">Views</div>
     <button class="navbtn active" data-view="dashboard" onclick="go('dashboard')"><span class="ic">◆</span> Manager Dashboard <span class="ct" id="navActions"></span></button>
-    <button class="navbtn" data-view="reports" onclick="go('reports')"><span class="ic">▤</span> Briefing &amp; Export</button>
+    <button class="navbtn extra-tool" data-view="reports" onclick="go('reports')"><span class="ic">▤</span> Briefing &amp; Export</button>
     <button class="navbtn" data-view="gaps" onclick="go('gaps')"><span class="ic">⇅</span> FTE Gaps <span class="ct" id="navGaps"></span></button>
     <button class="navbtn" data-view="leave" onclick="go('leave')"><span class="ic">☂</span> Leave &amp; Cover <span class="ct" id="navLeave"></span></button>
     <button class="navbtn" data-view="budget" onclick="go('budget')"><span class="ic">$</span> Budget <span class="ct" id="navBudget"></span></button>
     <button class="navbtn" data-view="planner" onclick="go('planner')"><span class="ic">▣</span> Planner</button>
     <button class="navbtn" data-view="timeline" onclick="go('timeline')"><span class="ic">👤</span> Staff Details</button>
     <button class="navbtn" data-view="rotations" onclick="go('rotations')"><span class="ic">◷</span> Rotations <span class="ct" id="navRot"></span></button>
-    <div class="rl">Workflow</div>
-    <button class="navbtn" data-view="approvals" onclick="go('approvals')"><span class="ic">✓</span> Approvals <span class="ct" id="navApprovals"></span></button>
-    <button class="navbtn" data-view="recruit" onclick="go('recruit')"><span class="ic">✚</span> Recruitment <span class="ct" id="navRecruit"></span></button>
+    <div class="rl extra-tool">Workflow</div>
+    <button class="navbtn extra-tool" data-view="approvals" onclick="go('approvals')"><span class="ic">✓</span> Approvals <span class="ct" id="navApprovals"></span></button>
+    <button class="navbtn extra-tool" data-view="recruit" onclick="go('recruit')"><span class="ic">✚</span> Recruitment <span class="ct" id="navRecruit"></span></button>
     <div class="rl">Data</div>
     <button class="navbtn" data-view="movements" onclick="go('movements')"><span class="ic">⇄</span> Movements <span class="ct" id="navMov"></span></button>
     <button class="navbtn" data-view="staff" onclick="go('staff')"><span class="ic">☰</span> Staff Register <span class="ct" id="navStaff"></span></button>
-    <button class="navbtn" data-view="audit" onclick="go('audit')"><span class="ic">↺</span> Audit History <span class="ct" id="navAudit"></span></button>
+    <button class="navbtn extra-tool" data-view="audit" onclick="go('audit')"><span class="ic">↺</span> Audit History <span class="ct" id="navAudit"></span></button>
     <button class="navbtn" data-view="settings" onclick="go('settings')"><span class="ic">⚙</span> Settings</button>
+    <div class="rl">Help</div>
+    <button class="navbtn" data-view="help" onclick="go('help')"><span class="ic">?</span> How it works</button>
   </nav>
 
   <div class="content">
@@ -522,30 +544,31 @@ table.planner td.lc-num.bad{color:var(--danger);background:var(--danger-bg)}
     <section class="view" id="view-gaps">
       <div class="card"><div class="card-body"><div class="ctrlrow">
         <div class="field" style="min-width:230px"><label>Pay cycle</label><select id="gapsCycle" onchange="renderGaps()"></select></div>
-        <div class="field"><label>&nbsp;</label><span class="hint">Cover is counted only where it overlaps the absence in this fortnight, so sequential backfills no longer look over-filled.</span></div>
+        <div class="field"><label>&nbsp;</label><span class="hint">Someone who starts or finishes part-way through the fortnight counts for the days they cover, so handovers never double up.</span></div>
       </div></div></div>
       <div class="viewhead"><div><h2>FTE Gaps</h2><div class="vsub">Each person with an absence — what is vacated vs what is backfilled.</div></div></div>
-      <div class="sectionnote">Auto-built live from movements. Vacated = leave / secondment-out / partial parental return. Backfilled = backfill movements owned by that person. Totals sum across the whole movement, not a single fortnight.</div>
+      <div class="sectionnote">Auto-built live from movements and the Staff Register. One row per person per substantive line, so someone split across two classifications has two rows. Vacated = leave, secondment out, partial parental return, working in another classification, relieving in another line at the same level, or a vacant position. Covered = backfill, acting or secondment-in movements that name that person as owner, matched to the line in the classification they work in. Everything counts for the working days it covers in the selected fortnight.</div>
       <div class="card"><div id="gapsTable"></div></div>
     </section>
 
     <!-- BUDGET -->
     <section class="view" id="view-budget">
-      <div class="viewhead"><div><h2>Budget Summary</h2><div class="vsub">Forecast of funded FTE against baseline and ceiling, then effective FTE per classification across 13 fortnights.</div></div></div>
+      <div class="viewhead"><div><h2>Budget headroom</h2><div class="vsub">Fortnight by fortnight: where each level has spare FTE, where it is over, and what that nets out to in dollars.</div></div></div>
       <div class="card">
-        <div class="card-head" onclick="toggleCard(this)"><div><h3>Forecast — where are we heading?</h3><div class="card-sub">Uses every dated contract, movement and rotation already recorded. Flags the first pay cycle a classification goes over its ceiling or baseline.</div></div><span class="chev">▾</span></div>
+        <div class="ctrlrow" style="margin-bottom:14px">
+          <div class="field" style="min-width:210px"><label>Start from pay period</label><select id="budgetStart" onchange="renderBudget()"></select></div>
+          <div class="field" style="min-width:160px"><label>Show</label><select id="budgetLen" onchange="renderBudget()"><option value="7">7 fortnights (~3 months)</option><option value="13" selected>13 fortnights (~6 months)</option><option value="26">26 fortnights (~12 months)</option></select></div>
+        </div>
+        <div id="budgetTable"></div>
+      </div>
+      <div class="card is-collapsed">
+        <div class="card-head" onclick="toggleCard(this)"><div><h3>Forecast — when does each level go over?</h3><div class="card-sub">Flags the first pay period a classification goes over its ceiling or baseline, and what changes then.</div></div><span class="chev">▾</span></div>
         <div class="card-body">
           <div class="ctrlrow" style="margin-bottom:14px">
             <div class="field" style="min-width:180px"><label>Look ahead</label><select id="fcHorizon" onchange="renderForecast()"><option value="13">13 pay cycles (~6 months)</option><option value="26" selected>26 pay cycles (~12 months)</option></select></div>
           </div>
           <div id="budgetForecast"></div>
         </div>
-      </div>
-      <div class="card">
-        <div class="ctrlrow" style="margin-bottom:14px">
-          <div class="field" style="min-width:210px"><label>Start window from cycle</label><select id="budgetStart" onchange="renderBudget()"></select></div>
-        </div>
-        <div id="budgetTable"></div>
       </div>
     </section>
 
@@ -555,15 +578,18 @@ table.planner td.lc-num.bad{color:var(--danger);background:var(--danger-bg)}
       <div class="card">
         <div class="ctrlrow" style="margin-bottom:12px">
           <div class="field" style="min-width:210px"><label>Start from week of</label><select id="plannerStart" onchange="renderPlanner()"></select></div>
+          <div class="field"><label>&nbsp;</label><label class="hint" style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="plannerInactive" onchange="renderPlanner()"> Show inactive lines</label></div>
         </div>
         <div class="plegend">
-          <span class="pchip" data-k="sub">1.0 = working substantive FTE</span>
-          <span class="pchip" data-k="acting">Class code = acting up in that class</span>
-          <span class="pchip" data-k="parental">P 0.4 = parental (vacated FTE)</span>
-          <span class="pchip" data-k="leave">L = leave</span>
-          <span class="pchip" data-k="sec">S = secondment out</span>
+          <span class="pchip" data-k="sub">0.8 = FTE working in their own line</span>
+          <span class="pchip" data-k="acting">HP4 1.0 = FTE working in another level</span>
+          <span class="pchip" data-k="parental">P = fully on parental leave</span>
+          <span class="pchip" data-k="leave">L = fully on leave</span>
+          <span class="pchip" data-k="sec">S = fully seconded out</span>
           <span class="pchip" data-k="end">X = contract ended</span>
+          <span class="pchip" data-k="vacant">V = vacant position</span>
         </div>
+        <div class="hint" style="margin:-4px 0 10px">Each cell shows what the person is actually doing that week. The small line underneath shows anything else on the same line: <b>P 0.2</b> parental, <b>L</b> leave, <b>S</b> secondment out, <b>V</b> vacant or not worked. Hover over a cell for the detail. The shaded <b>working</b> row above each level adds up everyone working in that level that week (acting up included) against its baseline: amber = over, blue = under.</div>
         <div id="plannerTable"></div>
       </div>
     </section>
@@ -630,6 +656,13 @@ table.planner td.lc-num.bad{color:var(--danger);background:var(--danger-bg)}
         </div>
       </div>
       <div class="card">
+        <div class="card-head" onclick="toggleCard(this)"><div><h3>Screens</h3><div class="card-sub">Keep the menu short. Extra tools can be switched on when you want them.</div></div><span class="chev">▾</span></div>
+        <div class="card-body">
+          <label style="display:flex;align-items:center;gap:8px;font-weight:700"><input type="checkbox" id="setMoreTools" onchange="setMoreTools(this.checked)"> Show more tools: Briefing &amp; Export, Approvals board, Recruitment board and Audit History</label>
+          <div class="hint" style="margin-top:6px">Turning these off only hides them from the menu. Nothing is deleted, and links from the Dashboard still open them.</div>
+        </div>
+      </div>
+      <div class="card">
         <div class="card-head" onclick="toggleCard(this)"><div><h3>Teams &amp; roles</h3><div class="card-sub">Build your own service structure: teams, and the roles inside each team.</div></div><span class="chev">▾</span></div>
         <div class="card-body">
           <div class="sectionnote">A <b>team</b> is any grouping you use (a ward, service line, rotation area). A <b>role</b> is a funded position inside a team. Each role has a classification (pay grade) and funded FTE. Funded FTE on roles adds up to the baseline for each classification, so the budget stays in step. Staff lines are then assigned to a team and role in the Staff Register.</div>
@@ -654,10 +687,11 @@ table.planner td.lc-num.bad{color:var(--danger);background:var(--danger-bg)}
         <div class="card-head" onclick="toggleCard(this)"><h3>Pay-cycle calendar</h3><span class="chev">▾</span></div>
         <div class="card-body">
           <div class="ctrlrow">
-            <div class="field"><label>Cycle anchor (a Wednesday)</label><input type="date" id="setAnchor" onchange="saveSettings()"></div>
+            <div class="field"><label>A pay period start date (a Monday)</label><input type="date" id="setAnchor" onchange="saveSettings()"></div>
             <div class="field"><label>Cycle length (days)</label><input type="number" id="setLen" value="14" onchange="saveSettings()" style="width:90px"></div>
           </div>
-          <div class="hint" style="margin-top:10px">Standard Queensland Health fortnight runs Wed–Tue. Change the anchor only if the pay calendar shifts.</div>
+          <div id="payPeriodCheck"></div>
+          <div class="hint" style="margin-top:10px">Queensland Health pay periods run Monday to Sunday, and pay day is the Wednesday after. Enter any Monday that starts a pay period — the “period start” date on a payslip. Every fortnight, the planner weeks and the budget line up with it. Someone who starts or finishes part-way through a fortnight counts for the working days they cover, so a handover never counts two people.</div>
         </div>
       </div>
       <div class="card">
@@ -685,6 +719,71 @@ table.planner td.lc-num.bad{color:var(--danger);background:var(--danger-bg)}
       </div>
     </section>
 
+    <!-- HOW IT WORKS -->
+    <section class="view" id="view-help">
+      <div class="viewhead"><div><h2>How it works</h2><div class="vsub">Setting up, sharing, and how to record the situations that come up most.</div></div></div>
+
+      <div class="card"><div class="card-head" onclick="toggleCard(this)"><h3>The big picture</h3><span class="chev">▾</span></div><div class="card-body howto">
+        <p>Everything comes from two lists:</p>
+        <ul>
+          <li><b>Staff Register</b> — who holds what. One row per substantive line: name, classification, FTE, and dates if it starts or ends. Someone split across two classifications has two rows.</li>
+          <li><b>Movements</b> — every change to that: leave, acting up, backfill, secondment, parental return, vacancy. One movement = one row with a start and end date.</li>
+        </ul>
+        <p>The Dashboard, FTE Gaps, Leave &amp; Cover, Planner, Budget and Staff Details are all worked out live from those two lists. If a number looks wrong, the answer is almost always a register line or movement with the wrong FTE, class or dates — open the person in <b>Staff Details</b> to see everything about them in one place.</p>
+      </div></div>
+
+      <div class="card"><div class="card-head" onclick="toggleCard(this)"><h3>Sharing with admin support (or anyone else)</h3><span class="chev">▾</span></div><div class="card-body howto">
+        <p>Both people work on the same data file kept in a shared OneDrive folder. Set up once:</p>
+        <h4>You (the owner)</h4>
+        <ol>
+          <li>In File Explorer, open <b>OneDrive</b> and make a folder, e.g. <b>StaffMovements</b>.</li>
+          <li>Put this tracker file (the .html) in that folder.</li>
+          <li>Open the tracker from that folder in <b>Microsoft Edge</b> (or Chrome).</li>
+          <li>Go to <b>Settings → Shared data &amp; backup</b>, type your name, click <b>Link shared folder</b>, pick the StaffMovements folder and choose <b>Edit files</b> when asked.</li>
+          <li>Right-click the folder in File Explorer → <b>Share</b> → add your admin's email → set to <b>Can edit</b> → Send.</li>
+        </ol>
+        <h4>Your admin</h4>
+        <ol>
+          <li>Open the share email, open the folder in OneDrive online, and click <b>Add shortcut to My files</b>. It then appears in their File Explorer under OneDrive.</li>
+          <li>Open the tracker .html from that folder in <b>Edge</b> (or Chrome).</li>
+          <li><b>Settings → Shared data &amp; backup</b> → type their name → <b>Link shared folder</b> → pick the same folder → <b>Edit files</b>.</li>
+        </ol>
+        <p><b>Every day after that:</b> just open the tracker. The browser may show a <b>Reconnect</b> bar once per session — one click. The top right shows <b>Saved · shared</b> when it is working. If you both change things at the same moment, the tracker asks which version to keep and saves the other one in the <b>backups</b> folder, so nothing is lost. A copy is also saved to the backups folder at the start of each day.</p>
+        <p>Firefox and Safari cannot use a shared folder — use Edge.</p>
+      </div></div>
+
+      <div class="card"><div class="card-head" onclick="toggleCard(this)"><h3>Pay periods</h3><span class="chev">▾</span></div><div class="card-body howto">
+        <p>Pay periods run <b>Monday to Sunday</b> over a fortnight. Set any Monday that starts a pay period in <b>Settings → Pay-cycle calendar</b> (the period start on a payslip). Start movements on a Monday and end them on a Sunday where you can.</p>
+        <p>Someone who starts or finishes part-way through a fortnight counts for the working days they cover. A Monday handover from one person to another never counts both.</p>
+      </div></div>
+
+      <div class="card"><div class="card-head" onclick="toggleCard(this)"><h3>How to record common situations</h3><span class="chev">▾</span></div><div class="card-body howto">
+        <div class="tbl-wrap"><table><thead><tr><th style="width:30%">Situation</th><th>What to enter</th></tr></thead><tbody>
+          <tr><td><b>Leave with someone backfilling</b></td><td>Movement 1: the person on leave — type <b>Leave</b>, the absence type, owner blank.<br>Movement 2: the backfiller — type <b>Backfill</b>, owner = the person on leave, working classification = the class they are covering.</td></tr>
+          <tr><td><b>Acting up into a higher level</b></td><td>Movement: type <b>Acting Higher Duties</b>, substantive class = what they hold (e.g. HP3), working class = where they are acting (e.g. HP4), owner = whose line they are in. Their own line now shows as vacated in FTE Gaps — add a backfill for it with them as owner.</td></tr>
+          <tr><td><b>Relieving in another post at the same level</b><br><span class="hint">e.g. an HP4 working in another HP4's line</span></td><td>Movement: type <b>Backfill</b>, substantive and working class the same, owner = whose line they are in, and tick <b>Comes out of their own line</b>. Their own line then shows as vacated so you can record who covers it.</td></tr>
+          <tr><td><b>Someone's substantive changes</b><br><span class="hint">new FTE, new class, or a split such as 0.4 HP3 + 0.6 HP4</span></td><td>Staff Register → their row → <b>Change from date</b>. Pick the Monday it starts and the new line(s). The old line ends the day before, so history stays right. Then end any movements that still draw on the old line and add new ones (the tool lists them).</td></tr>
+          <tr><td><b>Part of a line is given up and left vacant</b></td><td>Staff Register → <b>+ Add staff line</b>, name it clearly (e.g. <i>Vacant HP3 0.6 (ex Larissa)</i>), employment type <b>Vacant</b>, with the FTE and start date. Whoever fills it records a backfill with that line as owner. It shows in FTE Gaps until covered and is not counted as paid.</td></tr>
+          <tr><td><b>A backfiller goes on leave</b></td><td>End their backfill movement the day before the leave starts. Add their leave (owner blank). Whoever takes over records a backfill with the <b>original</b> person as owner. The backfiller's own leave shows in FTE Gaps as uncovered — that is expected when their line only existed to cover someone else.</td></tr>
+          <tr><td><b>Parental leave, then a part return</b></td><td>Leave movement: absence type <b>Parental Leave</b> or <b>Maternity Leave</b>, and the <b>Paid leave ends</b> date so the Budget stops costing it after that.<br>On return: type <b>Parental Return to Work</b>, FTE = the total they have come back to. The rest of their line stays vacated.</td></tr>
+          <tr><td><b>A temporary person covering</b></td><td>They need a Staff Register line (Temporary, with contract dates) <b>and</b> a movement saying whose line they are covering. Leave “Comes out of their own line” unticked.</td></tr>
+          <tr><td><b>Something similar to an existing record</b></td><td>Use <b>Duplicate</b> on the movement or staff line, then change what is different.</td></tr>
+        </tbody></table></div>
+      </div></div>
+
+      <div class="card"><div class="card-head" onclick="toggleCard(this)"><h3>Reading the screens</h3><span class="chev">▾</span></div><div class="card-body howto">
+        <p><b>Planner</b> — each cell shows what the person is actually doing that week: <b>0.8</b> = working 0.8 in their own line; <b>HP4 1</b> = working 1.0 as HP4. The small line underneath shows anything else (e.g. <b>P 0.2</b> = 0.2 still on parental leave). The shaded <b>working</b> row above each level adds up everyone working in that level against its baseline. Hover over any cell for the detail.</p>
+        <p><b>FTE Gaps</b> — one row per person per line: what is vacated, who covers it, and what is short (−) or over-covered (+) in the chosen fortnight.</p>
+        <p><b>Leave &amp; Cover</b> — the same thing week by week.</p>
+        <p><b>Budget</b> — spare (+) or over (−) FTE per level per fortnight, and dollars once costs are set in Settings. The lists underneath show pockets of spare FTE that could be consolidated, and the over-runs they could offset.</p>
+        <p><b>Rotations</b> — teams (areas) and roles (funded slots), and who is assigned to each for a date range. Leave and cover come in from Movements, so a clash is flagged. Use <b>Roll forward</b> to start the next rotation from the current one.</p>
+      </div></div>
+
+      <div class="card"><div class="card-head" onclick="toggleCard(this)"><h3>Backups</h3><span class="chev">▾</span></div><div class="card-body howto">
+        <p>With a shared folder linked, every save goes to the folder and a daily copy goes in the <b>backups</b> folder. <b>Export backup</b> (top right) downloads a separate copy you can keep anywhere — do this before any big clean-up. <b>Import</b> loads a backup and replaces what is in the tracker.</p>
+      </div></div>
+    </section>
+
   </div>
 </main>
 
@@ -707,7 +806,9 @@ table.planner td.lc-num.bad{color:var(--danger);background:var(--danger-bg)}
       <div class="field full" id="ownerField"><label id="ownerLabel">Backfilling whom / owner</label><select id="m_owner_sel" onchange="nameSelChanged('m_owner')"></select><input type="text" id="m_owner" class="nameother" placeholder="Type the name or funding source" style="display:none;margin-top:6px"><span class="hint" id="ownerHint"></span></div>
       <div class="field"><label>Start date</label><input type="date" id="m_start"></div>
       <div class="field"><label>End date</label><input type="date" id="m_end"></div>
-      <div class="field"><label>Leave / absence type</label><select id="m_absenceType"></select></div>
+      <div class="field"><label>Leave / absence type</label><select id="m_absenceType" onchange="movTypeHint()"></select></div>
+      <div class="field" id="paidUntilField"><label>Paid leave ends</label><input type="date" id="m_paidUntil"><span class="hint">Last day of paid parental leave. After this the leave is unpaid, so the Budget headroom stops costing it. Blank = paid throughout.</span></div>
+      <div class="field full" id="vacatesOwnField"><label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:12.5px"><input type="checkbox" id="m_vacatesOwn"> Comes out of their own line — they stop working their substantive position while doing this (e.g. relieving in another senior post at the same level)</label><span class="hint">Leave unticked when this is extra hours on top of their own line, or when their register line exists only for this cover (most temporary staff).</span></div>
       <div class="field"><label>Admin status</label><select id="m_adminStatus"></select></div>
       <div class="field"><label>VMC number</label><input type="text" id="m_vmcNum"></div>
       <div class="field"><label>Process number</label><input type="text" id="m_procNum"></div>
@@ -718,6 +819,7 @@ table.planner td.lc-num.bad{color:var(--danger);background:var(--danger-bg)}
     <div class="validation-panel is-clean" id="movValidation"><div class="vh">Validation ready</div></div>
     <div class="modal-foot">
       <button class="btn danger" id="m_delBtn" onclick="deleteMovement()">Delete</button>
+      <button class="btn" id="m_dupBtn" onclick="duplicateMovement(editingMovId)" title="Open a new movement pre-filled from this one">Duplicate</button>
       <div class="spacer"></div>
       <button class="btn" onclick="closeModal('movModal')">Cancel</button>
       <button class="btn primary" onclick="saveMovement()">Save movement</button>
@@ -750,6 +852,39 @@ table.planner td.lc-num.bad{color:var(--danger);background:var(--danger-bg)}
       <div class="spacer"></div>
       <button class="btn" onclick="closeModal('staffModal')">Cancel</button>
       <button class="btn primary" onclick="saveStaff()">Save staff line</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE SUBSTANTIVE MODAL -->
+<div class="modal-bg" id="chgModal">
+  <div class="modal">
+    <h3>Change substantive from a date</h3>
+    <div class="msub">Use this when someone's substantive changes — new FTE, new classification, or a split. The current line ends the day before, and the new line(s) start on the date, so history stays correct and nothing is counted twice.</div>
+    <div class="sectionnote" id="chgCurrent"></div>
+    <div class="grid2">
+      <div class="field full"><label>New arrangement starts (a Monday)</label><input type="date" id="chg_date" onchange="renderChangePreview()"></div>
+      <div class="field full"><label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:12.5px"><input type="checkbox" id="chg_endOnly" onchange="chgSplitToggle()"> Only end this line — the new line is already on the register</label></div>
+    </div>
+    <div class="grid2" id="chgLine1">
+      <div class="field"><label>Classification</label><select id="chg_cls1" onchange="renderChangePreview()"></select></div>
+      <div class="field"><label>FTE</label><input type="number" step="0.01" min="0" id="chg_fte1" oninput="renderChangePreview()"></div>
+      <div class="field"><label>Position ID</label><input type="text" id="chg_pos1"></div>
+      <div class="field"><label>Position title</label><input type="text" id="chg_title1" oninput="renderChangePreview()"></div>
+      <div class="field full"><label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:12.5px"><input type="checkbox" id="chg_split" onchange="chgSplitToggle()"> Split into two lines (e.g. 0.4 HP3 + 0.6 HP4)</label></div>
+    </div>
+    <div class="grid2" id="chgLine2">
+      <div class="field"><label>Second line classification</label><select id="chg_cls2" onchange="renderChangePreview()"></select></div>
+      <div class="field"><label>Second line FTE</label><input type="number" step="0.01" min="0" id="chg_fte2" oninput="renderChangePreview()"></div>
+      <div class="field"><label>Position ID</label><input type="text" id="chg_pos2"></div>
+      <div class="field"><label>Position title</label><input type="text" id="chg_title2" oninput="renderChangePreview()"></div>
+    </div>
+    <div id="chgPreview" style="margin-top:12px"></div>
+    <div class="validation-panel is-clean" id="chgValidation"><div class="vh">Validation ready</div></div>
+    <div class="modal-foot">
+      <div class="spacer"></div>
+      <button class="btn" onclick="closeModal('chgModal')">Cancel</button>
+      <button class="btn primary" onclick="applyChangeLine()">Make the change</button>
     </div>
   </div>
 </div>
@@ -900,7 +1035,7 @@ const SEED = {
    "CA3": { "ceiling":2.5, "additional":0 }
   },
   "cycleLenDays": 14,
-  "cycleAnchorDate": "2025-06-18"
+  "cycleAnchorDate": "2025-06-16"
  }
 };
 
@@ -921,12 +1056,16 @@ function defaultClass(){
 }
 const MOVE_TYPES = ['Substantive','Backfill','Acting Higher Duties','Secondment In','Secondment Out','Leave','Parental Return to Work','Temporary Contract Extension','Casual to Temporary','Vacancy','Flexible Work Arrangement','Extra Funded'];
 const EMP_ARR = ['Permanent','Temporary','Casual','Agency','External'];
-const EMP_TYPE = ['Permanent','Temporary','Casual','Agency','External'];
+const EMP_TYPE = ['Permanent','Temporary','Casual','Agency','External','Vacant'];
 const ADMIN_STATUS = ['Draft / Planning','Awaiting Submission','Awaiting Approval','VMC Submitted','VMC Approved','Payroll / MyHR Pending','Confirmed','Completed','On Hold','Cancelled'];
 const ABSENCE_TYPES = ['','LSL','Parental Leave','Maternity Leave','LWOP','Leave Without Pay','Secondment Out','Reduced Hours','Other'];
 // Absence types where the position stays FUNDED while the person is away.
 // The gaps view still shows them — funded is not the same as covered.
 const STAY_LEAVE = ['Parental Leave','Maternity Leave','LSL','Leave Without Pay','LWOP'];
+// Held open but not paid, so they come off what payroll is costing.
+const UNPAID_LEAVE = ['Leave Without Pay','LWOP'];
+// Leave that can be part paid, part unpaid — the movement records the date pay stops.
+const PAID_UNTIL_LEAVE = ['Parental Leave','Maternity Leave'];
 
 /* ============================ STATE ============================ */
 let state = null; // {staff, movements, settings}
@@ -935,6 +1074,23 @@ let managerActionFilter = 'all';
 
 /* ============================ DATE / CYCLE HELPERS ============================ */
 const MS_DAY = 86400000;
+// Queensland Health pay periods run Monday to Sunday. Any Monday that starts a period will do.
+const DEFAULT_ANCHOR = '2025-06-16';
+function isoOf(ms){ return new Date(ms).toISOString().slice(0,10); }
+function isMonday(ms){ return ms!==null&&new Date(ms).getUTCDay()===1; }
+function mondayOnOrBefore(ms){ return ms-((new Date(ms).getUTCDay()+6)%7)*MS_DAY; }
+// Weekdays (Mon–Fri) from a to b inclusive.
+function weekdaysIn(a,b){ let n=0; for(let t=a;t<=b;t+=MS_DAY){ const d=new Date(t).getUTCDay(); if(d!==0&&d!==6) n++; } return n; }
+// Share of the window [csMs,ceMs] covered by the dated range [st,en], counted in working days.
+// Pay is by the day, so a line that starts in the second week of a fortnight counts for half of it.
+// A blank date runs to the window edge.
+function shareOf(st,en,csMs,ceMs){
+  const a=Math.max(st===null?csMs:st,csMs), b=Math.min(en===null?ceMs:en,ceMs);
+  if(b<a) return 0;
+  const all=weekdaysIn(csMs,ceMs);
+  return all?weekdaysIn(a,b)/all:(b-a+MS_DAY)/(ceMs-csMs+MS_DAY);
+}
+function mvShare(m,csMs,ceMs){ return shareOf(parseDate(m.start),parseDate(m.end),csMs,ceMs); }
 function parseDate(v){ if(v===null||v===undefined||v==='') return null; const s=String(v).slice(0,10); const t=Date.parse(s+'T00:00:00Z'); return isNaN(t)?null:t; }
 function isoToday(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function fmtDate(v){ const t=parseDate(v); if(t===null) return ''; const d=new Date(t); return d.getUTCDate().toString().padStart(2,'0')+'-'+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getUTCMonth()]+'-'+d.getUTCFullYear(); }
@@ -943,7 +1099,7 @@ function str(v){ return (v===null||v===undefined)?'':String(v).trim(); }
 
 // Build the list of pay cycles (start ms) spanning the data + a forward buffer.
 function buildCycles(){
-  const anchor = parseDate(state.settings.cycleAnchorDate) ?? parseDate('2025-06-18');
+  const anchor = parseDate(state.settings.cycleAnchorDate) ?? parseDate(DEFAULT_ANCHOR);
   const len = (num(state.settings.cycleLenDays)||14) * MS_DAY;
   // span: earliest data date .. latest data date + 1 year
   let lo=anchor, hi=anchor;
@@ -968,37 +1124,49 @@ function currentCycleIndex(cycles,len){ const today=parseDate(isoToday()); for(l
 // movement active within [csMs, ceMs] and not archived
 function inCycle(m,csMs,ceMs){ const st=parseDate(m.start),en=parseDate(m.end); if(st===null||en===null) return false; return st<=ceMs && en>=csMs && str(m.archived).toLowerCase()!=='yes'; }
 
-// substantive base FTE for a class at cycle [csMs,ceMs], optionally one person
+// Lines that are on the register but paid to nobody: casual pools and vacant positions.
+function unpaidLine(s){ return str(s.empType)==='Casual'||str(s.empType)==='Vacant'; }
+// substantive base FTE for a class at cycle [csMs,ceMs], optionally one person,
+// pro-rata for lines that start or end part-way through the window
 function subBase(cls,csMs,ceMs,person){
   let base=0;
   for(const s of state.staff){
-    if(str(s.subClass)!==cls||str(s.active)!=='Yes'||str(s.empType)==='Casual') continue;
+    if(str(s.subClass)!==cls||str(s.active)!=='Yes'||unpaidLine(s)) continue;
     if(person && str(s.name)!==person) continue;
-    const cs=parseDate(s.contractStart), ce=parseDate(s.contractEnd);
-    const csOk = cs===null || cs<=ceMs; const ceOk = ce===null || ce>=csMs;
-    if(!(csOk&&ceOk)) continue;
-    base+=num(s.subFTE);
+    base+=num(s.subFTE)*shareOf(parseDate(s.contractStart),parseDate(s.contractEnd),csMs,ceMs);
   }
   return base;
 }
 
 // mode 'floor'  = who is actually at work. Every absence comes off, cover goes on.
-// mode 'funded' = what the service is paying for. Positions held open during
+// mode 'funded' = positions the service is holding. Positions held open during
 //                 parental / maternity / LSL / LWOP stay in the count.
+// mode 'paid'   = what payroll is costing. Like funded, but unpaid leave comes off, and
+//                 parental / maternity leave comes off after its "paid until" date.
+// Every movement counts in proportion to the working days it covers in the window.
+function leaveStillHeld(m,csMs,ceMs,mode){
+  const ab=str(m.absenceType);
+  if(mode==='floor'||!STAY_LEAVE.includes(ab)) return 0;
+  if(mode==='funded') return mvShare(m,csMs,ceMs);
+  if(UNPAID_LEAVE.includes(ab)) return 0;
+  const pu=parseDate(m.paidUntil);
+  if(pu===null) return mvShare(m,csMs,ceMs);
+  return shareOf(parseDate(m.start),Math.min(pu,parseDate(m.end)),csMs,ceMs);
+}
 function effFTE(cls,csMs,ceMs,mode){
-  const funded = mode==='funded';
   let base=subBase(cls,csMs,ceMs,null);
   let out=0,outL=0,inM=0,inE=0;
   for(const m of state.movements){
     if(!inCycle(m,csMs,ceMs)) continue;
-    const t=str(m.type),sc=str(m.subClass),wc=str(m.workClass),ab=str(m.absenceType),f=num(m.fteMoved);
+    const t=str(m.type),sc=str(m.subClass),wc=str(m.workClass),k=mvShare(m,csMs,ceMs),f=num(m.fteMoved)*k;
     // Extra Funded is new money — it lands in the working class and must never be
     // drawn out of a substantive class, whatever is recorded in the substantive field.
     if(sc===cls&&wc!==cls&&!(t==='Leave'||t==='Secondment Out'||t==='Vacancy'||t==='Flexible Work Arrangement'||t==='Extra Funded')) out+=f;
-    if(sc===cls&&(t==='Secondment Out'||t==='Vacancy'||t==='Flexible Work Arrangement'||(t==='Leave'&&!(funded&&STAY_LEAVE.includes(ab))))) outL+=f;
+    if(sc===cls&&(t==='Secondment Out'||t==='Vacancy'||t==='Flexible Work Arrangement')) outL+=f;
+    if(sc===cls&&t==='Leave') outL+=num(m.fteMoved)*(k-leaveStillHeld(m,csMs,ceMs,mode));
     // Parental Return to Work: the person is back for fteMoved of their subFTE line.
     // The portion they have NOT returned to is not being delivered, so it comes off.
-    if(sc===cls&&t==='Parental Return to Work'){ const held=registerFTE(str(m.staff),sc)||num(m.subFTE); const notBack=held-f; if(notBack>0) outL+=notBack; }
+    if(sc===cls&&t==='Parental Return to Work'){ const held=registerFTE(str(m.staff),sc)||num(m.subFTE); const notBack=held-num(m.fteMoved); if(notBack>0) outL+=notBack*k; }
     if(sc!==cls&&wc===cls&&!(t==='Leave'||t==='Secondment Out')&&t!=='Extra Funded') inM+=f;
     if(wc===cls&&t==='Extra Funded') inE+=f;
   }
@@ -1328,7 +1496,7 @@ function readMovementForm(){
     empArr:g('m_empArr'), workPosId:g('m_workPosId'), workPosTitle:g('m_workPosTitle'), workClass:g('m_workClass'),
     type:g('m_type'), fteMoved:g('m_fteMoved')===''?'':Number(g('m_fteMoved')), start:g('m_start'), end:g('m_end'),
     vmcNum:g('m_vmcNum'), vmcUrl:g('m_vmcUrl'), procNum:g('m_procNum'), adminStatus:g('m_adminStatus'),
-    absenceType:g('m_absenceType'), archived:document.getElementById('m_archived').checked?'Yes':'No', notes:g('m_notes'), owner:str(g('m_owner')) };
+    absenceType:g('m_absenceType'), paidUntil:g('m_paidUntil'), vacatesOwn:document.getElementById('m_vacatesOwn').checked?'Yes':'', archived:document.getElementById('m_archived').checked?'Yes':'No', notes:g('m_notes'), owner:str(g('m_owner')) };
 }
 function readStaffForm(){
   const g=id=>document.getElementById(id).value;
@@ -1347,8 +1515,8 @@ function validateMovementObject(obj,existingId){
     warnings.push(name+' has no Staff Register line. A person seconded in still needs one — add them as Temporary, with the secondment dates as the contract dates and the classification they work as here. Their FTE comes from that register line; this movement records who they are covering.');
   if(name&&str(obj.subClass)){
     const held=registerFTE(name,str(obj.subClass));
-    const thisRow=VACATING.includes(t)?f:(t==='Parental Return to Work'?Math.max(0,num(obj.subFTE)-f):((str(obj.workClass)&&str(obj.workClass)!==str(obj.subClass)&&t!=='Extra Funded')?f:0));
-    const total=r2(vacatedFrom(name,str(obj.subClass),existingId||str(obj.id))+thisRow);
+    const thisRow=VACATING.includes(t)?f:(t==='Parental Return to Work'?Math.max(0,num(obj.subFTE)-f):(((str(obj.workClass)&&str(obj.workClass)!==str(obj.subClass)&&t!=='Extra Funded')||vacatesOwnLine(obj))?f:0));
+    const total=vacatedFrom(name,str(obj.subClass),existingId||str(obj.id),{st,en,f:thisRow});
     if(held>0&&total>held+0.001)
       warnings.push(name+' would have '+total+' FTE emptied out of '+str(obj.subClass)+' but only holds '+held+' there. Absences, vacancies and working in another classification all count towards this, so check whether one of them is double counting the same hours.');
   }
@@ -1381,8 +1549,11 @@ function validateMovementObject(obj,existingId){
   const movesFTE=['Backfill','Acting Higher Duties','Secondment In','Temporary Contract Extension','Casual to Temporary'].includes(t);
   const attributionOnly=t==='Secondment In'||(name&&str(obj.workClass)&&registerFTE(name,str(obj.workClass))>0);
   const movesFTEInternally=movesFTE&&!attributionOnly;
-  if(movesFTEInternally&&str(obj.subClass)&&str(obj.subClass)===str(obj.workClass))
-    warnings.push('Substantive and working classification are both '+str(obj.subClass)+', so this movement will not change any FTE and will not appear on the planner. If this person is moving into a different classification, set the substantive classification to the one they actually hold.');
+  if(movesFTEInternally&&str(obj.subClass)&&str(obj.subClass)===str(obj.workClass)&&str(obj.vacatesOwn)!=='Yes')
+    warnings.push('Substantive and working classification are both '+str(obj.subClass)+', so this movement will not change any FTE and will not appear on the planner. If this person is moving into a different classification, set the substantive classification to the one they actually hold. If they are relieving in another line at the same level, tick “Comes out of their own line”.');
+  if(str(obj.vacatesOwn)==='Yes'&&name&&str(obj.subClass)&&registerFTE(name,str(obj.subClass))<=0)
+    warnings.push('“Comes out of their own line” is ticked, but '+name+' holds no active '+str(obj.subClass)+' line on the register, so there is no line to empty.');
+  if(t==='Leave'&&str(obj.paidUntil)&&PAID_UNTIL_LEAVE.includes(str(obj.absenceType))){ const pu=parseDate(obj.paidUntil); if(pu!==null&&((st!==null&&pu<st)||(en!==null&&pu>en))) warnings.push('Paid leave end date is outside the leave dates.'); }
   const landsSomewhere=['Substantive','Backfill','Acting Higher Duties','Secondment In','Parental Return to Work','Temporary Contract Extension','Casual to Temporary','Extra Funded'].includes(t);
   if(landsSomewhere&&!str(obj.workClass)) warnings.push('Working classification is blank, so this FTE is taken out of the substantive classification without landing anywhere. Set the classification the person is actually working as.');
   if((t==='Vacancy'||t==='Flexible Work Arrangement')&&str(obj.workClass)) warnings.push(t+' rows should have the working classification set to none, otherwise the FTE is not shown as undelivered.');
@@ -1394,6 +1565,7 @@ function validateMovementObject(obj,existingId){
   if(en!==null&&en<today&&str(obj.archived).toLowerCase()!=='yes'&&!['Completed','Cancelled'].includes(str(obj.adminStatus))) warnings.push('This movement has already ended but is not archived or completed/cancelled.');
   return {errors,warnings};
 }
+function linesOverlap(x,y){ const lo=v=>parseDate(v)??-8.64e15, hi=v=>parseDate(v)??8.64e15; return lo(x.contractStart)<=hi(y.contractEnd)&&lo(y.contractStart)<=hi(x.contractEnd); }
 function validateStaffObject(obj,idx){
   const errors=[],warnings=[];
   const name=str(obj.name), f=num(obj.subFTE), cs=parseDate(obj.contractStart), ce=parseDate(obj.contractEnd), today=parseDate(isoToday());
@@ -1403,16 +1575,12 @@ function validateStaffObject(obj,idx){
   if(f>1.0) warnings.push('Substantive FTE is greater than 1.0. Check whether this should be split across lines.');
   if(cs!==null&&ce!==null&&ce<cs) errors.push('Contract end date is before contract start date.');
   if(str(obj.empType)==='Temporary'&&str(obj.active)==='Yes'&&!str(obj.contractEnd)) warnings.push('Active temporary staff line has no contract end date. It will not appear in the contract horizon.');
-  // A substantive that changes mid-fortnight leaves both arrangements touching the same
-  // pay cycle, so that one cycle shows the person twice.
-  if(name&&(cs!==null||ce!==null)){
-    const len=(num(state.settings.cycleLenDays)||14)*MS_DAY;
-    state.staff.forEach(o=>{
-      if(str(o.name)!==name||o===obj) return;
-      const ocs=parseDate(o.contractStart), oce=parseDate(o.contractEnd);
-      const touching=(a,b)=>a!==null&&b!==null&&Math.abs(a-b)<len&&a!==b;
-      if(touching(cs,oce===null?null:oce+MS_DAY)||touching(ocs,ce===null?null:ce+MS_DAY))
-        warnings.push('This line changes over within a fortnight of another line for '+name+'. The pay cycle containing the changeover will show both arrangements, because a cycle counts any line that touches it. Every other cycle reads correctly.');
+  // Two live lines for one person in one classification over the same dates both count.
+  // Usually an old line was not ended when a new one was added.
+  if(name&&str(obj.active)==='Yes'&&!unpaidLine(obj)){
+    state.staff.forEach((o,i)=>{
+      if(i===idx||str(o.name)!==name||str(o.subClass)!==str(obj.subClass)||str(o.active)!=='Yes'||unpaidLine(o)) return;
+      if(linesOverlap(o,obj)) warnings.push('This line overlaps another active '+str(obj.subClass)+' line for '+name+' ('+r2(num(o.subFTE))+' FTE'+(str(o.contractStart)?' from '+fmtDate(o.contractStart):'')+(str(o.contractEnd)?' to '+fmtDate(o.contractEnd):', no end date')+'). Both are counted. If one replaces the other, give the old line an end date the day before the new one starts.');
     });
   }
   if(str(obj.empType)==='Temporary'&&str(obj.active)==='Yes'&&ce!==null&&ce<today) warnings.push('Temporary contract end date has passed while the line remains active.');
@@ -1440,7 +1608,7 @@ function renderValidationPanel(id,result){
 function updateMovementValidation(){ renderValidationPanel('movValidation',validateMovementObject(readMovementForm(),editingMovId)); }
 function updateStaffValidation(){ renderValidationPanel('staffValidation',validateStaffObject(readStaffForm(),editingStaffIdx)); }
 function wireValidation(){
-  ['m_staff','m_subClass','m_subFTE','m_type','m_fteMoved','m_workClass','m_empArr','m_owner','m_start','m_end','m_absenceType','m_adminStatus','m_vmcNum','m_vmcUrl','m_archived'].forEach(id=>{ const el=document.getElementById(id); if(el&&!el.dataset.vwired){ el.addEventListener('input',updateMovementValidation); el.addEventListener('change',updateMovementValidation); el.dataset.vwired='1'; }});
+  ['m_staff','m_subClass','m_subFTE','m_type','m_fteMoved','m_workClass','m_empArr','m_owner','m_start','m_end','m_absenceType','m_paidUntil','m_vacatesOwn','m_adminStatus','m_vmcNum','m_vmcUrl','m_archived'].forEach(id=>{ const el=document.getElementById(id); if(el&&!el.dataset.vwired){ el.addEventListener('input',updateMovementValidation); el.addEventListener('change',updateMovementValidation); el.dataset.vwired='1'; }});
   ['s_name','s_team','s_role','s_subClass','s_subFTE','s_posId','s_posTitle','s_empType','s_active','s_contractStart','s_contractEnd'].forEach(id=>{ const el=document.getElementById(id); if(el&&!el.dataset.vwired){ el.addEventListener('input',updateStaffValidation); el.addEventListener('change',updateStaffValidation); el.dataset.vwired='1'; }});
 }
 function confirmWarnings(result){
@@ -1507,48 +1675,77 @@ function applyBranding(){
 // rows are kept in state.legacyRotations until the manager discards them in Settings.
 let migratedNow=false;
 function isLegacyRotation(x){ return !!x&&typeof x==='object'&&!('roleId' in x)&&('area' in x||'owner' in x||'cls' in x||'actual' in x); }
+// Rotation sets from the first release: {name, effectiveFrom 'DD-MM-YYYY', planning, slots[]}.
+// Each set becomes dated rows: the current set runs until the day before the next set starts.
+function dmyOrIso(v){ const m=/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})$/.exec(str(v)); return m?parseDate(m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0')):parseDate(v); }
+function rotationSetRows(cycleStart){
+  const sets=(Array.isArray(state.rotationSets)?state.rotationSets:[]).filter(x=>x&&Array.isArray(x.slots)&&x.slots.length)
+    .map(x=>({x,from:dmyOrIso(x.effectiveFrom)}))
+    .sort((a,b)=>(a.x.planning?1:0)-(b.x.planning?1:0)||(a.from??0)-(b.from??0));
+  const rows=[];
+  sets.forEach((st,i)=>{
+    const start=i===0?(st.from??cycleStart):(st.from??cycleStart);
+    const next=sets[i+1], end=next&&next.from!==null&&next.from>start?isoOf(next.from-MS_DAY):'';
+    st.x.slots.forEach(sl=>rows.push(Object.assign(deepCopy(sl),{set:str(st.x.name)||'Rotation set',start:isoOf(start),end})));
+  });
+  return rows;
+}
 function migrateLegacyRotations(){
-  const old=state.rotations.filter(isLegacyRotation);
-  if(!old.length) return;
-  state.rotations=state.rotations.filter(x=>!isLegacyRotation(x));
-  state.legacyRotations=(Array.isArray(state.legacyRotations)?state.legacyRotations:[]).concat(deepCopy(old));
-  // Start the migrated assignments at the beginning of the pay cycle we are in now.
+  // Start undated rows at the beginning of the pay cycle we are in now.
   const anchor=parseDate(state.settings.cycleAnchorDate), len=num(state.settings.cycleLenDays)*MS_DAY;
-  const start=new Date(anchor+Math.floor((parseDate(isoToday())-anchor)/len)*len).toISOString().slice(0,10);
-  const areas=[...new Set(old.map(x=>str(x.area)||'Unassigned area'))].sort((a,b)=>a.localeCompare(b));
+  const cycleStart=anchor+Math.floor((parseDate(isoToday())-anchor)/len)*len;
+  const old=state.rotations.filter(isLegacyRotation).map(x=>Object.assign(deepCopy(x),{start:isoOf(cycleStart),end:''}));
+  const fromSets=rotationSetRows(cycleStart);
+  if(!old.length&&!fromSets.length){ if(Array.isArray(state.rotationSets)) delete state.rotationSets; return; }
+  const all=old.concat(fromSets);
+  state.rotations=state.rotations.filter(x=>!isLegacyRotation(x));
+  state.legacyRotations=(Array.isArray(state.legacyRotations)?state.legacyRotations:[]).concat(deepCopy(all));
+  delete state.rotationSets;
+  const areas=[...new Set(all.map(x=>str(x.area)||'Unassigned area'))].sort((a,b)=>a.localeCompare(b));
   const teamFor={};
   areas.forEach(a=>{
     let t=state.settings.teams.find(x=>x.name.toLowerCase()===a.toLowerCase());
     if(!t){ t={id:newId('T'),name:a,active:true,roles:[]}; state.settings.teams.push(t); }
     teamFor[a]=t;
   });
-  let nRoles=0, nAsg=0, nLinked=0;
-  old.forEach(x=>{
-    const t=teamFor[str(x.area)||'Unassigned area'], cls=str(x.cls), owner=str(x.owner);
-    const vacant=!owner||/^vacant$/i.test(owner);
-    const base=(cls||'No class')+' – '+(vacant?'Vacant':owner);
-    let name=base, n=1; while(t.roles.some(r=>r.name===name)) name=base+' ('+(++n)+')';
-    const role={id:newId('R'),name,cls,fte:num(x.fte),active:true};
-    if(cls&&!state.settings.classes.includes(cls)) state.settings.classes.push(cls);
-    t.roles.push(role); nRoles++;
-    if(vacant||!state.staff.some(s=>str(s.name)===owner)) return;
-    const notes=['Migrated from rotation slot '+str(x.id)+' ('+(str(x.area)||'no area')+')'];
-    if(str(x.actual)) notes.push('Delivered by (old note): '+str(x.actual));
-    if(str(x.notes)) notes.push('Old notes: '+str(x.notes));
-    state.rotations.push({id:newId('ROT'),roleId:role.id,staff:owner,fte:num(x.fte),start,end:'',notes:notes.join(' · ')}); nAsg++;
-    // Point the owner's register line at the role only when there is exactly one candidate.
-    const lines=state.staff.filter(s=>str(s.name)===owner&&str(s.subClass)===cls);
-    const slots=old.filter(y=>str(y.owner)===owner&&str(y.cls)===cls).length;
-    if(lines.length===1&&slots===1&&!str(lines[0].roleId)){ lines[0].roleId=role.id; nLinked++; }
+  // The same slot in the current and the next set is one role with two dated assignments.
+  // Slots are matched by area, class, owner and how many times that combination has come up in the set.
+  const roleFor={}; let nRoles=0, nAsg=0, nLinked=0;
+  const groups=[...new Set(all.map(x=>str(x.set)))];
+  groups.forEach(g=>{
+    const seen={};
+    all.filter(x=>str(x.set)===g).forEach(x=>{
+      const t=teamFor[str(x.area)||'Unassigned area'], cls=str(x.cls), owner=str(x.owner);
+      const vacant=!owner||/^vacant$/i.test(owner);
+      const base=(cls||'No class')+' – '+(vacant?'Vacant':owner);
+      const sk=t.id+'|'+base; seen[sk]=(seen[sk]||0)+1; const key=sk+'|'+seen[sk];
+      let role=roleFor[key];
+      if(!role){
+        let name=base, n=1; while(t.roles.some(r=>r.name===name)) name=base+' ('+(++n)+')';
+        role={id:newId('R'),name,cls,fte:num(x.fte),active:true}; roleFor[key]=role;
+        if(cls&&!state.settings.classes.includes(cls)) state.settings.classes.push(cls);
+        t.roles.push(role); nRoles++;
+      }
+      if(vacant||!state.staff.some(s=>str(s.name)===owner)) return;
+      const notes=['Migrated from '+(str(x.set)?str(x.set)+' ':'')+'slot '+str(x.id)+' ('+(str(x.area)||'no area')+')'];
+      if(str(x.actual)) notes.push('Delivered by (old note): '+str(x.actual));
+      if(str(x.notes)) notes.push('Old notes: '+str(x.notes));
+      state.rotations.push({id:newId('ROT'),roleId:role.id,staff:owner,fte:num(x.fte),start:str(x.start),end:str(x.end),notes:notes.join(' · ')}); nAsg++;
+      // Point the owner's register line at the role only when there is exactly one candidate.
+      const lines=state.staff.filter(s=>str(s.name)===owner&&str(s.subClass)===cls);
+      const slots=all.filter(y=>str(y.set)===g&&str(y.owner)===owner&&str(y.cls)===cls).length;
+      if(lines.length===1&&slots===1&&!str(lines[0].roleId)){ lines[0].roleId=role.id; nLinked++; }
+    });
   });
   const items=[];
   state.settings.classes.forEach(c=>{
     const was=r2(num((state.settings.baselines||{})[c])), now=classHasRoles(c)?roleFundedByClass(c):was;
     if(Math.abs(was-now)>0.001) items.push({cls:c,was,now});
   });
-  state.migrationNote={ts:new Date().toISOString(),slots:old.length,teams:areas.length,roles:nRoles,assignments:nAsg,linked:nLinked,items};
+  const setNote=groups.filter(Boolean).map(g=>{ const r=all.find(x=>str(x.set)===g); return g+' ('+fmtDate(r.start)+(r.end?' to '+fmtDate(r.end):' onwards')+')'; });
+  state.migrationNote={ts:new Date().toISOString(),slots:all.length,teams:areas.length,roles:nRoles,assignments:nAsg,linked:nLinked,items,sets:setNote};
   auditLog('Update','Settings','Rotations','Old rotation slots converted to teams, roles and assignments',null,null,
-    [old.length+' slot(s) → '+areas.length+' team(s), '+nRoles+' role(s), '+nAsg+' assignment(s) starting '+start,nLinked+' staff line(s) linked to a role','Old slots kept as a backup in the data file']);
+    [all.length+' slot(s) → '+areas.length+' team(s), '+nRoles+' role(s), '+nAsg+' assignment(s)'+(setNote.length?': '+setNote.join('; '):' starting '+isoOf(cycleStart)),nLinked+' staff line(s) linked to a role','Old slots kept as a backup in the data file']);
   migratedNow=true;
 }
 function ensureShape(){
@@ -1586,7 +1783,12 @@ function ensureShape(){
     if(NO_CLASS_BAD.test(String(x.workClass||''))) x.workClass='';
     if(NO_CLASS_BAD.test(String(x.subClass||''))) x.subClass='';
   });
-  state.settings.cycleAnchorDate=state.settings.cycleAnchorDate||'2025-06-18';
+  state.settings.cycleAnchorDate=state.settings.cycleAnchorDate||DEFAULT_ANCHOR;
+  // Pay periods run Monday to Sunday. Older files anchored on the Wednesday pay day, which put
+  // every Monday handover inside one Wed–Tue cycle and counted both people. Move the anchor to
+  // the Monday before and ask the manager to check it against a payslip.
+  const anc=parseDate(state.settings.cycleAnchorDate);
+  if(anc!==null&&!isMonday(anc)){ state.settings.cycleAnchorDate=isoOf(mondayOnOrBefore(anc)); state.settings.payPeriodToCheck=true; }
   state.settings.cycleLenDays=state.settings.cycleLenDays||14;
   // Assignments: convert any old area/slot/owner rows first, then normalise what is left.
   migrateLegacyRotations();
@@ -1615,6 +1817,8 @@ function viewStaffDetails(person){
   }
   renderTimeline();
 }
+function applyMoreTools(){ const on=!!(state&&state.settings&&state.settings.showMoreTools); document.body.classList.toggle('lean',!on); const cb=document.getElementById('setMoreTools'); if(cb) cb.checked=on; }
+function setMoreTools(on){ state.settings.showMoreTools=!!on; auditLog('Update','Settings','Screens',on?'More tools shown':'More tools hidden',null,null,[on?'Show more tools on':'Show more tools off']); persist(); applyMoreTools(); }
 function toggleCard(head){ head.parentElement.classList.toggle('is-collapsed'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 
@@ -1655,18 +1859,26 @@ function nameSelChanged(baseId){
 // Everything that empties a person's line in a classification: absence, vacancy,
 // or working somewhere else. The total can never exceed what they hold there.
 const VACATING=['Leave','Secondment Out','Vacancy','Flexible Work Arrangement'];
-function vacatedFrom(name,cls,exceptId){
-  let t=0;
+// Peak FTE emptied out of a person's line at any one time. Movements that follow one another
+// do not add up; only ones running on the same days do. `extra` = a row being edited.
+function vacatedFrom(name,cls,exceptId,extra){
+  const items=[];
   state.movements.forEach(m=>{
     if(str(m.staff)!==str(name)||str(m.subClass)!==str(cls)) return;
     if(exceptId!==undefined&&str(m.id)===str(exceptId)) return;
     if(str(m.archived).toLowerCase()==='yes') return;
-    const ty=str(m.type);
-    if(VACATING.includes(ty)) t+=num(m.fteMoved);
-    else if(ty==='Parental Return to Work') t+=Math.max(0,(registerFTE(str(m.staff),str(m.subClass))||num(m.subFTE))-num(m.fteMoved));
-    else if(str(m.workClass)&&str(m.workClass)!==str(m.subClass)&&ty!=='Extra Funded') t+=num(m.fteMoved);
+    const ty=str(m.type); let f=0;
+    if(VACATING.includes(ty)) f=num(m.fteMoved);
+    else if(ty==='Parental Return to Work') f=Math.max(0,(registerFTE(str(m.staff),str(m.subClass))||num(m.subFTE))-num(m.fteMoved));
+    else if(str(m.workClass)&&str(m.workClass)!==str(m.subClass)&&ty!=='Extra Funded') f=num(m.fteMoved);
+    else if(vacatesOwnLine(m)) f=num(m.fteMoved);
+    if(f>0) items.push({st:parseDate(m.start),en:parseDate(m.end),f});
   });
-  return r2(t);
+  if(extra&&extra.f>0) items.push(extra);
+  const lo=v=>v??-8.64e15, hi=v=>v??8.64e15;
+  let peak=0;
+  items.forEach(p=>{ const at=lo(p.st); peak=Math.max(peak,items.reduce((t,i)=>t+(lo(i.st)<=at&&hi(i.en)>=at?i.f:0),0)); });
+  return r2(peak);
 }
 function registerFTE(name,cls){
   return state.staff.filter(s=>str(s.name)===str(name)&&str(s.subClass)===str(cls)&&str(s.active)!=='No'&&str(s.empType)!=='Casual')
@@ -1675,15 +1887,7 @@ function registerFTE(name,cls){
 function distinctStaffNames(){ return [...new Set(state.staff.map(s=>str(s.name)).filter(Boolean))].sort(); }
 
 function renderGapsControls(){ fillCycleSelect('gapsCycle'); }
-function renderDashControls(){
-  const {cycles,len}=buildCycles();
-  const csel=document.getElementById('dashCycle');
-  if(csel){
-    const prevC=csel.value;
-    csel.innerHTML=cycles.map((c,i)=>`<option value="${i}">${cycleLabel(c,len)}</option>`).join('');
-    csel.value=prevC!==''?prevC:currentCycleIndex(cycles,len);
-  }
-}
+function renderDashControls(){ fillCycleSelect('dashCycle'); }
 
 const cycleMemory={};
 function fillCycleSelect(id){
@@ -1694,7 +1898,8 @@ function fillCycleSelect(id){
   const picked=sel.selectedOptions[0];
   const want=(picked&&picked.dataset.ms)?+picked.dataset.ms:cycleMemory[id];
   sel.innerHTML=cycles.map((c,i)=>`<option value="${i}" data-ms="${c}">${cycleLabel(c,len)}</option>`).join('');
-  let idx=(want!==undefined)?cycles.indexOf(want):-1;
+  // Keep the fortnight that contains the previous choice, even if the pay calendar moved.
+  let idx=(want!==undefined)?cycles.findIndex(c=>c<=want&&want<c+len):-1;
   if(idx<0) idx=currentCycleIndex(cycles,len);
   sel.value=idx; cycleMemory[id]=cycles[idx];
   if(!sel.dataset.cyWired){ sel.addEventListener('change',()=>{ const c2=buildCycles(); cycleMemory[id]=c2.cycles[Math.min(Math.max(+sel.value||0,0),c2.cycles.length-1)]; }); sel.dataset.cyWired='1'; }
@@ -1724,14 +1929,14 @@ function renderPersonProfileBlock(targetId,person,csMs,ceMs){
   const classes=new Set(); lines.forEach(s=>{classes.add(str(s.subClass));});
   let subForEff=0; classes.forEach(cls=>{ subForEff+=subBase(cls,csMs,ceMs,person); });
   let pOut=0,pLeave=0,pIn=0;
-  state.movements.forEach(m=>{ if(str(m.staff)!==person||!inCycle(m,csMs,ceMs)) return; const t=str(m.type),sc=str(m.subClass),wc=str(m.workClass),ab=str(m.absenceType),f=num(m.fteMoved);
+  state.movements.forEach(m=>{ if(str(m.staff)!==person||!inCycle(m,csMs,ceMs)) return; const t=str(m.type),sc=str(m.subClass),wc=str(m.workClass),ab=str(m.absenceType),k=mvShare(m,csMs,ceMs),f=num(m.fteMoved)*k;
     const away=(t==='Leave'||t==='Secondment Out'||t==='Vacancy'||t==='Flexible Work Arrangement');
     if(classes.has(sc)&&wc!==sc&&!away&&t!=='Extra Funded') pOut+=f;
     // Moving into another classification is still work. Counting only the outward leg
     // made anyone acting up read as zero.
     if(wc&&wc!==sc&&!away) pIn+=f;
     if(classes.has(sc)&&(t==='Secondment Out'||t==='Vacancy'||t==='Flexible Work Arrangement'||(t==='Leave'&&!STAY_LEAVE.includes(ab)))) pLeave+=f;
-    if(classes.has(sc)&&t==='Parental Return to Work'){ const notBack=num(m.subFTE)-f; if(notBack>0) pLeave+=notBack; }
+    if(classes.has(sc)&&t==='Parental Return to Work'){ const notBack=(registerFTE(person,sc)||num(m.subFTE))-num(m.fteMoved); if(notBack>0) pLeave+=notBack*k; }
   });
   const personEff=subForEff-pOut-pLeave+pIn;
   const holdings=state.movements.filter(m=>str(m.staff)===person&&inCycle(m,csMs,ceMs));
@@ -1751,7 +1956,7 @@ function renderPersonProfileBlock(targetId,person,csMs,ceMs){
   html+=tableHTML(['Class','FTE','Position title','Position ID','Type','Contract end'], lines.map(s=>[esc(str(s.subClass)),r2(num(s.subFTE)),esc(str(s.posTitle)),esc(str(s.posId)),esc(str(s.empType)),fmtDate(s.contractEnd)]), lines.length?'':'No substantive line on file.');
 
   html+=`<h4 style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 8px">Active holdings — where they are sitting <span style="font-weight:600;text-transform:none;letter-spacing:0">(click Open to edit / update status)</span></h4>`;
-  const movedOut=holdings.filter(m=>classes.has(str(m.subClass))&&str(m.workClass)!==str(m.subClass)&&!['Leave','Secondment Out','Vacancy','Flexible Work Arrangement','Extra Funded'].includes(str(m.type))).reduce((a,m)=>a+num(m.fteMoved),0);
+  const movedOut=holdings.filter(m=>classes.has(str(m.subClass))&&str(m.workClass)!==str(m.subClass)&&!['Leave','Secondment Out','Vacancy','Flexible Work Arrangement','Extra Funded'].includes(str(m.type))).reduce((a,m)=>a+num(m.fteMoved)*mvShare(m,csMs,ceMs),0);
   const stillOwn=r2(subForEff-movedOut-pLeave);
   const ownRow = stillOwn>0.001 ? [['<i>Own substantive role</i>',[...classes].join(' / '),stillOwn,'<i>Substantive</i>','','','','','','']] : [];
   html+=tableHTML(['Working role','Class','FTE','Type','Owner / backfilling','Start','End','VMC','Status',''],
@@ -1878,37 +2083,56 @@ function renderAlerts(){
 function computeGaps(csMs,ceMs){
   if(csMs===undefined){ const c=cycleFromSelect('gapsCycle'); csMs=c.csMs; ceMs=c.ceMs; }
   const live=m=>str(m.archived).toLowerCase()!=='yes'&&inCycle(m,csMs,ceMs);
-  const vac={}; // name -> absence in this cycle
-  state.movements.forEach(m=>{
-    if(!live(m)) return;
-    const t=str(m.type), ab=str(m.absenceType), person=str(m.staff);
-    let vacated=0, label='';
-    if(t==='Secondment Out'){ vacated=num(m.fteMoved); label='Secondment Out'; }
-    else if(t==='Leave'){ vacated=num(m.fteMoved); label=ab||'Leave (type not set)'; }
-    else if(t==='Vacancy'){ vacated=num(m.fteMoved); label='Vacancy'; }
-    else if(t==='Flexible Work Arrangement'){ vacated=num(m.fteMoved); label='FWA'; }
-    else if(t==='Parental Return to Work'){ const held=registerFTE(person,str(m.subClass))||num(m.subFTE); vacated=held-num(m.fteMoved); label='Parental (Partial Return)'; }
-    // Working in a different classification also empties the substantive line — that FTE
-    // is not being delivered where it is funded, so it needs covering like any absence.
-    else if(str(m.workClass)&&str(m.workClass)!==str(m.subClass)&&t!=='Extra Funded'
-            &&registerFTE(person,str(m.subClass))>0){ vacated=num(m.fteMoved); label='Working as '+str(m.workClass); }
-    else return;
-    if(vacated<=0&&t!=='Parental Return to Work') {} // keep zero-vacate parental too
-    const k=person;
-    if(!vac[k]) vac[k]={name:person,subClass:str(m.subClass),absence:label,vacated:0,start:null,end:null};
+  // One row per person per classification line, so a split substantive (e.g. 0.4 HP3 + 0.6 HP4)
+  // shows each line with its own cover. Everything counts by the working days it covers here.
+  const vac={};
+  const addVac=(person,cls,label,vacated,st,en)=>{
+    const k=person+'|'+cls;
+    if(!vac[k]) vac[k]={key:k,name:person,subClass:cls,absence:label,vacated:0,start:null,end:null};
     vac[k].vacated+=vacated;
     if(!vac[k].absence) vac[k].absence=label;
-    const st=parseDate(m.start),en=parseDate(m.end);
     if(st!==null) vac[k].start=vac[k].start===null?st:Math.min(vac[k].start,st);
     if(en!==null) vac[k].end=vac[k].end===null?en:Math.max(vac[k].end,en);
+  };
+  state.movements.forEach(m=>{
+    if(!live(m)) return;
+    const t=str(m.type), ab=str(m.absenceType), person=str(m.staff), sc=str(m.subClass), k=mvShare(m,csMs,ceMs), f=num(m.fteMoved)*k;
+    let vacated=0, label='';
+    if(t==='Secondment Out'){ vacated=f; label='Secondment Out'; }
+    else if(t==='Leave'){ vacated=f; label=ab||'Leave (type not set)'; }
+    else if(t==='Vacancy'){ vacated=f; label='Vacancy'; }
+    else if(t==='Flexible Work Arrangement'){ vacated=f; label='FWA'; }
+    else if(t==='Parental Return to Work'){ const held=registerFTE(person,sc)||num(m.subFTE); vacated=Math.max(0,held-num(m.fteMoved))*k; label='Parental (Partial Return)'; }
+    // Working in a different classification also empties the substantive line — that FTE
+    // is not being delivered where it is funded, so it needs covering like any absence.
+    else if(str(m.workClass)&&str(m.workClass)!==sc&&t!=='Extra Funded'&&registerFTE(person,sc)>0){ vacated=f; label='Working as '+str(m.workClass); }
+    // Relieving in another line at the same level empties their own line too, when the manager says so.
+    else if(vacatesOwnLine(m)){ vacated=f; label='Relieving '+(str(m.owner)||'another line'); }
+    else return;
+    addVac(person,sc,label,vacated,parseDate(m.start),parseDate(m.end));
   });
-  // backfill owned by each person
-  return Object.values(vac).map(v=>{
-    const bf=state.movements.filter(m=>str(m.owner)===v.name&&COVER_TYPES.includes(str(m.type))&&live(m));
-    const backfilled=bf.reduce((a,m)=>a+num(m.fteMoved),0);
-    const by=bf.map(m=>str(m.staff)+' '+r2(num(m.fteMoved))+' ('+str(m.type)+')');
-    return {...v, backfilled, gap:r2(backfilled-v.vacated), count:bf.length, coveredBy:by, vacated:r2(v.vacated)};
-  }).sort((a,b)=>CLASSES.indexOf(a.subClass)-CLASSES.indexOf(b.subClass)||a.name.localeCompare(b.name));
+  // Vacant positions on the register: funded, nobody in them, so the whole line needs cover.
+  state.staff.forEach(s=>{
+    if(str(s.empType)!=='Vacant'||str(s.active)!=='Yes') return;
+    const st=parseDate(s.contractStart), en=parseDate(s.contractEnd), k=shareOf(st,en,csMs,ceMs);
+    if(k>0) addVac(str(s.name),str(s.subClass),'Vacant position',num(s.subFTE)*k,st,en);
+  });
+  const rows=Object.values(vac).map(v=>Object.assign(v,{backfilled:0,coveredBy:[],count:0}));
+  // Cover goes to the owner's line in the class the cover is working in; if the owner has one
+  // line away, it all goes there.
+  state.movements.forEach(m=>{
+    if(!COVER_TYPES.includes(str(m.type))||!live(m)) return;
+    const mine=rows.filter(r=>r.name===str(m.owner)); if(!mine.length) return;
+    const r=mine.find(x=>x.subClass===str(m.workClass))||mine[0];
+    const f=num(m.fteMoved)*mvShare(m,csMs,ceMs);
+    r.backfilled+=f; r.count++; r.coveredBy.push(str(m.staff)+' '+r2(f)+' ('+str(m.type)+')');
+  });
+  return rows.map(v=>({...v, backfilled:r2(v.backfilled), gap:r2(v.backfilled-v.vacated), vacated:r2(v.vacated)}))
+    .sort((a,b)=>CLASSES.indexOf(a.subClass)-CLASSES.indexOf(b.subClass)||a.name.localeCompare(b.name));
+}
+// A same-level move flagged "comes out of their own line" (e.g. relieving in another senior post).
+function vacatesOwnLine(m){
+  return str(m.vacatesOwn)==='Yes'&&COVER_TYPES.includes(str(m.type))&&str(m.workClass)===str(m.subClass)&&registerFTE(str(m.staff),str(m.subClass))>0;
 }
 
 /* ============================ MANAGER ACTION DASHBOARD ============================ */
@@ -1918,6 +2142,16 @@ function editMovementAction(id){ return `<button class="iconbtn" onclick="openMo
 function computeManagerActions(){
   const items=[], today=parseDate(isoToday()), seenOverVacate=new Set();
   const add=(sev,person,issue,detail,meta,actions,type)=>items.push({sev,person:str(person)||'Unassigned staff member',issue,detail,meta:meta||[],actions:actions||'',type:type||''});
+  if(state.settings.payPeriodToCheck) add('warn','Pay-cycle calendar','Check the pay period start date',`Pay periods now run Monday to Sunday. The start date was moved to ${msDate(parseDate(state.settings.cycleAnchorDate))} — check it against the period start on a payslip.`,['Settings'],`<button class="iconbtn" onclick="go('settings')">Open Settings</button>`,'Settings');
+  const seenOverlap=new Set();
+  state.staff.forEach((s,i)=>{
+    if(str(s.active)!=='Yes'||unpaidLine(s)) return;
+    state.staff.forEach((o,j)=>{
+      if(j<=i||str(o.name)!==str(s.name)||str(o.subClass)!==str(s.subClass)||str(o.active)!=='Yes'||unpaidLine(o)||!linesOverlap(s,o)) return;
+      const k=str(s.name)+'|'+str(s.subClass); if(seenOverlap.has(k)) return; seenOverlap.add(k);
+      add('high',s.name,'Two active lines overlap in the same classification',`${str(s.subClass)}: ${r2(num(s.subFTE))} FTE and ${r2(num(o.subFTE))} FTE are both counted over the same dates. If one replaced the other, end the old line the day before the new one starts (Staff Register → Change from date does this for you).`,['Staff register','Double counted'],`${staffDetailsAction(s.name)}${editStaffAction(i)}`,'Staff');
+    });
+  });
   state.staff.forEach((s,i)=>{
     const ce=parseDate(s.contractEnd), days=ce===null?null:Math.round((ce-today)/MS_DAY);
     if(str(s.empType)==='Temporary'&&str(s.active)==='Yes'){
@@ -2003,7 +2237,7 @@ function renderManagerActions(){
   if(!items.length){ h+='<div class="empty">No manager actions detected from the current data.</div>'; el.innerHTML=h; return; }
   h+=`<div class="action-filter-note">Showing ${filtered.length} ${filterLabel.toLowerCase()} ${filtered.length===1?'item':'items'}.</div>`;
   if(!filtered.length){ h+=`<div class="empty">No ${filterLabel.toLowerCase()} actions detected. Select Open actions to view all current items.</div>`; el.innerHTML=h; return; }
-  h+='<div class="action-list">'+filtered.slice(0,24).map(i=>`<div class="action-item ${i.sev}"><div class="abar"></div><div><div class="action-person-row">${['Budget','Recruitment','Vacancy'].includes(i.type)?`<span class="action-person" style="cursor:default">${esc(i.person)}</span>`:`<button class="linklike action-person" onclick="viewStaffDetails(${esc(jsq(i.person))})">${esc(i.person)}</button>`}${i.type?`<span class="action-type-chip">${esc(i.type)}</span>`:''}</div><div class="action-issue">${esc(i.issue)}</div><div class="action-detail">${esc(i.detail)}</div><div class="action-meta">${(i.meta||[]).map(m=>`<span class="pill neutral">${esc(m)}</span>`).join('')}</div></div><div class="action-buttons">${i.actions}</div></div>`).join('')+'</div>';
+  h+='<div class="action-list">'+filtered.slice(0,24).map(i=>`<div class="action-item ${i.sev}"><div class="abar"></div><div><div class="action-person-row">${['Budget','Recruitment','Vacancy','Settings'].includes(i.type)?`<span class="action-person" style="cursor:default">${esc(i.person)}</span>`:`<button class="linklike action-person" onclick="viewStaffDetails(${esc(jsq(i.person))})">${esc(i.person)}</button>`}${i.type?`<span class="action-type-chip">${esc(i.type)}</span>`:''}</div><div class="action-issue">${esc(i.issue)}</div><div class="action-detail">${esc(i.detail)}</div><div class="action-meta">${(i.meta||[]).map(m=>`<span class="pill neutral">${esc(m)}</span>`).join('')}</div></div><div class="action-buttons">${i.actions}</div></div>`).join('')+'</div>';
   if(filtered.length>24) h+=`<div class="hint" style="margin-top:10px">Showing first 24 of ${filtered.length} ${filterLabel.toLowerCase()} actions.</div>`;
   el.innerHTML=h;
 }
@@ -2017,67 +2251,86 @@ function renderGaps(){
     const cover = g.count? g.coveredBy.map(x=>esc(x)).join('<br>') : '<span class="hint">nobody</span>';
     const holds=r2(registerFTE(g.name,g.subClass));
     const vacCell = (holds>0&&g.vacated>holds+0.001)? `<span class="pill danger">${r2(g.vacated)}</span>` : r2(g.vacated);
-    return [esc(g.name),esc(g.subClass),holds||'',vacCell,r2(g.backfilled),gp,cover,fmtDate(new Date(g.start).toISOString().slice(0,10)),g.end?fmtDate(new Date(g.end).toISOString().slice(0,10)):''];
+    return [esc(g.name),esc(g.subClass),esc(g.absence),holds||'',vacCell,r2(g.backfilled),gp,cover,g.start!==null?msDate(g.start):'',g.end!==null?msDate(g.end):''];
   });
-  document.getElementById('gapsTable').innerHTML=tableHTML(['Owner','Class','Holds','Vacated','Covered','Gap (\u2212 short, + over)','Covered by','Earliest start','Latest end'],rows,'No absences with vacated FTE right now.');
+  document.getElementById('gapsTable').innerHTML=tableHTML(['Owner','Class','Why','Holds','Vacated','Covered','Gap (\u2212 short, + over)','Covered by','Earliest start','Latest end'],rows,'No absences with vacated FTE right now.');
 }
 
 /* ============================ BUDGET SUMMARY ============================ */
-function renderBudgetControls(){
-  const {cycles,len}=buildCycles(); const sel=document.getElementById('budgetStart'); const prev=sel.value;
-  sel.innerHTML=cycles.map((c,i)=>`<option value="${i}">${fmtDate(new Date(c).toISOString().slice(0,10))}</option>`).join('');
-  sel.value=prev!==''?prev:currentCycleIndex(cycles,len);
-}
-function budgetChartSVG(eff,base,ceil){
-  const n=eff.length; if(!n) return '';
-  const W=Math.max(n*30,120), H=64, pad=6;
-  const maxV=Math.max(ceil,base,...eff,0.1)*1.14;
-  const colW=(W-2*pad)/n, bw=colW*0.64;
-  const y=v=>H-pad-(v/maxV)*(H-2*pad);
-  let bars='';
-  eff.forEach((v,i)=>{
-    let c; if(v>ceil) c='#B41A1A'; else if(v>base) c='#A87A00'; else if(v<base) c='#1A5A9A'; else c='#0C7A52';
-    const bx=pad+i*colW+(colW-bw)/2, by=y(v);
-    bars+=`<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${bw.toFixed(1)}" height="${(H-pad-by).toFixed(1)}" rx="2" fill="${c}" opacity="0.9"/>`;
+function renderBudgetControls(){ fillCycleSelect('budgetStart'); }
+function costOf(cls){ return num((state.settings.costs||{})[cls]); }
+function money(v){ const a=Math.abs(Math.round(v)); return (v<-0.5?'−':'')+'$'+a.toLocaleString('en-AU'); }
+// Headroom = baseline − paid FTE. Positive = spare FTE (money not being spent), negative = over.
+// Paid FTE counts people on paid leave (LSL, paid parental) but not unpaid leave, because this
+// is about what payroll costs. A fortnight's dollars = FTE × annual cost × days ÷ 365.25.
+function headroomData(start,n){
+  const {cycles,len}=buildCycles(), list=cycles.slice(start,start+n), yr=len/MS_DAY/365.25;
+  const rows=CLASSES.map(cls=>{
+    const base=baselineOf(cls), ceil=ceilingOf(cls), cost=costOf(cls);
+    const paid=list.map(c=>r2(effFTE(cls,c,c+len-MS_DAY,'paid')));
+    const head=paid.map(v=>r2(base-v));
+    const dollars=head.map(h=>cost?h*cost*yr:null);
+    return {cls,base,ceil,cost,paid,head,dollars};
   });
-  const yB=y(base).toFixed(1), yC=y(ceil).toFixed(1);
-  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">`
-    +`<line x1="${pad}" x2="${W-pad}" y1="${yC}" y2="${yC}" stroke="#B41A1A" stroke-width="1.5" opacity="0.6"/>`
-    +`<line x1="${pad}" x2="${W-pad}" y1="${yB}" y2="${yB}" stroke="#3A5068" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>`
-    +`${bars}</svg>`;
+  const net=list.map((c,i)=>rows.every(r=>r.cost)?rows.reduce((t,r)=>t+r.dollars[i],0):null);
+  return {list,len,rows,net};
+}
+// Runs of fortnights in a row where a level is spare (or over) by at least 0.05 FTE.
+function headroomPockets(d){
+  const out=[];
+  d.rows.forEach(r=>{
+    let run=null;
+    const close=()=>{ if(run){ out.push(run); run=null; } };
+    r.head.forEach((h,i)=>{
+      const k=h>=0.05?'spare':h<=-0.05?'over':null;
+      if(run&&run.k!==k) close();
+      if(!k) return;
+      if(!run) run={cls:r.cls,k,from:i,to:i,min:Math.abs(h),max:Math.abs(h),dollars:0,hasCost:!!r.cost};
+      run.to=i; run.min=Math.min(run.min,Math.abs(h)); run.max=Math.max(run.max,Math.abs(h)); if(r.cost) run.dollars+=Math.abs(r.dollars[i]);
+    });
+    close();
+  });
+  return out.sort((a,b)=>a.from-b.from||CLASSES.indexOf(a.cls)-CLASSES.indexOf(b.cls));
 }
 function renderBudget(){
   renderForecast();
-  const {cycles,len}=buildCycles(); let start=+document.getElementById('budgetStart').value||0;
-  const win=cycles.slice(start,start+13);
-  const effByClass={};
-  CLASSES.forEach(cls=>{ effByClass[cls]=win.map(c=>r2(effFTE(cls,c,c+len-MS_DAY,'funded'))); });
-
-  // --- shape charts ---
-  let chartH='<div style="margin-bottom:6px"><div class="card-sub" style="margin-bottom:6px">FTE shape across the window — bars = funded FTE, dashed line = baseline, red line = ceiling.</div>';
-  CLASSES.forEach(cls=>{
-    chartH+=`<div class="bchart"><div class="blab">${cls}<span class="bsub">base ${baselineOf(cls)} · ceil ${ceilingOf(cls)}</span></div>${budgetChartSVG(effByClass[cls],baselineOf(cls),ceilingOf(cls))}</div>`;
+  const start=+document.getElementById('budgetStart').value||0, n=+(document.getElementById('budgetLen')||{value:13}).value||13;
+  const d=headroomData(start,n), haveCost=d.rows.every(r=>r.cost), anyCost=d.rows.some(r=>r.cost);
+  const el=document.getElementById('budgetTable'); if(!d.list.length){ el.innerHTML='<div class="empty">No pay periods to show.</div>'; return; }
+  const fe=c=>msDate(c+d.len-MS_DAY);
+  const totSpare=d.rows.reduce((t,r)=>t+(r.cost?r.dollars.reduce((a,v)=>a+Math.max(0,v),0):0),0);
+  const totOver=d.rows.reduce((t,r)=>t+(r.cost?r.dollars.reduce((a,v)=>a+Math.max(0,-v),0):0),0);
+  let h=`<div class="tiles" style="margin-bottom:14px">
+    <div class="tile"><div class="k">Spare in this window</div><div class="v" style="color:var(--accent-dark)">${anyCost?money(totSpare):'—'}</div></div>
+    <div class="tile"><div class="k">Over in this window</div><div class="v" style="color:${totOver>0.5?'var(--warn)':'inherit'}">${anyCost?money(totOver):'—'}</div></div>
+    <div class="tile"><div class="k">Net position</div><div class="v" style="color:${totSpare-totOver<-0.5?'var(--danger)':'var(--good)'}">${haveCost?money(totSpare-totOver):'—'}</div></div></div>`;
+  if(!haveCost) h+=`<div class="sectionnote" style="background:var(--warn-bg);color:var(--warn)">${anyCost?'Some levels have no cost yet, so the net position is not shown.':'Add an annual cost per 1.0 FTE for each level'} in <a class="linklike" onclick="go('settings')">Settings → Classification budget</a> to see dollars and the net position. Finance can supply these (salary plus on-costs).</div>`;
+  h+='<div class="ptbl-wrap"><table class="planner hroom"><thead><tr><th class="pname">Level</th><th class="pcls">Baseline</th>';
+  d.list.forEach(c=>{ h+=`<th title="${esc(msDate(c)+' – '+fe(c))}">${esc(msDate(c).slice(0,6))}</th>`; });
+  h+='<th>Window</th></tr></thead><tbody>';
+  d.rows.forEach(r=>{
+    h+=`<tr><td class="pname">${esc(r.cls)}<span class="lcsub">FTE spare (+) / over (−)</span></td><td class="pcls">${r.base}</td>`;
+    r.head.forEach((v,i)=>{ const k=r.ceil>0&&r.paid[i]>r.ceil+0.001?'ceil':v<-0.001?'over':v>0.001?'spare':'on';
+      h+=`<td class="hrcell" data-k="${k}" title="${esc(r.cls+', '+msDate(d.list[i])+' – '+fe(d.list[i])+': '+r.paid[i]+' FTE paid against a baseline of '+r.base+(r.ceil?' (ceiling '+r.ceil+')':'')+'. '+(v>0?v+' FTE spare':v<0?(-v)+' FTE over':'on baseline')+(r.cost?' ≈ '+money(r.dollars[i])+' this fortnight':'')+'.')}">${v>0?'+'+v:v===0?'0':'−'+(-v)}${r.cost?`<span class="psub">${esc(money(r.dollars[i]))}</span>`:''}</td>`; });
+    const sumD=r.cost?r.dollars.reduce((a,v)=>a+v,0):null;
+    h+=`<td class="hrcell" data-k="${sumD===null?'on':sumD<-0.5?'over':sumD>0.5?'spare':'on'}"><b>${sumD===null?'—':esc(money(sumD))}</b></td></tr>`;
   });
-  chartH+=`<div class="plegend" style="margin-top:12px">
-    <span class="pchip" style="background:var(--good-bg);color:var(--good)">On / under baseline</span>
-    <span class="pchip" style="background:var(--warn-bg);color:var(--warn)">Over baseline</span>
-    <span class="pchip" style="background:var(--danger-bg);color:var(--danger)">Over ceiling</span>
-    <span class="pchip" style="background:#E7F0FA;color:var(--accent-dark)">Under baseline</span>
-  </div></div>`;
-
-  // --- number grid with heatmap ---
-  const head=['Class','Measure',...win.map(c=>fmtDate(new Date(c).toISOString().slice(0,10)).slice(0,6))];
-  let rows=[];
-  CLASSES.forEach(cls=>{
-    const eff=effByClass[cls], base=baselineOf(cls), ceil=ceilingOf(cls);
-    const heat=v=>{ let c=v>ceil?'heat-over':v>base?'heat-warn':v<base?'heat-under':'heat-on'; return `<span class="heatcell ${c}">${v}</span>`; };
-    rows.push([cls,'Effective FTE',...eff.map(heat)]);
-    rows.push(['','Baseline',...win.map(()=>base)]);
-    rows.push(['','Ceiling',...win.map(()=>ceil)]);
-    rows.push(['','vs Baseline',...eff.map(x=>cell_signed(x-base))]);
-    rows.push(['','',...win.map(()=>'')]);
-  });
-  document.getElementById('budgetTable').innerHTML=chartH+tableHTML(head,rows,'');
+  if(haveCost){
+    h+=`<tr class="ptally"><td class="pname">Net, all levels</td><td class="pcls">$</td>`;
+    d.net.forEach(v=>{ h+=`<td class="hrcell" data-k="${v<-0.5?'over':v>0.5?'spare':'on'}">${esc(money(v))}</td>`; });
+    h+=`<td class="hrcell" data-k="${totSpare-totOver<-0.5?'over':'spare'}"><b>${esc(money(totSpare-totOver))}</b></td></tr>`;
+  }
+  h+='</tbody></table></div>';
+  h+=`<div class="plegend" style="margin-top:10px"><span class="pchip" style="background:#E3EEF9;color:#0F3A63">+0.6 = spare FTE (not being spent)</span><span class="pchip" style="background:#FBEFC8;color:#7A5800">−0.4 = over baseline</span><span class="pchip" style="background:#F6CFCF;color:#9E1717">over the ceiling</span><span class="hint" style="align-self:center">Hover over a cell for the numbers.</span></div>`;
+  // Pockets: the bits that could be consolidated, and the over-runs they could offset.
+  const pk=headroomPockets(d), range=x=>x.min===x.max?String(r2(x.min)):r2(x.min)+'–'+r2(x.max);
+  const line=x=>`<li><b>${esc(x.cls)} ${x.k==='spare'?'spare':'over'} ${range(x)} FTE</b> · ${esc(msDate(d.list[x.from]))} → ${esc(fe(d.list[x.to]))} (${x.to-x.from+1} fortnight${x.to>x.from?'s':''})${x.hasCost?' · ≈ '+esc(money(x.dollars)):''}</li>`;
+  const sp=pk.filter(x=>x.k==='spare'), ov=pk.filter(x=>x.k==='over');
+  h+=`<div class="grid2" style="margin-top:16px;gap:16px">
+    <div><h4 style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px">Spare pockets — could be consolidated or used</h4>${sp.length?`<ul class="fcnote">${sp.map(line).join('')}</ul>`:'<div class="hint">No spare FTE in this window.</div>'}</div>
+    <div><h4 style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px">Over-runs — to offset or explain</h4>${ov.length?`<ul class="fcnote">${ov.map(line).join('')}</ul>`:'<div class="hint">No level is over its baseline in this window.</div>'}</div></div>`;
+  h+=`<div class="hint" style="margin-top:12px">Paid FTE = what payroll is costing: everyone on the register (pro-rata to their dates), less unpaid leave, secondments out and vacancies, plus anyone acting into the level. Paid parental and long service leave still count; parental leave stops counting after the “Paid leave ends” date on the movement. Casual staff are not counted. Dollars use the annual cost per 1.0 FTE set in Settings.</div>`;
+  el.innerHTML=h;
 }
 
 /* ============================ MOVEMENTS TABLE ============================ */
@@ -2105,7 +2358,7 @@ function renderMovements(){
     {label:'VMC',get:m=>vmcCell(m)},
     {label:'',get:m=>{
         const id=esc(str(m.id)); const isArch=str(m.archived).toLowerCase()==='yes';
-        return `<div class="rowact"><button class="iconbtn" onclick="openMovement('${id}')">Edit</button>`
+        return `<div class="rowact"><button class="iconbtn" onclick="openMovement('${id}')">Edit</button><button class="iconbtn" title="Open a new movement pre-filled from this one" onclick="duplicateMovement('${id}')">Duplicate</button>`
           +`<button class="iconbtn${isArch?'':' del'}" onclick="archiveMovement('${id}',${isArch?'false':'true'})">${isArch?'Unarchive':'Archive'}</button></div>`;
       }}
   ];
@@ -2140,10 +2393,76 @@ function renderStaff(){
         return isExpired(s)?`<span class="pill danger">⚠ EXPIRED · ${esc(fmtDate(s.contractEnd))}</span>`:esc(fmtDate(s.contractEnd));
       }},
     {label:'',get:(s,i)=>`<div class="rowact"><button class="iconbtn" onclick="openStaff(${i})">Edit</button>`
+        +`<button class="iconbtn" title="Open a new line pre-filled from this one" onclick="duplicateStaff(${i})">Duplicate</button>`
+        +`<button class="iconbtn" title="End this line on a date and start the new arrangement the next day" onclick="openChangeLine(${i})">Change from date</button>`
         +`<button class="iconbtn del" onclick="removeStaff(${i})">Remove</button></div>`}
   ];
   document.getElementById('staffTable').innerHTML=sortableTable(cols,items,staffSort,'sortStaff',
     {emptyMsg:'No staff.',rowClass:s=>(isExpired(s)?'rowexpired ':'')+(str(s.active)!=='Yes'?'archived':'')});
+}
+function duplicateStaff(i){
+  const s=state.staff[i]; if(!s) return;
+  openStaff(null,Object.assign(deepCopy(s),{notes:''}));
+  document.getElementById('staffModalTitle').textContent='Add staff line — copy of '+str(s.name)+' · '+str(s.subClass);
+}
+/* ---- Change a substantive line from a date ---- */
+// Ends the current line the day before and starts the new arrangement on the date, so the
+// history stays right and the two lines never overlap. A split (e.g. 0.4 HP3 + 0.6 HP4) adds a second line.
+let changeIdx=null;
+function openChangeLine(i){
+  const s=state.staff[i]; if(!s) return; changeIdx=i;
+  document.getElementById('chgCurrent').innerHTML=`<b>${esc(str(s.name))}</b> · ${esc(str(s.subClass))} · ${r2(num(s.subFTE))} FTE · ${esc(str(s.empType))}${str(s.posTitle)?' · '+esc(str(s.posTitle)):''}${str(s.contractStart)?' · from '+esc(fmtDate(s.contractStart)):''}${str(s.contractEnd)?' · to '+esc(fmtDate(s.contractEnd)):''}`;
+  document.getElementById('chg_date').value='';
+  fillSelect('chg_cls1',CLASSES,str(s.subClass)); document.getElementById('chg_fte1').value=num(s.subFTE)||'';
+  document.getElementById('chg_pos1').value=str(s.posId); document.getElementById('chg_title1').value=str(s.posTitle);
+  document.getElementById('chg_split').checked=false; document.getElementById('chg_endOnly').checked=false;
+  fillSelect('chg_cls2',CLASSES,str(s.subClass)); document.getElementById('chg_fte2').value='';
+  document.getElementById('chg_pos2').value=''; document.getElementById('chg_title2').value='';
+  chgSplitToggle(); renderChangePreview();
+  document.getElementById('chgModal').classList.add('open');
+}
+function chgSplitToggle(){ const endOnly=document.getElementById('chg_endOnly').checked; document.getElementById('chgLine1').style.display=endOnly?'none':''; document.getElementById('chgLine2').style.display=(!endOnly&&document.getElementById('chg_split').checked)?'':'none'; renderChangePreview(); }
+function changePlan(){
+  const s=state.staff[changeIdx], g=id=>document.getElementById(id).value, errors=[], warnings=[];
+  const d=parseDate(g('chg_date'));
+  const endOnly=document.getElementById('chg_endOnly').checked;
+  const lines=endOnly?[]:[{cls:g('chg_cls1'),fte:Number(g('chg_fte1')),posId:g('chg_pos1'),posTitle:g('chg_title1')}];
+  if(!endOnly&&document.getElementById('chg_split').checked) lines.push({cls:g('chg_cls2'),fte:Number(g('chg_fte2')),posId:g('chg_pos2'),posTitle:g('chg_title2')});
+  if(d===null) errors.push('Pick the date the new arrangement starts.');
+  const os=parseDate(s.contractStart), oe=parseDate(s.contractEnd);
+  if(d!==null&&os!==null&&d<=os) errors.push('The change date must be after this line starts ('+fmtDate(s.contractStart)+').');
+  if(d!==null&&oe!==null&&d>oe) errors.push('This line already ends on '+fmtDate(s.contractEnd)+', before the change date.');
+  lines.forEach((l,n)=>{ if(!(l.fte>0)) errors.push('Line '+(n+1)+' needs an FTE greater than 0.'); });
+  if(d!==null) lines.forEach(l=>{
+    const ex=state.staff.find((o,i)=>i!==changeIdx&&str(o.name)===str(s.name)&&str(o.subClass)===l.cls&&str(o.active)==='Yes'&&!unpaidLine(o)&&linesOverlap(o,{contractStart:isoOf(d),contractEnd:str(s.contractEnd)}));
+    if(ex) warnings.push(str(s.name)+' already has an active '+l.cls+' line ('+r2(num(ex.subFTE))+' FTE'+(str(ex.contractStart)?' from '+fmtDate(ex.contractStart):'')+') over these dates. If that is the new arrangement, tick “Only end this line” instead, or both will be counted.');
+  });
+  if(d!==null&&!isMonday(d)) warnings.push('Pay periods start on a Monday — '+msDate(d)+' is a '+['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(d).getUTCDay()]+'.');
+  // Movements that run past the change and still draw on the old line need checking by hand.
+  const after=d===null?[]:state.movements.filter(m=>liveMovement(m)&&str(m.staff)===str(s.name)&&str(m.subClass)===str(s.subClass)&&(parseDate(m.end)??8.64e15)>=d);
+  if(after.length) warnings.push('These movements for '+str(s.name)+' run past the change date and still come out of the old '+str(s.subClass)+' line: '+after.map(m=>str(m.id)+' ('+str(m.type)+' '+r2(num(m.fteMoved))+' FTE)').join(', ')+'. After saving, end each one the day before the change and add new movements against the new line(s).');
+  return {s,d,lines,errors,warnings,after};
+}
+function renderChangePreview(){
+  if(changeIdx===null) return;
+  const p=changePlan(), el=document.getElementById('chgPreview');
+  let h='';
+  if(p.d!==null){
+    h+=`<div class="sectionnote">Old line: ${esc(str(p.s.subClass))} ${r2(num(p.s.subFTE))} FTE will end <b>${esc(msDate(p.d-MS_DAY))}</b>.${p.lines.length?'<br>':''}`+p.lines.map(l=>`New line: <b>${esc(l.cls)} ${r2(l.fte||0)} FTE</b>${l.posTitle?' · '+esc(l.posTitle):''} from <b>${esc(msDate(p.d))}</b>${str(p.s.contractEnd)?' to '+esc(fmtDate(p.s.contractEnd)):''}.`).join('<br>')+'</div>';
+  }
+  el.innerHTML=h;
+  renderValidationPanel('chgValidation',{errors:p.errors,warnings:p.warnings});
+}
+function applyChangeLine(){
+  const p=changePlan();
+  if(!confirmWarnings({errors:p.errors,warnings:p.warnings})) return;
+  const s=p.s, before=deepCopy(s), iso=isoOf(p.d);
+  s.contractEnd=isoOf(p.d-MS_DAY);
+  const added=p.lines.map((l,n)=>Object.assign(deepCopy(before),{subClass:l.cls,subFTE:l.fte,posId:l.posId,posTitle:l.posTitle,contractStart:iso,contractEnd:str(before.contractEnd),roleId:(n===0&&l.cls===str(before.subClass))?str(before.roleId):'',notes:'Changed from '+str(before.subClass)+' '+r2(num(before.subFTE))+' FTE on '+fmtDate(iso)}));
+  state.staff.splice(changeIdx+1,0,...added);
+  auditLog('Update','Staff',str(s.name),`Substantive changed from ${fmtDate(iso)}: ${str(before.subClass)} ${r2(num(before.subFTE))} → ${added.length?added.map(a=>a.subClass+' '+r2(a.subFTE)).join(' + '):'line ended'}`,before,s);
+  closeModal('chgModal'); persist(); rebuildAll();
+  toast('Done. The old line ends '+msDate(p.d-MS_DAY)+(p.after.length?'. Now update '+p.after.length+' movement(s) listed in the warning.':'.'));
 }
 function removeStaff(i){
   const s=state.staff[i]; if(!s) return;
@@ -2322,7 +2641,7 @@ function renderLegacyNotes(){
   let h='';
   const n=state.migrationNote;
   if(n){
-    h+=`<div class="sectionnote" style="${warnStyle}"><b>Your old rotation slots were converted.</b> ${n.slots} slot(s) became ${n.teams} team(s) and ${n.roles} role(s), with ${n.assignments} dated assignment(s) and ${n.linked} staff line(s) linked to a role. Rename teams and roles as you like.`;
+    h+=`<div class="sectionnote" style="${warnStyle}"><b>Your old rotation slots were converted.</b> ${n.slots} slot(s) became ${n.teams} team(s) and ${n.roles} role(s), with ${n.assignments} dated assignment(s) and ${n.linked} staff line(s) linked to a role.${n.sets&&n.sets.length?' Rotation sets: '+esc(n.sets.join('; '))+'.':''} Each assignment names the substantive owner of the slot; the old “delivered by” text is in its notes. Rename teams and roles as you like.`;
     if(n.items.length) h+='<br><br><b>Baselines changed</b> because each classification now takes its baseline from the role FTE:<ul style="margin:6px 0 0 18px">'+n.items.map(x=>`<li>${esc(x.cls)}: was ${x.was}, now ${x.now}</li>`).join('')+'</ul>Check the roles below add up to your real funded FTE.';
     else h+=' Role totals match your old baselines.';
     h+=' <button class="iconbtn" onclick="dismissMigrationNote()">Dismiss</button></div>';
@@ -2330,7 +2649,7 @@ function renderLegacyNotes(){
   const old=Array.isArray(state.legacyRotations)?state.legacyRotations:[];
   if(old.length){
     h+=`<div class="sectionnote"><b>Safety copy:</b> your ${old.length} old rotation slot(s) are kept in the data file (and in Export backup) until you discard them. Their free-text "delivered by" and notes were copied into the assignment notes where the owner is on the Staff Register.
-      <details style="margin-top:8px"><summary>Show old slots</summary>${tableHTML(['Area','Class','FTE','Owner','Delivered by (old note)','Notes'],old.map(x=>[esc(str(x.area)),esc(str(x.cls)),r2(num(x.fte)),esc(str(x.owner)),esc(str(x.actual)),esc(str(x.notes))]),'')}</details>
+      <details style="margin-top:8px"><summary>Show old slots</summary>${tableHTML(['Set','Area','Class','FTE','Owner','Delivered by (old note)','Notes'],old.map(x=>[esc(str(x.set)),esc(str(x.area)),esc(str(x.cls)),r2(num(x.fte)),esc(str(x.owner)),esc(str(x.actual)),esc(str(x.notes))]),'')}</details>
       <div style="margin-top:8px"><button class="btn sm danger" onclick="discardLegacyRotations()">Discard old copy</button></div></div>`;
   }
   el.innerHTML=h;
@@ -2353,7 +2672,7 @@ function classUsage(cls){
 function renderSettings(){
   renderTeams();
   renderLegacyNotes();
-  let h='<div class="tbl-wrap"><table><thead><tr><th>Classification</th><th class="num">Baseline FTE</th><th class="num">Ceiling FTE</th><th class="num">Additional approved</th><th class="num">Effective ceiling</th><th>In use</th><th></th></tr></thead><tbody>';
+  let h='<div class="tbl-wrap"><table><thead><tr><th>Classification</th><th class="num">Baseline FTE</th><th class="num">Ceiling FTE</th><th class="num">Additional approved</th><th class="num">Effective ceiling</th><th class="num" title="Salary plus on-costs for one full-time person for a year. Used for dollars on the Budget page.">Annual cost per 1.0 FTE ($)</th><th>In use</th><th></th></tr></thead><tbody>';
   CLASSES.forEach((cls,i)=>{
     const b=num((state.settings.baselines||{})[cls]); const c=(state.settings.ceilings||{})[cls]||{};
     const u=classUsage(cls);
@@ -2362,6 +2681,7 @@ function renderSettings(){
       <td class="num"><input type="number" step="0.01" min="0" value="${num(c.ceiling)}" style="width:90px;text-align:right" onchange="setCeiling('${esc(cls)}','ceiling',this.value)"></td>
       <td class="num"><input type="number" step="0.01" value="${num(c.additional)}" style="width:90px;text-align:right" onchange="setCeiling('${esc(cls)}','additional',this.value)"></td>
       <td class="num"><b>${r2(num(c.ceiling)+num(c.additional))}</b></td>
+      <td class="num"><input type="number" step="1000" min="0" value="${costOf(cls)||''}" placeholder="e.g. 140000" style="width:110px;text-align:right" onchange="setCost('${esc(cls)}',this.value)"></td>
       <td>${u.total? '<span class="pill neutral">'+u.staff+' staff · '+u.movements+' mvt'+(u.roles?' · '+u.roles+' role'+(u.roles===1?'':'s'):'')+'</span>' : '<span class="hint">not used</span>'}</td>
       <td class="rowact"><button class="iconbtn" onclick="moveClassification(${i},-1)" title="Move up">↑</button><button class="iconbtn" onclick="moveClassification(${i},1)" title="Move down">↓</button><button class="iconbtn del" onclick="removeClassification(${i})">Remove</button></td></tr>`;
   });
@@ -2370,8 +2690,11 @@ function renderSettings(){
   document.getElementById('settingsClasses').innerHTML=h;
   const sn=document.getElementById('setServiceName'); if(sn) sn.value=str(state.settings.serviceName);
   const on=document.getElementById('setOrgName'); if(on) on.value=str(state.settings.orgName);
-  document.getElementById('setAnchor').value=state.settings.cycleAnchorDate||'2025-06-18';
+  document.getElementById('setAnchor').value=state.settings.cycleAnchorDate||DEFAULT_ANCHOR;
   document.getElementById('setLen').value=state.settings.cycleLenDays||14;
+  const pc=document.getElementById('payPeriodCheck');
+  if(pc){ const a=parseDate(state.settings.cycleAnchorDate);
+    pc.innerHTML=state.settings.payPeriodToCheck?`<div class="sectionnote" style="background:var(--warn-bg);color:var(--warn);margin-top:10px"><b>Please check this date.</b> Pay periods now run Monday to Sunday. The old setting used the Wednesday pay day, so it was moved to ${esc(msDate(a))}. Compare it with the period start on a payslip: if it matches (or falls exactly 2, 4, 6… weeks from it), click Confirm; otherwise change the date above.<div style="margin-top:8px"><button class="btn sm primary" onclick="confirmPayPeriod()">Confirm — this is a pay period start</button></div></div>`:''; }
 }
 function saveIdentity(){
   const before={serviceName:state.settings.serviceName,orgName:state.settings.orgName};
@@ -2423,8 +2746,17 @@ function moveClassification(i,dir){
   syncClasses(); persist(); rebuildAll();
 }
 function setBaseline(cls,v){ state.settings.baselines=state.settings.baselines||{}; const before=state.settings.baselines[cls]; state.settings.baselines[cls]=Number(v)||0; auditLog('Update','Settings','Baseline '+cls,`Baseline FTE updated for ${cls}`,{value:before},{value:state.settings.baselines[cls]}); persist(); rebuildCalc(); }
+function setCost(cls,v){ state.settings.costs=state.settings.costs||{}; const before=state.settings.costs[cls]; state.settings.costs[cls]=Number(v)||0; auditLog('Update','Settings','Cost '+cls,`Annual cost per FTE updated for ${cls}`,{value:before},{value:state.settings.costs[cls]}); persist(); rebuildCalc(); }
 function setCeiling(cls,k,v){ state.settings.ceilings[cls]=state.settings.ceilings[cls]||{ceiling:0,additional:0}; const before=state.settings.ceilings[cls][k]; state.settings.ceilings[cls][k]=Number(v)||0; auditLog('Update','Settings',`${cls} ${k}`,`${k} updated for ${cls}`,{value:before},{value:state.settings.ceilings[cls][k]}); persist(); rebuildCalc(); }
-function saveSettings(){ const before={cycleAnchorDate:state.settings.cycleAnchorDate,cycleLenDays:state.settings.cycleLenDays}; state.settings.cycleAnchorDate=document.getElementById('setAnchor').value||'2025-06-18'; state.settings.cycleLenDays=Number(document.getElementById('setLen').value)||14; auditLog('Update','Settings','Pay cycle','Pay-cycle settings updated',before,{cycleAnchorDate:state.settings.cycleAnchorDate,cycleLenDays:state.settings.cycleLenDays}); persist(); rebuildAll(); }
+function saveSettings(){
+  const before={cycleAnchorDate:state.settings.cycleAnchorDate,cycleLenDays:state.settings.cycleLenDays};
+  let a=parseDate(document.getElementById('setAnchor').value)??parseDate(DEFAULT_ANCHOR);
+  if(!isMonday(a)){ a=mondayOnOrBefore(a); toast('Pay periods start on a Monday, so the date was moved back to '+msDate(a)+'.'); }
+  state.settings.cycleAnchorDate=isoOf(a); state.settings.cycleLenDays=Number(document.getElementById('setLen').value)||14;
+  delete state.settings.payPeriodToCheck;
+  auditLog('Update','Settings','Pay cycle','Pay-cycle settings updated',before,{cycleAnchorDate:state.settings.cycleAnchorDate,cycleLenDays:state.settings.cycleLenDays}); persist(); rebuildAll();
+}
+function confirmPayPeriod(){ delete state.settings.payPeriodToCheck; auditLog('Update','Settings','Pay cycle','Pay period start confirmed as '+state.settings.cycleAnchorDate,null,null,['Pay period start confirmed']); persist(); rebuildAll(); toast('Pay period start confirmed'); }
 
 /* ============================ MODALS: MOVEMENT ============================ */
 // opts entries are either a plain string, or {v,label} where v is the stored value.
@@ -2439,11 +2771,12 @@ function fillSelect(id,opts,val){
   }).join('');
 }
 const NO_CLASS_LABEL='\u2014 none (not working in a classification) \u2014';
-function openMovement(id){
+function openMovement(id,preset){
   editingMovId=id;
-  const m = id? state.movements.find(x=>str(x.id)===id) : blankMovement();
-  document.getElementById('movModalTitle').textContent=id?'Edit movement':'Add movement';
+  const m = id? state.movements.find(x=>str(x.id)===id) : Object.assign(blankMovement(),preset||{});
+  document.getElementById('movModalTitle').textContent=id?'Edit movement':(preset?'Add movement — copy of '+str(preset.copyOf):'Add movement');
   document.getElementById('m_delBtn').style.display=id?'':'none';
+  document.getElementById('m_dupBtn').style.display=id?'':'none';
   document.getElementById('m_id').value=str(m.id);
   fillNameSelect('m_staff',str(m.staff));
   fillSelect('m_subClass',CLASSES,str(m.subClass)||defaultClass());
@@ -2458,6 +2791,8 @@ function openMovement(id){
   document.getElementById('m_start').value=m.start? String(m.start).slice(0,10):'';
   document.getElementById('m_end').value=m.end? String(m.end).slice(0,10):'';
   fillSelect('m_absenceType',ABSENCE_TYPES,str(m.absenceType));
+  document.getElementById('m_paidUntil').value=m.paidUntil?String(m.paidUntil).slice(0,10):'';
+  document.getElementById('m_vacatesOwn').checked=str(m.vacatesOwn)==='Yes';
   fillSelect('m_adminStatus',ADMIN_STATUS,str(m.adminStatus)||'Draft / Planning');
   document.getElementById('m_vmcNum').value=str(m.vmcNum);
   document.getElementById('m_procNum').value=str(m.procNum);
@@ -2470,6 +2805,8 @@ function openMovement(id){
 }
 function movTypeHint(){
   const t=document.getElementById('m_type').value;
+  const pf=document.getElementById('paidUntilField'); if(pf) pf.style.display=(t==='Leave'&&PAID_UNTIL_LEAVE.includes(document.getElementById('m_absenceType').value))?'':'none';
+  const vf=document.getElementById('vacatesOwnField'); if(vf) vf.style.display=COVER_TYPES.includes(t)?'':'none';
   const hint=document.getElementById('ownerHint');
   if(t==='Extra Funded') hint.textContent='Owner = funding source name (e.g. RITA Grant).';
   else if(t==='Leave'||t==='Secondment Out') hint.textContent='This is the absent person leaving — owner usually blank.';
@@ -2483,7 +2820,14 @@ function movTypeHint(){
   }
   else hint.textContent='Name the substantive person being backfilled / acted up for.';
 }
-function blankMovement(){ return {id:nextMovId(),staff:'',subClass:defaultClass(),subFTE:'',empArr:'Temporary',workPosId:'',workPosTitle:'',workClass:defaultClass(),type:'Backfill',fteMoved:'',start:'',end:'',vmcNum:'',vmcUrl:'',procNum:'',adminStatus:'Draft / Planning',statusSince:localStamp(),absenceType:'',archived:'No',notes:'',owner:''}; }
+// A new movement pre-filled from an existing one: new ID, back to Draft, not archived.
+function duplicateMovement(id){
+  const src=state.movements.find(x=>str(x.id)===str(id)); if(!src) return;
+  closeModal('movModal');
+  const b=blankMovement();
+  openMovement(null,Object.assign(deepCopy(src),{id:b.id,adminStatus:'Draft / Planning',statusSince:b.statusSince,archived:'No',copyOf:str(src.id)}));
+}
+function blankMovement(){ return {id:nextMovId(),staff:'',subClass:defaultClass(),subFTE:'',empArr:'Temporary',workPosId:'',workPosTitle:'',workClass:defaultClass(),type:'Backfill',fteMoved:'',start:'',end:'',vmcNum:'',vmcUrl:'',procNum:'',adminStatus:'Draft / Planning',statusSince:localStamp(),absenceType:'',paidUntil:'',vacatesOwn:'',archived:'No',notes:'',owner:''}; }
 function nextMovId(){ let max=0; state.movements.forEach(m=>{ const mm=/MV-?(\d+)/.exec(str(m.id)); if(mm) max=Math.max(max,+mm[1]); }); return 'MV-'+String(max+1).padStart(4,'0'); }
 function saveMovement(){
   const obj=readMovementForm();
@@ -2985,7 +3329,7 @@ function sortStaff(k){ if(staffSort.key===k) staffSort.dir=staffSort.dir==='asc'
 
 /* ============================ FORTNIGHT PLANNER ============================ */
 function buildWeeksAll(){
-  const anchor=parseDate(state.settings.cycleAnchorDate)??parseDate('2025-06-18');
+  const anchor=parseDate(state.settings.cycleAnchorDate)??parseDate(DEFAULT_ANCHOR);
   const step=7*MS_DAY; const all=[]; let lo=anchor,hi=anchor;
   state.movements.forEach(m=>['start','end'].forEach(k=>{const t=parseDate(m[k]);if(t!=null)all.push(t);}));
   all.push(parseDate(isoToday()));
@@ -2995,45 +3339,96 @@ function buildWeeksAll(){
   for(let t=first;t<=hi;t+=step) w.push(t);
   return w;
 }
-function plannerCode(line,ws){
+// What this staff line is actually doing in the week starting ws: FTE still worked in its own
+// classification, FTE acting in another classification, and what is away (and why).
+function plannerWork(line,ws){
   const we=ws+6*MS_DAY, name=str(line.name), cls=str(line.subClass), sub=num(line.subFTE);
+  const w={home:0,acting:{},away:{P:0,L:0,S:0,V:0},relieving:0,tips:[],ended:false,notYet:false};
+  const ls=parseDate(line.contractStart), le=parseDate(line.contractEnd);
+  if(le!==null&&ws>le){ w.ended=true; return w; }
+  if(ls!==null&&we<ls){ w.notYet=true; return w; }
+  const lk=shareOf(ls,le,ws,we);
+  if(str(line.empType)==='Vacant'){
+    w.away.V=sub*lk;
+    state.movements.forEach(m=>{ if(str(m.owner)===name&&COVER_TYPES.includes(str(m.type))&&inCycle(m,ws,we)) w.tips.push('Covered by '+str(m.staff)+' '+r2(num(m.fteMoved))); });
+    return w;
+  }
+  state.movements.forEach(m=>{
+    if(str(m.staff)!==name||str(m.subClass)!==cls||!inCycle(m,ws,we)) return;
+    const t=str(m.type), ab=str(m.absenceType), wc=str(m.workClass), k=mvShare(m,ws,we), f=num(m.fteMoved)*k;
+    if(t==='Leave'&&(ab==='Parental Leave'||ab==='Maternity Leave')){ w.away.P+=f; w.tips.push(r2(f)+' '+ab.toLowerCase()); }
+    else if(t==='Parental Return to Work'){ const nb=Math.max(0,(registerFTE(name,cls)||num(m.subFTE))-num(m.fteMoved))*k; if(nb>0){ w.away.P+=nb; w.tips.push(r2(nb)+' still on parental leave (returned to '+r2(num(m.fteMoved))+')'); } }
+    else if(t==='Leave'){ w.away.L+=f; w.tips.push(r2(f)+' '+(ab||'leave')); }
+    else if(t==='Secondment Out'){ w.away.S+=f; w.tips.push(r2(f)+' seconded out'+(str(m.workPosTitle)?' ('+str(m.workPosTitle)+')':'')); }
+    else if(t==='Vacancy'||t==='Flexible Work Arrangement'){ w.away.V+=f; w.tips.push(r2(f)+' '+(t==='Vacancy'?'vacant':'not worked (FWA)')); }
+    else if(wc&&wc!==cls&&t!=='Extra Funded'){ w.acting[wc]=(w.acting[wc]||0)+f; w.tips.push(r2(f)+' acting '+wc+(str(m.owner)?' for '+str(m.owner):'')); }
+    else if(vacatesOwnLine(m)){ w.relieving+=f; w.tips.push(r2(f)+' relieving '+(str(m.owner)||'another line')+' at '+cls); }
+  });
+  const away=w.away.P+w.away.L+w.away.S+w.away.V, act=Object.values(w.acting).reduce((a,v)=>a+v,0);
+  w.home=Math.max(0,sub*lk-away-act);
+  return w;
+}
+function plannerCode(line,ws){
+  const name=str(line.name), cls=str(line.subClass);
   if(!name) return {t:'',k:''};
-  const reg=state.staff.find(s=>str(s.name)===name);
-  if(reg&&str(reg.empType)==='Temporary'&&parseDate(reg.contractEnd)!=null&&ws>parseDate(reg.contractEnd)) return {t:'X',k:'end'};
-  const mv=state.movements.filter(m=>str(m.staff)===name&&str(m.subClass)===cls&&inCycle(m,ws,we));
-  let par=0;
-  mv.forEach(m=>{const t=str(m.type),ab=str(m.absenceType);
-    if(t==='Leave'&&(ab==='Parental Leave'||ab==='Maternity Leave')) par+=num(m.fteMoved);
-    if(t==='Parental Return to Work') par+=(num(m.subFTE)-num(m.fteMoved));});
-  par=Math.min(par,sub);
-  if(par>0) return {t:'P '+par.toFixed(1),k:'parental'};
-  if(mv.some(m=>str(m.type)==='Secondment Out')) return {t:'S',k:'sec'};
-  if(mv.some(m=>str(m.type)==='Leave'&&!(str(m.absenceType)==='Parental Leave'||str(m.absenceType)==='Maternity Leave'))) return {t:'L',k:'leave'};
-  for(const wc of CLASSES) if(mv.some(m=>str(m.workClass)===wc&&wc!==cls)) return {t:wc,k:'acting'};
-  return {t:String(r2(sub)),k:'sub'};
+  const w=plannerWork(line,ws);
+  if(w.ended) return str(line.empType)==='Temporary'?{t:'X',k:'end',tip:'Contract ended '+fmtDate(line.contractEnd)}:{t:'',k:''};
+  if(w.notYet) return {t:'',k:'',tip:'Line starts '+fmtDate(line.contractStart)};
+  if(str(line.empType)==='Vacant') return {t:'V',k:'vacant',tip:'Vacant '+cls+' '+r2(num(line.subFTE))+' FTE'+(w.tips.length?' · '+w.tips.join(' · '):' · nobody covering')};
+  const f=v=>String(r2(v)), parts=[];
+  if(w.home>0.001) parts.push(f(w.home));
+  Object.keys(w.acting).forEach(c=>{ if(w.acting[c]>0.001) parts.push(c+' '+f(w.acting[c])); });
+  const awayCodes=Object.keys(w.away).filter(c=>w.away[c]>0.001);
+  const tip=name+' · '+cls+' '+r2(num(line.subFTE))+' FTE'+(parts.length?' · working '+parts.join(' + '):'')+(w.tips.length?' · '+w.tips.join(' · '):'');
+  if(!parts.length){
+    if(!awayCodes.length) return {t:'',k:'',tip};
+    const big=awayCodes.sort((a,b)=>w.away[b]-w.away[a])[0];
+    return {t:big==='V'?'—':big,k:{P:'parental',L:'leave',S:'sec',V:'end'}[big],tip};
+  }
+  const k=Object.keys(w.acting).some(c=>w.acting[c]>0.001)?'acting':'sub';
+  const note=awayCodes.map(c=>c+' '+f(w.away[c])).join(' ');
+  return {t:parts[0],t2:[...parts.slice(1),note].filter(Boolean).join(' · '),k,tip};
 }
 function plannerLines(){
-  return state.staff.slice().sort((a,b)=> (CLASSES.indexOf(str(a.subClass))-CLASSES.indexOf(str(b.subClass))) || str(a.name).localeCompare(str(b.name)) );
+  const showInactive=document.getElementById('plannerInactive')&&document.getElementById('plannerInactive').checked;
+  return state.staff.filter(s=>showInactive||str(s.active)!=='No').slice().sort((a,b)=> (CLASSES.indexOf(str(a.subClass))-CLASSES.indexOf(str(b.subClass))) || str(a.name).localeCompare(str(b.name)) );
 }
-function renderPlannerControls(){
-  const weeks=buildWeeksAll(); const sel=document.getElementById('plannerStart'); const prev=sel.value;
-  sel.innerHTML=weeks.map((w,i)=>`<option value="${i}">${fmtDate(new Date(w).toISOString().slice(0,10))}</option>`).join('');
-  // default: week containing today
-  let def=0; const today=parseDate(isoToday());
-  for(let i=weeks.length-1;i>=0;i--){ if(weeks[i]<=today){def=i;break;} }
-  sel.value=prev!==''?prev:def;
+// Week pickers keep the chosen week by date, so a rebuilt list (new data, new pay calendar)
+// never jumps to a different week. Default = the week containing today.
+function fillWeekSelect(id){
+  const weeks=buildWeeksAll(), sel=document.getElementById(id); if(!sel) return;
+  const picked=sel.selectedOptions[0], want=picked&&picked.dataset.ms?+picked.dataset.ms:null;
+  sel.innerHTML=weeks.map((w,i)=>`<option value="${i}" data-ms="${w}">${fmtDate(isoOf(w))}</option>`).join('');
+  let idx=want===null?-1:weeks.findIndex(w=>w<=want&&want<w+7*MS_DAY);
+  if(idx<0){ const today=parseDate(isoToday()); idx=0; for(let i=weeks.length-1;i>=0;i--){ if(weeks[i]<=today){ idx=i; break; } } }
+  sel.value=idx;
 }
+function renderPlannerControls(){ fillWeekSelect('plannerStart'); }
 function renderPlanner(){
   const weeks=buildWeeksAll(); let start=+document.getElementById('plannerStart').value||0;
   const win=weeks.slice(start,start+26);
   const lines=plannerLines();
+  const anchor=parseDate(state.settings.cycleAnchorDate)??parseDate(DEFAULT_ANCHOR), len=(num(state.settings.cycleLenDays)||14)*MS_DAY;
+  const fnb=w=>((((w-anchor)%len)+len)%len)===0?'fnb':'';
   let h='<div class="ptbl-wrap"><table class="planner"><thead><tr><th class="pname">Staff member</th><th class="pcls">Class</th>';
-  win.forEach((w,i)=>{ h+=`<th class="${i%2===0?'fnb':''}">${fmtDate(new Date(w).toISOString().slice(0,10)).slice(0,6)}</th>`; });
+  win.forEach(w=>{ h+=`<th class="${fnb(w)}">${fmtDate(isoOf(w)).slice(0,6)}</th>`; });
   h+='</tr></thead><tbody>';
   if(!lines.length) h+=`<tr><td colspan="${win.length+2}" class="empty">No staff on file.</td></tr>`;
+  // Tally row per classification: FTE actually working in that level each week (acting up into it
+  // included, leave and acting out taken off), against its baseline.
+  const tally=cls=>{
+    const base=baselineOf(cls);
+    let r=`<tr class="ptally"><td class="pname">${esc(cls)} working</td><td class="pcls">of ${base}</td>`;
+    win.forEach(w=>{ const v=r2(effFTE(cls,w,w+6*MS_DAY,'floor')), d=r2(v-base), k=d>0.001?'over':d<-0.001?'under':'on';
+      r+=`<td class="ptcell ${fnb(w)}" data-k="${k}" title="${esc(cls+', week of '+msDate(w)+': '+v+' FTE working in '+cls+' (including acting up into it) against a baseline of '+base+' — '+(d>0?d+' over':d<0?(-d)+' under':'on baseline')+'.')}">${v}</td>`; });
+    return r+'</tr>';
+  };
+  let curCls=null;
   lines.forEach(line=>{
-    h+=`<tr><td class="pname"><button type="button" class="planner-name-link" title="Open Staff Details for ${esc(str(line.name))}" onclick="viewStaffDetails(${esc(jsq(str(line.name)))})">${esc(str(line.name))}</button></td><td class="pcls">${esc(str(line.subClass))}</td>`;
-    win.forEach((w,i)=>{ const c=plannerCode(line,w); h+=`<td class="pcell ${i%2===0?'fnb':''}" data-k="${c.k}">${esc(c.t)}</td>`; });
+    const cls=str(line.subClass);
+    if(cls!==curCls){ curCls=cls; if(CLASSES.includes(cls)) h+=tally(cls); }
+    h+=`<tr><td class="pname"><button type="button" class="planner-name-link" title="Open Staff Details for ${esc(str(line.name))}" onclick="viewStaffDetails(${esc(jsq(str(line.name)))})">${esc(str(line.name))}</button></td><td class="pcls">${esc(cls)}${str(line.empType)==='Vacant'?' <span class="hint">vacant</span>':''}</td>`;
+    win.forEach(w=>{ const c=plannerCode(line,w); h+=`<td class="pcell ${fnb(w)}" data-k="${c.k}" title="${esc(c.tip||'')}">${esc(c.t)}${c.t2?`<span class="psub">${esc(c.t2)}</span>`:''}</td>`; });
     h+='</tr>';
   });
   h+='</tbody></table></div>';
@@ -3048,17 +3443,8 @@ function renderTimelineControls(){
   psel.innerHTML=names.map(n=>`<option>${esc(n)}</option>`).join('');
   if(prev&&names.includes(prev)) psel.value=prev;
 
-  const {cycles,len}=buildCycles(); const csel=document.getElementById('timelineCycle');
-  if(csel){
-    const prevC=csel.value;
-    csel.innerHTML=cycles.map((c,i)=>`<option value="${i}">${cycleLabel(c,len)}</option>`).join('');
-    csel.value=prevC!==''?prevC:currentCycleIndex(cycles,len);
-  }
-
-  const weeks=buildWeeksAll(); const wsel=document.getElementById('timelineStart'); const prevW=wsel.value;
-  wsel.innerHTML=weeks.map((w,i)=>`<option value="${i}">${fmtDate(new Date(w).toISOString().slice(0,10))}</option>`).join('');
-  let def=0; const today=parseDate(isoToday()); for(let i=weeks.length-1;i>=0;i--){ if(weeks[i]<=today){ def=i; break; } }
-  wsel.value=prevW!==''?prevW:def;
+  fillCycleSelect('timelineCycle');
+  fillWeekSelect('timelineStart');
 }
 function tlKey(m,owned){ const t=str(m.type),ab=str(m.absenceType); if(owned) return 'owner'; if(t==='Backfill') return 'backfill'; if(t==='Acting Higher Duties'||t==='Secondment In'||t==='Temporary Contract Extension'||t==='Casual to Temporary'||t==='Vacancy'||t==='Flexible Work Arrangement') return 'acting'; if(t==='Secondment Out') return 'sec'; if(t==='Leave'&&(ab==='Parental Leave'||ab==='Maternity Leave')) return 'parental'; if(t==='Leave') return 'leave'; return 'acting'; }
 function renderTimeline(){
@@ -3208,13 +3594,13 @@ function renderLeaveCalendar(){
   const weeks=buildWeeksAll(), start=+document.getElementById('lcStart').value, count=+document.getElementById('lcWeeks').value||26;
   const i0=Math.max(0,weeks.indexOf(start)), win=weeks.slice(i0,i0+count);
   const only=document.getElementById('lcOnly').value==='short';
-  const perWeek=win.map(w=>{ const map={}; computeGaps(w,w+6*MS_DAY).forEach(g=>{ if(g.vacated>0.001) map[g.name]=g; }); return map; });
+  const perWeek=win.map(w=>{ const map={}; computeGaps(w,w+6*MS_DAY).forEach(g=>{ if(g.vacated>0.001) map[g.key]=g; }); return map; });
   const names=[...new Set(perWeek.flatMap(m=>Object.keys(m)))];
   const shortIn=n=>perWeek.some(m=>m[n]&&m[n].gap<-0.001);
   let people=names.filter(n=>!only||shortIn(n));
   const clsOf=n=>{ const g=perWeek.map(m=>m[n]).find(Boolean); return g?g.subClass:''; };
   people.sort((a,b)=>CLASSES.indexOf(clsOf(a))-CLASSES.indexOf(clsOf(b))||a.localeCompare(b));
-  const anchor=parseDate(state.settings.cycleAnchorDate)??parseDate('2025-06-18'), len=(num(state.settings.cycleLenDays)||14)*MS_DAY;
+  const anchor=parseDate(state.settings.cycleAnchorDate)??parseDate(DEFAULT_ANCHOR), len=(num(state.settings.cycleLenDays)||14)*MS_DAY;
   const isFn=w=>((((w-anchor)%len)+len)%len)===0;
   const estab=CLASSES.reduce((t,c)=>t+baselineOf(c),0);
   const away=perWeek.map(m=>r2(Object.values(m).reduce((t,g)=>t+g.vacated,0)));
@@ -3231,10 +3617,11 @@ function renderLeaveCalendar(){
   if(!people.length) h+=`<tr><td colspan="${win.length+2}" class="empty">Nobody has uncovered FTE in this window.</td></tr>`;
   people.forEach(n=>{
     const first=perWeek.map(m=>m[n]).find(Boolean);
-    h+=`<tr><td class="pname"><button type="button" class="planner-name-link" onclick="viewStaffDetails(${esc(jsq(n))})">${esc(n)}</button><span class="lcsub">${esc(first?first.absence:'')}</span></td><td class="pcls">${esc(first?first.subClass:'')}</td>`;
+    const who=first?first.name:n;
+    h+=`<tr><td class="pname"><button type="button" class="planner-name-link" onclick="viewStaffDetails(${esc(jsq(who))})">${esc(who)}</button><span class="lcsub">${esc(first?first.absence:'')}</span></td><td class="pcls">${esc(first?first.subClass:'')}</td>`;
     win.forEach((w,i)=>{
       const g=perWeek[i][n]; let k='', t='', tip='';
-      if(g){ const short=r2(Math.max(0,-g.gap)); tip=`${n}: ${g.absence}. Vacated ${g.vacated} FTE, covered ${r2(Math.min(g.vacated,g.backfilled))} FTE.${g.count?' Cover: '+g.coveredBy.join(', ')+'.':' Nobody covering.'}`; if(short<=0.001){ k='ok'; t='✓'; } else { k=g.backfilled>0.001?'part':'none'; t='−'+short; } }
+      if(g){ const short=r2(Math.max(0,-g.gap)); tip=`${who} (${g.subClass}): ${g.absence}. Vacated ${g.vacated} FTE, covered ${r2(Math.min(g.vacated,g.backfilled))} FTE.${g.count?' Cover: '+g.coveredBy.join(', ')+'.':' Nobody covering.'}`; if(short<=0.001){ k='ok'; t='✓'; } else { k=g.backfilled>0.001?'part':'none'; t='−'+short; } }
       h+=`<td class="pcell ${isFn(w)?'fnb':''}" data-k="${k}" title="${esc(tip)}">${esc(t)}</td>`;
     });
     h+='</tr>';
@@ -3595,7 +3982,7 @@ function fillCsvSheets(){ const sel=document.getElementById('csvSheet'); if(!sel
 
 /* ============================ REBUILD ============================ */
 function rebuildCalc(){ renderDashboard(); renderManagerActions(); renderGaps(); renderLeaveCalendar(); renderRotations(); renderBudget(); renderPlanner(); renderTimeline(); renderBoard(); renderRecruit(); renderBriefing(); renderAudit(); }
-function rebuildAll(){ applyBranding(); renderDashControls(); renderGapsControls(); renderBudgetControls(); renderPlannerControls(); renderTimelineControls(); updateDatalist(); renderMovements(); renderStaff(); renderSettings(); renderDashboard(); renderManagerActions(); renderGaps(); renderLeaveCalendar(); renderRotations(); renderBudget(); renderPlanner(); renderTimeline(); renderBoard(); renderRecruit(); renderBriefing(); renderAudit(); renderSyncUI(); }
+function rebuildAll(){ applyBranding(); applyMoreTools(); renderDashControls(); renderGapsControls(); renderBudgetControls(); renderPlannerControls(); renderTimelineControls(); updateDatalist(); renderMovements(); renderStaff(); renderSettings(); renderDashboard(); renderManagerActions(); renderGaps(); renderLeaveCalendar(); renderRotations(); renderBudget(); renderPlanner(); renderTimeline(); renderBoard(); renderRecruit(); renderBriefing(); renderAudit(); renderSyncUI(); }
 
 /* ============================ INIT ============================ */
 (async function init(){
