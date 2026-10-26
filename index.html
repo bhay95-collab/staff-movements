@@ -455,7 +455,7 @@ table.planner td.lc-num.bad{color:var(--danger);background:var(--danger-bg)}
     <!-- ROTATIONS -->
     <section class="view" id="view-rotations">
       <div class="viewhead"><div><h2>Rotation Planner</h2><div class="vsub">Who is working in each role, in each pay cycle. Plan ahead, and see where leave or over-allocation gets in the way.</div></div>
-        <div class="spacer"></div><button class="btn" onclick="openRoll()">Roll forward</button><button class="btn primary" onclick="openRotation(null)">+ Add assignment</button></div>
+        <div class="spacer"></div><button class="btn" onclick="openRoll()">Roll forward</button><button class="btn" onclick="exportRotationList()">Export team list</button><button class="btn" onclick="exportRotationCsv()">Export spreadsheet</button><button class="btn primary" onclick="openRotation(null)">+ Add assignment</button></div>
       <div class="card"><div class="ctrlrow">
         <div class="field" style="min-width:230px"><label>Pay cycle</label><select id="rotCycle" onchange="renderRotations()"></select></div>
         <div class="field" style="min-width:190px"><label>Team</label><select id="rotTeam" onchange="renderRotations()"></select></div>
@@ -1058,10 +1058,10 @@ const MOVE_TYPES = ['Substantive','Backfill','Acting Higher Duties','Secondment 
 const EMP_ARR = ['Permanent','Temporary','Casual','Agency','External'];
 const EMP_TYPE = ['Permanent','Temporary','Casual','Agency','External','Vacant'];
 const ADMIN_STATUS = ['Draft / Planning','Awaiting Submission','Awaiting Approval','VMC Submitted','VMC Approved','Payroll / MyHR Pending','Confirmed','Completed','On Hold','Cancelled'];
-const ABSENCE_TYPES = ['','LSL','Parental Leave','Maternity Leave','LWOP','Leave Without Pay','Secondment Out','Reduced Hours','Other'];
+const ABSENCE_TYPES = ['','LSL','Parental Leave','Maternity Leave','LWOP','Leave Without Pay','SARAS','Secondment Out','Reduced Hours','Other'];
 // Absence types where the position stays FUNDED while the person is away.
 // The gaps view still shows them — funded is not the same as covered.
-const STAY_LEAVE = ['Parental Leave','Maternity Leave','LSL','Leave Without Pay','LWOP'];
+const STAY_LEAVE = ['Parental Leave','Maternity Leave','LSL','Leave Without Pay','LWOP','SARAS'];
 // Held open but not paid, so they come off what payroll is costing.
 const UNPAID_LEAVE = ['Leave Without Pay','LWOP'];
 // Leave that can be part paid, part unpaid — the movement records the date pay stops.
@@ -1167,7 +1167,7 @@ function effFTE(cls,csMs,ceMs,mode){
     if(sc===cls&&t==='Leave') outL+=num(m.fteMoved)*(k-leaveStillHeld(m,csMs,ceMs,mode));
     // Parental Return to Work: the person is back for fteMoved of their subFTE line.
     // The portion they have NOT returned to is not being delivered, so it comes off.
-    if(sc===cls&&t==='Parental Return to Work'){ const held=registerFTE(str(m.staff),sc)||num(m.subFTE); const notBack=held-num(m.fteMoved); if(notBack>0) outL+=notBack*k; }
+    if(sc===cls&&t==='Parental Return to Work'){ const held=registerFTE(str(m.staff),sc,csMs,ceMs)||num(m.subFTE); const notBack=held-num(m.fteMoved); if(notBack>0) outL+=notBack*k; }
     if(sc!==cls&&wc===cls&&!(t==='Leave'||t==='Secondment Out')&&t!=='Extra Funded') inM+=f;
     if(wc===cls&&t==='Extra Funded') inE+=f;
   }
@@ -1546,7 +1546,7 @@ function validateMovementObject(obj,existingId){
   const drawsOnSubstantive=['Substantive','Backfill','Acting Higher Duties','Secondment Out','Leave','Parental Return to Work','Vacancy','Flexible Work Arrangement'].includes(t);
   if(num(obj.subFTE)>0&&f>num(obj.subFTE)+0.001) warnings.push('FTE moved exceeds the substantive FTE recorded on this row. Check whether this should be split or corrected.');
   if(drawsOnSubstantive&&name&&str(obj.subClass)){
-    const held=registerFTE(name,str(obj.subClass));
+    const held=registerFTE(name,str(obj.subClass),st,en);
     if(held<=0) warnings.push(name+' holds no active '+str(obj.subClass)+' FTE on the Staff Register, so there is nothing for this movement to draw on. If this FTE is separately funded rather than coming out of a substantive line, use Extra Funded instead.');
     else if(f>held+0.001) warnings.push('This moves '+r2(f)+' FTE but '+name+' only holds '+r2(held)+' FTE as '+str(obj.subClass)+' on the register. Either correct the FTE, split it across the classifications they actually hold, or use Extra Funded for the portion that is new money.');
   }
@@ -1559,11 +1559,11 @@ function validateMovementObject(obj,existingId){
   if((t==='Leave'||t==='Secondment Out')&&str(obj.owner)) warnings.push('Owner is usually blank for leave or secondment out. Check whether this should instead be a backfill row.');
   if(t==='Leave'&&!str(obj.absenceType)) warnings.push('Leave / absence type is blank, so this leave will be subtracted from the budget. Set it to Parental Leave, Maternity Leave, LSL or LWOP if the position stays funded.');
   const movesFTE=['Backfill','Acting Higher Duties','Secondment In','Temporary Contract Extension','Casual to Temporary'].includes(t);
-  const attributionOnly=t==='Secondment In'||(name&&str(obj.workClass)&&registerFTE(name,str(obj.workClass))>0);
+  const attributionOnly=t==='Secondment In'||(name&&str(obj.workClass)&&registerFTE(name,str(obj.workClass),st,en)>0);
   const movesFTEInternally=movesFTE&&!attributionOnly;
   if(movesFTEInternally&&str(obj.subClass)&&str(obj.subClass)===str(obj.workClass)&&str(obj.vacatesOwn)!=='Yes')
     warnings.push('Substantive and working classification are both '+str(obj.subClass)+', so this movement will not change any FTE and will not appear on the planner. If this person is moving into a different classification, set the substantive classification to the one they actually hold. If they are relieving in another line at the same level, tick “Comes out of their own line”.');
-  if(str(obj.vacatesOwn)==='Yes'&&name&&str(obj.subClass)&&registerFTE(name,str(obj.subClass))<=0)
+  if(str(obj.vacatesOwn)==='Yes'&&name&&str(obj.subClass)&&registerFTE(name,str(obj.subClass),st,en)<=0)
     warnings.push('“Comes out of their own line” is ticked, but '+name+' holds no active '+str(obj.subClass)+' line on the register, so there is no line to empty.');
   if(t==='Leave'&&str(obj.paidUntil)&&PAID_UNTIL_LEAVE.includes(str(obj.absenceType))){ const pu=parseDate(obj.paidUntil); if(pu!==null&&((st!==null&&pu<st)||(en!==null&&pu>en))) warnings.push('Paid leave end date is outside the leave dates.'); }
   const landsSomewhere=['Substantive','Backfill','Acting Higher Duties','Secondment In','Parental Return to Work','Temporary Contract Extension','Casual to Temporary','Extra Funded'].includes(t);
@@ -1577,6 +1577,7 @@ function validateMovementObject(obj,existingId){
   if(en!==null&&en<today&&str(obj.archived).toLowerCase()!=='yes'&&!['Completed','Cancelled'].includes(str(obj.adminStatus))) warnings.push('This movement has already ended but is not archived or completed/cancelled.');
   return {errors,warnings};
 }
+function samePositionish(x,y){ const eq=(a,b)=>!str(a)||!str(b)||str(a).toLowerCase()===str(b).toLowerCase(); return eq(x.posId,y.posId)&&eq(x.posTitle,y.posTitle)&&str(x.empType)===str(y.empType); }
 function linesOverlap(x,y){ const lo=v=>parseDate(v)??-8.64e15, hi=v=>parseDate(v)??8.64e15; return lo(x.contractStart)<=hi(y.contractEnd)&&lo(y.contractStart)<=hi(x.contractEnd); }
 function validateStaffObject(obj,idx){
   const errors=[],warnings=[];
@@ -1592,7 +1593,7 @@ function validateStaffObject(obj,idx){
   if(name&&str(obj.active)==='Yes'&&!unpaidLine(obj)){
     state.staff.forEach((o,i)=>{
       if(i===idx||str(o.name)!==name||str(o.subClass)!==str(obj.subClass)||str(o.active)!=='Yes'||unpaidLine(o)) return;
-      if(linesOverlap(o,obj)) warnings.push('This line overlaps another active '+str(obj.subClass)+' line for '+name+' ('+r2(num(o.subFTE))+' FTE'+(str(o.contractStart)?' from '+fmtDate(o.contractStart):'')+(str(o.contractEnd)?' to '+fmtDate(o.contractEnd):', no end date')+'). Both are counted. If one replaces the other, give the old line an end date the day before the new one starts.');
+      if(linesOverlap(o,obj)&&samePositionish(o,obj)) warnings.push('This line overlaps another active '+str(obj.subClass)+' line for '+name+' ('+r2(num(o.subFTE))+' FTE'+(str(o.contractStart)?' from '+fmtDate(o.contractStart):'')+(str(o.contractEnd)?' to '+fmtDate(o.contractEnd):', no end date')+'). Both are counted. If one replaces the other, give the old line an end date the day before the new one starts.');
     });
   }
   if(str(obj.empType)==='Temporary'&&str(obj.active)==='Yes'&&ce!==null&&ce<today) warnings.push('Temporary contract end date has passed while the line remains active.');
@@ -1906,7 +1907,7 @@ function vacatedFrom(name,cls,exceptId,extra){
     if(str(m.archived).toLowerCase()==='yes') return;
     const ty=str(m.type); let f=0;
     if(VACATING.includes(ty)) f=num(m.fteMoved);
-    else if(ty==='Parental Return to Work') f=Math.max(0,(registerFTE(str(m.staff),str(m.subClass))||num(m.subFTE))-num(m.fteMoved));
+    else if(ty==='Parental Return to Work') f=Math.max(0,(registerFTE(str(m.staff),str(m.subClass),parseDate(m.start),parseDate(m.end))||num(m.subFTE))-num(m.fteMoved));
     else if(str(m.workClass)&&str(m.workClass)!==str(m.subClass)&&ty!=='Extra Funded') f=num(m.fteMoved);
     else if(vacatesOwnLine(m)) f=num(m.fteMoved);
     if(f>0) items.push({st:parseDate(m.start),en:parseDate(m.end),f});
@@ -1917,8 +1918,13 @@ function vacatedFrom(name,cls,exceptId,extra){
   items.forEach(p=>{ const at=lo(p.st); peak=Math.max(peak,items.reduce((t,i)=>t+(lo(i.st)<=at&&hi(i.en)>=at?i.f:0),0)); });
   return r2(peak);
 }
-function registerFTE(name,cls){
-  return state.staff.filter(s=>str(s.name)===str(name)&&str(s.subClass)===str(cls)&&str(s.active)!=='No'&&str(s.empType)!=='Casual')
+// Given a window (a pay cycle, a week, or a movement's own dates), only lines that run in it
+// count. Without one, every line counts. A line that ended or replaced another used to keep
+// counting, so Holds, the person tiles and the planner disagreed with the budget.
+function registerFTE(name,cls,lo,hi){
+  const win=lo!==undefined||hi!==undefined;
+  return state.staff.filter(s=>str(s.name)===str(name)&&str(s.subClass)===str(cls)&&str(s.active)!=='No'&&str(s.empType)!=='Casual'
+    &&(!win||linesOverlap(s,{contractStart:lo==null?'':isoOf(lo),contractEnd:hi==null?'':isoOf(hi)})))
     .reduce((a,s)=>a+num(s.subFTE),0);
 }
 function distinctStaffNames(){ return [...new Set(state.staff.map(s=>str(s.name)).filter(Boolean))].sort(); }
@@ -1972,8 +1978,10 @@ function renderPersonProfileBlock(targetId,person,csMs,ceMs){
     // Moving into another classification is still work. Counting only the outward leg
     // made anyone acting up read as zero.
     if(wc&&wc!==sc&&!away) pIn+=f;
-    if(classes.has(sc)&&(t==='Secondment Out'||t==='Vacancy'||t==='Flexible Work Arrangement'||(t==='Leave'&&!STAY_LEAVE.includes(ab)))) pLeave+=f;
-    if(classes.has(sc)&&t==='Parental Return to Work'){ const notBack=(registerFTE(person,sc)||num(m.subFTE))-num(m.fteMoved); if(notBack>0) pLeave+=notBack*k; }
+    // Every kind of leave is time away on a person's own page. STAY_LEAVE keeps the position
+    // funded in the budget, but it does not put the person on the floor.
+    if(classes.has(sc)&&(t==='Secondment Out'||t==='Vacancy'||t==='Flexible Work Arrangement'||t==='Leave')) pLeave+=f;
+    if(classes.has(sc)&&t==='Parental Return to Work'){ const notBack=(registerFTE(person,sc,csMs,ceMs)||num(m.subFTE))-num(m.fteMoved); if(notBack>0) pLeave+=notBack*k; }
   });
   const personEff=subForEff-pOut-pLeave+pIn;
   const holdings=state.movements.filter(m=>str(m.staff)===person&&inCycle(m,csMs,ceMs));
@@ -2139,10 +2147,10 @@ function computeGaps(csMs,ceMs){
     else if(t==='Leave'){ vacated=f; label=ab||'Leave (type not set)'; }
     else if(t==='Vacancy'){ vacated=f; label='Vacancy'; }
     else if(t==='Flexible Work Arrangement'){ vacated=f; label='FWA'; }
-    else if(t==='Parental Return to Work'){ const held=registerFTE(person,sc)||num(m.subFTE); vacated=Math.max(0,held-num(m.fteMoved))*k; label='Parental (Partial Return)'; }
+    else if(t==='Parental Return to Work'){ const held=registerFTE(person,sc,csMs,ceMs)||num(m.subFTE); vacated=Math.max(0,held-num(m.fteMoved))*k; label='Parental (Partial Return)'; }
     // Working in a different classification also empties the substantive line — that FTE
     // is not being delivered where it is funded, so it needs covering like any absence.
-    else if(str(m.workClass)&&str(m.workClass)!==sc&&t!=='Extra Funded'&&registerFTE(person,sc)>0){ vacated=f; label='Working as '+str(m.workClass); }
+    else if(str(m.workClass)&&str(m.workClass)!==sc&&t!=='Extra Funded'&&registerFTE(person,sc,csMs,ceMs)>0){ vacated=f; label='Working as '+str(m.workClass); }
     // Relieving in another line at the same level empties their own line too, when the manager says so.
     else if(vacatesOwnLine(m)){ vacated=f; label='Relieving '+(str(m.owner)||'another line'); }
     else return;
@@ -2169,7 +2177,7 @@ function computeGaps(csMs,ceMs){
 }
 // A same-level move flagged "comes out of their own line" (e.g. relieving in another senior post).
 function vacatesOwnLine(m){
-  return str(m.vacatesOwn)==='Yes'&&COVER_TYPES.includes(str(m.type))&&str(m.workClass)===str(m.subClass)&&registerFTE(str(m.staff),str(m.subClass))>0;
+  return str(m.vacatesOwn)==='Yes'&&COVER_TYPES.includes(str(m.type))&&str(m.workClass)===str(m.subClass)&&registerFTE(str(m.staff),str(m.subClass),parseDate(m.start),parseDate(m.end))>0;
 }
 
 /* ============================ MANAGER ACTION DASHBOARD ============================ */
@@ -2184,7 +2192,7 @@ function computeManagerActions(){
   state.staff.forEach((s,i)=>{
     if(str(s.active)!=='Yes'||unpaidLine(s)) return;
     state.staff.forEach((o,j)=>{
-      if(j<=i||str(o.name)!==str(s.name)||str(o.subClass)!==str(s.subClass)||str(o.active)!=='Yes'||unpaidLine(o)||!linesOverlap(s,o)) return;
+      if(j<=i||str(o.name)!==str(s.name)||str(o.subClass)!==str(s.subClass)||str(o.active)!=='Yes'||unpaidLine(o)||!linesOverlap(s,o)||!samePositionish(s,o)) return;
       const k=str(s.name)+'|'+str(s.subClass); if(seenOverlap.has(k)) return; seenOverlap.add(k);
       add('high',s.name,'Two active lines overlap in the same classification',`${str(s.subClass)}: ${r2(num(s.subFTE))} FTE and ${r2(num(o.subFTE))} FTE are both counted over the same dates. If one replaced the other, end the old line the day before the new one starts (Staff Register → Change from date does this for you).`,['Staff register','Double counted'],`${staffDetailsAction(s.name)}${editStaffAction(i)}`,'Staff');
     });
@@ -2218,7 +2226,7 @@ function computeManagerActions(){
       }
     }
     if(str(m.staff)&&str(m.owner)&&str(m.staff)===str(m.owner)&&COVER_TYPES.includes(str(m.type))) add('high',person,'Someone is recorded as covering themselves',`${movementSummary}. Movement ${str(m.id)} has ${str(m.staff)} as both the staff member and the person being backfilled.`,['Check staff member'],actions,'Movement');
-    const attribOnly=str(m.type)==='Secondment In'||(str(m.staff)&&str(m.workClass)&&registerFTE(str(m.staff),str(m.workClass))>0);
+    const attribOnly=str(m.type)==='Secondment In'||(str(m.staff)&&str(m.workClass)&&registerFTE(str(m.staff),str(m.workClass),parseDate(m.start),parseDate(m.end))>0);
     const movesFTE2=!attribOnly&&['Backfill','Acting Higher Duties','Temporary Contract Extension','Casual to Temporary'].includes(str(m.type));
     if(movesFTE2&&str(m.subClass)&&str(m.subClass)===str(m.workClass)) add('high',person,'Movement is not affecting any FTE',`${movementSummary}. Movement ${str(m.id)} has ${str(m.subClass)} as both the substantive and the working classification, so no FTE moves and it does not show on the planner. Set the substantive classification to the one this person actually holds.`,['No effect','Check classification'],actions,'Movement');
     const draws=['Substantive','Backfill','Acting Higher Duties','Secondment Out','Leave','Parental Return to Work','Vacancy','Flexible Work Arrangement'].includes(str(m.type));
@@ -2232,8 +2240,10 @@ function computeManagerActions(){
   });
   // Approvals stuck part-way, or starting before they are approved. Old movements left on the
   // default Draft status are not raised here (they show on the Approvals board only).
+  // Approvals and Recruitment are extra tools, so their reminders only show when those screens do.
+  const moreTools=!!state.settings.showMoreTools;
   state.movements.forEach(m=>{
-    if(!liveMovement(m)) return;
+    if(!moreTools||!liveMovement(m)) return;
     const person=str(m.staff)||str(m.owner)||'Unassigned staff member', en=parseDate(m.end), st=parseDate(m.start);
     const actions=`${staffDetailsAction(person)}<button class="iconbtn" onclick="go('approvals')">Approvals board</button>`;
     approvalFlags(m).flags.forEach(f=>{
@@ -2243,13 +2253,15 @@ function computeManagerActions(){
     if(str(m.type)==='Vacancy'&&(en===null||en>=today)&&!state.recruitment.some(r=>str(r.movId)===str(m.id)))
       add('info',person,'Vacancy has no recruitment record',`${r2(num(m.fteMoved))} FTE vacant ${fmtDate(m.start)} → ${fmtDate(m.end)}. Add a position on the Recruitment board and link it to ${str(m.id)} if this is being filled.`,['Recruitment'],`<button class="iconbtn" onclick="go('recruit');openRecruit(null)">Add position</button>`,'Vacancy');
   });
-  state.recruitment.forEach(r=>{
+  if(moreTools) state.recruitment.forEach(r=>{
     rcFlags(r).forEach(f=>add(f.sev,str(r.title)||'Position','Recruitment: '+f.t,`${str(r.cls)} · ${r2(num(r.fte))} FTE · stage “${str(r.stage)}” · target start ${fmtDate(r.target)||'not set'}.`,['Recruitment'],`<button class="iconbtn" onclick="go('recruit')">Recruitment board</button><button class="iconbtn" onclick="openRecruit(${esc(jsq(str(r.id)))})">Open position</button>`,'Recruitment'));
   });
   forecastFindings(forecastData(26)).filter(x=>x.kind==='ceil').forEach(x=>add(x.sev,x.cls+' budget','Forecast: '+x.cls+' goes over its ceiling',x.text,['Budget forecast'],`<button class="iconbtn" onclick="go('budget')">View forecast</button>`,'Budget'));
-  computeGaps().filter(g=>g.gap>0.001).forEach(g=>{
+  // Gap is cover minus vacated: below zero is a shortfall, above zero is more cover than the line needs.
+  computeGaps().filter(g=>Math.abs(g.gap)>0.001).forEach(g=>{
     const actions=`${staffDetailsAction(g.name)}<button class="iconbtn" onclick="go('gaps')">View FTE gap</button>`;
-    add(g.gap>=0.5?'high':'warn',g.name,'Unfilled FTE gap linked to this person',`${g.subClass}: ${r2(g.vacated)} FTE vacated, ${r2(g.backfilled)} FTE backfilled, gap ${r2(g.gap)} FTE.`,['FTE gaps'],actions,'FTE gap');
+    if(g.gap<0) add(g.gap<=-0.5?'high':'warn',g.name,'Unfilled FTE gap linked to this person',`${g.subClass}: ${r2(g.vacated)} FTE vacated, ${r2(g.backfilled)} FTE backfilled, ${r2(-g.gap)} FTE not covered.`,['FTE gaps'],actions,'FTE gap');
+    else add('warn',g.name,'More cover than the line needs',`${g.subClass}: ${r2(g.vacated)} FTE vacated, ${r2(g.backfilled)} FTE backfilled, ${r2(g.gap)} FTE more than needed. Usually an earlier cover movement was not ended, or one FTE is out.`,['FTE gaps'],actions,'FTE gap');
   });
   items.sort((a,b)=>({high:0,warn:1,info:2}[a.sev]-{high:0,warn:1,info:2}[b.sev])||a.person.localeCompare(b.person)||a.issue.localeCompare(b.issue));
   return items;
@@ -2281,12 +2293,12 @@ function renderManagerActions(){
 
 function renderGaps(){
   renderGapsControls();
-  const gaps=computeGaps();
+  const gc=cycleFromSelect('gapsCycle'), gaps=computeGaps(gc.csMs,gc.ceMs);
   document.getElementById('navGaps').textContent=gaps.length||'';
   const rows=gaps.map(g=>{
     let gp; if(g.gap<-0.001) gp=`<span class="pill warn">${signed(g.gap)}</span>`; else if(g.gap>0.001) gp=`<span class="pill accent">${signed(g.gap)}</span>`; else gp=`<span class="pill good">0</span>`;
     const cover = g.count? g.coveredBy.map(x=>esc(x)).join('<br>') : '<span class="hint">nobody</span>';
-    const holds=r2(registerFTE(g.name,g.subClass));
+    const holds=r2(registerFTE(g.name,g.subClass,gc.csMs,gc.ceMs));
     const vacCell = (holds>0&&g.vacated>holds+0.001)? `<span class="pill danger">${r2(g.vacated)}</span>` : r2(g.vacated);
     return [esc(g.name),esc(g.subClass),esc(g.absence),holds||'',vacCell,r2(g.backfilled),gp,cover,g.start!==null?msDate(g.start):'',g.end!==null?msDate(g.end):''];
   });
@@ -3084,6 +3096,77 @@ function renderRotations(){
     x.d>0?`<span class="pill warn">${x.d} FTE unallocated</span>`:`<span class="pill danger">${r2(-x.d)} FTE over-allocated</span>`]),''):'<div class="empty">Everyone on the register is fully allocated in this cycle.</div>';
 }
 
+// Save a text file: the download route, or a new tab if the download is blocked.
+function downloadFile(name,text,mime){
+  try{
+    const blob=new Blob([text],{type:mime});
+    if(window.navigator&&window.navigator.msSaveOrOpenBlob){ window.navigator.msSaveOrOpenBlob(blob,name); toast('Saved '+name); return; }
+    const url=URL.createObjectURL(blob), a=document.createElement('a');
+    a.href=url; a.download=name; a.rel='noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>{ try{URL.revokeObjectURL(url);}catch(e){} },4000);
+    toast('Downloaded '+name+' \u2014 check your Downloads folder');
+  }catch(err){
+    try{
+      const win=window.open('','_blank');
+      if(win){ win.document.write(mime.indexOf('html')>=0?text:'<pre>'+esc(text)+'</pre>'); win.document.close();
+        toast('The download was blocked, so it has opened in a new tab \u2014 save it from there.',true); return; }
+    }catch(e){}
+    toast('Could not export: '+err.message,true);
+  }
+}
+// Share the roster. Both exports read the pay cycle currently on screen and use the same
+// rotRoleCycle() the board does, so what goes out is what you are looking at.
+function rotationExportRows(){
+  const {csMs,ceMs}=cycleFromSelect('rotCycle');
+  const teamFilter=(document.getElementById('rotTeam')||{}).value||'all';
+  return teams().filter(t=>t.active!==false&&(teamFilter==='all'||t.id===teamFilter)).map(t=>({
+    team:t.name,
+    roles:(t.roles||[]).filter(r=>r.active!==false).map(r=>{
+      const c=rotRoleCycle(r,csMs,ceMs);
+      return {
+        role:str(r.name)+(num(r.fte)&&num(r.fte)!==1?' ('+num(r.fte)+')':''),
+        roleName:str(r.name), cls:str(r.cls), funded:r2(num(r.fte)), filled:c.filled,
+        people:c.list.map(x=>({name:str(x.a.staff),fte:r2(num(x.a.fte)),notes:str(x.a.notes)})),
+        short:c.short
+      };
+    })
+  })).filter(t=>t.roles.length);
+}
+function exportRotationList(){
+  const rows=rotationExportRows(), when=cycleFromSelect('rotCycle').label;
+  const cols=rows.map(t=>`<div class="a"><h2>${esc(t.team)}</h2><table>`+
+    t.roles.map(r=>{
+      const who=r.people.length
+        ? r.people.map(pp=>esc(pp.name)+(pp.fte&&pp.fte!==r.funded?' '+pp.fte:'')+(pp.notes?' <span class="n">'+esc(pp.notes)+'</span>':'')).join('<br>')
+        : '<i>unfilled</i>';
+      return `<tr><td class="r">${esc(r.role)}</td><td>${who}</td></tr>`;
+    }).join('')+'</table></div>').join('');
+  const html=`<!doctype html><meta charset="utf-8"><title>${esc(str(state.settings.serviceName))} rotations</title>
+<style>body{font-family:Segoe UI,Calibri,sans-serif;color:#1F2A37;margin:26px;font-size:13px}
+h1{font-size:21px;margin:0 0 2px}.sub{color:#5A6B7C;font-size:12.5px;margin-bottom:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px}
+.a{break-inside:avoid;border:1px solid #C9D4DE;border-radius:9px;padding:11px 13px}
+h2{font-size:15px;margin:0 0 7px;color:#1A5A9A}
+table{width:100%;border-collapse:collapse}td{padding:4px 0;vertical-align:top;border-bottom:1px solid #EDF1F5}
+td.r{width:48%;color:#5A6B7C;padding-right:10px}.n{color:#8A97A5;font-size:11.5px}
+@media print{body{margin:10mm}}</style>
+<h1>${esc(str(state.settings.serviceName))} — rotations</h1>
+<div class="sub">${esc(when)} · produced ${esc(fmtDate(isoToday()))}</div>
+<div class="grid">${cols}</div>`;
+  downloadFile(((str(state.settings.serviceName)||'Service').replace(/[^A-Za-z0-9]+/g,''))+'_Rotations.html',html,'text/html');
+}
+function exportRotationCsv(){
+  const rows=rotationExportRows();
+  const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const out=[['Team','Role','Classification','Funded FTE','Assigned FTE','Person','Person FTE','Notes'].map(q).join(',')];
+  rows.forEach(t=>t.roles.forEach(r=>{
+    if(!r.people.length) out.push([t.team,r.roleName,r.cls,r.funded,r.filled,'(unfilled)','',''].map(q).join(','));
+    else r.people.forEach(pp=>out.push([t.team,r.roleName,r.cls,r.funded,r.filled,pp.name,pp.fte,pp.notes].map(q).join(',')));
+  }));
+  downloadFile(((str(state.settings.serviceName)||'Service').replace(/[^A-Za-z0-9]+/g,''))+'_Rotations.csv',out.join('\n'),'text/csv');
+}
+
 /* ---- Roll forward: copy the current block of assignments into a new date range ---- */
 let rollRows=[], rollSrc=null;
 function openRoll(){
@@ -3394,7 +3477,7 @@ function plannerWork(line,ws){
     if(str(m.staff)!==name||str(m.subClass)!==cls||!inCycle(m,ws,we)) return;
     const t=str(m.type), ab=str(m.absenceType), wc=str(m.workClass), k=mvShare(m,ws,we), f=num(m.fteMoved)*k;
     if(t==='Leave'&&(ab==='Parental Leave'||ab==='Maternity Leave')){ w.away.P+=f; w.tips.push(r2(f)+' '+ab.toLowerCase()); }
-    else if(t==='Parental Return to Work'){ const nb=Math.max(0,(registerFTE(name,cls)||num(m.subFTE))-num(m.fteMoved))*k; if(nb>0){ w.away.P+=nb; w.tips.push(r2(nb)+' still on parental leave (returned to '+r2(num(m.fteMoved))+')'); } }
+    else if(t==='Parental Return to Work'){ const nb=Math.max(0,(registerFTE(name,cls,ws,we)||num(m.subFTE))-num(m.fteMoved))*k; if(nb>0){ w.away.P+=nb; w.tips.push(r2(nb)+' still on parental leave (returned to '+r2(num(m.fteMoved))+')'); } }
     else if(t==='Leave'){ w.away.L+=f; w.tips.push(r2(f)+' '+(ab||'leave')); }
     else if(t==='Secondment Out'){ w.away.S+=f; w.tips.push(r2(f)+' seconded out'+(str(m.workPosTitle)?' ('+str(m.workPosTitle)+')':'')); }
     else if(t==='Vacancy'||t==='Flexible Work Arrangement'){ w.away.V+=f; w.tips.push(r2(f)+' '+(t==='Vacancy'?'vacant':'not worked (FWA)')); }
