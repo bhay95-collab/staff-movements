@@ -695,25 +695,28 @@ table.planner td.lc-num.bad{color:var(--danger);background:var(--danger-bg)}
         </div>
       </div>
       <div class="card">
-        <div class="card-head" onclick="toggleCard(this)"><div><h3>Shared data &amp; backup</h3><div class="card-sub">Keep one shared copy of the data in a OneDrive folder, with automatic daily backups.</div></div><span class="chev">▾</span></div>
+        <div class="card-head" onclick="toggleCard(this)"><div><h3>Sharing &amp; backup</h3><div class="card-sub">Everyone works from one shared backup file: import the latest before you start, export it back when you finish.</div></div><span class="chev">▾</span></div>
         <div class="card-body">
-          <div id="syncStatus"></div>
           <div class="ctrlrow" style="margin-bottom:12px">
-            <div class="field" style="min-width:240px"><label>Your name (shown as “saved by”)</label><input type="text" id="setUserName" onchange="setUser(this.value)" placeholder="e.g. Sam (admin) or Alex (manager)"></div>
+            <div class="field" style="min-width:240px"><label>Your name (shown in the audit history)</label><input type="text" id="setUserName" onchange="setUser(this.value)" placeholder="e.g. Sam (admin) or Alex (manager)"></div>
           </div>
-          <div id="syncButtons" style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px"></div>
-          <div class="sectionnote"><b>Set up once on each PC.</b><br>
-            1. In File Explorer, make a folder inside OneDrive (for example <b>StaffMovements</b>). Share it with the other person with <b>Can edit</b> permission, and have them sync it to their PC.<br>
-            2. Put this tracker file (index.html) in that folder too, and open it from there in <b>Microsoft Edge or Google Chrome</b>.<br>
-            3. Click <b>Link shared folder</b> above, pick that same folder, and choose <b>Edit files</b> when the browser asks.<br>
-            4. Each new browser session you may see <b>Reconnect</b> — one click, no data lost.<br>
-            Every save writes to <b>StaffMovementTracker-data.json</b>. A start-of-day snapshot goes in the <b>backups</b> folder (last 45 days kept), and OneDrive also keeps its own version history of the file.</div>
-          <h4 style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:6px 0 8px">Manual backup file</h4>
-          <div class="hint" style="margin-bottom:12px">A separate copy you can keep anywhere. Also how you move data between browsers that cannot use a shared folder.</div>
+          <div id="exportStatus"></div>
+          <div class="sectionnote"><b>Working from the shared file</b><br>
+            The data lives in this browser on your PC. To share it, keep one backup file in a shared folder that everyone can reach.<br>
+            1. <b>Before you start:</b> click <b>Import</b> (top right) and pick the newest file in the shared folder.<br>
+            2. Make your changes.<br>
+            3. <b>When you finish:</b> click <b>Export backup</b> and save the file into the shared folder.<br>
+            4. Only one person updates at a time. If two people change their own copies, whichever is imported last wins and the other person's changes are lost.<br>
+            Each export is named with the date (e.g. STARSPhysiotherapy_StaffMovementTracker_261103.json), so the newest file is easy to spot and older ones act as a history.</div>
           <div style="display:flex;gap:9px;flex-wrap:wrap">
             <button class="btn primary" onclick="exportBackup()">Export backup (.json)</button>
             <button class="btn" onclick="document.getElementById('importInput').click()">Import backup</button>
             <button class="btn danger" onclick="resetToSeed()">Reset to original data</button>
+          </div>
+          <div id="folderSync" style="display:none;margin-top:16px">
+            <h4 style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:6px 0 8px">Linked shared folder</h4>
+            <div id="syncStatus"></div>
+            <div id="syncButtons" style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px"></div>
           </div>
         </div>
       </div>
@@ -733,23 +736,20 @@ table.planner td.lc-num.bad{color:var(--danger);background:var(--danger-bg)}
       </div></div>
 
       <div class="card"><div class="card-head" onclick="toggleCard(this)"><h3>Sharing with admin support (or anyone else)</h3><span class="chev">▾</span></div><div class="card-body howto">
-        <p>Both people work on the same data file kept in a shared OneDrive folder. Set up once:</p>
-        <h4>You (the owner)</h4>
+        <p>The tracker saves to the browser on the PC you are using, so nobody else can see your changes until you pass them on. Sharing works through <b>one backup file kept in a shared folder</b> (a Teams/SharePoint folder or network drive everyone can open).</p>
+        <h4>Set up once (each person)</h4>
         <ol>
-          <li>In File Explorer, open <b>OneDrive</b> and make a folder, e.g. <b>StaffMovements</b>.</li>
-          <li>Put this tracker file (the .html) in that folder.</li>
-          <li>Open the tracker from that folder in <b>Microsoft Edge</b> (or Chrome).</li>
-          <li>Go to <b>Settings → Shared data &amp; backup</b>, type your name, click <b>Link shared folder</b>, pick the StaffMovements folder and choose <b>Edit files</b> when asked.</li>
-          <li>Right-click the folder in File Explorer → <b>Share</b> → add your admin's email → set to <b>Can edit</b> → Send.</li>
+          <li>Save the tracker file (the .html) somewhere you can open it, e.g. the same shared folder, and open it in <b>Microsoft Edge</b>.</li>
+          <li><b>Settings → Sharing &amp; backup</b> → type your name, so the audit history shows who changed what.</li>
         </ol>
-        <h4>Your admin</h4>
+        <h4>Every time you use it</h4>
         <ol>
-          <li>Open the share email, open the folder in OneDrive online, and click <b>Add shortcut to My files</b>. It then appears in their File Explorer under OneDrive.</li>
-          <li>Open the tracker .html from that folder in <b>Edge</b> (or Chrome).</li>
-          <li><b>Settings → Shared data &amp; backup</b> → type their name → <b>Link shared folder</b> → pick the same folder → <b>Edit files</b>.</li>
+          <li><b>Import first.</b> Click <b>Import</b> (top right) and pick the <b>newest</b> .json file in the shared folder. This brings in everyone else's changes.</li>
+          <li>Make your changes.</li>
+          <li><b>Export when you finish.</b> Click <b>Export backup</b>. If a “Save as” box appears, choose the shared folder; otherwise the file goes to <b>Downloads</b> — move it into the shared folder.</li>
+          <li>Let the other person know there is a new file, if they are about to use it.</li>
         </ol>
-        <p><b>Every day after that:</b> just open the tracker. The browser may show a <b>Reconnect</b> bar once per session — one click. The top right shows <b>Saved · shared</b> when it is working. If you both change things at the same moment, the tracker asks which version to keep and saves the other one in the <b>backups</b> folder, so nothing is lost. A copy is also saved to the backups folder at the start of each day.</p>
-        <p>Firefox and Safari cannot use a shared folder — use Edge.</p>
+        <p><b>One person at a time.</b> Each import replaces what is in the tracker. If two people make changes on their own PCs at the same time, whichever file is imported last wins and the other changes are lost. The tracker warns you if you try to import a file that is older than what you already have, and the banner at the top reminds you when you have changes that have not been exported.</p>
       </div></div>
 
       <div class="card"><div class="card-head" onclick="toggleCard(this)"><h3>Pay periods</h3><span class="chev">▾</span></div><div class="card-body howto">
@@ -780,7 +780,7 @@ table.planner td.lc-num.bad{color:var(--danger);background:var(--danger-bg)}
       </div></div>
 
       <div class="card"><div class="card-head" onclick="toggleCard(this)"><h3>Backups</h3><span class="chev">▾</span></div><div class="card-body howto">
-        <p>With a shared folder linked, every save goes to the folder and a daily copy goes in the <b>backups</b> folder. <b>Export backup</b> (top right) downloads a separate copy you can keep anywhere — do this before any big clean-up. <b>Import</b> loads a backup and replaces what is in the tracker.</p>
+        <p>The tracker keeps your data in this browser on this PC. The exported files in the shared folder are your backups as well as the way you share — each one is dated, so older files are a history you can go back to. Click <b>Export backup</b> whenever you finish a session of changes, and before any big clean-up. <b>Import</b> loads a file and replaces what is in the tracker. If you clear your browser data or change PC, just import the newest file again.</p>
       </div></div>
     </section>
 
@@ -1198,7 +1198,10 @@ function dbPut(val){ return dbPutKey('current',val); }
 
 const DATA_FILE='StaffMovementTracker-data.json', BACKUP_DIR='backups';
 const KEEP_COPIES={snapshot_:45,manual_:20,conflict_:20,restore_:10};
-const FS_OK=typeof window.showDirectoryPicker==='function';
+// The linked-folder sync (live OneDrive file) is switched off: the service shares one exported
+// backup file instead. Set to true to bring back Link shared folder in Settings.
+const SHARED_FOLDER=false;
+const FS_OK=SHARED_FOLDER&&typeof window.showDirectoryPicker==='function';
 let dirHandle=null, folderState='off', folderMsg='', lastMod=null, pushing=false, pushAgain=false, _chg=0, saving=false, bannerHidden=false;
 function lsGet(k){ try{ return localStorage.getItem(k)||''; }catch(e){ return ''; } }
 function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
@@ -1217,6 +1220,7 @@ function updateSaveDot(){
   else if(folderState==='reconnect'){ d.classList.add('warn'); txt='Reconnect shared folder'; }
   else if(folderState==='error'){ d.classList.add('err'); txt='Not reaching shared folder'; }
   else if(saving){ d.classList.add('saving'); txt='Saving…'; }
+  else if(!SHARED_FOLDER&&state&&meta().notExported){ d.classList.add('warn'); txt='Saved here · not exported'; }
   else { txt=FS_OK?'Saved on this PC only':'Saved in this browser'; if(FS_OK) d.classList.add('warn'); }
   t.textContent=txt;
 }
@@ -1224,7 +1228,7 @@ function markSaving(){ saving=true; updateSaveDot(); }
 function markSaved(){ saving=false; updateSaveDot(); }
 function persist(){
   markSaving(); _chg++;
-  if(state){ const m=meta(); m.edited=true; if(dirHandle) m.unsynced=true; }
+  if(state){ const m=meta(); m.edited=true; m.notExported=true; if(dirHandle) m.unsynced=true; }
   clearTimeout(_saveTimer);
   _saveTimer=setTimeout(async()=>{
     try{ await dbPut(JSON.stringify(state)); }catch(e){ console.error(e); }
@@ -1447,11 +1451,18 @@ function renderSyncUI(){
   let b='';
   if(folderState==='reconnect') b=`<div class="syncbar"><div class="grow">The shared folder needs your permission again — browsers ask once per session. Nothing is lost; changes are kept on this PC meanwhile.</div><button class="btn sm primary" onclick="reconnectFolder()">Reconnect</button></div>`;
   else if(folderState==='error') b=`<div class="syncbar err"><div class="grow">Changes are not reaching the shared folder${folderMsg?': '+esc(folderMsg):''}. They are safe on this PC.</div><button class="btn sm" onclick="retrySync()">Try again</button></div>`;
+  else if(!SHARED_FOLDER){
+    if(meta().notExported&&!bannerHidden) b=`<div class="syncbar"><div class="grow">You have changes that are not in the shared file yet. When you finish, click <b>Export backup</b> and save it into the shared folder so others get them.</div><button class="btn sm primary" onclick="exportBackup()">Export now</button><button class="btn sm" onclick="bannerHidden=true;renderSyncUI()">Later</button></div>`;
+  }
   else if(folderState==='off'&&!bannerHidden){
     if(FS_OK) b=`<div class="syncbar"><div class="grow">Your data is stored only in this browser on this PC — nobody else can see it, and clearing the browser would lose it. Link a OneDrive folder to share it and back it up automatically.</div><button class="btn sm primary" onclick="go('settings')">Set up shared folder</button><button class="btn sm" onclick="bannerHidden=true;renderSyncUI()">Not now</button></div>`;
     else b=`<div class="syncbar"><div class="grow">This browser cannot save to a shared folder — use Microsoft Edge or Google Chrome for that. Until then, export a backup regularly${days===null?' (you have not exported one yet)':days>7?' (last export '+days+' days ago)':''}.</div><button class="btn sm primary" onclick="exportBackup()">Export now</button><button class="btn sm" onclick="bannerHidden=true;renderSyncUI()">Not now</button></div>`;
   }
   if(bar) bar.innerHTML=b;
+  const es=document.getElementById('exportStatus');
+  if(es) es.innerHTML=`<div class="syncstatus" style="margin-bottom:12px"><div><div class="k">Last export from this PC</div><div class="v">${lastExp?esc(fmtDateTime(lastExp)):'Never'}</div></div><div><div class="k">Changes since</div><div class="v">${meta().notExported?'Yes — export when you finish':'None'}</div></div></div>`;
+  const fs=document.getElementById('folderSync'); if(fs) fs.style.display=SHARED_FOLDER?'':'none';
+  const un0=document.getElementById('setUserName'); if(un0&&document.activeElement!==un0) un0.value=userName();
   const st=document.getElementById('syncStatus'), bt=document.getElementById('syncButtons');
   if(!st||!bt) return;
   const m=meta(), stateTxt={off:'Not linked — data is only in this browser',reconnect:'Linked — needs reconnecting',ok:'Linked and saving',error:'Linked — not saving'}[folderState];
@@ -1589,7 +1600,7 @@ function validateStaffObject(obj,idx){
   if(fr){
     if(str(fr.role.cls)&&str(fr.role.cls)!==str(obj.subClass)) warnings.push('This role ('+fr.role.name+') is funded as '+fr.role.cls+' but the line is '+str(obj.subClass)+'. Fine if intended; otherwise the role or classification may be wrong.');
     if(fr.role.active===false||fr.team.active===false) warnings.push('This role or its team is archived, so its funded FTE is not counted.');
-    const others=state.staff.filter((s,i)=>i!==idx&&str(s.roleId)===fr.role.id&&str(s.active)==='Yes').reduce((a,s)=>a+num(s.subFTE),0);
+    const others=state.staff.filter((s,i)=>i!==idx&&str(s.roleId)===fr.role.id&&str(s.active)==='Yes'&&linesOverlap(s,obj)).reduce((a,s)=>a+num(s.subFTE),0);
     const total=r2(others+(str(obj.active)==='Yes'?f:0));
     if(num(fr.role.fte)>0&&total>num(fr.role.fte)+0.001) warnings.push(fr.team.name+' / '+fr.role.name+' would hold '+total+' FTE against '+r2(num(fr.role.fte))+' FTE funded.');
   }
@@ -1625,23 +1636,37 @@ function toast(msg,bad){
   el.textContent=msg; el.className='toast show'+(bad?' bad':'');
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>{ el.className='toast'; },bad?6000:3200);
 }
-function exportBackup(){
-  let url=null;
+function exportedNow(){
   lsSet('smt_lastExport',String(Date.now()));
+  meta().notExported=false; bannerHidden=false;
+  dbPut(JSON.stringify(state)).catch(e=>console.error(e));
+  updateSaveDot(); renderSyncUI();
+}
+async function exportBackup(){
+  let url=null;
+  meta().notExported=false;
+  const json=JSON.stringify(state,null,2);
+  const d=new Date(), stamp=d.getFullYear().toString().slice(2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+  const name=((str(state.settings.serviceName)||'Service').replace(/[^A-Za-z0-9]+/g,''))+'_StaffMovementTracker_'+stamp+'.json';
+  // Edge and Chrome can ask where to save, so the file goes straight into the shared folder.
+  if(typeof window.showSaveFilePicker==='function'){
+    try{
+      const h=await window.showSaveFilePicker({suggestedName:name,types:[{description:'Tracker backup',accept:{'application/json':['.json']}}]});
+      const w=await h.createWritable(); await w.write(json); await w.close();
+      exportedNow(); toast('Backup saved: '+h.name+'. Others can now import it.'); return;
+    }catch(e){ if(e&&e.name==='AbortError'){ meta().notExported=true; toast('Export cancelled — nothing saved.'); return; } console.error(e); }
+  }
   try{
-    const json=JSON.stringify(state,null,2);
     const blob=new Blob([json],{type:'application/json'});
-    const d=new Date(), stamp=d.getFullYear().toString().slice(2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
-    const name=((str(state.settings.serviceName)||'Service').replace(/[^A-Za-z0-9]+/g,''))+'_StaffMovementTracker_'+stamp+'.json';
     // Edge on a locked-down desktop can refuse a blob download from a local file with no
     // error at all, which looks exactly like a dead button. Try the documented path first,
     // then fall back to opening the data so it can be saved by hand.
-    if(window.navigator&&window.navigator.msSaveOrOpenBlob){ window.navigator.msSaveOrOpenBlob(blob,name); toast('Backup saved: '+name); return; }
+    if(window.navigator&&window.navigator.msSaveOrOpenBlob){ window.navigator.msSaveOrOpenBlob(blob,name); exportedNow(); toast('Backup saved: '+name); return; }
     url=URL.createObjectURL(blob);
     const a=document.createElement('a'); a.href=url; a.download=name; a.rel='noopener';
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>{ try{URL.revokeObjectURL(url);}catch(e){} },4000);
-    toast('Backup downloaded: '+name+' — check your Downloads folder');
+    exportedNow(); toast('Backup downloaded: '+name+' — move it from Downloads into the shared folder');
   }catch(err){
     try{
       const win=window.open('','_blank');
@@ -1657,8 +1682,14 @@ function importBackup(ev){
   reader.onerror=()=>toast('That file could not be read.',true);
   reader.onload=()=>{ let data; try{ data=JSON.parse(reader.result);}catch(e){ alert('That file could not be read as tracker data.'); return; }
     if(!data||!data.staff||!data.movements){ alert('That file does not look like tracker data.'); return; }
-    if(!confirm('Load this backup? It replaces everything currently in the tracker.')){ ev.target.value=''; toast('Import cancelled'); return; }
-    const prevMeta=state&&state._meta; state=data; state._meta=Object.assign({},prevMeta,{edited:true}); ensureShape(); auditLog('Import','Data','Backup','Backup imported into tracker',null,null,['Imported from '+(file.name||'backup file')]); persist(); rebuildAll(); ev.target.value='';
+    // Guard the shared-file workflow: importing an older file over newer local changes loses them.
+    const lastChange=x=>{ const a=(x&&Array.isArray(x.audit))?x.audit.find(e=>str(e.action)!=='Import'):null; const t=a?Date.parse(a.ts):NaN; return isNaN(t)?null:t; };
+    const mine=lastChange(state), theirs=lastChange(data);
+    let msg='Load this backup? It replaces everything currently in the tracker.';
+    if(theirs!==null) msg+='\n\nThis file was last changed '+fmtDateTime(theirs)+'.';
+    if(mine!==null&&theirs!==null&&theirs<mine-60000&&meta().notExported) msg='Careful — this file is OLDER than what is in the tracker now.\n\nFile last changed: '+fmtDateTime(theirs)+'\nTracker last changed: '+fmtDateTime(mine)+' (not exported yet)\n\nImporting it will lose your newer changes. Click Cancel, then Export backup first if you want to keep them.\n\nImport the older file anyway?';
+    if(!confirm(msg)){ ev.target.value=''; toast('Import cancelled'); return; }
+    const prevMeta=state&&state._meta; state=data; state._meta=Object.assign({},prevMeta,{edited:true}); ensureShape(); auditLog('Import','Data','Backup','Backup imported into tracker',null,null,['Imported from '+(file.name||'backup file')]); persist(); meta().notExported=false; bannerHidden=false; rebuildAll(); ev.target.value='';
     toast('Imported '+state.staff.length+' staff lines and '+state.movements.length+' movements from '+(file.name||'backup file'));
   };
   reader.readAsText(file);
