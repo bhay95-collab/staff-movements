@@ -691,7 +691,7 @@ table.planner td.lc-num.bad{color:var(--danger);background:var(--danger-bg)}
             <div class="field"><label>Cycle length (days)</label><input type="number" id="setLen" value="14" onchange="saveSettings()" style="width:90px"></div>
           </div>
           <div id="payPeriodCheck"></div>
-          <div class="hint" style="margin-top:10px">Queensland Health pay periods run Monday to Sunday, and pay day is the Wednesday after. Enter any Monday that starts a pay period — the “period start” date on a payslip. Every fortnight, the planner weeks and the budget line up with it. Someone who starts or finishes part-way through a fortnight counts for the working days they cover, so a handover never counts two people.</div>
+          <div class="hint" style="margin-top:10px">Queensland Health pay periods run Monday to Sunday over a fortnight, and are paid on the Wednesday 10 days after the period ends (e.g. 28 Sep – 11 Oct 2026, paid 21 Oct). Enter any Monday that starts a pay period — the first date in the Week 1 row of a payslip. Every fortnight, the planner weeks and the budget line up with it. Someone who starts or finishes part-way through a fortnight counts for the working days they cover, so a handover never counts two people.</div>
         </div>
       </div>
       <div class="card">
@@ -1035,7 +1035,7 @@ const SEED = {
    "CA3": { "ceiling":2.5, "additional":0 }
   },
   "cycleLenDays": 14,
-  "cycleAnchorDate": "2025-06-16"
+  "cycleAnchorDate": "2026-09-28"
  }
 };
 
@@ -1074,8 +1074,9 @@ let managerActionFilter = 'all';
 
 /* ============================ DATE / CYCLE HELPERS ============================ */
 const MS_DAY = 86400000;
-// Queensland Health pay periods run Monday to Sunday. Any Monday that starts a period will do.
-const DEFAULT_ANCHOR = '2025-06-16';
+// Queensland Health pay periods run Monday to Sunday, paid on the Wednesday 10 days after the
+// period ends (period 28 Sep – 11 Oct 2026 was paid 21 Oct 2026). Any period-start Monday will do.
+const DEFAULT_ANCHOR = '2026-09-28';
 function isoOf(ms){ return new Date(ms).toISOString().slice(0,10); }
 function isMonday(ms){ return ms!==null&&new Date(ms).getUTCDay()===1; }
 function mondayOnOrBefore(ms){ return ms-((new Date(ms).getUTCDay()+6)%7)*MS_DAY; }
@@ -1784,11 +1785,16 @@ function ensureShape(){
     if(NO_CLASS_BAD.test(String(x.subClass||''))) x.subClass='';
   });
   state.settings.cycleAnchorDate=state.settings.cycleAnchorDate||DEFAULT_ANCHOR;
-  // Pay periods run Monday to Sunday. Older files anchored on the Wednesday pay day, which put
-  // every Monday handover inside one Wed–Tue cycle and counted both people. Move the anchor to
-  // the Monday before and ask the manager to check it against a payslip.
+  // Pay periods run Monday to Sunday. Older files anchored on a Wednesday pay day, which put
+  // every Monday handover inside one Wed–Tue cycle and counted both people. Pay day is 10 days
+  // after the period ends, so the period it pays started 23 days earlier — on the fortnightly
+  // calendar that is the Monday 5 days after the pay day. Any other weekday is moved to the
+  // Monday before and the manager is asked to check it against a payslip.
   const anc=parseDate(state.settings.cycleAnchorDate);
-  if(anc!==null&&!isMonday(anc)){ state.settings.cycleAnchorDate=isoOf(mondayOnOrBefore(anc)); state.settings.payPeriodToCheck=true; }
+  if(anc!==null&&!isMonday(anc)){
+    if(new Date(anc).getUTCDay()===3) state.settings.cycleAnchorDate=isoOf(anc+5*MS_DAY);
+    else { state.settings.cycleAnchorDate=isoOf(mondayOnOrBefore(anc)); state.settings.payPeriodToCheck=true; }
+  }
   state.settings.cycleLenDays=state.settings.cycleLenDays||14;
   // Assignments: convert any old area/slot/owner rows first, then normalise what is left.
   migrateLegacyRotations();
@@ -2694,7 +2700,7 @@ function renderSettings(){
   document.getElementById('setLen').value=state.settings.cycleLenDays||14;
   const pc=document.getElementById('payPeriodCheck');
   if(pc){ const a=parseDate(state.settings.cycleAnchorDate);
-    pc.innerHTML=state.settings.payPeriodToCheck?`<div class="sectionnote" style="background:var(--warn-bg);color:var(--warn);margin-top:10px"><b>Please check this date.</b> Pay periods now run Monday to Sunday. The old setting used the Wednesday pay day, so it was moved to ${esc(msDate(a))}. Compare it with the period start on a payslip: if it matches (or falls exactly 2, 4, 6… weeks from it), click Confirm; otherwise change the date above.<div style="margin-top:8px"><button class="btn sm primary" onclick="confirmPayPeriod()">Confirm — this is a pay period start</button></div></div>`:''; }
+    pc.innerHTML=state.settings.payPeriodToCheck?`<div class="sectionnote" style="background:var(--warn-bg);color:var(--warn);margin-top:10px"><b>Please check this date.</b> Pay periods now run Monday to Sunday. The old setting was not a Monday, so it was moved to ${esc(msDate(a))}. Compare it with the period start on a payslip: if it matches (or falls exactly 2, 4, 6… weeks from it), click Confirm; otherwise change the date above.<div style="margin-top:8px"><button class="btn sm primary" onclick="confirmPayPeriod()">Confirm — this is a pay period start</button></div></div>`:''; }
 }
 function saveIdentity(){
   const before={serviceName:state.settings.serviceName,orgName:state.settings.orgName};
